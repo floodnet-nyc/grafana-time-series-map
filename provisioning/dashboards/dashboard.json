@@ -81,11 +81,11 @@
         }
       ],
       "options": {
-        "basemapProvider": "google",
+        "basemapProvider": "maplibre",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
-        "googleMapsApiKey": "AIzaSyDUrN3sHNWV3C86-pC0FOaVQw7RivbrfIA",
-        "googleMapsMapId": "bc24713045eceb6d78171160",
+        "googleMapsApiKey": "",
+        "googleMapsMapId": "",
         "initialLatitude": 40.694,
         "initialLongitude": -73.945,
         "initialZoom": 11,
