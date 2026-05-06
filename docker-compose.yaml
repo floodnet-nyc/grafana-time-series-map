@@ -1,0 +1,13 @@
+services:
+  grafana:
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    build:
+      args:
+        GRAFANA_IMAGE: grafana-oss
+    environment:
+      GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
+    volumes:
+      - ./provisioning/sample-data:/usr/share/grafana/public/sample-data:ro
