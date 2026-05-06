@@ -1,0 +1,219 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+      "gridPos": { "h": 22, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "FloodNet NYC — Depth Animation",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/event_depth_data.json",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "geometry.coordinates.0", "text": "lng",           "type": "number" },
+            { "selector": "geometry.coordinates.1", "text": "lat",           "type": "number" },
+            { "selector": "properties.deployment_id","text": "deployment_id", "type": "string" },
+            { "selector": "properties.depth_inches", "text": "depth_inches",  "type": "number" },
+            { "selector": "properties.time",         "text": "time",          "type": "timestamp" }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "B",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/sensor_locations.geojson",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "geometry.coordinates.0", "text": "lng", "type": "number" },
+            { "selector": "geometry.coordinates.1", "text": "lat", "type": "number" }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "C",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/flood_events_summary.geojson",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "geometry.coordinates.0",     "text": "lng",              "type": "number" },
+            { "selector": "geometry.coordinates.1",     "text": "lat",              "type": "number" },
+            { "selector": "properties.max_depth_inches", "text": "max_depth_inches", "type": "number" }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "D",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/past_flood_events.geojson",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "geometry.coordinates.0",     "text": "lng",              "type": "number" },
+            { "selector": "geometry.coordinates.1",     "text": "lat", "type": "number" },
+            { "selector": "properties.max_depth_inches", "text": "max_depth_inches", "type": "number" }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "google",
+        "maplibreStyle": "carto-dark",
+        "maplibreStyleUrl": "",
+        "googleMapsApiKey": "API-KEY",
+        "googleMapsMapId": "bc24713045eceb6d78171160",
+        "initialLatitude": 40.694,
+        "initialLongitude": -73.945,
+        "initialZoom": 11,
+        "showTimeControls": true,
+        "loopPlayback": true,
+        "defaultPlaybackSpeed": 1800000,
+        "showLegend": false,
+        "layers": [
+          {
+            "id": "past-events",
+            "type": "scatterplot",
+            "label": "Past Flood Events",
+            "visible": false,
+            "queryRefId": "D",
+            "geometry": { "type": "latlng", "latField": "lat", "lngField": "lng" },
+            "timeFilter": { "mode": "none", "timeField": "" },
+            "fieldMappings": [
+              { "fieldName": "max_depth_inches", "alias": "max_depth_inches" }
+            ],
+            "opacity": 0.5,
+            "shader": { "enabled": false, "valueField": "" },
+            "colorScale": {
+              "type": "steps",
+              "presetName": "floodDepth",
+              "field": "max_depth_inches"
+            },
+            "options": {
+              "radiusMinPixels": 3,
+              "radiusMaxPixels": 14,
+              "radiusField": "max_depth_inches",
+              "radiusScale": 0.4,
+              "stroked": false
+            }
+          },
+          {
+            "id": "sensors",
+            "type": "scatterplot",
+            "label": "Sensor Locations",
+            "visible": false,
+            "queryRefId": "B",
+            "geometry": { "type": "latlng", "latField": "lat", "lngField": "lng" },
+            "timeFilter": { "mode": "none", "timeField": "" },
+            "fieldMappings": [],
+            "opacity": 0.6,
+            "shader": { "enabled": false, "valueField": "" },
+            "colorScale": { "type": "fixed", "fixedColor": [0, 155, 104, 180] },
+            "options": {
+              "radiusMinPixels": 4,
+              "radiusMaxPixels": 10,
+              "stroked": false
+            }
+          },
+          {
+            "id": "flood-summary",
+            "type": "scatterplot",
+            "label": "Flood Event Summary (max depth)",
+            "visible": false,
+            "queryRefId": "C",
+            "geometry": { "type": "latlng", "latField": "lat", "lngField": "lng" },
+            "timeFilter": { "mode": "none", "timeField": "" },
+            "fieldMappings": [
+              { "fieldName": "max_depth_inches", "alias": "max_depth_inches" }
+            ],
+            "opacity": 0.85,
+            "shader": { "enabled": false, "valueField": "" },
+            "colorScale": {
+              "type": "steps",
+              "presetName": "floodDepth",
+              "field": "max_depth_inches"
+            },
+            "options": {
+              "radiusMinPixels": 5,
+              "radiusMaxPixels": 22,
+              "radiusField": "max_depth_inches",
+              "radiusScale": 0.6,
+              "stroked": true,
+              "elevateByValue": false
+            }
+          },
+          {
+            "id": "event-depth",
+            "type": "scatterplot",
+            "label": "Flood Depth (animated)",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": { "type": "latlng", "latField": "lat", "lngField": "lng", "elevationField": "depth_inches" },
+            "timeFilter": {
+              "mode": "asof",
+              "timeField": "time",
+              "groupByField": "deployment_id",
+              "maxLagMs": 600000
+            },
+            "fieldMappings": [
+              { "fieldName": "depth_inches", "alias": "value" }
+            ],
+            "opacity": 1,
+            "shader": { "enabled": true, "valueField": "depth_inches" },
+            "colorScale": { "type": "steps", "presetName": "floodDepth" },
+            "options": {
+              "radiusMinPixels": 8,
+              "radiusMaxPixels": 14,
+              "elevateByValue": true,
+              "showLabels": true,
+              "stroked": true,
+              "radiusField": "depth_inches",
+              "labelField": "depth_inches"
+            },
+            "elevation": {
+              "field": "depth_inches",
+              "scale": 0.0254,
+              "depthTest": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["floodnet", "map"],
+  "time": {
+    "from": "2025-10-30T17:00:00.000Z",
+    "to":   "2025-10-31T08:00:00.000Z"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "Provisioned timeseries-map dashboard",
+  "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
+  "version": 1,
+  "weekStart": ""
+}

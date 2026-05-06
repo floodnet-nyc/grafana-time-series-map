@@ -1,0 +1,2289 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": "remotely-cunning-bullfrog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.75595,
+                    40.71147
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "remotely-cunning-bullfrog",
+                "max_depth_inches": 23.346456692913385,
+                "name": "Q - 204th St/ 100th Ave",
+                "total_flood_duration_hours": 0.7169433333333334
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mainly_kind_boxer",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9426034,
+                    40.6599911
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mainly_kind_boxer",
+                "max_depth_inches": 23.346456692913385,
+                "name": "BK - Kingston Ave/Rutland Rd ",
+                "total_flood_duration_hours": 2.40404
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "early_calm_ghoul",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9231089,
+                    40.7014202
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "early_calm_ghoul",
+                "max_depth_inches": 22.755905511811022,
+                "name": "BK - Knickerbocker Ave/ Hart St",
+                "total_flood_duration_hours": 2.1080022222222223
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "nearly_tidy_weasel",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.8144174,
+                    40.7456171
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "nearly_tidy_weasel",
+                "max_depth_inches": 22.637795275590552,
+                "name": "Q - Peck Ave/153rd st",
+                "total_flood_duration_hours": 1.7666602777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "officially-immense-grub",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7591,
+                    40.75255
+                ]
+            },
+            "properties": {
+                "flood_count": 2,
+                "id": "officially-immense-grub",
+                "max_depth_inches": 21.929133858267715,
+                "name": "Q - 56th Ave/ Springfield Blvd",
+                "total_flood_duration_hours": 8.499419444444444
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "unlucky_white_wolverine",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.809928489,
+                    40.591699393
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "unlucky_white_wolverine",
+                "max_depth_inches": 20.433070866141733,
+                "name": "Q - Beach 84 St (2)",
+                "total_flood_duration_hours": 4.8497325
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "socially-caring-sunbird",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.77576,
+                    40.70549
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "socially-caring-sunbird",
+                "max_depth_inches": 19.96062992125984,
+                "name": "Q - Liberty Ave/ 183rd St",
+                "total_flood_duration_hours": 0.7830577777777777
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "definitely-neat-hippo",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.74448,
+                    40.6439
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "definitely-neat-hippo",
+                "max_depth_inches": 19.763779527559056,
+                "name": "Q - Brookville Blvd/ Snake Rd 1",
+                "total_flood_duration_hours": 3.583488611111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "daily_happy_satyr",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.80996,
+                    40.59136
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "daily_happy_satyr",
+                "max_depth_inches": 19.37007874015748,
+                "name": "Q - Beach 84 St",
+                "total_flood_duration_hours": 5.116283055555556
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "extremely-discrete-gull",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.76662,
+                    40.71099
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "extremely-discrete-gull",
+                "max_depth_inches": 19.173228346456693,
+                "name": "Q - Woodhull Ave/ 193rd St",
+                "total_flood_duration_hours": 1.3
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mean_flying_fish",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.94676843,
+                    40.70281185
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mean_flying_fish",
+                "max_depth_inches": 18.11023622047244,
+                "name": "BK - Wallabout St/Throop Ave",
+                "total_flood_duration_hours": 1.4908905555555556
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "slightly-one-longhorn",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.962457069,
+                    40.68713705
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "slightly-one-longhorn",
+                "max_depth_inches": 17.598425196850393,
+                "name": "BK - Greene Ave / Grand Ave",
+                "total_flood_duration_hours": 1.0333344444444443
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "blue_eyed_tiger",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.95459494,
+                    40.70086017
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "blue_eyed_tiger",
+                "max_depth_inches": 16.771653543307085,
+                "name": "BK - Lee Ave/Middleton St",
+                "total_flood_duration_hours": 2.0169555555555556
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "carefully-new-lion",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.94103149,
+                    40.682874037
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "carefully-new-lion",
+                "max_depth_inches": 16.614173228346456,
+                "name": "BK - Halsey St/ Throop Ave",
+                "total_flood_duration_hours": 1.283332222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "presently-bursting-ghost",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.92834,
+                    40.6793
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "presently-bursting-ghost",
+                "max_depth_inches": 15.62992125984252,
+                "name": "BK - Fulton St/ Malcom X Blvd",
+                "total_flood_duration_hours": 5.482777777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "solely_on_tahr",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.96627,
+                    40.63563
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "solely_on_tahr",
+                "max_depth_inches": 15.472440944881889,
+                "name": "BK - Ditmas Ave/Westminster Rd",
+                "total_flood_duration_hours": 1.455277222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mildly_calm_ibex",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.8305586,
+                    40.6533868
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mildly_calm_ibex",
+                "max_depth_inches": 15.275590551181102,
+                "name": "Q - Davenport Ct 1",
+                "total_flood_duration_hours": 6.845619444444444
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "easily-dominant-snake",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.745609477,
+                    40.649528268
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "easily-dominant-snake",
+                "max_depth_inches": 13.937007874015748,
+                "name": "Q - Brookville Blvd/ Snake Rd 3",
+                "total_flood_duration_hours": 2.3833208333333333
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "overly_heroic_squid",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.994892,
+                    40.673401
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "overly_heroic_squid",
+                "max_depth_inches": 13.031496062992126,
+                "name": "BK - 9th St/Smith St",
+                "total_flood_duration_hours": 1.3496277777777779
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "noticeably-safe-swine",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.949350166,
+                    40.728354533
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "noticeably-safe-swine",
+                "max_depth_inches": 12.598425196850394,
+                "name": "BK - Newel Ave/ Meserole St",
+                "total_flood_duration_hours": 0.5501727777777777
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "clearly_bored_turtle",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.95133488,
+                    40.70082053
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "clearly_bored_turtle",
+                "max_depth_inches": 12.559055118110237,
+                "name": "BK - Walton St/Marcy Ave",
+                "total_flood_duration_hours": 1.8265627777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "duly_pro_vervet",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.83156638,
+                    40.65431241
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "duly_pro_vervet",
+                "max_depth_inches": 12.244094488188976,
+                "name": "Q - Russell St 1",
+                "total_flood_duration_hours": 4.216391944444444
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "chilly_indigo_cobra",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.817947,
+                    40.60918
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "chilly_indigo_cobra",
+                "max_depth_inches": 11.968503937007874,
+                "name": "Q - Church Rd/E 6th Rd",
+                "total_flood_duration_hours": 3.116376388888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "big_pink_elephant",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.828642,
+                    40.6559075
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "big_pink_elephant",
+                "max_depth_inches": 11.968503937007874,
+                "name": "Q - 1st St/104th St",
+                "total_flood_duration_hours": 4.231083333333333
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "duly_exotic_collie",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.166351225,
+                    40.560324853
+                ]
+            },
+            "properties": {
+                "flood_count": 2,
+                "id": "duly_exotic_collie",
+                "max_depth_inches": 11.929133858267717,
+                "name": "SI - Ridgewood Ave/Arthur Kill Rd",
+                "total_flood_duration_hours": 2.833337222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "wholly_needed_cougar",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7765292,
+                    40.7104752
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "wholly_needed_cougar",
+                "max_depth_inches": 11.614173228346457,
+                "name": "Q - 184th St/91st Ave",
+                "total_flood_duration_hours": 0.5166672222222223
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "yearly_frank_mullet",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7779036,
+                    40.7111282
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "yearly_frank_mullet",
+                "max_depth_inches": 11.614173228346457,
+                "name": "Q - 183rd St/90th Ave",
+                "total_flood_duration_hours": 2.7166627777777776
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "lively_wanted_louse",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.793350357,
+                    40.73440799
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "lively_wanted_louse",
+                "max_depth_inches": 11.5748031496063,
+                "name": "Q - Utopia Pkwy/ 67th Ave",
+                "total_flood_duration_hours": 1.7666658333333334
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "sincerely-kind-bass",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9228409,
+                    40.7639636
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "sincerely-kind-bass",
+                "max_depth_inches": 11.535433070866143,
+                "name": "Q - 31st Ave/ 32nd St",
+                "total_flood_duration_hours": 1.3998194444444445
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "entirely-integral-muskrat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.907905959,
+                    40.803499449
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "entirely-integral-muskrat",
+                "max_depth_inches": 11.259842519685039,
+                "name": "BX - Walnut Ave / E 139th St",
+                "total_flood_duration_hours": 0.9330555555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "ghastly-credible-bluegill",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.769284447,
+                    40.76043231
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "ghastly-credible-bluegill",
+                "max_depth_inches": 11.062992125984252,
+                "name": "Q - Bell Blvd / Northern Blvd ",
+                "total_flood_duration_hours": 0.9499988888888888
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "hardly_graceful_bison",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.95259321,
+                    40.71825614
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "hardly_graceful_bison",
+                "max_depth_inches": 10.708661417322835,
+                "name": "BK - Richardson St/N 11th St",
+                "total_flood_duration_hours": 1.0499888888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "dryly_receptive_rabbit",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.767808202,
+                    40.596618248
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "dryly_receptive_rabbit",
+                "max_depth_inches": 10.669291338582678,
+                "name": "Q - Beach 35 St/Beach Channel Dr",
+                "total_flood_duration_hours": 1.733325
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "lonely_quiet_bear",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.833552539,
+                    40.656566832
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "lonely_quiet_bear",
+                "max_depth_inches": 10.511811023622046,
+                "name": "Q - 161st Ave/99th St",
+                "total_flood_duration_hours": 2.5814008333333334
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "spotty_white_donkey",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.945762421,
+                    40.727446866
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "spotty_white_donkey",
+                "max_depth_inches": 10.31496062992126,
+                "name": "BK - Humboldt St / Norman Ave",
+                "total_flood_duration_hours": 0.9166666666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "gently_exotic_bunny",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.888023636,
+                    40.667194905
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "gently_exotic_bunny",
+                "max_depth_inches": 10.196850393700787,
+                "name": "BK - Dumont Ave/Hendrix St",
+                "total_flood_duration_hours": 1.0333330555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "loudly_bold_gecko",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.807328515,
+                    40.815775737
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "loudly_bold_gecko",
+                "max_depth_inches": 10.196850393700787,
+                "name": "BX - Schurz Ave/Mullan Pl",
+                "total_flood_duration_hours": 1.366673611111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "doubtfully_popular_fawn",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.81424141,
+                    40.74609591
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "doubtfully_popular_fawn",
+                "max_depth_inches": 10.039370078740157,
+                "name": "Q - Kissena Blvd/ Rose Ave",
+                "total_flood_duration_hours": 1.116305
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "uniformly-choice-grackle",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9372876,
+                    40.767149
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "uniformly-choice-grackle",
+                "max_depth_inches": 9.881889763779528,
+                "name": "Q - 10th St/ Vernon Blvd",
+                "total_flood_duration_hours": 0.9499977777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "tender_gold_goose",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.959307359,
+                    40.740836998
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "tender_gold_goose",
+                "max_depth_inches": 9.566929133858268,
+                "name": "Q - 54th Ave / Second St",
+                "total_flood_duration_hours": 1.0666666666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "awfully-feasible-swan",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.787458281,
+                    40.742675636
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "awfully-feasible-swan",
+                "max_depth_inches": 9.21259842519685,
+                "name": "Q - 188th St/ 58th Ave",
+                "total_flood_duration_hours": 0.5333333333333333
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "lame_wicked_maid",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.789528,
+                    40.849297
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "lame_wicked_maid",
+                "max_depth_inches": 9.05511811023622,
+                "name": "BX - Ditmars St/Hunter Ave 2",
+                "total_flood_duration_hours": 7.3253225
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "lively_live_hawk",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.924982,
+                    40.8617458
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "lively_live_hawk",
+                "max_depth_inches": 8.937007874015748,
+                "name": "M - Nagle Ave/Dyckman St",
+                "total_flood_duration_hours": 2.4496830555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "firmly_needed_heron",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9701657,
+                    40.6467299
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "firmly_needed_heron",
+                "max_depth_inches": 8.779527559055119,
+                "name": "BK - Church Ave/E10th St",
+                "total_flood_duration_hours": 0.7194338888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mildly_loving_doe",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7945793,
+                    40.6973695
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mildly_loving_doe",
+                "max_depth_inches": 8.622047244094489,
+                "name": "Q - 160th St/107th Ave",
+                "total_flood_duration_hours": 0.8
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "humbly_ruling_elk",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.770498012,
+                    40.595733417
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "humbly_ruling_elk",
+                "max_depth_inches": 8.543307086614174,
+                "name": "Q - Beach Channel Dr/Beach 38th St",
+                "total_flood_duration_hours": 1.91668
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "rarely_sacred_insect",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.934855849,
+                    40.637051102
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "rarely_sacred_insect",
+                "max_depth_inches": 8.307086614173228,
+                "name": "BK - Troy Ave/Farragut Rd",
+                "total_flood_duration_hours": 2.2166805555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "vastly_close_bobcat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.870753,
+                    40.721347
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "vastly_close_bobcat",
+                "max_depth_inches": 8.307086614173228,
+                "name": "Q - 83rd Pl/Penelope Ave",
+                "total_flood_duration_hours": 0.3833363888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "light_maroon_penguin",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.960584,
+                    40.69933611
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "light_maroon_penguin",
+                "max_depth_inches": 8.188976377952756,
+                "name": "BK - Kent Ave/Wallabout St",
+                "total_flood_duration_hours": 1.2272272222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "only_enough_goat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.854729594,
+                    40.664029547
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "only_enough_goat",
+                "max_depth_inches": 8.11023622047244,
+                "name": "Q - 155th Ave/79th St",
+                "total_flood_duration_hours": 1.116586111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "helpful_empty_garden",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.789490883,
+                    40.848093554
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "helpful_empty_garden",
+                "max_depth_inches": 8.11023622047244,
+                "name": "BX - Tier St/William Ave",
+                "total_flood_duration_hours": 3.2500125
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "evenly_cute_tomcat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7816151,
+                    40.6922895
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "evenly_cute_tomcat",
+                "max_depth_inches": 8.031496062992126,
+                "name": "Q - 169th St/Sayres Ave",
+                "total_flood_duration_hours": 1.1663963888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "wholly_useful_shrew",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.881042808,
+                    40.812851317
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "wholly_useful_shrew",
+                "max_depth_inches": 8.031496062992126,
+                "name": "BX - 1st St/Avenue A",
+                "total_flood_duration_hours": 6.3161958333333335
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "explicitly-secure-sheep",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.106406772,
+                    40.64422064
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "explicitly-secure-sheep",
+                "max_depth_inches": 7.4015748031496065,
+                "name": "SI - Snug Harbor Rd / Kissel Ave ",
+                "total_flood_duration_hours": 1.9833330555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "presumably-suited-lobster",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.949968355,
+                    40.698988564
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "presumably-suited-lobster",
+                "max_depth_inches": 7.165354330708661,
+                "name": "BK - Marcy Ave/Hopkins St",
+                "total_flood_duration_hours": 1.6500205555555556
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "kindly_wanted_skunk",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0010209,
+                    40.5770213
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "kindly_wanted_skunk",
+                "max_depth_inches": 7.047244094488189,
+                "name": "BK - Neptune Ave W 35th St",
+                "total_flood_duration_hours": 3.1831116666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "random_stuck_buffalo",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.8009935,
+                    40.5965724
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "random_stuck_buffalo",
+                "max_depth_inches": 6.574803149606299,
+                "name": "Q - Beach 72nd St/Almeda Ave",
+                "total_flood_duration_hours": 2.0364263888888887
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "total_melt_deer",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.95898254,
+                    40.69954219
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "total_melt_deer",
+                "max_depth_inches": 6.25984251968504,
+                "name": "BK - Wythe Ave/Wallabout St",
+                "total_flood_duration_hours": 0.5784294444444444
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "primarily-patient-mastiff",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.78986,
+                    40.76193
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "primarily-patient-mastiff",
+                "max_depth_inches": 6.2204724409448815,
+                "name": "Q - 192nd St/ 39th Ave",
+                "total_flood_duration_hours": 0.38333333333333336
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "wholly_fast_colt",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9594633,
+                    40.6410513
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "wholly_fast_colt",
+                "max_depth_inches": 6.062992125984252,
+                "name": "BK - Ocean Ave/Dorchester Rd",
+                "total_flood_duration_hours": 0.5433311111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "solely_modern_locust",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.994147782,
+                    40.60488145
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "solely_modern_locust",
+                "max_depth_inches": 5.984251968503937,
+                "name": "BK - 83rd St/21st Ave",
+                "total_flood_duration_hours": 1.2166594444444443
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "easily_immune_glider",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.955668439,
+                    40.589699274
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "easily_immune_glider",
+                "max_depth_inches": 5.826771653543307,
+                "name": "BK - Avenue Y/E 14th St",
+                "total_flood_duration_hours": 1.0668675
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "vastly_main_lion",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9374847,
+                    40.8016005
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "vastly_main_lion",
+                "max_depth_inches": 5.669291338582677,
+                "name": "M - E 122nd St/3rd",
+                "total_flood_duration_hours": 0.6999922222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "really_usable_ghoul",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.779035298,
+                    40.595000638
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "really_usable_ghoul",
+                "max_depth_inches": 5.551181102362205,
+                "name": "Q - Beach Channel Dr/Beach 48th St",
+                "total_flood_duration_hours": 0.9833380555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "subtly_alert_marten",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.980407792,
+                    40.697836373
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "subtly_alert_marten",
+                "max_depth_inches": 5.275590551181103,
+                "name": "BK - Concord St/Navy St",
+                "total_flood_duration_hours": 0.7166772222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "really_subtle_fawn",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.94232856,
+                    40.63677062
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "really_subtle_fawn",
+                "max_depth_inches": 5.196850393700787,
+                "name": "BK - Farragut Rd/Brooklyn Ave",
+                "total_flood_duration_hours": 1.2000027777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "poorly_many_snake",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.003601913,
+                    40.61328106
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "poorly_many_snake",
+                "max_depth_inches": 5.039370078740157,
+                "name": "BK - 16th Ave/80th St",
+                "total_flood_duration_hours": 0.6666530555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "slowly_steady_stork",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.931102973,
+                    40.660654847
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "slowly_steady_stork",
+                "max_depth_inches": 5.039370078740157,
+                "name": "BK - Utica Ave/Rutland Rd",
+                "total_flood_duration_hours": 0.8500063888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "solely_strong_eft",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9171868,
+                    40.8671282
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "solely_strong_eft",
+                "max_depth_inches": 4.960629921259843,
+                "name": "M - 10th Ave/ W 211th St",
+                "total_flood_duration_hours": 0.7001316666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "purely_fancy_kite",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0934482,
+                    40.5748358
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "purely_fancy_kite",
+                "max_depth_inches": 4.803149606299213,
+                "name": "SI - Grimsby St/ Mapleton Ave",
+                "total_flood_duration_hours": 2.5467
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "newly_immune_whale",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.954405,
+                    40.810956
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "newly_immune_whale",
+                "max_depth_inches": 4.7637795275590555,
+                "name": "M - Hancock Pl/Morningside Ave",
+                "total_flood_duration_hours": 1.7997244444444445
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "simply-solid-cub",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.778412974,
+                    40.736703144
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "simply-solid-cub",
+                "max_depth_inches": 4.606299212598425,
+                "name": "Q - 69th Ave/195th Ln",
+                "total_flood_duration_hours": 0.61663
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "centrally-in-worm",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.85103,
+                    40.87613
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "centrally-in-worm",
+                "max_depth_inches": 4.52755905511811,
+                "name": "BX - Wilson Ave/E 214th St",
+                "total_flood_duration_hours": 1.3666744444444443
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "vastly_legal_calf",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.959508628,
+                    40.577475146
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "vastly_legal_calf",
+                "max_depth_inches": 4.488188976377953,
+                "name": "BK - Coney Island Ave/Brighton Beach Ave",
+                "total_flood_duration_hours": 1.283337777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "openly_fleet_tapir",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.964310012,
+                    40.593195942
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "openly_fleet_tapir",
+                "max_depth_inches": 4.448818897637795,
+                "name": "BK - Ocean Pkwy/Avenue W",
+                "total_flood_duration_hours": 0.3499963888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "eminently-growing-werewolf",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.92663,
+                    40.81355
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "eminently-growing-werewolf",
+                "max_depth_inches": 4.291338582677166,
+                "name": "BX - Rider Ave / E 140th St",
+                "total_flood_duration_hours": 0.5833247222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "sincerely-grateful-kite",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.92155,
+                    40.77293
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "sincerely-grateful-kite",
+                "max_depth_inches": 4.173228346456693,
+                "name": "Q - Cresent St/ Hoyt Ave",
+                "total_flood_duration_hours": 0.5997216666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "proud_green_ladybug",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.972408422,
+                    40.64797212
+                ]
+            },
+            "properties": {
+                "flood_count": 2,
+                "id": "proud_green_ladybug",
+                "max_depth_inches": 4.133858267716535,
+                "name": "BK - Caton Ave/E Eighth St",
+                "total_flood_duration_hours": 0.4166666666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "curly_furry_squirrel",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.88184068,
+                    40.76466648
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "curly_furry_squirrel",
+                "max_depth_inches": 3.8976377952755907,
+                "name": "Q - 87th St/Astoria Blvd",
+                "total_flood_duration_hours": 0.5000102777777777
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "slowly_sharp_dog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0144992,
+                    40.6237513
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "slowly_sharp_dog",
+                "max_depth_inches": 3.8976377952755907,
+                "name": "BK - 76th St/10th Ave",
+                "total_flood_duration_hours": 1.9833313888888888
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "hard_gold_cobra",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.917135561,
+                    40.740977744
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "hard_gold_cobra",
+                "max_depth_inches": 3.8188976377952755,
+                "name": "Q - 48th St / 47th Ave",
+                "total_flood_duration_hours": 0.6499977777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "namely_grand_dog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9957211,
+                    40.5776046
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "namely_grand_dog",
+                "max_depth_inches": 3.779527559055118,
+                "name": "BK - Neptune Ave W 29th St",
+                "total_flood_duration_hours": 0.9000027777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "overly-notable-dory",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.95193,
+                    40.74908
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "overly-notable-dory",
+                "max_depth_inches": 3.7401574803149606,
+                "name": "Q - 44th Dr/ Vernon Blvd",
+                "total_flood_duration_hours": 0.28334472222222223
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "nicely_great_perch",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.964606246,
+                    40.609812733
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "nicely_great_perch",
+                "max_depth_inches": 3.661417322834646,
+                "name": "BK - Avenue P/E 9th St",
+                "total_flood_duration_hours": 0.9240647222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "highly_comic_akita",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0903863,
+                    40.5731887
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "highly_comic_akita",
+                "max_depth_inches": 3.661417322834646,
+                "name": "SI - Baden Pl/ Mapleton Ave",
+                "total_flood_duration_hours": 2.7537202777777776
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mostly_poetic_wren",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.765681764,
+                    40.680464379
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mostly_poetic_wren",
+                "max_depth_inches": 3.543307086614173,
+                "name": "Q - 177th St/129th Ave",
+                "total_flood_duration_hours": 0.36684694444444443
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "strictly-mutual-moray",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.857288164,
+                    40.687854184
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "strictly-mutual-moray",
+                "max_depth_inches": 3.425196850393701,
+                "name": "Q - 85th St/91st Ave",
+                "total_flood_duration_hours": 0.35016277777777777
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "simply_fancy_tapir",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.779742577,
+                    40.593339165
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "simply_fancy_tapir",
+                "max_depth_inches": 3.425196850393701,
+                "name": "Q - Beach 49th St/Rockaway Beach Blvd",
+                "total_flood_duration_hours": 0.5500061111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "modern_teal_warthog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.791138533,
+                    40.692624645
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "modern_teal_warthog",
+                "max_depth_inches": 3.3464566929133857,
+                "name": "Q - 160th St/Brinkerhoff Ave",
+                "total_flood_duration_hours": 1.5166666666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "repeatedly-quality-cardinal",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.909423,
+                    40.766816
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "repeatedly-quality-cardinal",
+                "max_depth_inches": 3.1102362204724407,
+                "name": "Q - 25th Ave/ 43rd St",
+                "total_flood_duration_hours": 0.2666613888888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "spotty_brown_bobcat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.016319987,
+                    40.64974166
+                ]
+            },
+            "properties": {
+                "flood_count": 2,
+                "id": "spotty_brown_bobcat",
+                "max_depth_inches": 3.0708661417322833,
+                "name": "BK - 2nd Ave/49th St",
+                "total_flood_duration_hours": 3.8666469444444442
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "miserly_ivory_oryx",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.788862189,
+                    40.69844851
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "miserly_ivory_oryx",
+                "max_depth_inches": 3.031496062992126,
+                "name": "Q - Hendrickson Pl/166th St",
+                "total_flood_duration_hours": 0.5402311111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "humbly_casual_heron",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.87627509,
+                    40.819702647
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "humbly_casual_heron",
+                "max_depth_inches": 2.8740157480314963,
+                "name": "BX - Boynton Ave/Lafayette Ave",
+                "total_flood_duration_hours": 0.31665666666666664
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "surely-amused-shark",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.837171413,
+                    40.707823102
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "surely-amused-shark",
+                "max_depth_inches": 2.8346456692913384,
+                "name": "Q - Park Ln/Park Lane South",
+                "total_flood_duration_hours": 0.3663722222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mostly_equal_moth",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.908146032,
+                    40.757298611
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mostly_equal_moth",
+                "max_depth_inches": 2.795275590551181,
+                "name": "Q - Hobart St/31st Ave",
+                "total_flood_duration_hours": 0.6833375
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "fast_white_rabbit",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.746436864,
+                    40.652650223
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "fast_white_rabbit",
+                "max_depth_inches": 2.7559055118110236,
+                "name": "Q - Brookville Blvd/ 149th St",
+                "total_flood_duration_hours": 0.9166666666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "bored_blue_fish",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.77532549,
+                    40.60015807
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "bored_blue_fish",
+                "max_depth_inches": 2.5984251968503935,
+                "name": "Q - Beach 43rd St ",
+                "total_flood_duration_hours": 0.4666666666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "weekly_fair_dove",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.882074557,
+                    40.828552611
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "weekly_fair_dove",
+                "max_depth_inches": 2.5984251968503935,
+                "name": "BX - Colgate Av/Westchester Av",
+                "total_flood_duration_hours": 0.16667027777777776
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "fluffy-white-penguin",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.815948728,
+                    40.683977405
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "fluffy-white-penguin",
+                "max_depth_inches": 2.3622047244094486,
+                "name": "Q - 126th St/109th Ave",
+                "total_flood_duration_hours": 0.2666611111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "nicely_brief_dory",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7928629,
+                    40.6938104
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "nicely_brief_dory",
+                "max_depth_inches": 2.322834645669291,
+                "name": "Q - 159th St/109th Ave",
+                "total_flood_duration_hours": 0.3
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "chilly_green_goat",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.993449102,
+                    40.575733443
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "chilly_green_goat",
+                "max_depth_inches": 2.1653543307086616,
+                "name": "BK - Mermaid Ave/W 27th St (2)",
+                "total_flood_duration_hours": 0.7333325
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "defeated_smelly_cough",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9472892,
+                    40.7944083
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "defeated_smelly_cough",
+                "max_depth_inches": 2.1259842519685037,
+                "name": "M - E 108th St/Park Ave",
+                "total_flood_duration_hours": 1.3666472222222221
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "openly_rested_frog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.817921249,
+                    40.751463267
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "openly_rested_frog",
+                "max_depth_inches": 2.1259842519685037,
+                "name": "Q - Holly Ave/Union St",
+                "total_flood_duration_hours": 0.15001444444444445
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "daily_merry_racer",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.888061808,
+                    40.65763758
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "daily_merry_racer",
+                "max_depth_inches": 2.0866141732283463,
+                "name": "BK - Vermont St/Stanley Ave",
+                "total_flood_duration_hours": 0.8000116666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "wholly_gentle_ghost",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9184575,
+                    40.8730757
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "wholly_gentle_ghost",
+                "max_depth_inches": 2.047244094488189,
+                "name": "M - Indian Rd/W 215th St",
+                "total_flood_duration_hours": 2.350011388888889
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "truly_set_thrush",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0982011,
+                    40.5792971
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "truly_set_thrush",
+                "max_depth_inches": 2.0078740157480315,
+                "name": "SI - Haven Ave/ Adam Ave",
+                "total_flood_duration_hours": 1.3499902777777777
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "mainly_alert_magpie",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.91946,
+                    40.680855
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "mainly_alert_magpie",
+                "max_depth_inches": 2.0078740157480315,
+                "name": "BK - Marion St/Howard Ave",
+                "total_flood_duration_hours": 0.46653194444444446
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "openly_driven_tarpon",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.008560969,
+                    40.676352383
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "openly_driven_tarpon",
+                "max_depth_inches": 2.0078740157480315,
+                "name": "BK - Dwight St/King St",
+                "total_flood_duration_hours": 0.6515986111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "lately_tender_jackal",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.90001916,
+                    40.73714954
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "lately_tender_jackal",
+                "max_depth_inches": 1.968503937007874,
+                "name": "Q - 50th Ave/65th Pl",
+                "total_flood_duration_hours": 0.21666555555555556
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "oddly_eager_hen",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.773650528,
+                    40.595866721
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "oddly_eager_hen",
+                "max_depth_inches": 1.7716535433070866,
+                "name": "Q - Beach 42nd St/Beach Channel Dr",
+                "total_flood_duration_hours": 0.8333230555555555
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "solely-nice-wren",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.795242993,
+                    40.74015478
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "solely-nice-wren",
+                "max_depth_inches": 1.6929133858267718,
+                "name": "Q - 59th Ave/175th St",
+                "total_flood_duration_hours": 0.3000011111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "radically-fine-calf",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.93232,
+                    40.7676908
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "radically-fine-calf",
+                "max_depth_inches": 1.6141732283464567,
+                "name": "Q - 14th St/ 31st Rd",
+                "total_flood_duration_hours": 0.21666583333333334
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "tender_white_deer",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.9722392,
+                    40.650530589
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "tender_white_deer",
+                "max_depth_inches": 1.5748031496062993,
+                "name": "BK - Coney Island Ave/Park Circle ",
+                "total_flood_duration_hours": 0.19972222222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "gladly_mint_snail",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.01242208,
+                    40.67973354
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "gladly_mint_snail",
+                "max_depth_inches": 1.4960629921259843,
+                "name": "BK - Pioneer St/Conover St",
+                "total_flood_duration_hours": 0.33334416666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "plastic_navy_swan",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.971223606,
+                    40.648082837
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "plastic_navy_swan",
+                "max_depth_inches": 1.4173228346456692,
+                "name": "BK - Coney Island Ave/Caton Ave",
+                "total_flood_duration_hours": 0.6166841666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "unduly_wanted_shad",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.808890869,
+                    40.72802381
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "unduly_wanted_shad",
+                "max_depth_inches": 1.4173228346456692,
+                "name": "Q - 160th St/72nd Ave",
+                "total_flood_duration_hours": 0.3333402777777778
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "tiny_blue_impala",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.85064,
+                    40.90155
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "tiny_blue_impala",
+                "max_depth_inches": 1.299212598425197,
+                "name": "BX - Furman Ave/ E240th St",
+                "total_flood_duration_hours": 0.11666666666666667
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "widely_sweet_sheep",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.988478718,
+                    40.599746101
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "widely_sweet_sheep",
+                "max_depth_inches": 1.299212598425197,
+                "name": "BK - 85th St 24th Ave",
+                "total_flood_duration_hours": 0.21674916666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "deadly_trusty_troll",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.7512911,
+                    40.6556783
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "deadly_trusty_troll",
+                "max_depth_inches": 1.2598425196850394,
+                "name": "Q - 231st St/ 148th Ave",
+                "total_flood_duration_hours": 0.16666666666666666
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "early_still_frog",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.0043495,
+                    40.6737066
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "early_still_frog",
+                "max_depth_inches": 1.220472440944882,
+                "name": "BK - Lorraine St/Henry St",
+                "total_flood_duration_hours": 0.26292583333333336
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "daily_gentle_beetle",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.98394371,
+                    40.67585478
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "daily_gentle_beetle",
+                "max_depth_inches": 1.220472440944882,
+                "name": "BK - 4th Av/Garfield Pl",
+                "total_flood_duration_hours": 0.21024416666666668
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "slowly_meet_poodle",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.887745711,
+                    40.736664509
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "slowly_meet_poodle",
+                "max_depth_inches": 1.141732283464567,
+                "name": "Q - 51st Ave/Jacobus St",
+                "total_flood_duration_hours": 2.2163719444444445
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "rarely_intent_donkey",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.87551215,
+                    40.70700629
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "rarely_intent_donkey",
+                "max_depth_inches": 1.141732283464567,
+                "name": "Q - 71st Ave/75th St",
+                "total_flood_duration_hours": 0.16667027777777776
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "loudly_upward_eel",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.995450473,
+                    40.610848627
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "loudly_upward_eel",
+                "max_depth_inches": 0.905511811023622,
+                "name": "BK - 19th Ave/77th St",
+                "total_flood_duration_hours": 0.21649222222222222
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "only_set_calf",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.902775582,
+                    40.738245567
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "only_set_calf",
+                "max_depth_inches": 0.6692913385826772,
+                "name": "Q - 63rd St/Laurel Hill Blvd",
+                "total_flood_duration_hours": 0.09999111111111111
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "publicly-stunning-airedale",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -73.8303382,
+                    40.8392889
+                ]
+            },
+            "properties": {
+                "flood_count": 1,
+                "id": "publicly-stunning-airedale",
+                "max_depth_inches": 0.6299212598425197,
+                "name": "BX - Gillespie Ave/ Lasalle Ave",
+                "total_flood_duration_hours": 0.083335
+            }
+        }
+    ],
+    "numberReturned": 126,
+    "timeStamp": "2026-05-06T16:12:00Z",
+    "links": [
+        {
+            "href": "https://gis.floodnet.nyc/features/collections/postgisftw.flood_events_summary/items",
+            "rel": "self",
+            "type": "application/json",
+            "title": "This document as JSON"
+        },
+        {
+            "href": "https://gis.floodnet.nyc/features/collections/postgisftw.flood_events_summary/items.html",
+            "rel": "alternate",
+            "type": "text/html",
+            "title": "This document as HTML"
+        }
+    ]
+}
