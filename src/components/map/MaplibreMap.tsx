@@ -29,14 +29,14 @@ function OverlayController({ layers }: { layers: Layer[] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef]);
 
-  // Update layers on every render; triggerRepaint is required because MapboxOverlay in interleaved
-  // mode doesn't notify maplibre of layer changes, so the map won't repaint otherwise.
-  useEffect(() => {
-    if (overlayRef.current) {
-      overlayRef.current.setProps({ layers });
-      mapRef?.getMap()?.triggerRepaint();
-    }
-  });
+  // Synchronous during render (not useEffect) so deck.gl receives updated layers
+  // before the browser paints, matching them to the same RAF cycle.
+  // triggerRepaint is required because MapboxOverlay in interleaved mode doesn't
+  // notify maplibre of layer changes automatically.
+  if (overlayRef.current) {
+    overlayRef.current.setProps({ layers });
+    mapRef?.getMap()?.triggerRepaint();
+  }
 
   return null;
 }

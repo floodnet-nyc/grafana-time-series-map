@@ -4,7 +4,7 @@ import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
-import { buildPacked, computeClosestFlags } from '../utils/deckgl/closestTimeFiltering';
+import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../utils/deckgl/closestTimeFiltering';
 import { getLayer } from '../layers/registry';
 
 export function usePanelLayers(
@@ -36,7 +36,34 @@ export function usePanelLayers(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.series, options.layers]);
 
-  // Stage 2: build ASOF packed buckets (only for asof layers)
+  // Stage 2: build lookup packed series (parse + sort; runs on data/config change, not cursor ticks)
+  const lookupPackedByLayerId = useMemo(() => {
+    const result = new Map<string, { features: Feature[]; packed: ReturnType<typeof buildPacked> }>();
+    for (const layerConfig of options.layers) {
+      if (!layerConfig.lookup) continue;
+      const { queryRefId, keyField, timeField } = layerConfig.lookup;
+      const features = dataFramesToFeatures(data.series, queryRefId, { type: 'none' }, undefined, []);
+      result.set(layerConfig.id, { features, packed: buildPacked(features, keyField, timeField) });
+    }
+    return result;
+  }, [data.series, options.layers]);
+
+  // Stage 2b: resolve asof lookup scalars at cursor time (binary search only; runs every cursor tick)
+  const lookupByLayerId = useMemo(() => {
+    const result = new Map<string, Map<string, Record<string, number>>>();
+    for (const layerConfig of options.layers) {
+      if (!layerConfig.lookup) continue;
+      const entry = lookupPackedByLayerId.get(layerConfig.id);
+      if (!entry) continue;
+      result.set(
+        layerConfig.id,
+        resolveAsofLookup(entry.features, entry.packed, layerConfig.lookup.fields, cursorTimeMs, layerConfig.lookup.maxLagMs),
+      );
+    }
+    return result;
+  }, [lookupPackedByLayerId, options.layers, cursorTimeMs]);
+
+  // Stage 3: build ASOF packed buckets (only for asof layers)
   const packedByLayerId = useMemo(() => {
     const map = new Map<string, ReturnType<typeof buildPacked>>();
     for (const layerConfig of options.layers) {
@@ -48,7 +75,7 @@ export function usePanelLayers(
     return map;
   }, [featuresByLayerId, options.layers]);
 
-  // Stage 3: compute time filter flags (cheap typed-array ops, runs every cursor tick)
+  // Stage 4: compute time filter flags (cheap typed-array ops, runs every cursor tick)
   const flagsByLayerId = useMemo(() => {
     const map = new Map<string, Uint8Array>();
     for (const layerConfig of options.layers) {
@@ -80,7 +107,7 @@ export function usePanelLayers(
     return map;
   }, [featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
-  // Stage 4: call layer renderers
+  // Stage 5: call layer renderers
   return useMemo(() => {
     const allLayers: Layer[] = [];
     for (const layerConfig of options.layers) {
@@ -96,10 +123,11 @@ export function usePanelLayers(
         fromTimeMs,
         toTimeMs,
         timeFilterFlags,
+        lookupValues: lookupByLayerId.get(layerConfig.id),
         onFeatureClick,
       });
       allLayers.push(...layers);
     }
     return allLayers;
-  }, [featuresByLayerId, flagsByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, onFeatureClick]);
+  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, onFeatureClick]);
 }

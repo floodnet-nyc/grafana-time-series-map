@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
 import type { Layer } from '@deck.gl/core';
@@ -7,10 +7,8 @@ import type { GoogleMapsOverlayProps } from '@deck.gl/google-maps';
 
 function OverlayController(props: GoogleMapsOverlayProps) {
   const map = useMap();
-  const overlayRef = useRef<GoogleMapsOverlay | null>(null);
 
-  const overlay = useMemo(() => { 
-    // const dpr = ctx.devicePixelRatio;
+  const overlay = useMemo(() => {
     let dpr: number;
     const overlay = new GoogleMapsOverlay({
       interleaved: true, ...props,
@@ -28,17 +26,16 @@ function OverlayController(props: GoogleMapsOverlayProps) {
     // Intentionally run once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => {
-    if (!map) {return;}
-    // console.log("Adding to map", map, overlay);
-    overlay.setMap(map);
-    overlayRef.current = overlay;
-    return () => { overlay.setMap(null); console.log("Removed from map");};
-  }, [map, overlay]);
 
   useEffect(() => {
-    overlay.setProps(props);
-  }, [overlay, props]);
+    if (!map) {return;}
+    overlay.setMap(map);
+    return () => { overlay.setMap(null); };
+  }, [map, overlay]);
+
+  // Synchronous during render (not useEffect) so deck.gl receives updated layers
+  // before the browser paints, matching them to the same RAF cycle.
+  overlay.setProps(props);
 
   return null;
 }

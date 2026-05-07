@@ -5,9 +5,11 @@ services:
       service: grafana
     build:
       args:
-        GRAFANA_IMAGE: grafana-oss
+        GRAFANA_IMAGE: grafana:latest-ubuntu
     environment:
       GF_INSTALL_PLUGINS: "yesoreyeram-infinity-datasource"
+      # GF_PLUGIN_ALLOW_LOADING_UNSIGNED_PLUGINS: "motherduck-duckdb-datasource"
       GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
     volumes:
       - ./provisioning/sample-data:/usr/share/grafana/public/sample-data:ro
+      - ./provisioning/plugins/motherduck-duckdb-datasource:/var/lib/grafana/plugins/motherduck-duckdb-datasource

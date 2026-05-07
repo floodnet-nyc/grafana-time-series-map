@@ -93,10 +93,28 @@
             { "selector": "properties.max_depth_inches", "text": "max_depth_inches", "type": "number" }
           ],
           "format": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "F",
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://localhost:3000/public/sample-data/flood_inundation.geojson",
+          "url_options": { "method": "GET", "data": "" },
+          "root_selector": "features",
+          "columns": [
+            { "text": "deployment_id",       "selector": "properties.deployment_id",       "type": "string" },
+            { "text": "contour_depth_inches", "selector": "properties.contour_depth_inches", "type": "number" },
+            { "text": "geometry",             "selector": "geometry",                        "type": "string" }
+          ],
+          "filters": [],
+          "global_query_id": "",
+          "parser": "backend"
         }
       ],
       "options": {
-        "basemapProvider": "google",
+        "basemapProvider": "maplibre",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
         "googleMapsApiKey": "AIzaSyDUrN3sHNWV3C86-pC0FOaVQw7RivbrfIA",
@@ -195,6 +213,31 @@
               "radiusScale": 0.6,
               "stroked": true,
               "elevateByValue": false
+            }
+          },
+          {
+            "id": "flood-inundation",
+            "type": "flood-inundation",
+            "label": "Flood Inundation Contours",
+            "visible": true,
+            "queryRefId": "F",
+            "geometry": { "type": "geojson", "field": "geometry" },
+            "timeFilter": { "mode": "none", "timeField": "" },
+            "fieldMappings": [],
+            "opacity": 1,
+            "lookup": {
+              "queryRefId": "A",
+              "keyField": "deployment_id",
+              "timeField": "time",
+              "maxLagMs": 600000,
+              "fields": [
+                { "sourceField": "depth_inches", "as": "depth" }
+              ]
+            },
+            "options": {
+              "contourDepthField": "contour_depth_inches",
+              "sensorKeyField": "deployment_id",
+              "fillOpacity": 0.5
             }
           },
           {
