@@ -1,6 +1,6 @@
 import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
-import type { GeometrySource, FieldMapping } from '../../types';
+import type { GeometrySource, FieldMapping, ElevationConfig } from '../../types';
 import { parseGeometry } from '../geometry';
 
 export type GeoFeature = Feature & { __idx: number };
@@ -93,6 +93,7 @@ export function dataFramesToFeatures(
   frames: DataFrame[],
   refId: string | undefined,
   geometry: GeometrySource,
+  elevation: ElevationConfig | undefined,
   fieldMappings: FieldMapping[],
 ): GeoFeature[] {
   const matching = refId
@@ -107,6 +108,14 @@ export function dataFramesToFeatures(
       f.__idx = offset++;
       all.push(f);
     }
+  }
+
+  if (elevation?.field) {
+    all.sort((a, b) => {
+      const az = Number(a.properties?.[elevation.field ?? ''] ?? 0);
+      const bz = Number(b.properties?.[elevation.field ?? ''] ?? 0);
+      return az - bz;
+    });
   }
   return all;
 }
