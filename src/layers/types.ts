@@ -11,6 +11,8 @@ export interface LayerRenderContext {
   timeFilterFlags: Uint8Array;
   /** Per-group scalar values resolved from the layer's lookup query at the current cursor time. */
   lookupValues?: Map<string, Record<string, number>>;
+  /** Key of the currently selected feature (matched against timeFilter.groupByField). */
+  selectedKey?: string | null;
   onFeatureClick?: (feature: Feature, info: any) => void;
 }
 

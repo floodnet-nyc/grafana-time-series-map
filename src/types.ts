@@ -102,4 +102,6 @@ export interface MapPanelOptions {
   loopPlayback: boolean;
   showTimeControls: boolean;
   showLegend: boolean;
+  syncPublish: boolean;
+  syncSubscribe: boolean;
 }

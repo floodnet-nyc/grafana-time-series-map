@@ -12,6 +12,7 @@ TODO:
       - interleaved toggle
       - google maps
          - street view toggle
+         - dark/light/auto toggle
       - other control toggles?
    
    
@@ -21,6 +22,7 @@ TODO:
       - remove presets as something separate from d3 colormap gradients. Any custom colormap can just utilize the d3 colormap API
       - floodinundation should use the common colormap options
       - cog layer should also use the common colormap options. Add current hardcoded cog colormap as a custom d3 colormap gradient preset.
+   - sync time cursor
    - legend not implemented - implement
    - popup not implemented - implement
 

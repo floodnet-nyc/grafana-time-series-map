@@ -31,7 +31,7 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+  renderLayers({ config, features, timeFilterFlags, selectedKey, onFeatureClick }: LayerRenderContext) {
     const opts = config.options as Record<string, any>;
 
     // Value field: prefer colorScale.field, then shader.valueField, then legacy fieldMapping
@@ -68,6 +68,12 @@ const renderer: LayerRenderer = {
     }
 
     const getColor = buildColorAccessor(config.colorScale);
+
+    const keyField = config.timeFilter?.groupByField ?? '';
+    const isSelected = (f: Feature) =>
+      selectedKey != null && keyField && String(f.properties?.[keyField]) === selectedKey;
+    const hasSelection = selectedKey != null && keyField;
+
     const layers: any[] = [];
 
     layers.push(
@@ -81,8 +87,10 @@ const renderer: LayerRenderer = {
         radiusUnits: 'pixels' as const,
         stroked: opts.stroked ?? true,
         filled: true,
-        getLineColor: [200, 200, 240, 200],
-        getLineWidth: 2,
+        getLineColor: hasSelection
+          ? (f: Feature) => (isSelected(f) ? [255, 230, 60, 255] : [200, 200, 240, 60])
+          : [200, 200, 240, 200],
+        getLineWidth: hasSelection ? (f: Feature) => (isSelected(f) ? 3 : 1) : 2,
         lineWidthMinPixels: 0,
         pickable: config.pickable ?? true,
         minZoom: config.minZoom,
@@ -113,7 +121,11 @@ const renderer: LayerRenderer = {
         collisionGroup: 'scatter-points',
         collisionTestProps: { radiusScale: 0.01, radiusUnits: 'meters' },
         getCollisionPriority: (f: any) => Number(f.properties?.[config.elevation?.field ?? ''] ?? 0),
-        updateTriggers: { getFilterValue: [timeFilterFlags] },
+        updateTriggers: {
+          getFilterValue: [timeFilterFlags],
+          getLineColor: [selectedKey],
+          getLineWidth: [selectedKey],
+        },
         parameters: { blend: true, depthTest: false },
       }),
     );

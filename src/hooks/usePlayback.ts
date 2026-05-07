@@ -82,6 +82,8 @@ export interface UsePlaybackResult {
   play(): void;
   pause(): void;
   scrubTo(ms: number): void;
+  /** Move cursor to ms and pause — keeps scrubbing:false so external callers can keep driving. */
+  seekTo(ms: number): void;
   setSpeed(ms: number): void;
 }
 
@@ -171,9 +173,14 @@ export function usePlayback({
     dispatch({ type: 'scrub', timeMs: ms });
   }, []);
 
+  const seekTo = useCallback((ms: number) => {
+    cursorTimeMsRef.current = ms;
+    dispatch({ type: 'pause', timeMs: ms });
+  }, []);
+
   const setSpeed = useCallback((speed: number) => {
     dispatch({ type: 'pause', timeMs: cursorTimeMsRef.current, speed });
   }, []);
 
-  return { cursorTimeMs, playing, scrubbing, playbackSpeed, play, pause, scrubTo, setSpeed };
+  return { cursorTimeMs, playing, scrubbing, playbackSpeed, play, pause, scrubTo, seekTo, setSpeed };
 }
