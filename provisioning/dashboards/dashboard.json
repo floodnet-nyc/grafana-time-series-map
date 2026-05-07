@@ -65,6 +65,21 @@
         },
         {
           "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "E",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/precip_cog_index.json",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "properties.time", "text": "time", "type": "timestamp" },
+            { "selector": "properties.url",  "text": "url",       "type": "string" }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
           "refId": "D",
           "type": "json",
           "source": "url",
@@ -81,19 +96,36 @@
         }
       ],
       "options": {
-        "basemapProvider": "maplibre",
+        "basemapProvider": "google",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
-        "googleMapsApiKey": "",
-        "googleMapsMapId": "",
+        "googleMapsApiKey": "API-KEY",
+        "googleMapsMapId": "bc24713045eceb6d78171160",
         "initialLatitude": 40.694,
         "initialLongitude": -73.945,
-        "initialZoom": 11,
+        "initialZoom": 9,
         "showTimeControls": true,
         "loopPlayback": true,
         "defaultPlaybackSpeed": 1800000,
         "showLegend": false,
         "layers": [
+          {
+            "id": "precip-cog",
+            "type": "cog",
+            "label": "Precipitation (MRMS COG)",
+            "visible": false,
+            "queryRefId": "E",
+            "geometry": { "type": "none" },
+            "timeFilter": { "mode": "none", "timeField": "" },
+            "fieldMappings": [],
+            "opacity": 0.86,
+            "options": {
+              "urlField": "url",
+              "timestampField": "time",
+              "colorMaxValue": 200,
+              "maxRequests": 4
+            }
+          },
           {
             "id": "past-events",
             "type": "scatterplot",

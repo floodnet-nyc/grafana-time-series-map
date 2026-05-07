@@ -1,5 +1,4 @@
-import { FieldType } from '@grafana/data';
-import type { DataFrame, Field } from '@grafana/data';
+import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
 import type { GeometrySource, FieldMapping } from '../../types';
 import { parseGeometry } from '../geometry';
@@ -30,10 +29,12 @@ export function dataFrameToFeatures(
   let latField: Field | undefined;
   let lngField: Field | undefined;
 
-  if (geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') {
+  if (geometry.type === 'none') {
+    // no geometry needed — fall through to property extraction
+  } else if (geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') {
     geomField = resolveField(frame, geometry.field);
     if (!geomField) return [];
-  } else {
+  } else if (geometry.type === 'latlng') {
     latField = resolveField(frame, geometry.latField);
     lngField = resolveField(frame, geometry.lngField);
     if (!latField || !lngField) return [];
@@ -56,7 +57,7 @@ export function dataFrameToFeatures(
       } catch {
         geom = null;
       }
-    } else {
+    } else if (geometry.type === 'latlng') {
       const lat = latField!.values[i] as number;
       const lng = lngField!.values[i] as number;
       if (lat != null && lng != null) {
@@ -64,7 +65,7 @@ export function dataFrameToFeatures(
       }
     }
 
-    if (!geom) continue;
+    // if (!geom) continue;
 
     const properties: Record<string, unknown> = {};
     // All fields by original name so time/groupBy fields are available without explicit mapping.

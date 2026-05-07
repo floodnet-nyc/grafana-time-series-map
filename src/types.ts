@@ -1,4 +1,5 @@
 export type GeometrySource =
+  | { type: 'none' }
   | { type: 'wkb'; field: string }
   | { type: 'wkt'; field: string }
   | { type: 'latlng'; latField: string; lngField: string }

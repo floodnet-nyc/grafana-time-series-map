@@ -15,6 +15,7 @@ export function usePanelLayers(
   toTimeMs: number,
   onFeatureClick?: (feature: Feature, info: any) => void,
 ): Layer[] {
+  // console.log('usePanelLayers', { data, options, cursorTimeMs, fromTimeMs, toTimeMs });
   // Stage 1: parse DataFrames → GeoJSON features per layer
   const featuresByLayerId = useMemo(() => {
     const map = new Map<string, Feature[]>();

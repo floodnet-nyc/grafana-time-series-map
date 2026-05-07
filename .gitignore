@@ -8,6 +8,13 @@ yarn-error.log*
 
 node_modules/
 
+
+shh*/
+PRIVATE*
+
+provisioning/sample-data/cogs/*.tif
+provisioning/sample-data/flood_inundation.geojson
+
 # yarn
 .yarn/cache
 .yarn/unplugged

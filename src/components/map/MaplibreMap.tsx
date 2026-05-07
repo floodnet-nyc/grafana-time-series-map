@@ -61,6 +61,7 @@ export function MaplibreMap({ width, height, options, layers }: MaplibreMapProps
         longitude: options.initialLongitude,
         zoom: options.initialZoom,
       }}
+      // projection="globe"
       style={{ width, height }}
       mapStyle={styleUrl}
     >
