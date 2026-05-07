@@ -52,9 +52,23 @@ export interface FieldMapping {
   alias: string;
 }
 
+export interface LookupField {
+  sourceField: string;
+  as: string;
+}
+
+export interface LookupConfig {
+  queryRefId: string;
+  keyField: string;
+  timeField: string;
+  maxLagMs?: number;
+  fields: LookupField[];
+}
+
 export interface LayerConfig {
   id: string;
   type: string;
+  lookup?: LookupConfig;
   label: string;
   visible: boolean;
   queryRefId?: string;

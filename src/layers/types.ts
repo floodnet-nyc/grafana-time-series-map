@@ -9,6 +9,8 @@ export interface LayerRenderContext {
   fromTimeMs: number;
   toTimeMs: number;
   timeFilterFlags: Uint8Array;
+  /** Per-group scalar values resolved from the layer's lookup query at the current cursor time. */
+  lookupValues?: Map<string, Record<string, number>>;
   onFeatureClick?: (feature: Feature, info: any) => void;
 }
 

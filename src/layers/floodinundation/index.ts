@@ -1,5 +1,4 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
 import { MathExtension } from '../../utils/deckgl/MathExtension';
 import { registerLayer } from '../registry';
@@ -20,15 +19,15 @@ vec3 depthToColorSmooth(float d) {
 `.trim();
 
 const FILTER_COLOR_GLSL = `
-float depthDiff = vInstanceCurrentDepth - vInstanceRelativeElevation;
+float depthDiff = vInstanceCurrentDepth - vInstanceContourDepth;
 float alpha = smoothstep(0.0, 3.0, depthDiff);
 if (alpha < 0.005) discard;
 color = vec4(depthToColorSmooth(depthDiff) / 255.0, alpha * vInstanceFillOpacity);
 `.trim();
 
 const schema: LayerOptionField[] = [
-  { key: 'relativeElevationField', label: 'Relative elevation field (inches)', type: 'fieldPicker', defaultValue: '' },
-  { key: 'currentDepthField', label: 'Current depth field (inches)', type: 'fieldPicker', defaultValue: '' },
+  { key: 'contourDepthField', label: 'Contour depth field (inches)', type: 'fieldPicker', defaultValue: '' },
+  { key: 'sensorKeyField', label: 'Sensor key field', type: 'fieldPicker', defaultValue: '' },
   { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
 ];
 
@@ -44,46 +43,44 @@ const renderer: LayerRenderer = {
   type: 'flood-inundation',
   label: 'Flood Inundation',
   defaultOptions: {
-    relativeElevationField: '',
-    currentDepthField: '',
+    contourDepthField: '',
+    sensorKeyField: '',
     fillOpacity: 0.5,
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+  renderLayers({ config, features, lookupValues, onFeatureClick }: LayerRenderContext) {
     const opts = config.options as Record<string, any>;
-    const relativeElevationField: string = opts.relativeElevationField ?? '';
-    const currentDepthField: string = opts.currentDepthField ?? '';
+    const contourDepthField: string = opts.contourDepthField ?? '';
+    const sensorKeyField: string = opts.sensorKeyField ?? '';
     const fillOpacity: number = opts.fillOpacity ?? 0.5;
-
-    const polygonFeatures = features.filter((f) => getPolygonCoords(f) !== null);
 
     return [
       new SolidPolygonLayer({
         id: config.id,
-        data: polygonFeatures,
+        // Pass features directly (stable reference from usePanelLayers memo) so deck.gl
+        // doesn't re-tessellate polygons on every cursor tick. getPolygon handles null geometry.
+        data: features,
         visible: config.visible,
-        pickable: config.pickable ?? false,
+        pickable: false,
         filled: true,
         stroked: false,
-        getPolygon: (f: Feature) => getPolygonCoords(f)![0] as any,
+        getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
         getFillColor: [0, 0, 0, 255],
         minZoom: config.minZoom,
         maxZoom: config.maxZoom,
         onClick: onFeatureClick
           ? (info: any) => info.object && onFeatureClick(info.object, info)
           : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
-        getRelativeElevation: (f: Feature) => Number(f.properties?.[relativeElevationField] ?? 0),
-        getCurrentDepth: (f: Feature) => Number(f.properties?.[currentDepthField] ?? 0),
+        getContourDepth: (f: Feature) => Number(f.properties?.[contourDepthField] ?? 0),
+        getCurrentDepth: (f: Feature) =>
+          lookupValues?.get(String(f.properties?.[sensorKeyField] ?? ''))?.depth ?? 0,
         getFillOpacity: (_f: Feature) => fillOpacity,
         extensions: [
-          new DataFilterExtension({ filterSize: 1 }),
           new MathExtension({
             name: `floodinundation_${config.id}`,
             attrs: {
-              relativeElevation: { type: 'float' },
+              contourDepth: { type: 'float' },
               currentDepth: { type: 'float' },
               fillOpacity: { type: 'float' },
             },
@@ -95,8 +92,8 @@ const renderer: LayerRenderer = {
           }),
         ],
         updateTriggers: {
-          getFilterValue: [timeFilterFlags],
-          getCurrentDepth: [timeFilterFlags],
+          getContourDepth: [],
+          getCurrentDepth: [lookupValues],
         },
         parameters: { depthTest: false },
       }),

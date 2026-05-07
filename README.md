@@ -14,26 +14,16 @@ TODO:
          - street view toggle
       - other control toggles?
    
-   - settings 
-      - text min/max size
    
-   -  layer settings
-      - Add a depth test toggle
-      - text options should not belong to the scatterplot layer, they should be toggleable for any geometry type
-
-
-      - color settings
-         - fixed color - color picker (addColorPicker from Grafana UI components)
-         - color by value - field selector and color selector
-            - preset colormaps
-            - option to enable shader editor
-         - polygon fill opacitiy should just be folded into the color picker
-
+   
    - discrete flood depth colormap
-      - should just be "Color by threshold" to generalize it
+      - should just use "Color by threshold" (discrete colormap) with custom thresholds and custom colors. can we enable the builtin threshold editor for this?
+      - remove presets as something separate from d3 colormap gradients. Any custom colormap can just utilize the d3 colormap API
+      - floodinundation should use the common colormap options
+      - cog layer should also use the common colormap options. Add current hardcoded cog colormap as a custom d3 colormap gradient preset.
+   - legend not implemented - implement
+   - popup not implemented - implement
 
-TODO:
- - COG layer
 
 ## What are Grafana panel plugins?
 
