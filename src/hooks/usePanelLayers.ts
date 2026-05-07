@@ -24,15 +24,9 @@ export function usePanelLayers(
           data.series,
           layerConfig.queryRefId,
           layerConfig.geometry,
+          layerConfig.elevation,
           layerConfig.fieldMappings,
         )
-      if (layerConfig.elevation?.field) {
-        features = features.slice().sort((a, b) => {
-          const az = Number(a.properties?.[layerConfig.elevation?.field ?? ''] ?? 0);
-          const bz = Number(b.properties?.[layerConfig.elevation?.field ?? ''] ?? 0);
-          return az - bz;
-        });
-      }
       map.set(
         layerConfig.id,
         features,
