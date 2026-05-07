@@ -74,7 +74,7 @@ export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, steps = 
   const scaleMax = colorScale.scaleMax ?? (preset ? preset[preset.length - 1].value : 1);
   const range = scaleMax - scaleMin || 1;
   const invert = colorScale.invert ?? false;
-  console.log(preset, scaleMax, scaleMin);
+  // console.log(preset, scaleMax, scaleMin);
 
   const palette: Array<[number, number, number]> = [];
   for (let i = 0; i < steps; i++) {
