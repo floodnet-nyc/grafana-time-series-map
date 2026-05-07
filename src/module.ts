@@ -112,6 +112,20 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Show legend',
         defaultValue: false,
       })
+      .addBooleanSwitch({
+        path: 'syncPublish',
+        name: 'Publish cursor & selection',
+        description: 'Broadcast time cursor and hover selection to other panels',
+        defaultValue: true,
+        category: ['Cross-panel sync'],
+      })
+      .addBooleanSwitch({
+        path: 'syncSubscribe',
+        name: 'Subscribe to cursor & selection',
+        description: 'Receive time cursor and hover selection from other panels',
+        defaultValue: true,
+        category: ['Cross-panel sync'],
+      })
       .addCustomEditor({
         id: 'layers',
         path: 'layers',

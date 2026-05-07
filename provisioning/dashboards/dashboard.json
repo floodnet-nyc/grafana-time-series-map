@@ -9,7 +9,7 @@
   "panels": [
     {
       "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
-      "gridPos": { "h": 22, "w": 24, "x": 0, "y": 0 },
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 0 },
       "id": 1,
       "title": "FloodNet NYC — Depth Animation",
       "type": "floodnet-timeseriesmap-panel",
@@ -114,7 +114,7 @@
         }
       ],
       "options": {
-        "basemapProvider": "maplibre",
+        "basemapProvider": "google",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
         "googleMapsApiKey": "API-KEY",
@@ -174,7 +174,7 @@
             "id": "sensors",
             "type": "scatterplot",
             "label": "Sensor Locations",
-            "visible": false,
+            "visible": true,
             "queryRefId": "B",
             "geometry": { "type": "latlng", "latField": "lat", "lngField": "lng" },
             "timeFilter": { "mode": "none", "timeField": "" },
@@ -219,7 +219,7 @@
             "id": "flood-inundation",
             "type": "flood-inundation",
             "label": "Flood Inundation Contours",
-            "visible": true,
+            "visible": false,
             "queryRefId": "F",
             "geometry": { "type": "geojson", "field": "geometry" },
             "timeFilter": { "mode": "none", "timeField": "" },
@@ -275,6 +275,53 @@
             }
           }
         ]
+      }
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 2,
+      "title": "Sensor Depth — All Deployments",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity-ds" },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/event_depth_data.json",
+          "url_options": { "method": "GET", "data": "" },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            { "selector": "properties.deployment_id", "text": "deployment_id", "type": "string" },
+            { "selector": "properties.depth_inches",  "text": "depth_inches",  "type": "number" },
+            { "selector": "properties.time",          "text": "time",          "type": "timestamp" }
+          ],
+          "format": "timeseries"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": ["deployment_id"],
+            "keepFields": false
+          }
+        }
+      ],
+      "options": {
+        "tooltip": { "mode": "single", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0
+          },
+          "unit": "lengthin"
+        },
+        "overrides": []
       }
     }
   ],

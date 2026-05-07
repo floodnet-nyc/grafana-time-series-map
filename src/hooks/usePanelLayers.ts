@@ -13,6 +13,7 @@ export function usePanelLayers(
   cursorTimeMs: number,
   fromTimeMs: number,
   toTimeMs: number,
+  selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: any) => void,
 ): Layer[] {
   // console.log('usePanelLayers', { data, options, cursorTimeMs, fromTimeMs, toTimeMs });
@@ -124,10 +125,11 @@ export function usePanelLayers(
         toTimeMs,
         timeFilterFlags,
         lookupValues: lookupByLayerId.get(layerConfig.id),
+        selectedKey,
         onFeatureClick,
       });
       allLayers.push(...layers);
     }
     return allLayers;
-  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, onFeatureClick]);
+  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, selectedKey, onFeatureClick]);
 }
