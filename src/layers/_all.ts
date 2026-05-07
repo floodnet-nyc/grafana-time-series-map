@@ -5,3 +5,4 @@ import './path';
 import './heatmap';
 import './arc';
 import './cog';
+import './floodinundation';
