@@ -363,7 +363,7 @@
           },
           {
             "id": "sensors",
-            "type": "scatterplot",
+            "type": "icon",
             "label": "Sensor Locations",
             "visible": true,
             "queryRefId": "B",

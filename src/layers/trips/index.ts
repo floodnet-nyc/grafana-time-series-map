@@ -122,7 +122,7 @@ const renderer: LayerRenderer = {
 
     return [
       new TripsLayer<TripDatum>({
-        id: config.id,
+        id: `trips/${config.id}`,
         data,
         visible: config.visible,
         opacity: config.opacity,

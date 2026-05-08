@@ -18,7 +18,7 @@ const schema: LayerOptionField[] = [
 
 const renderer: LayerRenderer = {
   type: 'line',
-  label: 'Line (straight)',
+  label: 'Line (origin→destination)',
   defaultOptions: {
     srcLngField: '',
     srcLatField: '',
@@ -37,7 +37,7 @@ const renderer: LayerRenderer = {
 
     return [
       new LineLayer({
-        id: config.id,
+        id: `line/${config.id}`,
         data: features,
         visible: config.visible,
         opacity: config.opacity,

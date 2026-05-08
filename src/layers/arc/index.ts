@@ -33,7 +33,7 @@ const renderer: LayerRenderer = {
 
     return [
       new ArcLayer({
-        id: config.id,
+        id: `arc/${config.id}`,
         data: features,
         visible: config.visible,
         opacity: config.opacity,
