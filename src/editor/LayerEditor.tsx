@@ -301,7 +301,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
       </CollapsableSection>
 
       {/* ── Time filter ───────────────────────── */}
-      <CollapsableSection label="Time filter" isOpen>
+      <CollapsableSection label="Time" isOpen>
         <Field label="Mode">
           <Select
             options={TIME_FILTER_MODES}
@@ -526,7 +526,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         Array.from(optionsBySections.entries()).map(([section, fields]) => (
           <CollapsableSection
             key={section ?? '__default'}
-            label={section ? `${currentRenderer.label} — ${section}` : currentRenderer.label}
+            label={section ? section : currentRenderer.label}
             isOpen
           >
             {fields.map((f) => (
