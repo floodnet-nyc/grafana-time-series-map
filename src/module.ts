@@ -5,6 +5,33 @@ import { MapPanel } from './components/MapPanel';
 import { MapPanelEditor } from './editor/MapPanelEditor';
 // import { commonOptionsBuilder } from '@grafana/ui';
 
+const googleControlPositions = [
+  { label: 'Start top', value: 'INLINE_START_BLOCK_START' },
+  { label: 'Start center', value: 'INLINE_START_BLOCK_CENTER' },
+  { label: 'Start bottom', value: 'INLINE_START_BLOCK_END' },
+  { label: 'End top', value: 'INLINE_END_BLOCK_START' },
+  { label: 'End center', value: 'INLINE_END_BLOCK_CENTER' },
+  { label: 'End bottom', value: 'INLINE_END_BLOCK_END' },
+  { label: 'Top start', value: 'BLOCK_START_INLINE_START' },
+  { label: 'Top center (logical)', value: 'BLOCK_START_INLINE_CENTER' },
+  { label: 'Top end', value: 'BLOCK_START_INLINE_END' },
+  { label: 'Bottom start', value: 'BLOCK_END_INLINE_START' },
+  { label: 'Bottom center (logical)', value: 'BLOCK_END_INLINE_CENTER' },
+  { label: 'Bottom end', value: 'BLOCK_END_INLINE_END' },
+  { label: 'Top left', value: 'TOP_LEFT' },
+  { label: 'Top center', value: 'TOP_CENTER' },
+  { label: 'Top right', value: 'TOP_RIGHT' },
+  { label: 'Left top', value: 'LEFT_TOP' },
+  { label: 'Left center', value: 'LEFT_CENTER' },
+  { label: 'Left bottom', value: 'LEFT_BOTTOM' },
+  { label: 'Right top', value: 'RIGHT_TOP' },
+  { label: 'Right center', value: 'RIGHT_CENTER' },
+  { label: 'Right bottom', value: 'RIGHT_BOTTOM' },
+  { label: 'Bottom left', value: 'BOTTOM_LEFT' },
+  { label: 'Bottom center', value: 'BOTTOM_CENTER' },
+  { label: 'Bottom right', value: 'BOTTOM_RIGHT' },
+];
+
 export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
   .setNoPadding()
   // .useFieldConfig({
@@ -62,6 +89,19 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: '',
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.maplibreStyle === 'custom',
       })
+      .addSelect({
+        path: 'maplibreProjection',
+        name: 'MapLibre projection',
+        description: 'Google globe/3D behavior is configured through the Google Maps Map ID style console.',
+        defaultValue: 'mercator',
+        settings: {
+          options: [
+            { label: 'Mercator', value: 'mercator' },
+            { label: 'Globe', value: 'globe' },
+          ],
+        },
+        showIf: (cfg) => cfg.basemapProvider !== 'google',
+      })
       .addTextInput({
         path: 'googleMapsApiKey',
         name: 'Google Maps API key',
@@ -74,6 +114,191 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: '',
         description: 'Cloud-based map styling ID (required for vector maps and 3D)',
         showIf: (cfg) => cfg.basemapProvider === 'google',
+      })
+      .addBooleanSwitch({
+        path: 'interactions.interactive',
+        name: 'Interactive map',
+        description: 'Enable user map gestures such as drag, zoom, rotate, and keyboard navigation.',
+        defaultValue: true,
+        category: ['Map interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'interactions.cooperativeGestures',
+        name: 'Cooperative gestures',
+        description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.interactions?.interactive !== false,
+        category: ['Map interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'interactions.syncViewToUrl',
+        name: 'Hash routing',
+        description: 'Stores the current view as URL hash parameter v=zoom/lat/lon. MapLibre uses its native hash support; Google Maps uses a matching custom implementation.',
+        defaultValue: false,
+        category: ['Map interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'interactions.rollEnabled',
+        name: 'Enable 3D roll',
+        description: 'MapLibre only. Allows camera roll with Ctrl + drag.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.interactions?.interactive !== false,
+        category: ['Map interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'controls.navigationControl',
+        name: 'Navigation control',
+        description: 'MapLibre zoom/compass control or Google camera control.',
+        defaultValue: true,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controls.geolocateControl',
+        name: 'Geolocate control',
+        description: 'Find the user location using the browser geolocation API.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.interactions?.interactive !== false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controls.fullscreenControl',
+        name: 'Fullscreen control',
+        defaultValue: false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controls.scaleControl',
+        name: 'Scale control',
+        defaultValue: false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'maplibreControls.geolocateTrackUserLocation',
+        name: 'Track user location',
+        description: 'Keep watching the user position after geolocation is enabled.',
+        defaultValue: false,
+        showIf: (cfg) =>
+          cfg.basemapProvider !== 'google' &&
+          (cfg.controls?.geolocateControl === true || cfg.maplibreControls?.geolocateControl === true),
+        category: ['Map controls', 'MapLibre'],
+      })
+      .addBooleanSwitch({
+        path: 'maplibreControls.navigationShowZoom',
+        name: 'Show zoom buttons',
+        defaultValue: true,
+        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
+        category: ['Map controls', 'MapLibre navigation'],
+      })
+      .addBooleanSwitch({
+        path: 'maplibreControls.navigationShowCompass',
+        name: 'Show compass button',
+        defaultValue: true,
+        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
+        category: ['Map controls', 'MapLibre navigation'],
+      })
+      .addBooleanSwitch({
+        path: 'maplibreControls.navigationVisualizePitch',
+        name: 'Visualize pitch',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
+        category: ['Map controls', 'MapLibre navigation'],
+      })
+      .addBooleanSwitch({
+        path: 'maplibreControls.navigationVisualizeRoll',
+        name: 'Visualize roll',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
+        category: ['Map controls', 'MapLibre navigation'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.colorScheme',
+        name: 'Google Maps color scheme',
+        defaultValue: 'LIGHT',
+        settings: {
+          options: [
+            { label: 'Light', value: 'LIGHT' },
+            { label: 'Dark', value: 'DARK' },
+            { label: 'Auto', value: 'FOLLOW_SYSTEM' },
+          ],
+        },
+        showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Map controls', 'Google Maps'],
+      })
+      .addBooleanSwitch({
+        path: 'googleMapOptions.mapTypeControl',
+        name: 'Map type control',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Map controls', 'Google Maps'],
+      })
+      .addBooleanSwitch({
+        path: 'googleMapOptions.streetViewControl',
+        name: 'Street View control',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Map controls', 'Google Maps'],
+      })
+      .addBooleanSwitch({
+        path: 'googleMapOptions.rotateControl',
+        name: 'Rotate control',
+        description: 'Google only. Appears when 45-degree or 3D imagery is available.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Map controls', 'Google Maps'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.cameraControlPosition',
+        name: 'Camera control position',
+        defaultValue: 'INLINE_START_BLOCK_END',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.navigationControl !== false,
+        category: ['Map controls', 'Google Maps options'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.fullscreenControlPosition',
+        name: 'Fullscreen control position',
+        defaultValue: 'TOP_RIGHT',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.fullscreenControl === true,
+        category: ['Map controls', 'Google Maps options'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.mapTypeControlPosition',
+        name: 'Map type control position',
+        defaultValue: 'TOP_LEFT',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
+        category: ['Map controls', 'Google Maps options'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.mapTypeControlStyle',
+        name: 'Map type control style',
+        defaultValue: 'DEFAULT',
+        settings: {
+          options: [
+            { label: 'Default', value: 'DEFAULT' },
+            { label: 'Dropdown menu', value: 'DROPDOWN_MENU' },
+            { label: 'Horizontal bar', value: 'HORIZONTAL_BAR' },
+          ],
+        },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
+        category: ['Map controls', 'Google Maps options'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.streetViewControlPosition',
+        name: 'Street View control position',
+        defaultValue: 'RIGHT_BOTTOM',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.streetViewControl === true,
+        category: ['Map controls', 'Google Maps options'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.rotateControlPosition',
+        name: 'Rotate control position',
+        defaultValue: 'RIGHT_BOTTOM',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.rotateControl === true,
+        category: ['Map controls', 'Google Maps options'],
       })
       .addSelect({
         path: 'initialViewMode',

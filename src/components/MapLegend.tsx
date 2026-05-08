@@ -219,7 +219,7 @@ interface MapLegendProps {
 
 const SMALL_PANEL_THRESHOLD = 400;
 
-export function MapLegend({ layers, onToggleVisibility, panelWidth = 800 }: MapLegendProps) {
+export function MapLegend({ layers, onToggleVisibility, panelWidth = 500 }: MapLegendProps) {
   const [collapsed, setCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
 
   // Show all legend-worthy layers regardless of visibility so hidden ones can be re-enabled.

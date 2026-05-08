@@ -91,14 +91,88 @@ export interface LayerConfig {
 
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle = 'carto-dark' | 'carto-light' | 'osm' | 'custom';
+export type MaplibreProjection = 'mercator' | 'globe';
 export type InitialViewMode = 'manual' | 'fitData';
+export type GoogleMapColorScheme = 'LIGHT' | 'DARK' | 'FOLLOW_SYSTEM';
+export type GoogleMapTypeControlStyle = 'DEFAULT' | 'DROPDOWN_MENU' | 'HORIZONTAL_BAR';
+export type GoogleControlPosition =
+  | 'BLOCK_START_INLINE_START'
+  | 'BLOCK_START_INLINE_CENTER'
+  | 'BLOCK_START_INLINE_END'
+  | 'INLINE_START_BLOCK_START'
+  | 'INLINE_START_BLOCK_CENTER'
+  | 'INLINE_START_BLOCK_END'
+  | 'INLINE_END_BLOCK_START'
+  | 'INLINE_END_BLOCK_CENTER'
+  | 'INLINE_END_BLOCK_END'
+  | 'BLOCK_END_INLINE_START'
+  | 'BLOCK_END_INLINE_CENTER'
+  | 'BLOCK_END_INLINE_END'
+  | 'TOP_LEFT'
+  | 'TOP_CENTER'
+  | 'TOP_RIGHT'
+  | 'LEFT_TOP'
+  | 'LEFT_CENTER'
+  | 'LEFT_BOTTOM'
+  | 'RIGHT_TOP'
+  | 'RIGHT_CENTER'
+  | 'RIGHT_BOTTOM'
+  | 'BOTTOM_LEFT'
+  | 'BOTTOM_CENTER'
+  | 'BOTTOM_RIGHT';
+
+export interface MapInteractionOptions {
+  /** Toggle all map user gestures where supported. */
+  interactive?: boolean;
+  /** Require Ctrl/Cmd or two-finger gestures for scroll zoom and rotation. */
+  cooperativeGestures?: boolean;
+  /** Sync the map camera to URL hash parameter v=zoom/lat/lon. */
+  syncViewToUrl?: boolean;
+  /** MapLibre only: enable camera roll with Ctrl + drag. */
+  rollEnabled?: boolean;
+}
+
+export interface MapControlOptions {
+  /** MapLibre NavigationControl or Google camera control. */
+  navigationControl?: boolean;
+  geolocateControl?: boolean;
+  fullscreenControl?: boolean;
+  scaleControl?: boolean;
+}
+
+export interface MaplibreControlOptions {
+  geolocateControl?: boolean;
+  geolocateTrackUserLocation?: boolean;
+  navigationShowZoom?: boolean;
+  navigationShowCompass?: boolean;
+  navigationVisualizePitch?: boolean;
+  navigationVisualizeRoll?: boolean;
+}
+
+export interface GoogleMapOptions {
+  colorScheme?: GoogleMapColorScheme;
+  mapTypeControl?: boolean;
+  streetViewControl?: boolean;
+  rotateControl?: boolean;
+  cameraControlPosition?: GoogleControlPosition;
+  fullscreenControlPosition?: GoogleControlPosition;
+  mapTypeControlPosition?: GoogleControlPosition;
+  mapTypeControlStyle?: GoogleMapTypeControlStyle;
+  streetViewControlPosition?: GoogleControlPosition;
+  rotateControlPosition?: GoogleControlPosition;
+}
 
 export interface MapPanelOptions {
   basemapProvider: BasemapProvider;
   maplibreStyle: MaplibreStyle;
   maplibreStyleUrl?: string;
+  maplibreProjection?: MaplibreProjection;
   googleMapsApiKey?: string;
   googleMapsMapId?: string;
+  interactions?: MapInteractionOptions;
+  controls?: MapControlOptions;
+  maplibreControls?: MaplibreControlOptions;
+  googleMapOptions?: GoogleMapOptions;
   initialViewMode: InitialViewMode;
   initialLatitude: number;
   initialLongitude: number;
