@@ -40,16 +40,54 @@ export function buildColorAccessor(
   return () => defaultColor;
 }
 
+// ── Palette array builder (for uniform-based shaders) ────────────────────────
+
+const PALETTE_N = 32;
+
+export function buildPaletteArrays(
+  colorScale: ColorScaleConfig,
+  n: number = PALETTE_N,
+): { r: Float32Array; g: Float32Array; b: Float32Array; scaleMin: number; scaleMax: number } {
+  const r = new Float32Array(n);
+  const g = new Float32Array(n);
+  const b = new Float32Array(n);
+
+  const sorted =
+    colorScale.type === 'threshold' && colorScale.steps?.length
+      ? [...colorScale.steps].sort((a, b) => a.value - b.value)
+      : null;
+
+  // For threshold scales, derive range from step values when not explicitly set.
+  const scaleMin = colorScale.scaleMin ?? (sorted ? sorted[0].value : 0);
+  const scaleMax = colorScale.scaleMax ?? (sorted ? sorted[sorted.length - 1].value : 1);
+  const range = scaleMax - scaleMin || 1;
+
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    let rgba: RGBA;
+    if (colorScale.type === 'gradient' && colorScale.schemeName) {
+      rgba = interpolateScheme(colorScale.schemeName, t, colorScale.invert ?? false);
+    } else if (sorted) {
+      rgba = thresholdToColor(sorted, scaleMin + t * range);
+    } else {
+      rgba = [128, 128, 128, 255];
+    }
+    r[i] = rgba[0] / 255;
+    g[i] = rgba[1] / 255;
+    b[i] = rgba[2] / 255;
+  }
+
+  return { r, g, b, scaleMin, scaleMax };
+}
+
 // ── GLSL shader generation ────────────────────────────────────────────────────
 
 export const DEFAULT_VS_FILTER_COLOR = `\
 float v = instanceValue;
-color = interpolateColor(v);
-// // e.g. vary opacity with value:
-// color.a = smoothstep(0.0, 1.0, v);`;
+color = interpolateColor(v);`;
 
 export const DEFAULT_FS_FILTER_COLOR = `\
-float v = instanceValue;
+float v = vInstanceValue;
 color = interpolateColor(v);`;
 
 /**
