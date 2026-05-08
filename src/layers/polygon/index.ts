@@ -1,7 +1,7 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
-import { MathExtension } from '../../utils/deckgl/MathExtension';
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
@@ -12,6 +12,15 @@ const schema: LayerOptionField[] = [
   { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
   { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
 ];
+
+// Stable subclass. equals() compares inject by string content so the same color
+// scale / shader config → same GLSL → no shader recompile during scrubbing.
+const PolygonColorExtension = CreateMathExtensionSubclass({
+  name: 'PolygonColor',
+  attrs: { value: { type: 'float' } },
+  uniforms: {},
+  inject: {},
+});
 
 function getPolygonCoords(f: Feature): number[][][] | null {
   const g = f.geometry as Polygon | MultiPolygon;
@@ -42,15 +51,13 @@ const renderer: LayerRenderer = {
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
       const userDecl = config.shader?.vsDecl?.trim() ?? '';
-      const vsDecl = userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl;
       const vsFilterColor = config.shader?.vsFilterColor?.trim() || DEFAULT_VS_FILTER_COLOR;
       extensions.push(
-        new MathExtension({
+        new PolygonColorExtension({
           name: `shader_${config.id}`,
-          attrs: { value: { type: 'float' } },
           uniforms: {},
           inject: {
-            'vs:#decl': vsDecl,
+            'vs:#decl': userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl,
             'vs:DECKGL_FILTER_COLOR': vsFilterColor,
           },
         }),

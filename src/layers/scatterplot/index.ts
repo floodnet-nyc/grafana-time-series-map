@@ -1,7 +1,7 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import { MathExtension } from '../../utils/deckgl/MathExtension';
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
@@ -16,6 +16,13 @@ const schema: LayerOptionField[] = [
   { key: 'showLabels', label: 'Show labels', type: 'boolean', defaultValue: false, section: 'Text' },
   { key: 'labelField', label: 'Label field', type: 'fieldPicker', defaultValue: '', section: 'Text' },
 ];
+
+const ScatterColorExtension = CreateMathExtensionSubclass({
+  name: 'ScatterColor',
+  attrs: { value: { type: 'float' } },
+  uniforms: {},
+  inject: {},
+});
 
 const renderer: LayerRenderer = {
   type: 'scatterplot',
@@ -52,15 +59,13 @@ const renderer: LayerRenderer = {
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
       const userDecl = config.shader?.vsDecl?.trim() ?? '';
-      const vsDecl = userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl;
       const vsFilterColor = config.shader?.vsFilterColor?.trim() || DEFAULT_VS_FILTER_COLOR;
       extensions.push(
-        new MathExtension({
+        new ScatterColorExtension({
           name: `shader_${config.id}`,
-          attrs: { value: { type: 'float' } },
           uniforms: {},
           inject: {
-            'vs:#decl': vsDecl,
+            'vs:#decl': userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl,
             'vs:DECKGL_FILTER_COLOR': vsFilterColor,
           },
         }),

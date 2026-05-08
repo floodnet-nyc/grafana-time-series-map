@@ -10,7 +10,8 @@
       "Bash(curl -sf http://localhost:3000/api/health)",
       "mcp__Claude_Preview__preview_start",
       "Bash(find /opt/gh/floodnet-event-map-v2 -name \"past_flood_event_contours.ts\" 2>/dev/null | head -5)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
     ]
   }
 }

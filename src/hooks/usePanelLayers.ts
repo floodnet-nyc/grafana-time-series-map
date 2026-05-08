@@ -37,6 +37,18 @@ export function usePanelLayers(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.series, options.layers]);
 
+  // Stage 3: build ASOF packed buckets (only for asof layers)
+  const packedByLayerId = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof buildPacked>>();
+    for (const layerConfig of options.layers) {
+      if (layerConfig.timeFilter.mode !== 'asof') continue;
+      const features = featuresByLayerId.get(layerConfig.id) ?? [];
+      const { timeField, groupByField = 'id' } = layerConfig.timeFilter;
+      map.set(layerConfig.id, buildPacked(features, groupByField, timeField));
+    }
+    return map;
+  }, [featuresByLayerId, options.layers]);
+
   // Stage 2: build lookup packed series (parse + sort; runs on data/config change, not cursor ticks)
   const lookupPackedByLayerId = useMemo(() => {
     const result = new Map<string, { features: Feature[]; packed: ReturnType<typeof buildPacked> }>();
@@ -64,17 +76,6 @@ export function usePanelLayers(
     return result;
   }, [lookupPackedByLayerId, options.layers, cursorTimeMs]);
 
-  // Stage 3: build ASOF packed buckets (only for asof layers)
-  const packedByLayerId = useMemo(() => {
-    const map = new Map<string, ReturnType<typeof buildPacked>>();
-    for (const layerConfig of options.layers) {
-      if (layerConfig.timeFilter.mode !== 'asof') continue;
-      const features = featuresByLayerId.get(layerConfig.id) ?? [];
-      const { timeField, groupByField = 'id' } = layerConfig.timeFilter;
-      map.set(layerConfig.id, buildPacked(features, groupByField, timeField));
-    }
-    return map;
-  }, [featuresByLayerId, options.layers]);
 
   // Stage 4: compute time filter flags (cheap typed-array ops, runs every cursor tick)
   const flagsByLayerId = useMemo(() => {
