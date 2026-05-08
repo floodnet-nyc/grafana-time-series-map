@@ -1,8 +1,7 @@
 import React from 'react';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
-import { MaplibreMap } from './MaplibreMap';
-import type { ViewportSnapshot } from './MaplibreMap';
+import { MaplibreMap, type ViewportSnapshot } from './MaplibreMap';
 import { GoogleMap } from './GoogleMap';
 
 interface DeckGLMapProps {
@@ -17,7 +16,16 @@ interface DeckGLMapProps {
 
 export function DeckGLMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved }: DeckGLMapProps) {
   if (options.basemapProvider === 'google') {
-    return <GoogleMap width={width} height={height} options={options} layers={layers} interleaved={interleaved} />;
+    return (
+      <GoogleMap
+        width={width}
+        height={height}
+        options={options}
+        layers={layers}
+        interleaved={interleaved}
+        onViewportChange={onViewportChange}
+      />
+    );
   }
   return (
     <MaplibreMap

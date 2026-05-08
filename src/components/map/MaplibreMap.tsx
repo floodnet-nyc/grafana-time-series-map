@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import Map, { useMap } from 'react-map-gl/maplibre';
-import type { MapRef } from 'react-map-gl/maplibre';
+import Map, {
+  FullscreenControl,
+  GeolocateControl,
+  NavigationControl,
+  ScaleControl,
+  type MapRef,
+  useMap,
+} from 'react-map-gl/maplibre';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
@@ -18,7 +24,9 @@ function OverlayController({ layers, interleaved }: { layers: Layer[]; interleav
 
   useEffect(() => {
     const map = mapRef?.getMap();
-    if (!map) return;
+    if (!map) {
+      return;
+    }
     const overlay = new MapboxOverlay({ interleaved, layers });
     overlayRef.current = overlay;
     map.addControl(overlay as any);
@@ -30,16 +38,16 @@ function OverlayController({ layers, interleaved }: { layers: Layer[]; interleav
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef]);
 
-  // Synchronous during render (not useEffect) so deck.gl receives updated layers
-  // before the browser paints, matching them to the same RAF cycle.
-  // triggerRepaint is required in interleaved mode because MapboxOverlay doesn't
-  // notify maplibre of layer changes automatically.
-  if (overlayRef.current) {
-    overlayRef.current.setProps({ layers });
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    if (!overlay) {
+      return;
+    }
+    overlay.setProps({ layers });
     if (interleaved) {
       mapRef?.getMap()?.triggerRepaint();
     }
-  }
+  }, [interleaved, layers, mapRef]);
 
   return null;
 }
@@ -74,7 +82,9 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
   const prevFitBoundsRef = useRef<string | null>(null);
   useEffect(() => {
     const key = fitBounds ? JSON.stringify(fitBounds) : null;
-    if (!fitBounds || key === prevFitBoundsRef.current) return;
+    if (!fitBounds || key === prevFitBoundsRef.current) {
+      return;
+    }
     prevFitBoundsRef.current = key;
     const map = mapRef.current?.getMap();
     if (map) {
@@ -83,7 +93,9 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
   }, [fitBounds]);
 
   const handleMoveEnd = useCallback((e: any) => {
-    if (!onViewportChange) return;
+    if (!onViewportChange) {
+      return;
+    }
     const { latitude, longitude, zoom, bearing, pitch } = e.viewState;
     onViewportChange({ latitude, longitude, zoom, bearing, pitch });
   }, [onViewportChange]);
@@ -97,6 +109,11 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
         bearing: options.initialBearing ?? 0,
         pitch: options.initialPitch ?? 0,
       };
+  const interactions = options.interactions ?? {};
+  const controls = options.controls ?? {};
+  const maplibreControls = options.maplibreControls ?? {};
+  const interactive = interactions.interactive ?? true;
+  const showNavigationControl = options.controls?.navigationControl ?? false;
 
   return (
     <Map
@@ -104,8 +121,31 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
       initialViewState={initialViewState}
       style={{ width, height }}
       mapStyle={styleUrl}
+      projection={options.maplibreProjection ?? 'mercator'}
+      interactive={interactive}
+      cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
+      hash={interactions.syncViewToUrl ? 'v' : false}
+      rollEnabled={interactive ? interactions.rollEnabled ?? false : false}
       onMoveEnd={handleMoveEnd}
     >
+      {showNavigationControl && (
+        <NavigationControl
+          position="top-right"
+          showZoom={maplibreControls.navigationShowZoom ?? true}
+          showCompass={maplibreControls.navigationShowCompass ?? true}
+          visualizePitch={maplibreControls.navigationVisualizePitch ?? false}
+          visualizeRoll={maplibreControls.navigationVisualizeRoll ?? false}
+        />
+      )}
+      {(controls.geolocateControl || maplibreControls.geolocateControl) && interactive && (
+        <GeolocateControl
+          position="top-right"
+          trackUserLocation={maplibreControls.geolocateTrackUserLocation ?? false}
+          positionOptions={{ enableHighAccuracy: true }}
+        />
+      )}
+      {controls.fullscreenControl && <FullscreenControl position="top-right" />}
+      {controls.scaleControl && <ScaleControl position="bottom-left" />}
       <OverlayController layers={layers} interleaved={interleaved} />
     </Map>
   );
