@@ -236,7 +236,7 @@
         "basemapProvider": "google",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
-        "maplibreProjection": "globe",
+        "maplibreProjection": "mercator",
         "googleMapsApiKey": "API-KEY",
         "googleMapsMapId": "bc24713045eceb6d78171160",
         "initialLatitude": 40.694,
@@ -363,7 +363,7 @@
           },
           {
             "id": "sensors",
-            "type": "icon",
+            "type": "scatterplot",
             "label": "Sensor Locations",
             "visible": true,
             "queryRefId": "B",

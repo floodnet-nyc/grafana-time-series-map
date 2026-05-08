@@ -11,6 +11,7 @@ import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
 import { useMapHashRoute } from '../../hooks/useMapHashRoute';
+import { buildDeckParameters } from '../../utils/deckgl/parameters';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const STYLE_URLS: Record<string, string> = {
@@ -19,16 +20,17 @@ const STYLE_URLS: Record<string, string> = {
   osm: 'https://demotiles.maplibre.org/style.json',
 };
 
-function OverlayController({ layers, interleaved }: { layers: Layer[]; interleaved: boolean }) {
+function OverlayController({ layers, interleaved, options }: { layers: Layer[]; interleaved: boolean; options: MapPanelOptions }) {
   const { current: mapRef } = useMap();
   const overlayRef = useRef<MapboxOverlay | null>(null);
+  const parameters = buildDeckParameters(options.deckParameters);
 
   useEffect(() => {
     const map = mapRef?.getMap();
     if (!map) {
       return;
     }
-    const overlay = new MapboxOverlay({ interleaved, layers });
+    const overlay = new MapboxOverlay({ interleaved, layers, parameters });
     overlayRef.current = overlay;
     map.addControl(overlay as any);
     return () => {
@@ -44,11 +46,11 @@ function OverlayController({ layers, interleaved }: { layers: Layer[]; interleav
     if (!overlay) {
       return;
     }
-    overlay.setProps({ layers });
+    overlay.setProps({ layers, parameters });
     if (interleaved) {
       mapRef?.getMap()?.triggerRepaint();
     }
-  }, [interleaved, layers, mapRef]);
+  }, [interleaved, layers, mapRef, parameters]);
 
   return null;
 }
@@ -164,7 +166,7 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
       )}
       {controls.fullscreenControl && <FullscreenControl position="top-right" />}
       {controls.scaleControl && <ScaleControl position="bottom-left" />}
-      <OverlayController layers={layers} interleaved={interleaved} />
+      <OverlayController layers={layers} interleaved={interleaved} options={options} />
     </Map>
   );
 }

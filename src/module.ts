@@ -1,8 +1,9 @@
 import { PanelPlugin } from '@grafana/data';
 // import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
-import type { MapPanelOptions } from './types';
+import type { DeckBlendFactor, DeckBlendOperation, DeckDepthCompare, MapPanelOptions } from './types';
 import { MapPanel } from './components/MapPanel';
 import { MapPanelEditor } from './editor/MapPanelEditor';
+import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
 
 const googleControlPositions = [
@@ -30,6 +31,41 @@ const googleControlPositions = [
   { label: 'Bottom left', value: 'BOTTOM_LEFT' },
   { label: 'Bottom center', value: 'BOTTOM_CENTER' },
   { label: 'Bottom right', value: 'BOTTOM_RIGHT' },
+];
+
+const deckBlendOperations: Array<{ label: string; value: DeckBlendOperation }> = [
+  { label: 'Add', value: 'add' },
+  { label: 'Subtract', value: 'subtract' },
+  { label: 'Reverse subtract', value: 'reverse-subtract' },
+  { label: 'Min', value: 'min' },
+  { label: 'Max', value: 'max' },
+];
+
+const deckBlendFactors: Array<{ label: string; value: DeckBlendFactor }> = [
+  { label: 'Zero', value: 'zero' },
+  { label: 'One', value: 'one' },
+  { label: 'Source', value: 'src' },
+  { label: 'One minus source', value: 'one-minus-src' },
+  { label: 'Source alpha', value: 'src-alpha' },
+  { label: 'One minus source alpha', value: 'one-minus-src-alpha' },
+  { label: 'Destination', value: 'dst' },
+  { label: 'One minus destination', value: 'one-minus-dst' },
+  { label: 'Destination alpha', value: 'dst-alpha' },
+  { label: 'One minus destination alpha', value: 'one-minus-dst-alpha' },
+  { label: 'Source alpha saturated', value: 'src-alpha-saturated' },
+  { label: 'Constant', value: 'constant' },
+  { label: 'One minus constant', value: 'one-minus-constant' },
+];
+
+const deckDepthCompareOptions: Array<{ label: string; value: DeckDepthCompare }> = [
+  { label: 'Never', value: 'never' },
+  { label: 'Less', value: 'less' },
+  { label: 'Equal', value: 'equal' },
+  { label: 'Less or equal', value: 'less-equal' },
+  { label: 'Greater', value: 'greater' },
+  { label: 'Not equal', value: 'not-equal' },
+  { label: 'Greater or equal', value: 'greater-equal' },
+  { label: 'Always', value: 'always' },
 ];
 
 export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
@@ -377,6 +413,74 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Interleaved rendering',
         description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
         defaultValue: true,
+      })
+      .addBooleanSwitch({
+        path: 'deckParameters.blend',
+        name: 'Blend',
+        description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blend,
+        category: ['Deck rendering'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendColorOperation',
+        name: 'Color blend operation',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
+        settings: { options: deckBlendOperations },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendColorSrcFactor',
+        name: 'Color source factor',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
+        settings: { options: deckBlendFactors },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendColorDstFactor',
+        name: 'Color destination factor',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
+        settings: { options: deckBlendFactors },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendAlphaOperation',
+        name: 'Alpha blend operation',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
+        settings: { options: deckBlendOperations },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendAlphaSrcFactor',
+        name: 'Alpha source factor',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
+        settings: { options: deckBlendFactors },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addSelect({
+        path: 'deckParameters.blendAlphaDstFactor',
+        name: 'Alpha destination factor',
+        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
+        settings: { options: deckBlendFactors },
+        category: ['Deck rendering', 'Blending'],
+      })
+      .addBooleanSwitch({
+        path: 'deckParameters.polygonOffsetFill',
+        name: 'Polygon offset fill',
+        defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
+        category: ['Deck rendering', 'Depth'],
+      })
+      .addBooleanSwitch({
+        path: 'deckParameters.depthWriteEnabled',
+        name: 'Depth write enabled',
+        defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
+        category: ['Deck rendering', 'Depth'],
+      })
+      .addSelect({
+        path: 'deckParameters.depthCompare',
+        name: 'Depth compare',
+        defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
+        settings: { options: deckDepthCompareOptions },
+        category: ['Deck rendering', 'Depth'],
       })
       .addBooleanSwitch({
         path: 'syncPublish',

@@ -162,6 +162,36 @@ export interface GoogleMapOptions {
   rotateControlPosition?: GoogleControlPosition;
 }
 
+export type DeckBlendOperation = 'add' | 'subtract' | 'reverse-subtract' | 'min' | 'max';
+export type DeckBlendFactor =
+  | 'zero'
+  | 'one'
+  | 'src'
+  | 'one-minus-src'
+  | 'src-alpha'
+  | 'one-minus-src-alpha'
+  | 'dst'
+  | 'one-minus-dst'
+  | 'dst-alpha'
+  | 'one-minus-dst-alpha'
+  | 'src-alpha-saturated'
+  | 'constant'
+  | 'one-minus-constant';
+export type DeckDepthCompare = 'never' | 'less' | 'equal' | 'less-equal' | 'greater' | 'not-equal' | 'greater-equal' | 'always';
+
+export interface DeckRenderParametersOptions {
+  blend?: boolean;
+  blendColorOperation?: DeckBlendOperation;
+  blendColorSrcFactor?: DeckBlendFactor;
+  blendColorDstFactor?: DeckBlendFactor;
+  blendAlphaOperation?: DeckBlendOperation;
+  blendAlphaSrcFactor?: DeckBlendFactor;
+  blendAlphaDstFactor?: DeckBlendFactor;
+  polygonOffsetFill?: boolean;
+  depthWriteEnabled?: boolean;
+  depthCompare?: DeckDepthCompare;
+}
+
 export interface MapPanelOptions {
   basemapProvider: BasemapProvider;
   maplibreStyle: MaplibreStyle;
@@ -173,6 +203,7 @@ export interface MapPanelOptions {
   controls?: MapControlOptions;
   maplibreControls?: MaplibreControlOptions;
   googleMapOptions?: GoogleMapOptions;
+  deckParameters?: DeckRenderParametersOptions;
   initialViewMode: InitialViewMode;
   initialLatitude: number;
   initialLongitude: number;

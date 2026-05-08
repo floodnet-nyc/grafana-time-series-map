@@ -5,6 +5,7 @@ import type { Layer } from '@deck.gl/core';
 import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapPanelOptions } from '../../types';
 import type { ViewportSnapshot } from './MaplibreMap';
 import { useMapHashRoute } from '../../hooks/useMapHashRoute';
+import { buildDeckParameters } from '../../utils/deckgl/parameters';
 
 function OverlayController(props: GoogleMapsOverlayProps) {
   const map = useMap();
@@ -229,7 +230,7 @@ export function GoogleMap({ width, height, options, layers, interleaved = true, 
           writeHashView(viewport);
         }}
       >
-        <OverlayController layers={layers} interleaved={interleaved} />
+        <OverlayController layers={layers} interleaved={interleaved} parameters={buildDeckParameters(options.deckParameters)} />
         <GoogleHashRoute enabled={interactions.syncViewToUrl ?? false} />
         <GoogleGeolocateControl enabled={geolocateControl && interactive} />
       </Map>
