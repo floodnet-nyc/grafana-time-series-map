@@ -96,7 +96,7 @@ const renderer: LayerRenderer = {
 
     return [
       new TextLayer({
-        id: config.id,
+        id: `text/${config.id}`,
         data: features,
         visible: config.visible,
         opacity: config.opacity,

@@ -83,7 +83,7 @@ const renderer: LayerRenderer = {
 
     layers.push(
       new ScatterplotLayer({
-        id: config.id,
+        id: `scatterplot/${config.id}`,
         data: features,
         visible: config.visible,
         opacity: config.opacity,
@@ -102,7 +102,7 @@ const renderer: LayerRenderer = {
         maxZoom: config.maxZoom,
         getPosition: (f: Feature) => {
           const coords = (f.geometry as any)?.coordinates;
-          if (!coords) return [0, 0, 0];
+          if (!coords) {return [0, 0, 0];}
           let z = 0;
           if (config.elevation?.field) {
             z = Number(f.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1);
@@ -139,13 +139,13 @@ const renderer: LayerRenderer = {
       const getDecimals = (v: number) => (v > 6 ? 0 : 0);
       layers.push(
         new TextLayer({
-          id: `${config.id}-labels`,
+          id: `scatterplot-labels/${config.id}`,
           data: features,
           visible: config.visible,
           pickable: false,
           getPosition: (f: Feature) => {
             const coords = (f.geometry as any)?.coordinates;
-            if (!coords) return [0, 0, 0];
+            if (!coords) {return [0, 0, 0];}
             let z = 0;
             if (config.elevation?.field) {
               z = Number(f.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1);

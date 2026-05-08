@@ -115,7 +115,7 @@ const renderer: LayerRenderer = {
 
     return [
       new HexagonLayer({
-        id: config.id,
+        id: `hexagon/${config.id}`,
         data,
         visible: config.visible,
         opacity: config.opacity,

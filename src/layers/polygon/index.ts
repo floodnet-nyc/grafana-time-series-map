@@ -24,15 +24,15 @@ const PolygonColorExtension = CreateMathExtensionSubclass({
 
 function getPolygonCoords(f: Feature): number[][][] | null {
   const g = f.geometry as Polygon | MultiPolygon;
-  if (!g) return null;
-  if (g.type === 'Polygon') return g.coordinates as number[][][];
-  if (g.type === 'MultiPolygon') return g.coordinates[0] as number[][][];
+  if (!g) {return null;}
+  if (g.type === 'Polygon') {return g.coordinates as number[][][];}
+  if (g.type === 'MultiPolygon') {return g.coordinates[0] as number[][][];}
   return null;
 }
 
 const renderer: LayerRenderer = {
   type: 'polygon',
-  label: 'Polygon (filled)',
+  label: 'Polygon',
   defaultOptions: {
     fillOpacity: 180,
     extruded: false,
@@ -69,7 +69,7 @@ const renderer: LayerRenderer = {
 
     return [
       new SolidPolygonLayer({
-        id: config.id,
+        id: `polygon/${config.id}`,
         data: features.filter((f) => getPolygonCoords(f) !== null),
         visible: config.visible,
         opacity: config.opacity,

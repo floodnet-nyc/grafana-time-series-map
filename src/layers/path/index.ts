@@ -16,9 +16,9 @@ const schema: LayerOptionField[] = [
 
 function getPath(f: Feature): number[][] | null {
   const g = f.geometry as LineString | MultiLineString;
-  if (!g) return null;
-  if (g.type === 'LineString') return g.coordinates as number[][];
-  if (g.type === 'MultiLineString') return g.coordinates[0] as number[][];
+  if (!g) {return null;}
+  if (g.type === 'LineString') {return g.coordinates as number[][];}
+  if (g.type === 'MultiLineString') {return g.coordinates[0] as number[][];}
   return null;
 }
 
@@ -42,7 +42,7 @@ const renderer: LayerRenderer = {
 
     return [
       new PathLayer({
-        id: config.id,
+        id: `path/${config.id}`,
         data: lineFeatures,
         visible: config.visible,
         opacity: config.opacity,

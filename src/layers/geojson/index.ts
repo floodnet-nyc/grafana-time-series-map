@@ -15,7 +15,7 @@ const schema: LayerOptionField[] = [
 
 const renderer: LayerRenderer = {
   type: 'geojson',
-  label: 'GeoJSON (universal)',
+  label: 'GeoJSON',
   defaultOptions: {
     pointRadiusMinPixels: 4,
     pointRadiusMaxPixels: 20,
@@ -32,7 +32,7 @@ const renderer: LayerRenderer = {
 
     return [
       new GeoJsonLayer({
-        id: config.id,
+        id: `geojson/${config.id}`,
         data: { type: 'FeatureCollection', features },
         visible: config.visible,
         opacity: config.opacity,

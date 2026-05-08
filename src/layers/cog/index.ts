@@ -1,8 +1,6 @@
-import { COGLayer, texture as geotiffTexture } from '@developmentseed/deck.gl-geotiff';
-import type { GetTileDataOptions, MinimalTileData } from '@developmentseed/deck.gl-geotiff';
+import { COGLayer, texture as geotiffTexture, type GetTileDataOptions, type MinimalTileData } from '@developmentseed/deck.gl-geotiff';
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
-import type { GeoTIFF, Overview } from '@developmentseed/geotiff';
-import { DecoderPool } from '@developmentseed/geotiff';
+import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu-modules';
 import type { Texture } from '@luma.gl/core';
 
@@ -51,7 +49,7 @@ function padToAlignment(
 ): Uint8Array | Uint16Array {
   const rowBytes = width * bytesPerPixel;
   const alignedRowBytes = Math.ceil(rowBytes / 4) * 4;
-  if (alignedRowBytes === rowBytes) return data;
+  if (alignedRowBytes === rowBytes) {return data;}
 
   const src = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   const dst = new Uint8Array(alignedRowBytes * height);
@@ -148,7 +146,7 @@ function getStableRenderTile(
 }
 
 function snapToNearest(timeMs: number, timestamps: number[]): number | null {
-  if (timestamps.length === 0) return null;
+  if (timestamps.length === 0) {return null;}
   let best = timestamps[0];
   let bestDist = Math.abs(timeMs - best);
   for (const t of timestamps) {
@@ -186,7 +184,7 @@ const renderer: LayerRenderer = {
       }
     }
 
-    if (entries.length === 0) return [];
+    if (entries.length === 0) {return [];}
 
     const timestamps = entries.map((e) => e.timeMs);
     const activeTimeMs = snapToNearest(cursorTimeMs, timestamps);
@@ -196,7 +194,7 @@ const renderer: LayerRenderer = {
     return entries.map(({ timeMs, url }) =>
       // config.visible && timeMs === activeTimeMs && console.log(url) || 
       new COGLayer<CogTileData>({
-        id: `${config.id}-${timeMs}`,
+        id: `cog/${config.id}-${timeMs}`,
         geotiff: url,
         // geotiff: buildPrecipCogUrl(timeMs),
         getTileData,

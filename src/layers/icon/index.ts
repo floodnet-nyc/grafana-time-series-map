@@ -5,11 +5,6 @@ import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 
-const DEFAULT_ICON_ATLAS =
-  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png';
-const DEFAULT_ICON_MAPPING =
-  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.json';
-
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
   { label: 'Marker (shaded)', value: 'marker-shaded' },
@@ -38,6 +33,42 @@ const schema: LayerOptionField[] = [
   { key: 'alphaCutoff', label: 'Alpha cutoff', type: 'number', defaultValue: 0.05, section: 'Style' },
 ];
 
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+const BUILT_IN_ICON_ATLAS = svgDataUrl(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="320" height="64" viewBox="0 0 320 64">
+    <path fill="white" d="M32 4C20.4 4 11 13.4 11 25c0 15.8 21 35 21 35s21-19.2 21-35C53 13.4 43.6 4 32 4zm0 30a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/>
+    <g transform="translate(64 0)">
+      <path fill="white" opacity=".35" d="M32 62s19-18.8 19-36C51 15.5 42.5 7 32 7v55z"/>
+      <path fill="white" d="M32 4C20.4 4 11 13.4 11 25c0 15.8 21 35 21 35s21-19.2 21-35C53 13.4 43.6 4 32 4zm0 30a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/>
+    </g>
+    <g transform="translate(128 0)">
+      <path fill="white" d="M32 4C20.4 4 11 13.4 11 25c0 15.8 21 35 21 35s21-19.2 21-35C53 13.4 43.6 4 32 4zm0 49.6C25.8 47.1 17 35.6 17 25c0-8.3 6.7-15 15-15s15 6.7 15 15c0 10.6-8.8 22.1-15 28.6z"/>
+      <circle fill="white" cx="32" cy="25" r="7"/>
+    </g>
+    <g transform="translate(192 0)">
+      <path fill="white" d="M14 58h6V8h-6v50zM24 9h31l-7 13 7 13H24V9z"/>
+    </g>
+    <g transform="translate(256 0)">
+      <circle fill="white" cx="32" cy="32" r="28"/>
+    </g>
+  </svg>
+`);
+
+const BUILT_IN_ICON_MAPPING = {
+  marker: { x: 0, y: 0, width: 64, height: 64, anchorY: 64, mask: true },
+  'marker-shaded': { x: 64, y: 0, width: 64, height: 64, anchorY: 64, mask: true },
+  'marker-outline': { x: 128, y: 0, width: 64, height: 64, anchorY: 64, mask: true },
+  flag: { x: 192, y: 0, width: 64, height: 64, anchorX: 17, anchorY: 58, mask: true },
+  'plain-circle': { x: 256, y: 0, width: 64, height: 64, mask: true },
+};
+
+function getBuiltInIconName(iconName: string) {
+  return iconName in BUILT_IN_ICON_MAPPING ? iconName : 'marker';
+}
+
 const renderer: LayerRenderer = {
   type: 'icon',
   label: 'Icon',
@@ -64,18 +95,19 @@ const renderer: LayerRenderer = {
       selectedKey != null && keyField && String(f.properties?.[keyField]) === selectedKey;
     const hasSelection = selectedKey != null && keyField;
 
-    const iconAtlas = (opts.iconAtlasUrl as string)?.trim() || DEFAULT_ICON_ATLAS;
-    const iconMapping = (opts.iconMappingUrl as string)?.trim() || DEFAULT_ICON_MAPPING;
+    const iconAtlas = (opts.iconAtlasUrl as string)?.trim();
+    const iconMapping = (opts.iconMappingUrl as string)?.trim();
+    const useCustomAtlas = Boolean(iconAtlas && iconMapping);
     const fixedIcon: string = opts.fixedIcon ?? 'marker';
 
     return [
       new IconLayer({
-        id: config.id,
+        id: `icon/${config.id}`,
         data: features,
         visible: config.visible,
         opacity: config.opacity,
-        iconAtlas,
-        iconMapping,
+        iconAtlas: useCustomAtlas ? iconAtlas : BUILT_IN_ICON_ATLAS,
+        iconMapping: useCustomAtlas ? iconMapping : BUILT_IN_ICON_MAPPING,
         billboard: opts.billboard ?? true,
         alphaCutoff: opts.alphaCutoff ?? 0.05,
         sizeScale: 1,
@@ -94,8 +126,11 @@ const renderer: LayerRenderer = {
           return [coords[0], coords[1], z];
         },
         getIcon: opts.iconField
-          ? (f: Feature) => String(f.properties?.[opts.iconField] ?? fixedIcon)
-          : () => fixedIcon,
+          ? (f: Feature) => {
+              const iconName = String(f.properties?.[opts.iconField] ?? fixedIcon);
+              return useCustomAtlas ? iconName : getBuiltInIconName(iconName);
+            }
+          : () => (useCustomAtlas ? fixedIcon : getBuiltInIconName(fixedIcon)),
         getSize: opts.sizeField
           ? (f: Feature) => Number(f.properties?.[opts.sizeField] ?? opts.sizeScale ?? 32)
           : (opts.sizeScale ?? 32),

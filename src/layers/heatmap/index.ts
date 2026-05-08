@@ -42,7 +42,7 @@ const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
 
 const renderer: LayerRenderer = {
   type: 'heatmap',
-  label: 'Heatmap (density)',
+  label: 'Heatmap',
   defaultOptions: {
     radiusPixels: 30,
     intensity: 1,
@@ -74,7 +74,7 @@ const renderer: LayerRenderer = {
 
     return [
       new HeatmapLayer({
-        id: config.id,
+        id: `heatmap/${config.id}`,
         data: filtered,
         visible: config.visible,
         opacity: config.opacity,
