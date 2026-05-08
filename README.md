@@ -11,15 +11,16 @@ TODO:
          - fit to current viewport bounding box
          - bearing, pitch
          - restrictable map bounds (set to current viewport)
-      - interleaved toggle
       - flyto interaction
       - navigate game-like controls addEventListener('keydown')
       - map padding
       - globe projection toggle
+      - minimap
       - hash routing
       - icon layer
       - Fly to a location based on scroll position
       - clustering
+
       - maplibre
          - maplibregl.GeolocateControl
          - cooperativeGestures
@@ -35,7 +36,6 @@ TODO:
             - interactive - toggle all user interactions (drag, zoom, rotate, etc.)
 
       - google maps
-         - street view toggle
          - dark/light/auto toggle
          - controls:
             - cameraControl - zoom/pan control
