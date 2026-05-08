@@ -8,32 +8,27 @@ import type { Texture } from '@luma.gl/core';
 
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
+import type { ColorScaleConfig } from '../../types';
 
-// Default precipitation color ramp. colorMaxValue is embedded as a literal at
-// renderLayers time so no uniform injection is needed.
-function buildDefaultFsColor(colorMaxValue: number): string {
+const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
+  type: 'gradient',
+  schemeName: 'MrmsPrecip',
+  scaleMin: 0,
+  scaleMax: 1,
+};
+
+// The raw 16-bit pixel value is decoded, normalized by colorMaxValue with gamma correction,
+// then passed to the common interpolateColor(t) function generated from the layer's colorScale.
+function buildFsFilterColor(colorMaxValue: number): string {
   return `\
 float raw = color.r * 65535.0;
 if (raw <= 0.0) { discard; }
 float t = clamp(raw / ${colorMaxValue.toFixed(1)}, 0.0, 1.0);
 t = pow(t, 0.72);
-
-vec3 c0 = vec3(0.56, 0.77, 0.98);
-vec3 c1 = vec3(0.10, 0.95, 0.86);
-vec3 c2 = vec3(0.32, 0.98, 0.45);
-vec3 c3 = vec3(0.96, 0.84, 0.20);
-vec3 c4 = vec3(0.98, 0.38, 0.76);
-vec3 c5 = vec3(0.98, 0.75, 0.93);
-
-vec3 ramp;
-if (t < 0.18)      { ramp = mix(c0, c1, smoothstep(0.00, 0.18, t)); }
-else if (t < 0.42) { ramp = mix(c1, c2, smoothstep(0.18, 0.42, t)); }
-else if (t < 0.68) { ramp = mix(c2, c3, smoothstep(0.42, 0.68, t)); }
-else if (t < 0.88) { ramp = mix(c3, c4, smoothstep(0.68, 0.88, t)); }
-else               { ramp = mix(c4, c5, smoothstep(0.88, 1.00, t)); }
-
+vec4 c = interpolateColor(t);
 float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
-color = vec4(ramp, alpha);`;
+color = vec4(c.rgb, alpha);`;
 }
 
 const schema: LayerOptionField[] = [
@@ -119,21 +114,37 @@ async function getTileData(
 // fails in webpack AMD bundles (Grafana plugins). Falls back to main-thread decoding.
 const mainThreadPool = new DecoderPool();
 
-// Stable renderTile cache keyed by colorMaxValue — prevents COGLayer.clearState()
-// being triggered every render due to a new function reference.
-const renderTileCache = new Map<number, (data: CogTileData) => RenderTileResult>();
-function getStableRenderTile(colorMaxValue: number): (data: CogTileData) => RenderTileResult {
-  if (!renderTileCache.has(colorMaxValue)) {
-    const colorRamp = {
-      name: `cog-color-${colorMaxValue}`,
-      inject: { 'fs:DECKGL_FILTER_COLOR': buildDefaultFsColor(colorMaxValue) },
+// Cache keyed by colorMaxValue + scheme identity so COGLayer.clearState() isn't triggered
+// by a new function reference on every render.
+const renderTileCache = new Map<string, (data: CogTileData) => RenderTileResult>();
+
+function cogCacheKey(colorMaxValue: number, cs: ColorScaleConfig): string {
+  if (cs.type === 'threshold') {
+    return `${colorMaxValue}:threshold:${JSON.stringify(cs.steps ?? [])}`;
+  }
+  return `${colorMaxValue}:${cs.schemeName ?? ''}:${cs.invert ?? false}:${cs.scaleMin ?? 0}:${cs.scaleMax ?? 1}`;
+}
+
+function getStableRenderTile(
+  colorMaxValue: number,
+  colorScale: ColorScaleConfig,
+): (data: CogTileData) => RenderTileResult {
+  const key = cogCacheKey(colorMaxValue, colorScale);
+  if (!renderTileCache.has(key)) {
+    const colorDecl = buildInterpolateColorGlsl(colorScale);
+    const colorModule = {
+      name: `cog-color-${key}`,
+      inject: {
+        'fs:#decl': colorDecl,
+        'fs:DECKGL_FILTER_COLOR': buildFsFilterColor(colorMaxValue),
+      },
     };
-    renderTileCache.set(colorMaxValue, (data: CogTileData): RenderTileResult => ({
+    renderTileCache.set(key, (data: CogTileData): RenderTileResult => ({
       image: data.texture as any,
-      renderPipeline: [{ module: colorRamp as any }],
+      renderPipeline: [{ module: colorModule as any }],
     }));
   }
-  return renderTileCache.get(colorMaxValue)!;
+  return renderTileCache.get(key)!;
 }
 
 function snapToNearest(timeMs: number, timestamps: number[]): number | null {
@@ -163,6 +174,7 @@ const renderer: LayerRenderer = {
     const urlField: string = opts.urlField ?? 'url';
     const timestampField: string = opts.timestampField ?? 'time';
     const colorMaxValue: number = opts.colorMaxValue ?? 200;
+    const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
     const maxRequests: number = opts.maxRequests ?? 4;
 
     const entries: Array<{ timeMs: number; url: string }> = [];
@@ -179,7 +191,7 @@ const renderer: LayerRenderer = {
     const timestamps = entries.map((e) => e.timeMs);
     const activeTimeMs = snapToNearest(cursorTimeMs, timestamps);
 
-    const renderTile = getStableRenderTile(colorMaxValue);
+    const renderTile = getStableRenderTile(colorMaxValue, colorScale);
     // console.log(entries.slice(700,720))
     return entries.map(({ timeMs, url }) =>
       // config.visible && timeMs === activeTimeMs && console.log(url) || 

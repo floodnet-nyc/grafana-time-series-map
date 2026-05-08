@@ -11,7 +11,7 @@ function OverlayController(props: GoogleMapsOverlayProps) {
   const overlay = useMemo(() => {
     let dpr: number;
     const overlay = new GoogleMapsOverlay({
-      interleaved: true, ...props,
+      interleaved: props.interleaved ?? true, ...props,
       onResize: (size: {width: number, height: number}) => {
         const deck = (overlay as any)._deck;
         if (!deck) {return;}
@@ -45,18 +45,21 @@ interface GoogleMapProps {
   height: number;
   options: MapPanelOptions;
   layers: Layer[];
+  interleaved?: boolean;
 }
 
-export function GoogleMap({ width, height, options, layers }: GoogleMapProps) {
+export function GoogleMap({ width, height, options, layers, interleaved = true }: GoogleMapProps) {
   return (
     <APIProvider apiKey={options.googleMapsApiKey ?? ''}>
       <Map
         defaultCenter={{ lat: options.initialLatitude, lng: options.initialLongitude }}
         defaultZoom={options.initialZoom}
+        defaultHeading={options.initialBearing ?? 0}
+        defaultTilt={options.initialPitch ?? 0}
         style={{ width, height }}
         mapId={options.googleMapsMapId || undefined}
       >
-        <OverlayController layers={layers} />
+        <OverlayController layers={layers} interleaved={interleaved} />
       </Map>
     </APIProvider>
   );

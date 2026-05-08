@@ -75,21 +75,56 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'Cloud-based map styling ID (required for vector maps and 3D)',
         showIf: (cfg) => cfg.basemapProvider === 'google',
       })
+      .addSelect({
+        path: 'initialViewMode',
+        name: 'Initial view',
+        defaultValue: 'manual',
+        description: 'Manual: use the coordinates below. Fit to data: zoom to fit all layer features on load.',
+        settings: {
+          options: [
+            { label: 'Manual', value: 'manual' },
+            { label: 'Fit to data', value: 'fitData' },
+          ],
+        },
+        category: ['Map bounds'],
+      })
       .addNumberInput({
         path: 'initialLatitude',
-        name: 'Initial latitude',
+        name: 'Latitude',
         defaultValue: 40.7128,
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
       })
       .addNumberInput({
         path: 'initialLongitude',
-        name: 'Initial longitude',
+        name: 'Longitude',
         defaultValue: -74.006,
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
       })
       .addNumberInput({
         path: 'initialZoom',
-        name: 'Initial zoom',
+        name: 'Zoom',
         defaultValue: 11,
         settings: { min: 0, max: 22 },
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialBearing',
+        name: 'Bearing (°)',
+        defaultValue: 0,
+        description: 'Rotation in degrees clockwise from north (0–360)',
+        settings: { min: -180, max: 360 },
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialPitch',
+        name: 'Pitch (°)',
+        defaultValue: 0,
+        description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',
+        settings: { min: 0, max: 85 },
+        category: ['Map bounds'],
       })
       .addBooleanSwitch({
         path: 'showTimeControls',
@@ -111,6 +146,12 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         path: 'showLegend',
         name: 'Show legend',
         defaultValue: false,
+      })
+      .addBooleanSwitch({
+        path: 'interleaved',
+        name: 'Interleaved rendering',
+        description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
+        defaultValue: true,
       })
       .addBooleanSwitch({
         path: 'syncPublish',

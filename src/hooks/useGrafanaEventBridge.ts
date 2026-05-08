@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { EventBus } from '@grafana/data';
-import { DataHoverEvent, DataHoverClearEvent, DataSelectEvent } from '@grafana/data';
+import { type EventBus, DataHoverEvent, DataHoverClearEvent } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
 
 const PUBLISH_INTERVAL_MS = 100;
@@ -34,9 +33,11 @@ export function useGrafanaEventBridge(
   subscribe: boolean,
 ): UseGrafanaEventBridgeResult {
   const playbackRef = useRef(playback);
+  // eslint-disable-next-line react-hooks/refs
   playbackRef.current = playback;
 
   const rangeRef = useRef({ fromTimeMs, toTimeMs });
+  // eslint-disable-next-line react-hooks/refs
   rangeRef.current = { fromTimeMs, toTimeMs };
 
   const lastReceivedAtRef = useRef<number>(0);
@@ -82,33 +83,33 @@ export function useGrafanaEventBridge(
         }
       }
 
-      // Series selection: data frame present means a specific series is being hovered.
-      // After partitionByValues, data.name is the deployment_id of the hovered series.
-      if (data != null && columnIndex != null) {
-        const key = data.fields[columnIndex].labels?.deployment_id ?? null;
-        // const key = data.labels?.deployment_id ?? null;
-        // const key = data.name ?? null;
-        setSelectedKey(key ?? null);
-        // Suppress echo on the cursor publish for a moment since we just received
-        lastReceivedAtRef.current = Date.now();
-        void columnIndex; void rowIndex; // available if needed for sub-field resolution
-      }
+      // // Series selection: data frame present means a specific series is being hovered.
+      // // After partitionByValues, data.name is the deployment_id of the hovered series.
+      // if (data != null && columnIndex != null) {
+      //   const key = data.fields[columnIndex].labels?.deployment_id ?? null;
+      //   // const key = data.labels?.deployment_id ?? null;
+      //   // const key = data.name ?? null;
+      //   setSelectedKey(key ?? null);
+      //   // Suppress echo on the cursor publish for a moment since we just received
+      //   lastReceivedAtRef.current = Date.now();
+      //   void columnIndex; void rowIndex; // available if needed for sub-field resolution
+      // }
     });
 
     const clearSub = eventBus.subscribe(DataHoverClearEvent, () => {
       setSelectedKey(null);
     });
 
-    // DataSelectEvent (click) may also carry data — handle the same way as hover
-    const selectSub = eventBus.subscribe(DataSelectEvent, (event) => {
-      const key = event.payload?.data?.name ?? event.payload?.dataId ?? null;
-      setSelectedKey(key ?? null);
-    });
+    // // DataSelectEvent (click) may also carry data — handle the same way as hover
+    // const selectSub = eventBus.subscribe(DataSelectEvent, (event) => {
+    //   const key = event.payload?.data?.name ?? event.payload?.dataId ?? null;
+    //   setSelectedKey(key ?? null);
+    // });
 
     return () => {
       hoverSub.unsubscribe();
       clearSub.unsubscribe();
-      selectSub.unsubscribe();
+      // selectSub.unsubscribe();
     };
   }, [eventBus, subscribe]);
 

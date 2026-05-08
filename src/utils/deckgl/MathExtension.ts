@@ -7,7 +7,7 @@ export type MathExtensionProps<DataT = any> = {
 };
 
 type GlslType = 'float' | 'vec2' | 'vec3' | 'vec4' | 'int' | 'ivec2' | 'ivec3' | 'ivec4' | 'mat2' | 'mat3' | 'mat4';
-type UniformValue = number | number[] | number[][];
+type UniformValue = number | number[] | number[][] | Float32Array | Float64Array;
 type Uniform = {
   type: GlslType;
   utype: VariableShaderType;
