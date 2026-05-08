@@ -235,6 +235,7 @@
         "basemapProvider": "google",
         "maplibreStyle": "carto-dark",
         "maplibreStyleUrl": "",
+        "maplibreProjection": "globe",
         "googleMapsApiKey": "API-KEY",
         "googleMapsMapId": "bc24713045eceb6d78171160",
         "initialLatitude": 40.694,
@@ -370,6 +371,9 @@
               "latField": "lat",
               "lngField": "lng"
             },
+            "elevation": {
+              "depthTest": false
+            },
             "timeFilter": {
               "mode": "none",
               "timeField": ""
@@ -398,7 +402,7 @@
           {
             "id": "flood-summary",
             "type": "scatterplot",
-            "label": "Flood Event Summary (max depth)",
+            "label": "Flood Event Summary",
             "visible": false,
             "queryRefId": "C",
             "geometry": {
@@ -484,7 +488,7 @@
           {
             "id": "flood-inundation",
             "type": "flood-inundation",
-            "label": "Flood Inundation Contours",
+            "label": "Flood Inundation",
             "visible": false,
             "queryRefId": "F",
             "geometry": {

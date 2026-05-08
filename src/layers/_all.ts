@@ -6,3 +6,4 @@ import './heatmap';
 import './arc';
 import './cog';
 import './floodinundation';
+import './icon';

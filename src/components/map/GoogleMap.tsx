@@ -4,8 +4,7 @@ import { GoogleMapsOverlay, type GoogleMapsOverlayProps } from '@deck.gl/google-
 import type { Layer } from '@deck.gl/core';
 import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapPanelOptions } from '../../types';
 import type { ViewportSnapshot } from './MaplibreMap';
-
-const HASH_VIEW_KEY = 'v';
+import { useMapHashRoute } from '../../hooks/useMapHashRoute';
 
 function OverlayController(props: GoogleMapsOverlayProps) {
   const map = useMap();
@@ -41,92 +40,18 @@ function OverlayController(props: GoogleMapsOverlayProps) {
   return null;
 }
 
-interface HashView {
-  zoom: number;
-  latitude: number;
-  longitude: number;
-  bearing?: number;
-  pitch?: number;
-}
-
-function parseHashView(): HashView | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  const hash = window.location.hash.replace(/^#/, '');
-  const part = hash.split('&').find((item) => item.startsWith(`${HASH_VIEW_KEY}=`));
-  if (!part) {
-    return null;
-  }
-  const values = decodeURIComponent(part.slice(HASH_VIEW_KEY.length + 1)).split('/').map(Number);
-  const [zoom, latitude, longitude, bearing, pitch] = values;
-  if (![zoom, latitude, longitude].every(Number.isFinite)) {
-    return null;
-  }
-  return {
-    zoom,
-    latitude,
-    longitude,
-    bearing: Number.isFinite(bearing) ? bearing : undefined,
-    pitch: Number.isFinite(pitch) ? pitch : undefined,
-  };
-}
-
-function formatHashView(view: ViewportSnapshot): string {
-  const zoom = Math.round(view.zoom * 100) / 100;
-  const latitude = Math.round(view.latitude * 1e6) / 1e6;
-  const longitude = Math.round(view.longitude * 1e6) / 1e6;
-  const bearing = Math.round(view.bearing * 10) / 10;
-  const pitch = Math.round(view.pitch);
-  return pitch || bearing
-    ? `${zoom}/${latitude}/${longitude}/${bearing}/${pitch}`
-    : `${zoom}/${latitude}/${longitude}`;
-}
-
-function updateHashView(view: ViewportSnapshot) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  const hash = window.location.hash.replace(/^#/, '');
-  const parts = hash ? hash.split('&').filter(Boolean) : [];
-  const nextPart = `${HASH_VIEW_KEY}=${formatHashView(view)}`;
-  const index = parts.findIndex((part) => part.startsWith(`${HASH_VIEW_KEY}=`));
-  if (index >= 0) {
-    parts[index] = nextPart;
-  } else {
-    parts.push(nextPart);
-  }
-  const nextHash = `#${parts.join('&')}`;
-  if (window.location.hash !== nextHash) {
-    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${nextHash}`);
-  }
-}
-
 function GoogleHashRoute({ enabled }: { enabled: boolean }) {
   const map = useMap();
-
-  useEffect(() => {
-    if (!enabled || !map) {
-      return;
-    }
-    const applyHashView = () => {
-      const view = parseHashView();
-      if (!view) {
-        return;
-      }
+  useMapHashRoute(enabled, (view) => {
+    if (map) {
       map.moveCamera({
         center: { lat: view.latitude, lng: view.longitude },
         zoom: view.zoom,
         heading: view.bearing,
         tilt: view.pitch,
       });
-    };
-    applyHashView();
-    window.addEventListener('hashchange', applyHashView);
-    return () => {
-      window.removeEventListener('hashchange', applyHashView);
-    };
-  }, [enabled, map]);
+    }
+  });
 
   return null;
 }
@@ -255,7 +180,7 @@ export function GoogleMap({ width, height, options, layers, interleaved = true, 
   const interactions = options.interactions ?? {};
   const googleMapOptions = options.googleMapOptions ?? {};
   const interactive = interactions.interactive ?? true;
-  const hashView = interactions.syncViewToUrl ? parseHashView() : null;
+  const { initialView: hashView, writeHashView } = useMapHashRoute(interactions.syncViewToUrl ?? false);
   const cameraControl = options.controls?.navigationControl;
   const geolocateControl = options.controls?.geolocateControl ?? false;
   const fullscreenControl = options.controls?.fullscreenControl;
@@ -301,9 +226,7 @@ export function GoogleMap({ width, height, options, layers, interleaved = true, 
             pitch: event.detail.tilt,
           };
           onViewportChange?.(viewport);
-          if (interactions.syncViewToUrl) {
-            updateHashView(viewport);
-          }
+          writeHashView(viewport);
         }}
       >
         <OverlayController layers={layers} interleaved={interleaved} />
