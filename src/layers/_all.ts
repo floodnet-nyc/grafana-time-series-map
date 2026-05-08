@@ -1,4 +1,5 @@
 import './scatterplot';
+import './extensions/_all';
 import './geojson';
 import './polygon';
 import './path';
