@@ -89,9 +89,11 @@ function InfoIcon() {
 function LayerLegendEntry({
   layer,
   onToggle,
+  showEye,
 }: {
   layer: LayerConfig;
   onToggle?: () => void;
+  showEye: boolean;
 }) {
   const cs = layer.colorScale;
   const visible = layer.visible;
@@ -169,7 +171,7 @@ function LayerLegendEntry({
             </span>
           )}
         </div>
-        {onToggle && (
+        {onToggle && showEye && (
           <span style={{ color: visible ? '#888' : '#555', flexShrink: 0, lineHeight: 0 }}>
             <EyeIcon visible={visible} />
           </span>
@@ -215,11 +217,12 @@ interface MapLegendProps {
   layers: LayerConfig[];
   onToggleVisibility?: (layerId: string) => void;
   panelWidth?: number;
+  showEye?: boolean; // Whether to show the eye icon for visibility toggle (default: false)
 }
 
 const SMALL_PANEL_THRESHOLD = 400;
 
-export function MapLegend({ layers, onToggleVisibility, panelWidth = 500 }: MapLegendProps) {
+export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEye=false }: MapLegendProps) {
   const [collapsed, setCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
 
   // Show all legend-worthy layers regardless of visibility so hidden ones can be re-enabled.
@@ -234,7 +237,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500 }: MapL
     position: 'absolute',
     top: 16,
     left: 12,
-    background: 'rgba(14, 16, 26, 0.88)',
+    background: 'rgba(14, 16, 25, 0.63)',//rgba(16, 21, 46, 0.56)
     border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: 8,
     zIndex: 100,
@@ -275,6 +278,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500 }: MapL
         <LayerLegendEntry
           key={layer.id}
           layer={layer}
+          showEye={showEye}
           onToggle={onToggleVisibility ? () => onToggleVisibility(layer.id) : undefined}
         />
       ))}
@@ -284,12 +288,16 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500 }: MapL
           onClick={() => setCollapsed(true)}
           title="Collapse legend"
           style={{
+            position: 'absolute',
+            bottom: 4,
+            right: 6,
             display: 'flex',
             alignItems: 'center',
             gap: 4,
             background: 'none',
             border: 'none',
-            color: '#666',
+            // color: '#666',
+            color: 'inherit',
             cursor: 'pointer',
             padding: '2px 0',
             fontSize: 10,
