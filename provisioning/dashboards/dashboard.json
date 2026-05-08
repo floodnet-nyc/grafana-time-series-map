@@ -203,6 +203,7 @@
           "type": "json",
           "source": "url",
           "format": "table",
+          "hide": true,
           "url": "http://localhost:3000/public/sample-data/flood_inundation.geojson",
           "url_options": {
             "method": "GET",
