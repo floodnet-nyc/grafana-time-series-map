@@ -2,7 +2,9 @@ import { PanelPlugin } from '@grafana/data';
 // import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
 import type { DeckBlendFactor, DeckBlendOperation, DeckDepthCompare, MapPanelOptions } from './types';
 import { MapPanel } from './components/MapPanel';
+import { LightingEditor } from './editor/LightingEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
+import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
 import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
 
@@ -481,6 +483,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
         settings: { options: deckDepthCompareOptions },
         category: ['Deck rendering', 'Depth'],
+      })
+      .addCustomEditor({
+        id: 'deckLighting',
+        path: 'deckLighting',
+        name: 'Deck lighting',
+        description: 'Configure deck.gl LightingEffect light sources.',
+        editor: LightingEditor,
+        defaultValue: DEFAULT_DECK_LIGHTING,
       })
       .addBooleanSwitch({
         path: 'syncPublish',

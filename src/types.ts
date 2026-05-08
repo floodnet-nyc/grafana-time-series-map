@@ -192,6 +192,31 @@ export interface DeckRenderParametersOptions {
   depthCompare?: DeckDepthCompare;
 }
 
+export type DeckLightType = 'ambient' | 'point' | 'directional' | 'camera' | 'sun';
+
+export interface DeckLightConfig {
+  id: string;
+  type: DeckLightType;
+  color?: string;
+  intensity?: number;
+  longitude?: number;
+  latitude?: number;
+  altitude?: number;
+  directionX?: number;
+  directionY?: number;
+  directionZ?: number;
+  attenuationConstant?: number;
+  attenuationLinear?: number;
+  attenuationQuadratic?: number;
+  timestamp?: number;
+  shadow?: boolean;
+}
+
+export interface DeckLightingOptions {
+  enabled?: boolean;
+  lights?: DeckLightConfig[];
+}
+
 export interface MapPanelOptions {
   basemapProvider: BasemapProvider;
   maplibreStyle: MaplibreStyle;
@@ -204,6 +229,7 @@ export interface MapPanelOptions {
   maplibreControls?: MaplibreControlOptions;
   googleMapOptions?: GoogleMapOptions;
   deckParameters?: DeckRenderParametersOptions;
+  deckLighting?: DeckLightingOptions;
   initialViewMode: InitialViewMode;
   initialLatitude: number;
   initialLongitude: number;

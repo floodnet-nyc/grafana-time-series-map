@@ -131,6 +131,7 @@ export function usePanelLayers(
       const lookupValues = lookupByLayerId.get(layerConfig.id);
       const layers = renderer.renderLayers({
         config: layerConfig,
+        panelOptions: options,
         features,
         cursorTimeMs,
         fromTimeMs,
@@ -142,6 +143,7 @@ export function usePanelLayers(
       });
       allLayers.push(...applyLayerExtensions(layers, layerConfig));
     }
+    console.log('allLayers', allLayers);
     return allLayers;
   }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, selectedKey, onFeatureClick]);
 }

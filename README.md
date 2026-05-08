@@ -19,7 +19,7 @@ TODO:
       - maplibre
          - dark/light/auto toggle
    
-
+   - scatter unit pixels
    - legend not implemented - implement
    - popup not implemented - implement
 

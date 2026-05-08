@@ -6,14 +6,22 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import type { ColorScaleConfig } from '../../types';
 
-// Calls interpolateColor() defined in fs:#decl via buildInterpolateColorGlsl.
-const FS_FILTER_COLOR = `
-float depthDiff = vInstanceCurrentDepth - vInstanceContourDepth;
-float alpha = smoothstep(0.0, 3.0, depthDiff) * vInstanceFillOpacity;
-if (alpha < 0.005) discard;
+const VS_FILTER_COLOR = `
+float depthDiff = instanceCurrentDepth - instanceContourDepth;
+float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
+//if (alpha < 0.005) discard;
 vec4 c = interpolateColor(depthDiff);
 color = vec4(c.rgb, alpha);
 `.trim();
+
+// // Calls interpolateColor() defined in fs:#decl via buildInterpolateColorGlsl.
+// const FS_FILTER_COLOR = `
+// float depthDiff = vInstanceCurrentDepth - vInstanceContourDepth;
+// float alpha = smoothstep(0.0, 3.0, depthDiff) * vInstanceFillOpacity;
+// if (alpha < 0.005) discard;
+// vec4 c = interpolateColor(depthDiff);
+// color = vec4(c.rgb, alpha);
+// `.trim();
 
 const DEFAULT_COLOR_SCALE: ColorScaleConfig = {
   type: 'gradient',
@@ -66,7 +74,6 @@ const renderer: LayerRenderer = {
     const fillOpacity: number = opts.fillOpacity ?? 0.5;
 
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
-
     return [
       new SolidPolygonLayer({
         id: `flood-inundation/${config.id}`,
@@ -76,6 +83,9 @@ const renderer: LayerRenderer = {
         filled: true,
         stroked: false,
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
+        extruded: config.elevation?.field ? true : false,
+        elevationScale: config.elevation?.scale ?? 1,
+        getElevation: config?.elevation?.field ? (f: Feature) => Number(f.properties?.[config.elevation!.field!] ?? 0) : 0,
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: fillOpacity,
         minZoom: config.minZoom,
@@ -90,16 +100,17 @@ const renderer: LayerRenderer = {
             name: `floodinundation_${config.id}`,
             uniforms: {},
             inject: {
-              'fs:#decl': buildInterpolateColorGlsl(colorScale),
-              'fs:DECKGL_FILTER_COLOR': FS_FILTER_COLOR,
+              'vs:#decl': buildInterpolateColorGlsl(colorScale),
+              'vs:DECKGL_FILTER_COLOR': VS_FILTER_COLOR,
             },
           }),
         ],
         updateTriggers: {
+          getElevation: [opts.elevation?.field],
           getContourDepth: [contourDepthField],
           getCurrentDepth: [lookupValues, sensorKeyField],
         },
-        parameters: { depthTest: false },
+        parameters: { depthTest: !!opts.depthTest },
       }),
     ];
   },

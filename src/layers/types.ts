@@ -1,9 +1,10 @@
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
-import type { LayerConfig } from '../types';
+import type { LayerConfig, MapPanelOptions } from '../types';
 
 export interface LayerRenderContext {
   config: LayerConfig;
+  panelOptions: MapPanelOptions;
   features: Feature[];
   cursorTimeMs: number;
   fromTimeMs: number;
@@ -21,6 +22,9 @@ export interface LayerOptionField {
   label: string;
   type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker';
   defaultValue?: unknown;
+  min?: number;
+  max?: number;
+  step?: number;
   selectOptions?: Array<{ label: string; value: string | number }>;
   showIf?: (options: Record<string, unknown>) => boolean;
   section?: string;

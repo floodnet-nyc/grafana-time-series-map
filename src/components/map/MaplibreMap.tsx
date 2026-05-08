@@ -11,6 +11,7 @@ import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
 import { useMapHashRoute } from '../../hooks/useMapHashRoute';
+import { buildDeckEffects } from '../../utils/deckgl/lighting';
 import { buildDeckParameters } from '../../utils/deckgl/parameters';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -23,6 +24,7 @@ const STYLE_URLS: Record<string, string> = {
 function OverlayController({ layers, interleaved, options }: { layers: Layer[]; interleaved: boolean; options: MapPanelOptions }) {
   const { current: mapRef } = useMap();
   const overlayRef = useRef<MapboxOverlay | null>(null);
+  const effects = buildDeckEffects(options.deckLighting);
   const parameters = buildDeckParameters(options.deckParameters);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ function OverlayController({ layers, interleaved, options }: { layers: Layer[]; 
     if (!map) {
       return;
     }
-    const overlay = new MapboxOverlay({ interleaved, layers, parameters });
+    const overlay = new MapboxOverlay({ interleaved, layers, effects, parameters });
     overlayRef.current = overlay;
     map.addControl(overlay as any);
     return () => {
@@ -46,11 +48,11 @@ function OverlayController({ layers, interleaved, options }: { layers: Layer[]; 
     if (!overlay) {
       return;
     }
-    overlay.setProps({ layers, parameters });
+    overlay.setProps({ layers, effects, parameters });
     if (interleaved) {
       mapRef?.getMap()?.triggerRepaint();
     }
-  }, [interleaved, layers, mapRef, parameters]);
+  }, [effects, interleaved, layers, mapRef, parameters]);
 
   return null;
 }
