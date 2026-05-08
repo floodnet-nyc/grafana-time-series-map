@@ -247,6 +247,9 @@
         "defaultPlaybackSpeed": 1800000,
         "showLegend": true,
         "syncSubscribe": false,
+        "googleMapOptions": {
+          "colorScheme": "DARK"
+        },
         "layers": [
           {
             "id": "precip-cog",
@@ -490,11 +493,14 @@
             "id": "flood-inundation",
             "type": "flood-inundation",
             "label": "Flood Inundation",
-            "visible": false,
+            "visible": true,
             "queryRefId": "F",
             "geometry": {
               "type": "geojson",
               "field": "geometry"
+            },
+            "elevation": {
+              "field": "contour_depth_inches"
             },
             "timeFilter": {
               "mode": "none",

@@ -75,8 +75,12 @@ function hexToRgba(hex: string): [number, number, number, number] {
 }
 
 function colorMode(layer: LayerConfig): string {
-  if (!layer.colorScale || layer.colorScale.type === 'fixed') return 'fixed';
-  if (layer.colorScale.type === 'threshold') return 'threshold';
+  if (!layer.colorScale || layer.colorScale.type === 'fixed') {
+    return 'fixed';
+  }
+  if (layer.colorScale.type === 'threshold') {
+    return 'threshold';
+  }
   return 'gradient';
 }
 
@@ -170,11 +174,15 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
   const currentRenderer = getAllLayerTypes().find((r) => r.type === layer.type);
 
   const optionsBySections = useMemo(() => {
-    if (!currentRenderer) return new Map<string | undefined, LayerOptionField[]>();
+    if (!currentRenderer) {
+      return new Map<string | undefined, LayerOptionField[]>();
+    }
     const map = new Map<string | undefined, LayerOptionField[]>();
     for (const f of currentRenderer.optionsSchema) {
       const s = f.section;
-      if (!map.has(s)) map.set(s, []);
+      if (!map.has(s)) {
+        map.set(s, []);
+      }
       map.get(s)!.push(f);
     }
     return map;
@@ -288,7 +296,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches→m)">
           <Input
             type="number"
-            value={layer.elevation?.scale ?? (layer.elevation?.field ? 0.0254 : 0)}
+            value={layer.elevation?.scale ?? (layer.elevation?.field ? 1 : 0)}
             onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
           />
         </Field>
@@ -547,6 +555,22 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
                     value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
                     onChange={(v) => patchOpts(f.key, v)}
                     availableFields={availableFields}
+                  />
+                ) : f.type === 'color' ? (
+                  <div className={styles.colorPickerRow}>
+                    <ColorPicker
+                      color={rgbaToHex((layer.options[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
+                      onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
+                    />
+                  </div>
+                ) : f.type === 'number' && f.min !== undefined && f.max !== undefined ? (
+                  <Slider
+                    inputId={`layer-option-${f.key}`}
+                    min={f.min}
+                    max={f.max}
+                    step={f.step ?? 1}
+                    value={Number(layer.options[f.key] ?? f.defaultValue ?? f.min)}
+                    onChange={(v) => patchOpts(f.key, v)}
                   />
                 ) : (
                   <Input
