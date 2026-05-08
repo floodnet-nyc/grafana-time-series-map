@@ -1,29 +1,53 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
 import { MathExtension } from '../../utils/deckgl/MathExtension';
+import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import type { ColorScaleConfig } from '../../types';
 
-const DEPTH_COLOR_GLSL = `
-vec3 depthToColorSmooth(float d) {
-  vec3 c0 = vec3(0.0, 155.0, 104.0);
-  vec3 c1 = vec3(0.0, 204.0, 255.0);
-  vec3 c2 = vec3(255.0, 162.0, 68.0);
-  vec3 c3 = vec3(254.0, 77.0, 76.0);
-  vec3 c4 = vec3(215.0, 77.0, 254.0);
-  if (d < 4.0)  return mix(c0, c1, smoothstep(0.0, 4.0, d));
-  if (d < 12.0) return mix(c1, c2, smoothstep(4.0, 12.0, d));
-  if (d < 24.0) return mix(c2, c3, smoothstep(12.0, 24.0, d));
-  return mix(c3, c4, smoothstep(24.0, 40.0, d));
+// Maximum number of unique sensor keys supported per layer.
+// Sensor depths are passed as a uniform float array; must be a compile-time constant.
+const MAX_SENSORS = 256;
+
+// Per-features-array cache so we only rebuild the sensor→index mapping when
+// the features array reference changes (i.e. on data/config change, not every tick).
+type SensorIndexCache = { keyField: string; toIndex: Map<string, number> };
+const sensorIndexCache = new WeakMap<readonly Feature[], SensorIndexCache>();
+
+function getSensorIndexMap(features: Feature[], keyField: string): Map<string, number> {
+  const hit = sensorIndexCache.get(features);
+  if (hit && hit.keyField === keyField) return hit.toIndex;
+
+  const toIndex = new Map<string, number>();
+  let count = 0;
+  for (const f of features) {
+    const k = String(f.properties?.[keyField] ?? '');
+    if (k && !toIndex.has(k)) toIndex.set(k, count++);
+  }
+  sensorIndexCache.set(features, { keyField, toIndex });
+  return toIndex;
 }
+
+// Fragment shader: look up current depth from the per-frame uniform array using
+// the polygon's stable sensor index, then compute depth-above-contour color.
+// noUniformBlock mode declares this as: uniform float sensorDepths[MAX_SENSORS];
+// Non-constant index for uniform arrays is valid in GLSL ES 3.00 (WebGL 2).
+const FS_FILTER_COLOR = `
+float currentDepth = sensorDepths[int(vInstanceSensorIndex + 0.5)];
+float depthDiff = currentDepth - vInstanceContourDepth;
+float alpha = smoothstep(0.0, 3.0, depthDiff) * vInstanceFillOpacity;
+if (alpha < 0.005) discard;
+vec4 c = interpolateColor(depthDiff);
+color = vec4(c.rgb, alpha);
 `.trim();
 
-const FILTER_COLOR_GLSL = `
-float depthDiff = vInstanceCurrentDepth - vInstanceContourDepth;
-float alpha = smoothstep(0.0, 3.0, depthDiff);
-if (alpha < 0.005) discard;
-color = vec4(depthToColorSmooth(depthDiff) / 255.0, alpha * vInstanceFillOpacity);
-`.trim();
+const DEFAULT_COLOR_SCALE: ColorScaleConfig = {
+  type: 'gradient',
+  schemeName: 'FloodDepth',
+  scaleMin: 0,
+  scaleMax: 40,
+};
 
 const schema: LayerOptionField[] = [
   { key: 'contourDepthField', label: 'Contour depth field (inches)', type: 'fieldPicker', defaultValue: '' },
@@ -55,11 +79,27 @@ const renderer: LayerRenderer = {
     const sensorKeyField: string = opts.sensorKeyField ?? '';
     const fillOpacity: number = opts.fillOpacity ?? 0.5;
 
+    const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
+    const fsDecl = buildInterpolateColorGlsl(colorScale);
+
+    // ── Sensor index mapping (stable per data load, O(1) during scrubbing) ──────
+    const toIndex = getSensorIndexMap(features, sensorKeyField);
+
+    // ── Current depths uniform array (O(N) per tick, no vertex expansion) ───────
+    // A fresh Float32Array is created each tick so luma.gl detects the change and
+    // uploads it. At MAX_SENSORS=256 floats this is 1 KB — negligible.
+    const sensorDepths = new Float32Array(MAX_SENSORS);
+    if (lookupValues) {
+      for (const [key, idx] of toIndex) {
+        if (idx < MAX_SENSORS) {
+          sensorDepths[idx] = lookupValues.get(key)?.depth ?? 0;
+        }
+      }
+    }
+
     return [
       new SolidPolygonLayer({
         id: config.id,
-        // Pass features directly (stable reference from usePanelLayers memo) so deck.gl
-        // doesn't re-tessellate polygons on every cursor tick. getPolygon handles null geometry.
         data: features,
         visible: config.visible,
         pickable: false,
@@ -67,33 +107,48 @@ const renderer: LayerRenderer = {
         stroked: false,
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
         getFillColor: [0, 0, 0, 255],
+        getFillOpacity: fillOpacity,
         minZoom: config.minZoom,
         maxZoom: config.maxZoom,
         onClick: onFeatureClick
           ? (info: any) => info.object && onFeatureClick(info.object, info)
           : undefined,
+        // Stable per-polygon accessor — only re-uploaded when sensorKeyField changes,
+        // NOT on every cursor tick. This is the key perf fix: eliminates the O(vertex-count)
+        // attribute expansion that previously ran every tick for getCurrentDepth.
+        getSensorIndex: (f: Feature) => toIndex.get(String(f.properties?.[sensorKeyField] ?? '')) ?? 0,
         getContourDepth: (f: Feature) => Number(f.properties?.[contourDepthField] ?? 0),
-        getCurrentDepth: (f: Feature) =>
-          lookupValues?.get(String(f.properties?.[sensorKeyField] ?? ''))?.depth ?? 0,
-        getFillOpacity: (_f: Feature) => fillOpacity,
         extensions: [
           new MathExtension({
             name: `floodinundation_${config.id}`,
             attrs: {
-              contourDepth: { type: 'float' },
-              currentDepth: { type: 'float' },
-              fillOpacity: { type: 'float' },
+              sensorIndex: { type: 'float' },    // stable — one per polygon
+              contourDepth: { type: 'float' },   // stable — one per polygon
+              fillOpacity: { type: 'float' },    // stable — one per polygon
             },
-            uniforms: {},
+            uniforms: {
+              // sensorDepths is updated each frame via MathExtension.draw() →
+              // setShaderModuleProps(). luma.gl uploads the Float32Array as-is.
+              // Cost: O(MAX_SENSORS) uniform upload, zero vertex expansion.
+              sensorDepths: {
+                type: 'float',
+                utype: 'f32' as any,
+                value: sensorDepths,  // fresh Float32Array each tick
+                length: MAX_SENSORS,
+              },
+            },
+            noUniformBlock: true,  // declares as: uniform float sensorDepths[256];
             inject: {
-              'fs:#decl': DEPTH_COLOR_GLSL,
-              'fs:DECKGL_FILTER_COLOR': FILTER_COLOR_GLSL,
+              'fs:#decl': fsDecl,
+              'fs:DECKGL_FILTER_COLOR': FS_FILTER_COLOR,
             },
           }),
         ],
         updateTriggers: {
-          getContourDepth: [],
-          getCurrentDepth: [lookupValues],
+          getContourDepth: [contourDepthField],
+          // sensorIndex only changes when the field name changes — never during scrubbing.
+          getSensorIndex: [sensorKeyField],
+          getFillOpacity: [fillOpacity],
         },
         parameters: { depthTest: false },
       }),

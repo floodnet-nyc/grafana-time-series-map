@@ -103,6 +103,8 @@ export function usePanelLayers(
             ? computeClosestFlags(packed.buckets, cursorTimeMs, maxLagMs)
             : new Uint8Array(n),
         );
+      } else {
+        map.set(layerConfig.id, new Uint8Array(n));
       }
     }
     return map;
@@ -112,11 +114,12 @@ export function usePanelLayers(
   return useMemo(() => {
     const allLayers: Layer[] = [];
     for (const layerConfig of options.layers) {
-      if (!layerConfig.visible) continue;
+      if (!layerConfig.visible) { continue; }
       const renderer = getLayer(layerConfig.type);
-      if (!renderer) continue;
-      const features = featuresByLayerId.get(layerConfig.id) ?? [];
-      const timeFilterFlags = flagsByLayerId.get(layerConfig.id) ?? new Uint8Array(features.length);
+      if (!renderer) { continue; }
+      const features = featuresByLayerId.get(layerConfig.id)!;
+      const timeFilterFlags = flagsByLayerId.get(layerConfig.id)!;
+      const lookupValues = lookupByLayerId.get(layerConfig.id);
       const layers = renderer.renderLayers({
         config: layerConfig,
         features,
@@ -124,7 +127,7 @@ export function usePanelLayers(
         fromTimeMs,
         toTimeMs,
         timeFilterFlags,
-        lookupValues: lookupByLayerId.get(layerConfig.id),
+        lookupValues,
         selectedKey,
         onFeatureClick,
       });

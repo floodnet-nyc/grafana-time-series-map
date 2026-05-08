@@ -8,21 +8,50 @@ TODO:
    - map settings
       - bounds 
          - fit to data
-         - set to current viewport
+         - fit to current viewport bounding box
+         - bearing, pitch
+         - restrictable map bounds (set to current viewport)
       - interleaved toggle
+      - flyto interaction
+      - navigate game-like controls addEventListener('keydown')
+      - map padding
+      - globe projection toggle
+      - hash routing
+      - icon layer
+      - Fly to a location based on scroll position
+      - clustering
+      - maplibre
+         - maplibregl.GeolocateControl
+         - cooperativeGestures
+         - controls:
+            - rollEnabled - enable 3d view with ctrl + drag
+            - NavigationControl
+               - visualizePitch - show current pitch in the control
+               - visualizeRoll - show current roll in the control
+               - showZoom - show zoom buttons in the control
+               - showCompass - show compass button in the control
+            - cooperativeGestures - require ctrl/cmd to be pressed for zooming and rotating the map
+            - hash='v' - sync map position with URL hash v={zoom}/{lat}/{lon}
+            - interactive - toggle all user interactions (drag, zoom, rotate, etc.)
+
       - google maps
          - street view toggle
          - dark/light/auto toggle
-      - other control toggles?
+         - controls:
+            - cameraControl - zoom/pan control
+            - cameraControlOptions
+            - mapTypeControl - toggle between map types (such as Map and Satellite)
+            - mapTypeControlOptions
+            - streetViewControl - toggle pegman control for street view
+            - streetViewControlOptions
+            - rotateControl - toggle rotate control for 3D imagery
+            - rotateControlOptions
+            - scaleControl - toggle scale control
+            - scaleControlOptions
+            - fullscreenControl - toggle fullscreen control
+            - fullscreenControlOptions
    
-   
-   
-   - discrete flood depth colormap
-      - should just use "Color by threshold" (discrete colormap) with custom thresholds and custom colors. can we enable the builtin threshold editor for this?
-      - remove presets as something separate from d3 colormap gradients. Any custom colormap can just utilize the d3 colormap API
-      - floodinundation should use the common colormap options
-      - cog layer should also use the common colormap options. Add current hardcoded cog colormap as a custom d3 colormap gradient preset.
-   - sync time cursor
+
    - legend not implemented - implement
    - popup not implemented - implement
 

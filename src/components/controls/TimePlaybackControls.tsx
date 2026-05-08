@@ -72,6 +72,18 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
   );
 }
 
+// width: 1696px;
+// position: absolute;
+// bottom: 60px;
+// background: rgba(39, 18, 214, 0.36);
+// border-radius: 30px;
+// backdrop-filter: blur(10px);
+// max-width: 400px;
+// left: 50%;
+// transform: translateX(-50%);
+// padding: 1em 2em;
+// /* color: black; */
+
 function getStyles(theme: GrafanaTheme2) {
   return {
     container: css({

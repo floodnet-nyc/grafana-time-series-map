@@ -39,6 +39,37 @@ import {
 
 type Interpolator = (t: number) => string;
 
+// ── Custom domain-specific interpolators ──────────────────────────────────────
+
+function lerpRgb(c0: [number, number, number], c1: [number, number, number], f: number): string {
+  return `rgb(${Math.round(c0[0] + f * (c1[0] - c0[0]))},${Math.round(c0[1] + f * (c1[1] - c0[1]))},${Math.round(c0[2] + f * (c1[2] - c0[2]))})`;
+}
+
+// Flood-depth: 5 uniformly-spaced stops (teal→blue→amber→red→purple)
+function interpolateFloodDepth(t: number): string {
+  const s: Array<[number, number, number]> = [
+    [0, 155, 104], [0, 204, 255], [253, 191, 75], [254, 77, 76], [215, 77, 254],
+  ];
+  const n = s.length - 1;
+  const idx = Math.min(t * n, n - 1e-10);
+  const i = Math.floor(idx);
+  return lerpRgb(s[i], s[Math.min(i + 1, n)], idx - i);
+}
+
+// MRMS precipitation: 6 stops at non-uniform positions matching the COG shader ramp
+function interpolateMrmsPrecip(t: number): string {
+  const s: Array<[number, [number, number, number]]> = [
+    [0.00, [143, 196, 250]], [0.18, [26, 242, 219]], [0.42, [82, 250, 115]],
+    [0.68, [245, 214, 51]],  [0.88, [250, 97, 194]], [1.00, [250, 191, 237]],
+  ];
+  let i = s.length - 2;
+  for (let j = 0; j < s.length - 1; j++) { if (t <= s[j + 1][0]) { i = j; break; } }
+  const [t0, c0] = s[i];
+  const [t1, c1] = s[Math.min(i + 1, s.length - 1)];
+  const f = t1 === t0 ? 1 : Math.max(0, Math.min(1, (t - t0) / (t1 - t0)));
+  return lerpRgb(c0, c1, f);
+}
+
 const INTERPOLATORS: Record<string, Interpolator> = {
   // Diverging
   BrBG: interpolateBrBG,
@@ -79,15 +110,21 @@ const INTERPOLATORS: Record<string, Interpolator> = {
   Oranges: interpolateOranges,
   Purples: interpolatePurples,
   Reds: interpolateReds,
+  // Domain-specific
+  FloodDepth: interpolateFloodDepth,
+  MrmsPrecip: interpolateMrmsPrecip,
 };
 
 export interface SchemeEntry {
   name: string;
   label: string;
-  group: 'diverging' | 'sequential' | 'singlehue';
+  group: 'diverging' | 'sequential' | 'singlehue' | 'domain';
 }
 
 export const COLOR_SCHEMES: SchemeEntry[] = [
+  // Domain-specific
+  { name: 'FloodDepth', label: 'Flood Depth', group: 'domain' },
+  { name: 'MrmsPrecip', label: 'MRMS Precipitation', group: 'domain' },
   // Diverging
   { name: 'Spectral', label: 'Spectral', group: 'diverging' },
   { name: 'RdYlGn', label: 'Red-Yellow-Green', group: 'diverging' },

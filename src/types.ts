@@ -21,20 +21,20 @@ export interface ElevationConfig {
   depthTest: boolean;
 }
 
-export type ColorScaleType = 'fixed' | 'steps' | 'gradient' | 'category';
+export type ColorScaleType = 'fixed' | 'threshold' | 'gradient';
 
 export interface ColorStep {
   value: number;
-  color: [number, number, number, number];
+  color: [number, number, number, number]; // RGBA 0-255
 }
 
 export interface ColorScaleConfig {
   type: ColorScaleType;
   fixedColor?: [number, number, number, number];
+  /** Sorted threshold steps for type='threshold'. The lowest step is the base color. */
   steps?: ColorStep[];
   field?: string;
-  presetName?: string;
-  schemeName?: string;
+  schemeName?: string; // d3 or custom interpolator name
   scaleMin?: number;
   scaleMax?: number;
   invert?: boolean;
@@ -78,6 +78,10 @@ export interface LayerConfig {
   fieldMappings: FieldMapping[];
   opacity: number;
   colorScale?: ColorScaleConfig;
+  /** Whether this layer appears in the map legend. Defaults to true. */
+  showInLegend?: boolean;
+  /** Optional description shown as a tooltip in the legend. */
+  description?: string;
   minZoom?: number;
   maxZoom?: number;
   pickable?: boolean;
@@ -87,6 +91,7 @@ export interface LayerConfig {
 
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle = 'carto-dark' | 'carto-light' | 'osm' | 'custom';
+export type InitialViewMode = 'manual' | 'fitData';
 
 export interface MapPanelOptions {
   basemapProvider: BasemapProvider;
@@ -94,14 +99,18 @@ export interface MapPanelOptions {
   maplibreStyleUrl?: string;
   googleMapsApiKey?: string;
   googleMapsMapId?: string;
+  initialViewMode: InitialViewMode;
   initialLatitude: number;
   initialLongitude: number;
   initialZoom: number;
+  initialBearing: number;
+  initialPitch: number;
   layers: LayerConfig[];
   defaultPlaybackSpeed: number;
   loopPlayback: boolean;
   showTimeControls: boolean;
   showLegend: boolean;
+  interleaved: boolean;
   syncPublish: boolean;
   syncSubscribe: boolean;
 }

@@ -12,7 +12,7 @@ import {
   ColorPicker,
 } from '@grafana/ui';
 import type { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig } from '../types';
+import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig, ColorStep } from '../types';
 import { getAllLayerTypes } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
@@ -35,18 +35,27 @@ const TIME_FILTER_MODES: Array<SelectableValue<TimeFilterMode>> = [
 
 const COLOR_MODES: Array<SelectableValue<string>> = [
   { label: 'Fixed color', value: 'fixed' },
-  { label: 'By value', value: 'byValue' },
+  { label: 'By threshold', value: 'threshold' },
+  { label: 'By gradient', value: 'gradient' },
 ];
 
 const SCHEME_OPTIONS: Array<SelectableValue<string>> = [
-  { label: '── Built-in ──', value: '', description: '' },
-  { label: 'Flood Depth', value: '__floodDepth__' },
+  { label: '── Domain-specific ──', value: '', description: '' },
+  ...COLOR_SCHEMES.filter((s) => s.group === 'domain').map((s) => ({ label: s.label, value: s.name })),
   { label: '── Diverging ──', value: '', description: '' },
   ...COLOR_SCHEMES.filter((s) => s.group === 'diverging').map((s) => ({ label: s.label, value: s.name })),
   { label: '── Sequential ──', value: '', description: '' },
   ...COLOR_SCHEMES.filter((s) => s.group === 'sequential').map((s) => ({ label: s.label, value: s.name })),
   { label: '── Single hue ──', value: '', description: '' },
   ...COLOR_SCHEMES.filter((s) => s.group === 'singlehue').map((s) => ({ label: s.label, value: s.name })),
+];
+
+const DEFAULT_THRESHOLD_STEPS: ColorStep[] = [
+  { value: 0,  color: [0,   155, 104, 255] },
+  { value: 4,  color: [0,   204, 255, 255] },
+  { value: 12, color: [253, 191, 75,  255] },
+  { value: 24, color: [254, 77,  76,  255] },
+  { value: 48, color: [215, 77,  254, 255] },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -67,11 +76,11 @@ function hexToRgba(hex: string): [number, number, number, number] {
 
 function colorMode(layer: LayerConfig): string {
   if (!layer.colorScale || layer.colorScale.type === 'fixed') return 'fixed';
-  return 'byValue';
+  if (layer.colorScale.type === 'threshold') return 'threshold';
+  return 'gradient';
 }
 
 function activeScheme(layer: LayerConfig): string {
-  if (layer.colorScale?.presetName === 'floodDepth') return '__floodDepth__';
   return layer.colorScale?.schemeName ?? '';
 }
 
@@ -111,13 +120,7 @@ interface ColorSchemePreviewProps {
 
 function ColorSchemePreview({ schemeName, invert }: ColorSchemePreviewProps) {
   const styles = useStyles2(getStyles);
-  const gradient = useMemo(() => {
-    if (schemeName === '__floodDepth__') {
-      return 'linear-gradient(to right, #009b68, #00ccff, #fdbf4b, #fe4d4c, #d74dfe)';
-    }
-    return schemeToGradientCss(schemeName, invert);
-  }, [schemeName, invert]);
-
+  const gradient = useMemo(() => schemeToGradientCss(schemeName, invert), [schemeName, invert]);
   return <div className={styles.schemePreview} style={{ background: gradient }} />;
 }
 
@@ -187,6 +190,14 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
       <Field label="Label">
         <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
       </Field>
+      <Field label="Description" description="Shown as a tooltip on the legend info icon">
+        <TextArea
+          rows={2}
+          value={layer.description ?? ''}
+          onChange={(e) => patch({ description: e.currentTarget.value || undefined })}
+          placeholder="Optional description…"
+        />
+      </Field>
       <Field label="Layer type">
         <Select options={layerTypes} value={layer.type} onChange={(v) => v.value && patch({ type: v.value })} />
       </Field>
@@ -199,6 +210,12 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
       </Field>
       <Field label="Visible">
         <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
+      </Field>
+      <Field label="Show in legend">
+        <Switch
+          value={layer.showInLegend ?? true}
+          onChange={(e) => patch({ showInLegend: e.currentTarget.checked })}
+        />
       </Field>
       <Field label="Opacity">
         <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
@@ -339,9 +356,24 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
             onChange={(v) => {
               if (v.value === 'fixed') {
                 patch({ colorScale: { type: 'fixed', fixedColor: [0, 155, 104, 255] } });
+              } else if (v.value === 'threshold') {
+                patch({
+                  colorScale: {
+                    type: 'threshold',
+                    field: layer.colorScale?.field ?? '',
+                    steps: DEFAULT_THRESHOLD_STEPS,
+                  },
+                  shader: { enabled: true, valueField: layer.colorScale?.field ?? '', vsDecl: '', vsFilterColor: DEFAULT_VS_FILTER_COLOR },
+                });
               } else {
                 patch({
-                  colorScale: { type: 'steps', presetName: 'floodDepth', scaleMin: 0, scaleMax: 24 },
+                  colorScale: {
+                    type: 'gradient',
+                    schemeName: 'FloodDepth',
+                    scaleMin: 0,
+                    scaleMax: 40,
+                    field: layer.colorScale?.field ?? '',
+                  },
                   shader: { enabled: true, valueField: layer.colorScale?.field ?? '', vsDecl: '', vsFilterColor: DEFAULT_VS_FILTER_COLOR },
                 });
               }
@@ -360,15 +392,71 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
           </Field>
         )}
 
-        {mode === 'byValue' && (
+        {mode === 'threshold' && (
+          <>
+            <Field label="Value field">
+              <FieldSelect
+                value={layer.colorScale?.field ?? ''}
+                onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
+                availableFields={availableFields}
+              />
+            </Field>
+            {(layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS).map((step, i) => {
+              const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
+              return (
+                <div key={i} className={styles.thresholdRow}>
+                  <span className={styles.thresholdLabel}>≥</span>
+                  <Input
+                    type="number"
+                    className={styles.thresholdValue}
+                    value={step.value}
+                    onChange={(e) => {
+                      const next = steps.map((s, j) =>
+                        j === i ? { ...s, value: Number(e.currentTarget.value) } : s,
+                      );
+                      patchColor({ steps: next });
+                    }}
+                  />
+                  <div className={styles.colorPickerRow}>
+                    <ColorPicker
+                      color={rgbaToHex(step.color)}
+                      onChange={(hex) => {
+                        const next = steps.map((s, j) =>
+                          j === i ? { ...s, color: hexToRgba(hex) } : s,
+                        );
+                        patchColor({ steps: next });
+                      }}
+                    />
+                  </div>
+                  <button
+                    className={styles.thresholdRemove}
+                    onClick={() => patchColor({ steps: steps.filter((_, j) => j !== i) })}
+                    disabled={steps.length <= 1}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+            <button
+              className={styles.thresholdAdd}
+              onClick={() => {
+                const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
+                const last = steps[steps.length - 1];
+                patchColor({ steps: [...steps, { value: (last?.value ?? 0) + 10, color: [200, 200, 200, 255] }] });
+              }}
+            >
+              + Add threshold
+            </button>
+          </>
+        )}
+
+        {mode === 'gradient' && (
           <>
             <Field label="Value field">
               <FieldSelect
                 value={layer.colorScale?.field ?? layer.shader?.valueField ?? ''}
-                onChange={(v) => {
-                  patchColor({ field: v });
-                  patchShader({ valueField: v });
-                }}
+                onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
                 availableFields={availableFields}
               />
             </Field>
@@ -376,14 +464,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
               <Select
                 options={SCHEME_OPTIONS.filter((o) => o.value !== '')}
                 value={scheme || null}
-                onChange={(v) => {
-                  const val = v?.value ?? '';
-                  if (val === '__floodDepth__') {
-                    patchColor({ presetName: 'floodDepth', schemeName: undefined });
-                  } else {
-                    patchColor({ presetName: undefined, schemeName: val || undefined });
-                  }
-                }}
+                onChange={(v) => patchColor({ schemeName: v?.value || undefined })}
                 isClearable
                 placeholder="Choose scheme…"
               />
@@ -393,35 +474,31 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
                 <Field label="">
                   <ColorSchemePreview schemeName={scheme} invert={layer.colorScale?.invert} />
                 </Field>
-                {scheme !== '__floodDepth__' && (
-                  <>
-                    <Field label="Invert">
-                      <Switch
-                        value={layer.colorScale?.invert ?? false}
-                        onChange={(e) => patchColor({ invert: e.currentTarget.checked })}
-                      />
-                    </Field>
-                    <Field label="Scale min">
-                      <Input
-                        type="number"
-                        value={layer.colorScale?.scaleMin}
-                        onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })}
-                      />
-                    </Field>
-                    <Field label="Scale max">
-                      <Input
-                        type="number"
-                        value={layer.colorScale?.scaleMax}
-                        onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })}
-                      />
-                    </Field>
-                  </>
-                )}
+                <Field label="Invert">
+                  <Switch
+                    value={layer.colorScale?.invert ?? false}
+                    onChange={(e) => patchColor({ invert: e.currentTarget.checked })}
+                  />
+                </Field>
+                <Field label="Scale min">
+                  <Input
+                    type="number"
+                    value={layer.colorScale?.scaleMin}
+                    onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })}
+                  />
+                </Field>
+                <Field label="Scale max">
+                  <Input
+                    type="number"
+                    value={layer.colorScale?.scaleMax}
+                    onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })}
+                  />
+                </Field>
               </>
             )}
             <Field
               label="Additional GLSL declarations"
-              description="Injected after the auto-generated interpolateColor(float v). Add custom helper functions here."
+              description="Injected after the auto-generated interpolateColor(float v)."
             >
               <TextArea
                 rows={4}
@@ -505,6 +582,43 @@ function getStyles(theme: GrafanaTheme2) {
       height: 10,
       borderRadius: theme.shape.radius.default,
       width: '100%',
+    }),
+    thresholdRow: css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+      marginBottom: theme.spacing(0.5),
+    }),
+    thresholdLabel: css({
+      fontSize: 12,
+      color: theme.colors.text.secondary,
+      width: 12,
+      flexShrink: 0,
+    }),
+    thresholdValue: css({
+      width: 72,
+      flexShrink: 0,
+    }),
+    thresholdRemove: css({
+      background: 'none',
+      border: 'none',
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 16,
+      padding: '0 4px',
+      '&:hover': { color: theme.colors.error.text },
+      '&:disabled': { opacity: 0.3, cursor: 'default' },
+    }),
+    thresholdAdd: css({
+      background: 'none',
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 12,
+      padding: '4px 8px',
+      marginTop: theme.spacing(0.5),
+      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
     }),
   };
 }

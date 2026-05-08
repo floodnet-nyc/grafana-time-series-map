@@ -42,7 +42,7 @@ const renderer: LayerRenderer = {
       '';
 
     // Always use shader when a color scheme is configured
-    const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.presetName);
+    const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField);
 
     const extensions: any[] = [

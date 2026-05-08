@@ -35,7 +35,7 @@ const renderer: LayerRenderer = {
   renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
     const opts = config.options as Record<string, any>;
     const valueField = config.colorScale?.field || config.fieldMappings.find((m) => m.alias === 'value')?.fieldName || '';
-    const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.presetName);
+    const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField);
 
     const extensions: any[] = [new DataFilterExtension({ filterSize: 1 })];
