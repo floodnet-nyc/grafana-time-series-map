@@ -5,7 +5,6 @@ import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
-import CollisionFilterExtensionFix from 'utils/deckgl/collisionFilterFix';
 
 const schema: LayerOptionField[] = [
   { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4, section: 'Point' },
@@ -54,7 +53,6 @@ const renderer: LayerRenderer = {
 
     const extensions: any[] = [
       new DataFilterExtension({ filterSize: 1 }),
-      // new CollisionFilterExtensionFix(),
     ];
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
@@ -123,9 +121,6 @@ const renderer: LayerRenderer = {
         filterRange: [1, 1] as [number, number],
         ...(useShader ? { getValue: (f: Feature) => Number(f.properties?.[valueField] ?? 0) } : {}),
         extensions,
-        collisionGroup: 'scatter-points',
-        collisionTestProps: { radiusScale: 0.01, radiusUnits: 'meters' },
-        getCollisionPriority: (f: any) => Number(f.properties?.[config.elevation?.field ?? ''] ?? 0),
         updateTriggers: {
           getFilterValue: [timeFilterFlags],
           getLineColor: [selectedKey],
@@ -192,13 +187,7 @@ const renderer: LayerRenderer = {
           maxZoom: config.maxZoom,
           getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
           filterRange: [1, 1] as [number, number],
-          collisionGroup: 'scatter-labels',
-          collisionTestProps: { sizeScale: 2 },
-          getCollisionPriority: (f: any) => Number(f.properties?.[config.elevation?.field ?? ''] ?? 0) - 1000,
-          extensions: [
-            new DataFilterExtension({ filterSize: 1 }),
-            new CollisionFilterExtensionFix(),
-          ],
+          extensions: [new DataFilterExtension({ filterSize: 1 })],
           updateTriggers: { getFilterValue: [timeFilterFlags] },
           parameters: { depthTest: false },
           polygonOffset: 1,

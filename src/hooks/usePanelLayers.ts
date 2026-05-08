@@ -6,6 +6,7 @@ import type { MapPanelOptions } from '../types';
 import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../utils/deckgl/closestTimeFiltering';
 import { getLayer } from '../layers/registry';
+import { applyLayerExtensions } from '../layers/extensions/registry';
 
 export function usePanelLayers(
   data: PanelData,
@@ -21,27 +22,28 @@ export function usePanelLayers(
   const featuresByLayerId = useMemo(() => {
     const map = new Map<string, Feature[]>();
     for (const layerConfig of options.layers) {
-      let features = dataFramesToFeatures(
-          data.series,
-          layerConfig.queryRefId,
-          layerConfig.geometry,
-          layerConfig.elevation,
-          layerConfig.fieldMappings,
-        )
+      const features = dataFramesToFeatures(
+        data.series,
+        layerConfig.queryRefId,
+        layerConfig.geometry,
+        layerConfig.elevation,
+        layerConfig.fieldMappings,
+      );
       map.set(
         layerConfig.id,
         features,
       );
     }
     return map;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.series, options.layers]);
 
   // Stage 3: build ASOF packed buckets (only for asof layers)
   const packedByLayerId = useMemo(() => {
     const map = new Map<string, ReturnType<typeof buildPacked>>();
     for (const layerConfig of options.layers) {
-      if (layerConfig.timeFilter.mode !== 'asof') continue;
+      if (layerConfig.timeFilter.mode !== 'asof') {
+        continue;
+      }
       const features = featuresByLayerId.get(layerConfig.id) ?? [];
       const { timeField, groupByField = 'id' } = layerConfig.timeFilter;
       map.set(layerConfig.id, buildPacked(features, groupByField, timeField));
@@ -53,7 +55,9 @@ export function usePanelLayers(
   const lookupPackedByLayerId = useMemo(() => {
     const result = new Map<string, { features: Feature[]; packed: ReturnType<typeof buildPacked> }>();
     for (const layerConfig of options.layers) {
-      if (!layerConfig.lookup) continue;
+      if (!layerConfig.lookup) {
+        continue;
+      }
       const { queryRefId, keyField, timeField } = layerConfig.lookup;
       const features = dataFramesToFeatures(data.series, queryRefId, { type: 'none' }, undefined, []);
       result.set(layerConfig.id, { features, packed: buildPacked(features, keyField, timeField) });
@@ -65,9 +69,13 @@ export function usePanelLayers(
   const lookupByLayerId = useMemo(() => {
     const result = new Map<string, Map<string, Record<string, number>>>();
     for (const layerConfig of options.layers) {
-      if (!layerConfig.lookup) continue;
+      if (!layerConfig.lookup) {
+        continue;
+      }
       const entry = lookupPackedByLayerId.get(layerConfig.id);
-      if (!entry) continue;
+      if (!entry) {
+        continue;
+      }
       result.set(
         layerConfig.id,
         resolveAsofLookup(entry.features, entry.packed, layerConfig.lookup.fields, cursorTimeMs, layerConfig.lookup.maxLagMs),
@@ -132,7 +140,7 @@ export function usePanelLayers(
         selectedKey,
         onFeatureClick,
       });
-      allLayers.push(...layers);
+      allLayers.push(...applyLayerExtensions(layers, layerConfig));
     }
     return allLayers;
   }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, selectedKey, onFeatureClick]);
