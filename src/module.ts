@@ -139,9 +139,9 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addBooleanSwitch({
         path: 'interactions.rollEnabled',
-        name: 'Enable 3D roll',
+        name: 'Enable 3D',
         description: 'MapLibre only. Allows camera roll with Ctrl + drag.',
-        defaultValue: false,
+        defaultValue: true,
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.interactions?.interactive !== false,
         category: ['Map interactions'],
       })

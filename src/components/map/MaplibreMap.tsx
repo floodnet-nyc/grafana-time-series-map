@@ -10,6 +10,7 @@ import Map, {
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
+import { useMapHashRoute } from '../../hooks/useMapHashRoute';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const STYLE_URLS: Record<string, string> = {
@@ -77,10 +78,22 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
       : (STYLE_URLS[options.maplibreStyle] ?? STYLE_URLS['carto-dark']);
 
   const mapRef = useRef<MapRef>(null);
+  const hashRoutingEnabled = options.interactions?.syncViewToUrl ?? false;
+  const { initialView: hashInitialView, writeHashView } = useMapHashRoute(hashRoutingEnabled, (view) => {
+    mapRef.current?.getMap().jumpTo({
+      center: [view.longitude, view.latitude],
+      zoom: view.zoom,
+      bearing: view.bearing,
+      pitch: view.pitch,
+    });
+  });
 
   // When fitBounds changes (data loaded or mode changed), refit the map.
   const prevFitBoundsRef = useRef<string | null>(null);
   useEffect(() => {
+    if (hashInitialView) {
+      return;
+    }
     const key = fitBounds ? JSON.stringify(fitBounds) : null;
     if (!fitBounds || key === prevFitBoundsRef.current) {
       return;
@@ -90,17 +103,24 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
     if (map) {
       map.fitBounds(fitBounds as any, { padding: 48, duration: 800 });
     }
-  }, [fitBounds]);
+  }, [fitBounds, hashInitialView]);
 
   const handleMoveEnd = useCallback((e: any) => {
-    if (!onViewportChange) {
-      return;
-    }
     const { latitude, longitude, zoom, bearing, pitch } = e.viewState;
-    onViewportChange({ latitude, longitude, zoom, bearing, pitch });
-  }, [onViewportChange]);
+    const viewport = { latitude, longitude, zoom, bearing, pitch };
+    onViewportChange?.(viewport);
+    writeHashView(viewport);
+  }, [onViewportChange, writeHashView]);
 
-  const initialViewState = fitBounds
+  const initialViewState = hashInitialView
+    ? {
+        latitude: hashInitialView.latitude,
+        longitude: hashInitialView.longitude,
+        zoom: hashInitialView.zoom,
+        bearing: hashInitialView.bearing,
+        pitch: hashInitialView.pitch,
+      }
+    : fitBounds
     ? { bounds: fitBounds as any, fitBoundsOptions: { padding: 48 } }
     : {
         latitude: options.initialLatitude,
@@ -114,7 +134,6 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
   const maplibreControls = options.maplibreControls ?? {};
   const interactive = interactions.interactive ?? true;
   const showNavigationControl = options.controls?.navigationControl ?? false;
-
   return (
     <Map
       ref={mapRef}
@@ -124,7 +143,6 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
       projection={options.maplibreProjection ?? 'mercator'}
       interactive={interactive}
       cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
-      hash={interactions.syncViewToUrl ? 'v' : false}
       rollEnabled={interactive ? interactions.rollEnabled ?? false : false}
       onMoveEnd={handleMoveEnd}
     >

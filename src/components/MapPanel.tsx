@@ -2,8 +2,7 @@ import '../layers/_all'; // side-effect: registers all built-in layer types
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';
-import type { Geometry } from 'geojson';
-import type { Feature } from 'geojson';
+import type { Feature, Geometry } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { DeckGLMap } from './map/DeckGLMap';
 import type { ViewportSnapshot } from './map/MaplibreMap';
@@ -18,15 +17,17 @@ import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 const CONTROLS_HEIGHT = 48;
 
 // Recursively collect [lng, lat] coordinate pairs from any GeoJSON geometry.
-function collectCoords(geom: Geometry | null | undefined): [number, number][] {
-  if (!geom) return [];
+function collectCoords(geom: Geometry | null | undefined): Array<[number, number]> {
+  if (!geom) {
+    return [];
+  }
   switch (geom.type) {
     case 'Point': return [geom.coordinates as [number, number]];
     case 'MultiPoint':
-    case 'LineString': return geom.coordinates as [number, number][];
+    case 'LineString': return geom.coordinates as Array<[number, number]>;
     case 'MultiLineString':
-    case 'Polygon': return (geom.coordinates as [number, number][][]).flat();
-    case 'MultiPolygon': return (geom.coordinates as [number, number][][][]).flat(2);
+    case 'Polygon': return (geom.coordinates as Array<Array<[number, number]>>).flat();
+    case 'MultiPolygon': return (geom.coordinates as Array<Array<Array<[number, number]>>>).flat(2);
     case 'GeometryCollection': return geom.geometries.flatMap((g) => collectCoords(g));
     default: return [];
   }
@@ -86,34 +87,36 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   // ── Viewport tracking ───────────────────────────────────────────────────────
   const currentViewportRef = useRef<ViewportSnapshot | null>(null);
-  const [viewportMoved, setViewportMoved] = useState(false);
 
   const handleViewportChange = useCallback((viewport: ViewportSnapshot) => {
     currentViewportRef.current = viewport;
-    setViewportMoved(true);
   }, []);
 
-  const handleSaveView = useCallback(() => {
-    const vp = currentViewportRef.current;
-    if (!vp) return;
-    onOptionsChange({
-      ...options,
-      initialViewMode: 'manual',
-      initialLatitude: Math.round(vp.latitude * 1e6) / 1e6,
-      initialLongitude: Math.round(vp.longitude * 1e6) / 1e6,
-      initialZoom: Math.round(vp.zoom * 100) / 100,
-      initialBearing: Math.round(vp.bearing * 10) / 10,
-      initialPitch: Math.round(vp.pitch * 10) / 10,
-    });
-    setViewportMoved(false);
-  }, [options, onOptionsChange]);
+  // const handleSaveView = useCallback(() => {
+  //   const vp = currentViewportRef.current;
+  //   if (!vp) return;
+  //   onOptionsChange({
+  //     ...options,
+  //     initialViewMode: 'manual',
+  //     initialLatitude: Math.round(vp.latitude * 1e6) / 1e6,
+  //     initialLongitude: Math.round(vp.longitude * 1e6) / 1e6,
+  //     initialZoom: Math.round(vp.zoom * 100) / 100,
+  //     initialBearing: Math.round(vp.bearing * 10) / 10,
+  //     initialPitch: Math.round(vp.pitch * 10) / 10,
+  //   });
+  //   setViewportMoved(false);
+  // }, [options, onOptionsChange]);
 
   // ── Fit-to-data bounds ──────────────────────────────────────────────────────
   const fitBounds = useMemo((): [[number, number], [number, number]] | undefined => {
-    if (options.initialViewMode !== 'fitData') return undefined;
+    if (options.initialViewMode !== 'fitData') {
+      return undefined;
+    }
     let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
     for (const layerConfig of options.layers) {
-      if (layerConfig.geometry.type === 'none') continue;
+      if (layerConfig.geometry.type === 'none') {
+        continue;
+      }
       const features = dataFramesToFeatures(
         data.series,
         layerConfig.queryRefId,
@@ -123,13 +126,17 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
       );
       for (const f of features) {
         for (const [lng, lat] of collectCoords(f.geometry)) {
-          if (!isFinite(lng) || !isFinite(lat)) continue;
+          if (!isFinite(lng) || !isFinite(lat)) {
+            continue;
+          }
           minLng = Math.min(minLng, lng); maxLng = Math.max(maxLng, lng);
           minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
         }
       }
     }
-    if (!isFinite(minLng) || minLng === maxLng) return undefined;
+    if (!isFinite(minLng) || minLng === maxLng) {
+      return undefined;
+    }
     return [[minLng, minLat], [maxLng, maxLat]];
   }, [data.series, options.layers, options.initialViewMode]);
 
@@ -184,7 +191,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         />
       )}
       {/* "Set as initial view" button — saves the current viewport to options */}
-      {viewportMoved && (
+      {/* {viewportMoved && (
         <button
           onClick={handleSaveView}
           title="Save current map position as the initial view"
@@ -215,7 +222,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
           </svg>
           Set as initial view
         </button>
-      )}
+      )} */}
     </div>
   );
 }

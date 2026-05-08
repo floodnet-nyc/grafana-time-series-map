@@ -283,21 +283,21 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         </Field>
         {layer.elevation?.field && (
           <>
-            <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches→m)">
-              <Input
-                type="number"
-                value={layer.elevation?.scale ?? 0.0254}
-                onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
-              />
-            </Field>
-            <Field label="Depth test">
-              <Switch
-                value={layer.elevation?.depthTest ?? false}
-                onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
-              />
-            </Field>
           </>
         )}
+        <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches→m)">
+          <Input
+            type="number"
+            value={layer.elevation?.scale ?? (layer.elevation?.field ? 0.0254 : 0)}
+            onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
+          />
+        </Field>
+        <Field label="Depth test">
+          <Switch
+            value={layer.elevation?.depthTest ?? false}
+            onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
+          />
+        </Field>
       </CollapsableSection>
 
       {/* ── Time filter ───────────────────────── */}
