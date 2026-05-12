@@ -173,11 +173,9 @@ export interface GoogleMapOptions {
   colorScheme?: GoogleMapColorScheme;
   mapTypeControl?: boolean;
   streetViewControl?: boolean;
-  rotateControl?: boolean;
   mapTypeControlPosition?: GoogleControlPosition;
   mapTypeControlStyle?: GoogleMapTypeControlStyle;
   streetViewControlPosition?: GoogleControlPosition;
-  rotateControlPosition?: GoogleControlPosition;
 }
 
 export type DeckBlendOperation = 'add' | 'subtract' | 'reverse-subtract' | 'min' | 'max';

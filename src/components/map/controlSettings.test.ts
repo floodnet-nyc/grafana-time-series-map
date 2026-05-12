@@ -59,6 +59,13 @@ describe('controlSettings', () => {
       position: 'top-right',
     });
     expect(resolved.scale).toEqual({ enabled: true });
+    expect(resolved.google).toEqual({
+      mapTypeControl: false,
+      streetViewControl: false,
+      mapTypeControlPosition: 'TOP_LEFT',
+      mapTypeControlStyle: 'DEFAULT',
+      streetViewControlPosition: 'RIGHT_BOTTOM',
+    });
   });
 
   it('prefers new shared control settings over provider-specific fallbacks', () => {
