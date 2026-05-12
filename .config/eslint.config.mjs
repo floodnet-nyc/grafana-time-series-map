@@ -13,6 +13,8 @@ export default defineConfig([
   {
     rules: {
       'react/prop-types': 'off',
+      "curly": "off",
+      "no-unused-vars": "off",
     },
   },
   {
@@ -26,6 +28,8 @@ export default defineConfig([
 
     rules: {
       '@typescript-eslint/no-deprecated': 'warn',
+      "curly": "off",
+      "no-unused-vars": "off",
     },
   },
   {

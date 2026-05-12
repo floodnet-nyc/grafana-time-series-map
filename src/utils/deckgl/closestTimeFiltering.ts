@@ -9,8 +9,8 @@ type PackedSeries = {
 
 export function buildPacked(
   features: Feature[],
-  idKey: string = 'deployment_id',
-  timeKey: string = 'time',
+  idKey = 'deployment_id',
+  timeKey = 'time',
 ): { depToIdx: Map<string, number>; buckets: PackedSeries[] } {
   if (!features?.length) return { depToIdx: new Map(), buckets: [] };
 
