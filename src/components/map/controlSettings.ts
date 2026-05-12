@@ -30,11 +30,9 @@ export interface ResolvedMapControlSettings {
   google: {
     mapTypeControl: boolean;
     streetViewControl: boolean;
-    rotateControl: boolean;
     mapTypeControlPosition: GoogleControlPosition;
     mapTypeControlStyle: NonNullable<GoogleMapOptions['mapTypeControlStyle']>;
     streetViewControlPosition: GoogleControlPosition;
-    rotateControlPosition: GoogleControlPosition;
   };
 }
 
@@ -81,11 +79,9 @@ function resolveSharedSettings(
     google: {
       mapTypeControl: googleMapOptions?.mapTypeControl ?? false,
       streetViewControl: googleMapOptions?.streetViewControl ?? false,
-      rotateControl: googleMapOptions?.rotateControl ?? false,
       mapTypeControlPosition: googleMapOptions?.mapTypeControlPosition ?? 'TOP_LEFT',
       mapTypeControlStyle: googleMapOptions?.mapTypeControlStyle ?? 'DEFAULT',
       streetViewControlPosition: googleMapOptions?.streetViewControlPosition ?? 'RIGHT_BOTTOM',
-      rotateControlPosition: googleMapOptions?.rotateControlPosition ?? 'RIGHT_BOTTOM',
     },
   };
 }

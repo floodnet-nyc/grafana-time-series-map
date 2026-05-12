@@ -412,14 +412,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemapProvider === 'google',
         category: ['Map controls', 'Google Maps controls'],
       })
-      .addBooleanSwitch({
-        path: 'googleMapOptions.rotateControl',
-        name: 'Rotate control',
-        description: 'Google only. Appears when 45-degree or 3D imagery is available.',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemapProvider === 'google',
-        category: ['Map controls', 'Google Maps controls'],
-      })
       .addSelect({
         path: 'googleMapOptions.mapTypeControlPosition',
         name: 'Map type control position',
@@ -448,14 +440,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: 'RIGHT_BOTTOM',
         settings: { options: googleControlPositions },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.streetViewControl === true,
-        category: ['Map controls', 'Google Maps placement'],
-      })
-      .addSelect({
-        path: 'googleMapOptions.rotateControlPosition',
-        name: 'Rotate control position',
-        defaultValue: 'RIGHT_BOTTOM',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.rotateControl === true,
         category: ['Map controls', 'Google Maps placement'],
       })
       .addBooleanSwitch({

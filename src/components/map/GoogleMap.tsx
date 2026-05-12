@@ -48,8 +48,8 @@ export default function GoogleMap({ width, height, options, layers, fitBounds, i
         }}
         streetViewControl={controlSettings.google.streetViewControl}
         streetViewControlOptions={{ position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM') }}
-        rotateControl={controlSettings.google.rotateControl}
-        rotateControlOptions={{ position: getControlPosition(controlSettings.google.rotateControlPosition, 'RIGHT_BOTTOM') }}
+        rotateControl={controlSettings.navigation.showCompass}
+        rotateControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
         onCameraChanged={(event) => {
           const viewport = {
             latitude: event.detail.center.lat,
