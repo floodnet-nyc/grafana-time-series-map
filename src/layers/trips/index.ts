@@ -4,6 +4,19 @@ import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerOptionField, LayerRenderContext, LayerRenderer } from '../types';
 
+interface TripsLayerOptions {
+  timestampsField: string;
+  timestampUnit: 'ms' | 's';
+  trailLengthMs: number;
+  fadeTrail: boolean;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'timestampsField', label: 'Timestamps field', type: 'fieldPicker', defaultValue: '', section: 'Trip time' },
   {
@@ -79,7 +92,7 @@ function getTimestamps(feature: Feature, path: number[][], field: unknown, unit:
   return unit === 's' ? timestamps.map((value) => value * 1000) : timestamps;
 }
 
-function getTripData(features: Feature[], timeFilterFlags: Uint8Array, opts: Record<string, unknown>) {
+function getTripData(features: Feature[], timeFilterFlags: Uint8Array, options: TripsLayerOptions) {
   const data: TripDatum[] = [];
   for (const feature of features as Array<Feature & { __idx?: number }>) {
     if (!timeFilterFlags[feature.__idx ?? -1]) {
@@ -89,7 +102,7 @@ function getTripData(features: Feature[], timeFilterFlags: Uint8Array, opts: Rec
     if (!path || path.length < 2) {
       continue;
     }
-    const timestamps = getTimestamps(feature, path, opts.timestampsField, opts.timestampUnit);
+    const timestamps = getTimestamps(feature, path, options.timestampsField, options.timestampUnit);
     if (!timestamps) {
       continue;
     }
@@ -98,7 +111,7 @@ function getTripData(features: Feature[], timeFilterFlags: Uint8Array, opts: Rec
   return data;
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<TripsLayerOptions> = {
   type: 'trips',
   label: 'Trips',
   defaultOptions: {
@@ -115,9 +128,8 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, cursorTimeMs, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
-    const opts = config.options as Record<string, unknown>;
-    const data = getTripData(features, timeFilterFlags, opts);
+  renderLayers({ config, features, cursorTimeMs, timeFilterFlags, onFeatureClick, options }: LayerRenderContext<TripsLayerOptions>) {
+    const data = getTripData(features, timeFilterFlags, options);
     const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220]);
 
     return [
@@ -130,19 +142,19 @@ const renderer: LayerRenderer = {
         minZoom: config.minZoom,
         maxZoom: config.maxZoom,
         currentTime: cursorTimeMs,
-        trailLength: Number(opts.trailLengthMs ?? 300000),
-        fadeTrail: Boolean(opts.fadeTrail ?? true),
+        trailLength: options.trailLengthMs,
+        fadeTrail: options.fadeTrail,
         widthUnits: 'pixels',
-        widthMinPixels: Number(opts.widthMinPixels ?? 2),
-        widthMaxPixels: Number(opts.widthMaxPixels ?? 8),
-        capRounded: Boolean(opts.capRounded ?? true),
-        jointRounded: Boolean(opts.jointRounded ?? true),
+        widthMinPixels: options.widthMinPixels,
+        widthMaxPixels: options.widthMaxPixels,
+        capRounded: options.capRounded,
+        jointRounded: options.jointRounded,
         getPath: (datum: TripDatum) => datum.path as any,
         getTimestamps: (datum: TripDatum) => datum.timestamps,
         getColor: (datum: TripDatum) => getColor(datum.feature) as [number, number, number, number],
         getWidth: (datum: TripDatum) =>
-          opts.widthField
-            ? Number(datum.feature.properties?.[String(opts.widthField)] ?? 1) * Number(opts.widthScale ?? 1)
+          options.widthField
+            ? Number(datum.feature.properties?.[options.widthField] ?? 1) * options.widthScale
             : 1,
         onClick: onFeatureClick
           ? (info: any) => info.object && onFeatureClick(info.object.feature, info)

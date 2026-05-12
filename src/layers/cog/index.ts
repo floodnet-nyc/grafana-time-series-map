@@ -10,6 +10,14 @@ import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../typ
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import type { ColorScaleConfig } from '../../types';
 
+interface CogLayerOptions {
+  urlField: string;
+  timestampField: string;
+  colorMaxValue: number;
+  maxRequests: number;
+  maxFrameRate: number;
+}
+
 // import type { GeoTIFF, Overview } from "@developmentseed/geotiff";
 
 
@@ -195,7 +203,7 @@ async function getTileData(
 }
 
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<CogLayerOptions> = {
   type: 'cog',
   label: 'COG Raster',
   defaultOptions: {
@@ -207,14 +215,13 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, cursorTimeMs }: LayerRenderContext) {
-    const opts = config.options as Record<string, any>;
-    const urlField: string = opts.urlField ?? 'url';
-    const timestampField: string = opts.timestampField ?? 'time';
-    const colorMaxValue: number = opts.colorMaxValue ?? 200;
+  renderLayers({ config, features, cursorTimeMs, options }: LayerRenderContext<CogLayerOptions>) {
+    const urlField = options.urlField;
+    const timestampField = options.timestampField;
+    const colorMaxValue = options.colorMaxValue;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
-    const maxRequests: number = opts.maxRequests ?? 4;
-    const maxFrameRate: number = opts.maxFrameRate ?? 0;
+    const maxRequests = options.maxRequests;
+    const maxFrameRate = options.maxFrameRate;
 
     const frames: TimeCOGFrame[] = [];
     for (const f of features) {

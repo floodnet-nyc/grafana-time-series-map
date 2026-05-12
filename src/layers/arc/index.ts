@@ -5,6 +5,15 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
+interface ArcLayerOptions {
+  widthMinPixels: number;
+  greatCircle: boolean;
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
   { key: 'greatCircle', label: 'Great circle', type: 'boolean', defaultValue: false },
@@ -14,7 +23,7 @@ const schema: LayerOptionField[] = [
   { key: 'tgtLatField', label: 'Target latitude field', type: 'fieldPicker', defaultValue: '' },
 ];
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<ArcLayerOptions> = {
   type: 'arc',
   label: 'Arc (origin→destination)',
   defaultOptions: {
@@ -27,21 +36,20 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, features } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<ArcLayerOptions>) {
+    const { config, features, options } = context;
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
     const commonProps = createCommonLayerProps(context);
-    const getSourcePosition = createSourcePositionAccessor(opts);
-    const getTargetPosition = createTargetPositionAccessor(opts);
+    const getSourcePosition = createSourcePositionAccessor(options);
+    const getTargetPosition = createTargetPositionAccessor(options);
 
     return [
       new ArcLayer({
         ...commonProps,
         id: `arc/${config.id}`,
         data: features,
-        greatCircle: opts.greatCircle ?? false,
-        widthMinPixels: opts.widthMinPixels ?? 2,
+        greatCircle: options.greatCircle,
+        widthMinPixels: options.widthMinPixels,
         getSourcePosition: (f: Feature) => getSourcePosition(f),
         getTargetPosition: (f: Feature) => getTargetPosition(f),
         getSourceColor: getColor as any,

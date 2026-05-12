@@ -3,6 +3,14 @@ import type { Feature, Point } from 'geojson';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 
+interface HeatmapLayerOptions {
+  radiusPixels: number;
+  intensity: number;
+  threshold: number;
+  weightField: string;
+  colorRange: string;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'radiusPixels', label: 'Radius (px)', type: 'number', defaultValue: 30 },
   { key: 'intensity', label: 'Intensity', type: 'number', defaultValue: 1 },
@@ -40,7 +48,7 @@ const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   ],
 };
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<HeatmapLayerOptions> = {
   type: 'heatmap',
   label: 'Heatmap',
   defaultOptions: {
@@ -52,8 +60,7 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, fromTimeMs, toTimeMs }: LayerRenderContext) {
-    const opts = config.options as Record<string, any>;
+  renderLayers({ config, features, fromTimeMs, toTimeMs, options }: LayerRenderContext<HeatmapLayerOptions>) {
     const { mode, timeField } = config.timeFilter;
     const pointFeatures = features.filter((f) => f.geometry?.type === 'Point');
 
@@ -67,7 +74,7 @@ const renderer: LayerRenderer = {
           })
         : pointFeatures;
 
-    const colorRange = (COLOR_RANGES[opts.colorRange as string] || COLOR_RANGES.fire).map((c) => [
+    const colorRange = (COLOR_RANGES[options.colorRange] || COLOR_RANGES.fire).map((c) => [
       ...c,
       255,
     ]) as Array<[number, number, number, number]>;
@@ -78,13 +85,13 @@ const renderer: LayerRenderer = {
         data: filtered,
         visible: config.visible,
         opacity: config.opacity,
-        radiusPixels: opts.radiusPixels ?? 30,
-        intensity: opts.intensity ?? 1,
-        threshold: opts.threshold ?? 0.03,
+        radiusPixels: options.radiusPixels,
+        intensity: options.intensity,
+        threshold: options.threshold,
         colorRange,
         getPosition: (f: Feature) => (f.geometry as Point).coordinates as [number, number],
-        getWeight: opts.weightField
-          ? (f: Feature) => Number(f.properties?.[opts.weightField] ?? 1)
+        getWeight: options.weightField
+          ? (f: Feature) => Number(f.properties?.[options.weightField] ?? 1)
           : 1,
       }),
     ];

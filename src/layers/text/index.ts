@@ -5,6 +5,22 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 
+interface TextLayerOptions {
+  textField: string;
+  fontSize: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  fontFamily: string;
+  fontWeight: string;
+  anchor: 'start' | 'middle' | 'end';
+  baseline: 'top' | 'center' | 'bottom';
+  billboard: boolean;
+  background: boolean;
+  pixelOffsetX: number;
+  pixelOffsetY: number;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'textField', label: 'Text field', type: 'fieldPicker', defaultValue: '', section: 'Text' },
   { key: 'fontSize', label: 'Font size (px)', type: 'number', defaultValue: 14, section: 'Text' },
@@ -63,7 +79,7 @@ const schema: LayerOptionField[] = [
   { key: 'pixelOffsetY', label: 'Pixel offset Y', type: 'number', defaultValue: 0, section: 'Style' },
 ];
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<TextLayerOptions> = {
   type: 'text',
   label: 'Text',
   defaultOptions: {
@@ -83,27 +99,26 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, selectedKey } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<TextLayerOptions>) {
+    const { config, selectedKey, options } = context;
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
     const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
     const commonProps = createCommonLayerProps(context);
 
-    const textField: string = opts.textField ?? '';
+    const textField = options.textField;
 
     return [
       new TextLayer({
         ...commonProps,
-        billboard: opts.billboard ?? true,
-        background: opts.background ?? false,
+        billboard: options.billboard,
+        background: options.background,
         backgroundPadding: [4, 2, 4, 2],
-        fontFamily: opts.fontFamily ?? 'Helvetica Neue, Verdana, Roboto, sans-serif',
-        fontWeight: opts.fontWeight ?? 'normal',
+        fontFamily: options.fontFamily,
+        fontWeight: options.fontWeight,
         sizeScale: 1,
-        sizeMinPixels: opts.sizeMinPixels ?? 6,
-        sizeMaxPixels: opts.sizeMaxPixels ?? 64,
+        sizeMinPixels: options.sizeMinPixels,
+        sizeMaxPixels: options.sizeMaxPixels,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
         getText: (f: Feature) => {
           const v = f.properties?.[textField];
@@ -111,18 +126,18 @@ const renderer: LayerRenderer = {
           if (typeof v === 'number') { return Number.isInteger(v) ? String(v) : v.toFixed(2); }
           return String(v);
         },
-        getSize: opts.sizeField
-          ? (f: Feature) => Number(f.properties?.[opts.sizeField] ?? opts.fontSize ?? 14)
-          : (opts.fontSize ?? 14),
+        getSize: options.sizeField
+          ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.fontSize)
+          : options.fontSize,
         getColor,
-        getTextAnchor: opts.anchor ?? 'middle',
-        getAlignmentBaseline: opts.baseline ?? 'center',
-        getPixelOffset: [opts.pixelOffsetX ?? 0, opts.pixelOffsetY ?? 0] as [number, number],
+        getTextAnchor: options.anchor,
+        getAlignmentBaseline: options.baseline,
+        getPixelOffset: [options.pixelOffsetX, options.pixelOffsetY] as [number, number],
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: [selectedKey],
           getText: [textField],
-          getSize: [opts.sizeField, opts.fontSize],
+          getSize: [options.sizeField, options.fontSize],
         },
       }),
     ];

@@ -6,6 +6,13 @@ import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR 
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 
+interface PolygonLayerOptions {
+  fillOpacity: number;
+  extruded: boolean;
+  elevationField: string;
+  elevationScale: number;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'fillOpacity', label: 'Fill opacity (0-255)', type: 'number', defaultValue: 180 },
   { key: 'extruded', label: 'Extruded (3D)', type: 'boolean', defaultValue: false },
@@ -30,7 +37,7 @@ function getPolygonCoords(f: Feature): number[][][] | null {
   return null;
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<PolygonLayerOptions> = {
   type: 'polygon',
   label: 'Polygon',
   defaultOptions: {
@@ -41,8 +48,7 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
-    const opts = config.options as Record<string, any>;
+  renderLayers({ config, features, timeFilterFlags, onFeatureClick, options }: LayerRenderContext<PolygonLayerOptions>) {
     const valueField = config.colorScale?.field || config.fieldMappings.find((m) => m.alias === 'value')?.fieldName || '';
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField);
@@ -65,7 +71,7 @@ const renderer: LayerRenderer = {
     }
 
     const getColor = buildColorAccessor(config.colorScale);
-    const fillOpacity = opts.fillOpacity ?? 180;
+    const fillOpacity = options.fillOpacity;
 
     return [
       new SolidPolygonLayer({
@@ -75,7 +81,7 @@ const renderer: LayerRenderer = {
         opacity: config.opacity,
         pickable: config.pickable ?? false,
         filled: true,
-        extruded: opts.extruded ?? false,
+        extruded: options.extruded,
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
         getFillColor: useShader
           ? [0, 0, 0, fillOpacity]
@@ -83,9 +89,9 @@ const renderer: LayerRenderer = {
               const c = (getColor as (f: Feature) => [number, number, number, number])(f);
               return [c[0], c[1], c[2], fillOpacity] as [number, number, number, number];
             },
-        getElevation: opts.elevationField
+        getElevation: options.elevationField
           ? (f: Feature) =>
-              Number(f.properties?.[opts.elevationField] ?? 0) * (opts.elevationScale ?? 1)
+              Number(f.properties?.[options.elevationField] ?? 0) * options.elevationScale
           : 0,
         minZoom: config.minZoom,
         maxZoom: config.maxZoom,

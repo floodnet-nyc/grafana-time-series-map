@@ -5,6 +5,17 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
+interface LineLayerOptions {
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'srcLngField', label: 'Source longitude field', type: 'fieldPicker', defaultValue: '', section: 'Source' },
   { key: 'srcLatField', label: 'Source latitude field', type: 'fieldPicker', defaultValue: '', section: 'Source' },
@@ -16,7 +27,7 @@ const schema: LayerOptionField[] = [
   { key: 'widthScale', label: 'Width scale', type: 'number', defaultValue: 1, section: 'Style' },
 ];
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<LineLayerOptions> = {
   type: 'line',
   label: 'Line (origin→destination)',
   defaultOptions: {
@@ -31,13 +42,12 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, features } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<LineLayerOptions>) {
+    const { config, features, options } = context;
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
     const commonProps = createCommonLayerProps(context);
-    const getSourcePosition = createSourcePositionAccessor(opts);
-    const getTargetPosition = createTargetPositionAccessor(opts);
+    const getSourcePosition = createSourcePositionAccessor(options);
+    const getTargetPosition = createTargetPositionAccessor(options);
 
     return [
       new LineLayer({
@@ -45,17 +55,17 @@ const renderer: LayerRenderer = {
         id: `line/${config.id}`,
         data: features,
         widthUnits: 'pixels' as const,
-        widthMinPixels: opts.widthMinPixels ?? 1,
-        widthMaxPixels: opts.widthMaxPixels ?? 20,
+        widthMinPixels: options.widthMinPixels,
+        widthMaxPixels: options.widthMaxPixels,
         getSourcePosition: (f: Feature) => getSourcePosition(f),
         getTargetPosition: (f: Feature) => getTargetPosition(f),
         getColor: getColor as any,
-        getWidth: opts.widthField
-          ? (f: Feature) => Number(f.properties?.[opts.widthField] ?? 1) * (opts.widthScale ?? 1)
+        getWidth: options.widthField
+          ? (f: Feature) => Number(f.properties?.[options.widthField] ?? 1) * options.widthScale
           : 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getWidth: [opts.widthField, opts.widthScale],
+          getWidth: [options.widthField, options.widthScale],
         },
         parameters: { depthTest: false },
       }),

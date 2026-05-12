@@ -1,9 +1,9 @@
 import type { LayerRenderer } from './types';
 import { getExtensionDefaultOptions, getExtensionOptionsSchema } from './extensions/registry';
 
-const registry = new Map<string, LayerRenderer>();
+const registry = new Map<string, LayerRenderer<any>>();
 
-function withRegisteredExtensions(renderer: LayerRenderer): LayerRenderer {
+function withRegisteredExtensions<TOptions extends object>(renderer: LayerRenderer<TOptions>): LayerRenderer<TOptions> {
   return {
     ...renderer,
     defaultOptions: {
@@ -17,15 +17,15 @@ function withRegisteredExtensions(renderer: LayerRenderer): LayerRenderer {
   };
 }
 
-export function registerLayer(renderer: LayerRenderer): void {
+export function registerLayer<TOptions extends object>(renderer: LayerRenderer<TOptions>): void {
   registry.set(renderer.type, renderer);
 }
 
-export function getLayer(type: string): LayerRenderer | undefined {
+export function getLayer(type: string): LayerRenderer<any> | undefined {
   const renderer = registry.get(type);
   return renderer ? withRegisteredExtensions(renderer) : undefined;
 }
 
-export function getAllLayerTypes(): LayerRenderer[] {
+export function getAllLayerTypes(): Array<LayerRenderer<any>> {
   return Array.from(registry.values()).map(withRegisteredExtensions);
 }
