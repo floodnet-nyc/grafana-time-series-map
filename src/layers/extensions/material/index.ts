@@ -12,6 +12,12 @@ function rgbColor(value: unknown): [number, number, number] {
   ];
 }
 
+function supportsMaterial(layer: unknown): boolean {
+  const props = (layer as any).props ?? {};
+  const defaultProps = (layer as any).constructor?.defaultProps ?? {};
+  return 'material' in props || 'material' in defaultProps;
+}
+
 registerLayerExtension({
   id: 'material',
   defaultOptions: {
@@ -34,8 +40,7 @@ registerLayerExtension({
       return layer;
     }
 
-    const props = (layer as any).props ?? {};
-    if (!('material' in props)) {
+    if (!supportsMaterial(layer)) {
       return layer;
     }
 

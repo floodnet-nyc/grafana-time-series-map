@@ -100,6 +100,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         path: 'basemapProvider',
         name: 'Basemap provider',
         defaultValue: 'maplibre',
+        category: ['Basemap'],
         settings: {
           options: [
             { label: 'Maplibre GL', value: 'maplibre' },
@@ -120,12 +121,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
           ],
         },
         showIf: (cfg) => cfg.basemapProvider !== 'google',
+        category: ['Basemap', 'MapLibre'],
       })
       .addTextInput({
         path: 'maplibreStyleUrl',
         name: 'Maplibre style URL',
         defaultValue: '',
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.maplibreStyle === 'custom',
+        category: ['Basemap', 'MapLibre'],
       })
       .addSelect({
         path: 'maplibreProjection',
@@ -139,12 +142,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
           ],
         },
         showIf: (cfg) => cfg.basemapProvider !== 'google',
+        category: ['Basemap', 'MapLibre'],
       })
       .addTextInput({
         path: 'googleMapsApiKey',
         name: 'Google Maps API key',
         defaultValue: '',
         showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Basemap', 'Google Maps'],
       })
       .addTextInput({
         path: 'googleMapsMapId',
@@ -152,13 +157,115 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: '',
         description: 'Cloud-based map styling ID (required for vector maps and 3D)',
         showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Basemap', 'Google Maps'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.colorScheme',
+        name: 'Google Maps color scheme',
+        defaultValue: 'LIGHT',
+        settings: {
+          options: [
+            { label: 'Light', value: 'LIGHT' },
+            { label: 'Dark', value: 'DARK' },
+            { label: 'Auto', value: 'FOLLOW_SYSTEM' },
+          ],
+        },
+        showIf: (cfg) => cfg.basemapProvider === 'google',
+        category: ['Basemap', 'Google Maps'],
+      })
+      .addSelect({
+        path: 'initialViewMode',
+        name: 'Initial view',
+        defaultValue: 'manual',
+        description: 'Manual: use the coordinates below. Fit to data: zoom to fit all layer features on load.',
+        settings: {
+          options: [
+            { label: 'Manual', value: 'manual' },
+            { label: 'Fit to data', value: 'fitData' },
+          ],
+        },
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialLatitude',
+        name: 'Latitude',
+        defaultValue: 40.7128,
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialLongitude',
+        name: 'Longitude',
+        defaultValue: -74.006,
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialZoom',
+        name: 'Zoom',
+        defaultValue: 11,
+        settings: { min: 0, max: 22 },
+        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialBearing',
+        name: 'Bearing (°)',
+        defaultValue: 0,
+        description: 'Rotation in degrees clockwise from north (0–360)',
+        settings: { min: -180, max: 360 },
+        category: ['Map bounds'],
+      })
+      .addNumberInput({
+        path: 'initialPitch',
+        name: 'Pitch (°)',
+        defaultValue: 0,
+        description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',
+        settings: { min: 0, max: 85 },
+        category: ['Map bounds'],
+      })
+      .addBooleanSwitch({
+        path: 'showTimeControls',
+        name: 'Show time playback controls',
+        defaultValue: true,
+        category: ['Time playback'],
+      })
+      .addBooleanSwitch({
+        path: 'loopPlayback',
+        name: 'Loop playback',
+        defaultValue: true,
+        showIf: (cfg) => cfg.showTimeControls !== false,
+        category: ['Time playback'],
+      })
+      .addNumberInput({
+        path: 'defaultPlaybackSpeed',
+        name: 'Default playback speed (data-ms per real-second)',
+        defaultValue: 1_800_000,
+        description: 'e.g. 1800000 = 30 minutes per second',
+        showIf: (cfg) => cfg.showTimeControls !== false,
+        category: ['Time playback'],
+      })
+      .addBooleanSwitch({
+        path: 'showLegend',
+        name: 'Show legend',
+        defaultValue: false,
+        category: ['Legend'],
+      })
+      .addCustomEditor({
+        id: 'layers',
+        path: 'layers',
+        name: 'Layers',
+        description: 'Add and configure deck.gl layers',
+        editor: MapPanelEditor,
+        defaultValue: [],
+        category: ['Layers'],
       })
       .addBooleanSwitch({
         path: 'interactions.interactive',
         name: 'Interactive map',
         description: 'Enable user map gestures such as drag, zoom, rotate, and keyboard navigation.',
         defaultValue: true,
-        category: ['Map interactions'],
+        category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
         path: 'interactions.cooperativeGestures',
@@ -166,14 +273,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
         defaultValue: false,
         showIf: (cfg) => cfg.interactions?.interactive !== false,
-        category: ['Map interactions'],
+        category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
         path: 'interactions.syncViewToUrl',
         name: 'Hash routing',
         description: 'Stores the current view as URL hash parameter v=zoom/lat/lon. MapLibre uses its native hash support; Google Maps uses a matching custom implementation.',
         defaultValue: false,
-        category: ['Map interactions'],
+        category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
         path: 'interactions.rollEnabled',
@@ -181,13 +288,21 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'MapLibre only. Allows camera roll with Ctrl + drag.',
         defaultValue: true,
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.interactions?.interactive !== false,
-        category: ['Map interactions'],
+        category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
         path: 'controls.navigationControl',
         name: 'Navigation control',
         description: 'MapLibre zoom/compass control or Google camera control.',
         defaultValue: true,
+        category: ['Map controls'],
+      })
+      .addSelect({
+        path: 'googleMapOptions.cameraControlPosition',
+        name: 'Camera control position',
+        defaultValue: 'INLINE_START_BLOCK_END',
+        settings: { options: googleControlPositions },
+        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.navigationControl !== false,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
@@ -248,33 +363,19 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
         category: ['Map controls', 'MapLibre navigation'],
       })
-      .addSelect({
-        path: 'googleMapOptions.colorScheme',
-        name: 'Google Maps color scheme',
-        defaultValue: 'LIGHT',
-        settings: {
-          options: [
-            { label: 'Light', value: 'LIGHT' },
-            { label: 'Dark', value: 'DARK' },
-            { label: 'Auto', value: 'FOLLOW_SYSTEM' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemapProvider === 'google',
-        category: ['Map controls', 'Google Maps'],
-      })
       .addBooleanSwitch({
         path: 'googleMapOptions.mapTypeControl',
         name: 'Map type control',
         defaultValue: false,
         showIf: (cfg) => cfg.basemapProvider === 'google',
-        category: ['Map controls', 'Google Maps'],
+        category: ['Map controls', 'Google Maps controls'],
       })
       .addBooleanSwitch({
         path: 'googleMapOptions.streetViewControl',
         name: 'Street View control',
         defaultValue: false,
         showIf: (cfg) => cfg.basemapProvider === 'google',
-        category: ['Map controls', 'Google Maps'],
+        category: ['Map controls', 'Google Maps controls'],
       })
       .addBooleanSwitch({
         path: 'googleMapOptions.rotateControl',
@@ -282,15 +383,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'Google only. Appears when 45-degree or 3D imagery is available.',
         defaultValue: false,
         showIf: (cfg) => cfg.basemapProvider === 'google',
-        category: ['Map controls', 'Google Maps'],
-      })
-      .addSelect({
-        path: 'googleMapOptions.cameraControlPosition',
-        name: 'Camera control position',
-        defaultValue: 'INLINE_START_BLOCK_END',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.navigationControl !== false,
-        category: ['Map controls', 'Google Maps options'],
+        category: ['Map controls', 'Google Maps controls'],
       })
       .addSelect({
         path: 'googleMapOptions.fullscreenControlPosition',
@@ -298,7 +391,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: 'TOP_RIGHT',
         settings: { options: googleControlPositions },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.fullscreenControl === true,
-        category: ['Map controls', 'Google Maps options'],
+        category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
         path: 'googleMapOptions.mapTypeControlPosition',
@@ -306,7 +399,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: 'TOP_LEFT',
         settings: { options: googleControlPositions },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
-        category: ['Map controls', 'Google Maps options'],
+        category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
         path: 'googleMapOptions.mapTypeControlStyle',
@@ -320,7 +413,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
           ],
         },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
-        category: ['Map controls', 'Google Maps options'],
+        category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
         path: 'googleMapOptions.streetViewControlPosition',
@@ -328,7 +421,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: 'RIGHT_BOTTOM',
         settings: { options: googleControlPositions },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.streetViewControl === true,
-        category: ['Map controls', 'Google Maps options'],
+        category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
         path: 'googleMapOptions.rotateControlPosition',
@@ -336,182 +429,104 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: 'RIGHT_BOTTOM',
         settings: { options: googleControlPositions },
         showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.rotateControl === true,
-        category: ['Map controls', 'Google Maps options'],
-      })
-      .addSelect({
-        path: 'initialViewMode',
-        name: 'Initial view',
-        defaultValue: 'manual',
-        description: 'Manual: use the coordinates below. Fit to data: zoom to fit all layer features on load.',
-        settings: {
-          options: [
-            { label: 'Manual', value: 'manual' },
-            { label: 'Fit to data', value: 'fitData' },
-          ],
-        },
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialLatitude',
-        name: 'Latitude',
-        defaultValue: 40.7128,
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialLongitude',
-        name: 'Longitude',
-        defaultValue: -74.006,
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialZoom',
-        name: 'Zoom',
-        defaultValue: 11,
-        settings: { min: 0, max: 22 },
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialBearing',
-        name: 'Bearing (°)',
-        defaultValue: 0,
-        description: 'Rotation in degrees clockwise from north (0–360)',
-        settings: { min: -180, max: 360 },
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialPitch',
-        name: 'Pitch (°)',
-        defaultValue: 0,
-        description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',
-        settings: { min: 0, max: 85 },
-        category: ['Map bounds'],
+        category: ['Map controls', 'Google Maps placement'],
       })
       .addBooleanSwitch({
-        path: 'showTimeControls',
-        name: 'Show time playback controls',
+        path: 'syncPublish',
+        name: 'Publish playback time to other panels',
+        description: 'Broadcast time cursor and hover selection to other panels. Displays a cursor at the current time on other time series panels.',
         defaultValue: true,
+        category: ['Map controls', 'Cross-panel sync'],
       })
       .addBooleanSwitch({
-        path: 'loopPlayback',
-        name: 'Loop playback',
+        path: 'syncSubscribe',
+        name: 'Subscribe to time hover events from other panels',
+        description: 'Receive time cursor and hover selection from other panels',
         defaultValue: true,
-      })
-      .addNumberInput({
-        path: 'defaultPlaybackSpeed',
-        name: 'Default playback speed (data-ms per real-second)',
-        defaultValue: 1_800_000,
-        description: 'e.g. 1800000 = 30 minutes per second',
-      })
-      .addBooleanSwitch({
-        path: 'showLegend',
-        name: 'Show legend',
-        defaultValue: false,
+        category: ['Map controls', 'Cross-panel sync'],
       })
       .addBooleanSwitch({
         path: 'interleaved',
         name: 'Interleaved rendering',
         description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
         defaultValue: true,
+        category: ['Rendering'],
       })
       .addBooleanSwitch({
         path: 'deckParameters.blend',
         name: 'Blend',
         description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
         defaultValue: DEFAULT_DECK_PARAMETERS.blend,
-        category: ['Deck rendering'],
+        category: ['Rendering'],
       })
       .addSelect({
         path: 'deckParameters.blendColorOperation',
         name: 'Color blend operation',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
         settings: { options: deckBlendOperations },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addSelect({
         path: 'deckParameters.blendColorSrcFactor',
         name: 'Color source factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
         settings: { options: deckBlendFactors },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addSelect({
         path: 'deckParameters.blendColorDstFactor',
         name: 'Color destination factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
         settings: { options: deckBlendFactors },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addSelect({
         path: 'deckParameters.blendAlphaOperation',
         name: 'Alpha blend operation',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
         settings: { options: deckBlendOperations },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addSelect({
         path: 'deckParameters.blendAlphaSrcFactor',
         name: 'Alpha source factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
         settings: { options: deckBlendFactors },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addSelect({
         path: 'deckParameters.blendAlphaDstFactor',
         name: 'Alpha destination factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
         settings: { options: deckBlendFactors },
-        category: ['Deck rendering', 'Blending'],
+        category: ['Rendering', 'Blending'],
       })
       .addBooleanSwitch({
         path: 'deckParameters.polygonOffsetFill',
         name: 'Polygon offset fill',
         defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
-        category: ['Deck rendering', 'Depth'],
+        category: ['Rendering', 'Depth'],
       })
       .addBooleanSwitch({
         path: 'deckParameters.depthWriteEnabled',
         name: 'Depth write enabled',
         defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
-        category: ['Deck rendering', 'Depth'],
+        category: ['Rendering', 'Depth'],
       })
       .addSelect({
         path: 'deckParameters.depthCompare',
         name: 'Depth compare',
         defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
         settings: { options: deckDepthCompareOptions },
-        category: ['Deck rendering', 'Depth'],
+        category: ['Rendering', 'Depth'],
       })
       .addCustomEditor({
         id: 'deckLighting',
         path: 'deckLighting',
-        name: 'Deck lighting',
+        name: 'Lighting',
         description: 'Configure deck.gl LightingEffect light sources.',
         editor: LightingEditor,
         defaultValue: DEFAULT_DECK_LIGHTING,
-      })
-      .addBooleanSwitch({
-        path: 'syncPublish',
-        name: 'Publish cursor & selection',
-        description: 'Broadcast time cursor and hover selection to other panels',
-        defaultValue: true,
-        category: ['Cross-panel sync'],
-      })
-      .addBooleanSwitch({
-        path: 'syncSubscribe',
-        name: 'Subscribe to cursor & selection',
-        description: 'Receive time cursor and hover selection from other panels',
-        defaultValue: true,
-        category: ['Cross-panel sync'],
-      })
-      .addCustomEditor({
-        id: 'layers',
-        path: 'layers',
-        name: 'Layers',
-        description: 'Add and configure deck.gl layers',
-        editor: MapPanelEditor,
-        defaultValue: [],
+        category: ['Rendering', 'Lighting'],
       });
   });

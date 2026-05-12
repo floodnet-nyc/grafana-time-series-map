@@ -4,14 +4,16 @@ import {
   useStyles2,
   Input,
   Switch,
-  Select,
+  Combobox,
   Slider,
+  RangeSlider,
   Field,
   TextArea,
   CollapsableSection,
   ColorPicker,
+  type ComboboxOption,
 } from '@grafana/ui';
-import type { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig, ColorStep } from '../types';
 import { getAllLayerTypes } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
@@ -20,26 +22,26 @@ import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const GEOMETRY_TYPES: Array<SelectableValue<string>> = [
+const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Lat / Lng columns', value: 'latlng' },
   { label: 'WKB hex', value: 'wkb' },
   { label: 'WKT string', value: 'wkt' },
   { label: 'GeoJSON string', value: 'geojson' },
 ];
 
-const TIME_FILTER_MODES: Array<SelectableValue<TimeFilterMode>> = [
+const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
   { label: 'None (show all rows)', value: 'none' },
   { label: 'Window (within time range)', value: 'window' },
   { label: 'ASOF (closest per series key)', value: 'asof' },
 ];
 
-const COLOR_MODES: Array<SelectableValue<string>> = [
+const COLOR_MODES: Array<ComboboxOption<string>> = [
   { label: 'Fixed color', value: 'fixed' },
   { label: 'By threshold', value: 'threshold' },
   { label: 'By gradient', value: 'gradient' },
 ];
 
-const SCHEME_OPTIONS: Array<SelectableValue<string>> = [
+const SCHEME_OPTIONS: Array<ComboboxOption<string>> = [
   { label: '── Domain-specific ──', value: '', description: '' },
   ...COLOR_SCHEMES.filter((s) => s.group === 'domain').map((s) => ({ label: s.label, value: s.name })),
   { label: '── Diverging ──', value: '', description: '' },
@@ -57,6 +59,10 @@ const DEFAULT_THRESHOLD_STEPS: ColorStep[] = [
   { value: 24, color: [254, 77,  76,  255] },
   { value: 48, color: [215, 77,  254, 255] },
 ];
+
+const ADVANCED_COLOR_SECTIONS = new Set(['Blending', 'Material']);
+const DEFAULT_MIN_ZOOM = 0;
+const DEFAULT_MAX_ZOOM = 24;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -103,14 +109,13 @@ function FieldSelect({ value, onChange, availableFields, placeholder }: FieldSel
     [availableFields],
   );
   return (
-    <Select
+    <Combobox
       options={opts}
       value={value || null}
-      onChange={(v) => onChange(v?.value ?? '')}
-      allowCustomValue
+      onChange={(v) => onChange(v?.value != null ? String(v.value) : '')}
       isClearable
+      createCustomValue
       placeholder={placeholder ?? 'Field name…'}
-      onCreateOption={(v) => onChange(v)}
     />
   );
 }
@@ -191,6 +196,60 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
   const fixedColor = layer.colorScale?.fixedColor ?? [0, 155, 104, 255];
   const mode = colorMode(layer);
   const scheme = activeScheme(layer);
+  const zoomRange = [layer.minZoom ?? DEFAULT_MIN_ZOOM, layer.maxZoom ?? DEFAULT_MAX_ZOOM];
+  const regularOptionSections = Array.from(optionsBySections.entries()).filter(
+    ([section]) => !ADVANCED_COLOR_SECTIONS.has(section ?? ''),
+  );
+  const advancedColorOptionSections = Array.from(optionsBySections.entries()).filter(([section]) =>
+    ADVANCED_COLOR_SECTIONS.has(section ?? ''),
+  );
+
+  const renderOptionField = (f: LayerOptionField) => (
+    <Field key={f.key} label={f.label}>
+      {f.type === 'boolean' ? (
+        <Switch
+          value={Boolean(layer.options[f.key] ?? f.defaultValue)}
+          onChange={(e) => patchOpts(f.key, e.currentTarget.checked)}
+        />
+      ) : f.type === 'select' ? (
+        <Combobox
+          options={f.selectOptions ?? []}
+          value={(layer.options[f.key] ?? f.defaultValue) as string | number}
+          onChange={(v) => patchOpts(f.key, v.value)}
+        />
+      ) : f.type === 'fieldPicker' ? (
+        <FieldSelect
+          value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
+          onChange={(v) => patchOpts(f.key, v)}
+          availableFields={availableFields}
+        />
+      ) : f.type === 'color' ? (
+        <div className={styles.colorPickerRow}>
+          <ColorPicker
+            color={rgbaToHex((layer.options[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
+            onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
+          />
+        </div>
+      ) : f.type === 'number' && f.min !== undefined && f.max !== undefined ? (
+        <Slider
+          inputId={`layer-option-${f.key}`}
+          min={f.min}
+          max={f.max}
+          step={f.step ?? 1}
+          value={Number(layer.options[f.key] ?? f.defaultValue ?? f.min)}
+          onChange={(v) => patchOpts(f.key, v)}
+        />
+      ) : (
+        <Input
+          type={f.type === 'number' ? 'number' : 'text'}
+          value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
+          onChange={(e) =>
+            patchOpts(f.key, f.type === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value)
+          }
+        />
+      )}
+    </Field>
+  );
 
   return (
     <div className={styles.container}>
@@ -207,7 +266,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         />
       </Field>
       <Field label="Layer type">
-        <Select options={layerTypes} value={layer.type} onChange={(v) => v.value && patch({ type: v.value })} />
+        <Combobox options={layerTypes} value={layer.type} onChange={(v) => patch({ type: v.value })} />
       </Field>
       <Field label="Query (ref ID)">
         <Input
@@ -228,28 +287,29 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
       <Field label="Opacity">
         <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
       </Field>
-      <Field label="Min zoom">
-        <Input
-          type="number"
-          value={layer.minZoom ?? ''}
-          onChange={(e) => patch({ minZoom: e.currentTarget.value ? Number(e.currentTarget.value) : undefined })}
-        />
-      </Field>
-      <Field label="Max zoom">
-        <Input
-          type="number"
-          value={layer.maxZoom ?? ''}
-          onChange={(e) => patch({ maxZoom: e.currentTarget.value ? Number(e.currentTarget.value) : undefined })}
+      <Field label="Zoom range" description="Visible from the first zoom value through the second. Full range means no zoom limit.">
+        <RangeSlider
+          min={DEFAULT_MIN_ZOOM}
+          max={DEFAULT_MAX_ZOOM}
+          step={1}
+          value={zoomRange}
+          onChange={(value) =>
+            patch({
+              minZoom: value[0] <= DEFAULT_MIN_ZOOM ? undefined : value[0],
+              maxZoom: value[1] >= DEFAULT_MAX_ZOOM ? undefined : value[1],
+            })
+          }
+          formatTooltipResult={(value) => `${value}`}
         />
       </Field>
 
       {/* ── Geometry + Elevation ──────────────── */}
       <CollapsableSection label="Geometry" isOpen>
         <Field label="Geometry source">
-          <Select
+          <Combobox
             options={GEOMETRY_TYPES}
             value={layer.geometry.type}
-            onChange={(v) => v.value && patchGeom({ type: v.value as GeometrySource['type'] })}
+            onChange={(v) => patchGeom({ type: v.value as GeometrySource['type'] })}
           />
         </Field>
         {(layer.geometry.type === 'wkb' || layer.geometry.type === 'wkt' || layer.geometry.type === 'geojson') && (
@@ -291,30 +351,30 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         </Field>
         {layer.elevation?.field && (
           <>
+            <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches to meters)">
+              <Input
+                type="number"
+                value={layer.elevation?.scale ?? 1}
+                onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
+              />
+            </Field>
+            <Field label="Depth test">
+              <Switch
+                value={layer.elevation?.depthTest ?? false}
+                onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
+              />
+            </Field>
           </>
         )}
-        <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches→m)">
-          <Input
-            type="number"
-            value={layer.elevation?.scale ?? (layer.elevation?.field ? 1 : 0)}
-            onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
-          />
-        </Field>
-        <Field label="Depth test">
-          <Switch
-            value={layer.elevation?.depthTest ?? false}
-            onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
-          />
-        </Field>
       </CollapsableSection>
 
       {/* ── Time filter ───────────────────────── */}
-      <CollapsableSection label="Time" isOpen>
+      <CollapsableSection label="Time" isOpen={false}>
         <Field label="Mode">
-          <Select
+          <Combobox
             options={TIME_FILTER_MODES}
             value={layer.timeFilter.mode}
-            onChange={(v) => v.value && patchTimeFilter({ mode: v.value })}
+            onChange={(v) => patchTimeFilter({ mode: v.value })}
           />
         </Field>
         {layer.timeFilter.mode !== 'none' && (
@@ -356,9 +416,9 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
       </CollapsableSection>
 
       {/* ── Color ─────────────────────────────── */}
-      <CollapsableSection label="Color" isOpen>
+      <CollapsableSection label="Color" isOpen={false}>
         <Field label="Color mode">
-          <Select
+          <Combobox
             options={COLOR_MODES}
             value={mode}
             onChange={(v) => {
@@ -469,11 +529,11 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
               />
             </Field>
             <Field label="Color scheme">
-              <Select
+              <Combobox
                 options={SCHEME_OPTIONS.filter((o) => o.value !== '')}
                 value={scheme || null}
-                onChange={(v) => patchColor({ schemeName: v?.value || undefined })}
                 isClearable
+                onChange={(v) => patchColor({ schemeName: v?.value || undefined })}
                 placeholder="Choose scheme…"
               />
             </Field>
@@ -504,85 +564,47 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
                 </Field>
               </>
             )}
-            <Field
-              label="Additional GLSL declarations"
-              description="Injected after the auto-generated interpolateColor(float v)."
-            >
-              <TextArea
-                rows={4}
-                value={layer.shader?.vsDecl ?? ''}
-                onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })}
-                placeholder="// e.g. custom normalization or helper functions"
-              />
-            </Field>
-            <Field
-              label="Color filter (vs:DECKGL_FILTER_COLOR)"
-              description="GLSL injected into the vertex shader to set the final color."
-            >
-              <TextArea
-                rows={5}
-                value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR}
-                onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })}
-              />
-            </Field>
+            <CollapsableSection label="Advanced color shader" isOpen={false}>
+              {advancedColorOptionSections.map(([section, fields]) => (
+                <CollapsableSection key={section ?? '__advanced'} label={section ?? 'Advanced'} isOpen={false}>
+                  {fields.map(renderOptionField)}
+                </CollapsableSection>
+              ))}
+              <Field
+                label="Additional GLSL declarations"
+                description="Injected after the auto-generated interpolateColor(float v)."
+              >
+                <TextArea
+                  rows={4}
+                  value={layer.shader?.vsDecl ?? ''}
+                  onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })}
+                  placeholder="// e.g. custom normalization or helper functions"
+                />
+              </Field>
+              <Field
+                label="Color filter (vs:DECKGL_FILTER_COLOR)"
+                description="GLSL injected into the vertex shader to set the final color."
+              >
+                <TextArea
+                  rows={5}
+                  value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR}
+                  onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })}
+                />
+              </Field>
+            </CollapsableSection>
           </>
         )}
       </CollapsableSection>
 
       {/* ── Layer-type options (grouped by section) ── */}
       {currentRenderer && currentRenderer.optionsSchema.length > 0 &&
-        Array.from(optionsBySections.entries()).map(([section, fields]) => (
+        regularOptionSections.map(([section, fields]) => (
           <CollapsableSection
             key={section ?? '__default'}
             label={section ? section : currentRenderer.label}
-            isOpen
+            isOpen={false}
           >
-            {fields.map((f) => (
-              <Field key={f.key} label={f.label}>
-                {f.type === 'boolean' ? (
-                  <Switch
-                    value={Boolean(layer.options[f.key] ?? f.defaultValue)}
-                    onChange={(e) => patchOpts(f.key, e.currentTarget.checked)}
-                  />
-                ) : f.type === 'select' ? (
-                  <Select
-                    options={f.selectOptions ?? []}
-                    value={layer.options[f.key] ?? f.defaultValue}
-                    onChange={(v) => patchOpts(f.key, v.value)}
-                  />
-                ) : f.type === 'fieldPicker' ? (
-                  <FieldSelect
-                    value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
-                    onChange={(v) => patchOpts(f.key, v)}
-                    availableFields={availableFields}
-                  />
-                ) : f.type === 'color' ? (
-                  <div className={styles.colorPickerRow}>
-                    <ColorPicker
-                      color={rgbaToHex((layer.options[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
-                      onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
-                    />
-                  </div>
-                ) : f.type === 'number' && f.min !== undefined && f.max !== undefined ? (
-                  <Slider
-                    inputId={`layer-option-${f.key}`}
-                    min={f.min}
-                    max={f.max}
-                    step={f.step ?? 1}
-                    value={Number(layer.options[f.key] ?? f.defaultValue ?? f.min)}
-                    onChange={(v) => patchOpts(f.key, v)}
-                  />
-                ) : (
-                  <Input
-                    type={f.type === 'number' ? 'number' : 'text'}
-                    value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
-                    onChange={(e) =>
-                      patchOpts(f.key, f.type === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value)
-                    }
-                  />
-                )}
-              </Field>
-            ))}
+            {fields.map(renderOptionField)}
           </CollapsableSection>
         ))}
     </div>

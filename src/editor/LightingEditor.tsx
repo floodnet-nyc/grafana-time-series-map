@@ -1,11 +1,22 @@
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
-import { Button, ColorPicker, Field, IconButton, Input, Select, Slider, Switch, useStyles2 } from '@grafana/ui';
+import {
+  Button,
+  ColorPicker,
+  Combobox,
+  Field,
+  IconButton,
+  Input,
+  Slider,
+  Switch,
+  useStyles2,
+  type ComboboxOption,
+} from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
 import { DEFAULT_DECK_LIGHTING } from '../utils/deckgl/lighting';
 
-const lightTypes: Array<{ label: string; value: DeckLightType }> = [
+const lightTypes: Array<ComboboxOption<DeckLightType>> = [
   { label: 'Ambient', value: 'ambient' },
   { label: 'Point', value: 'point' },
   { label: 'Directional', value: 'directional' },
@@ -144,10 +155,10 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
             <div key={`${light.id}-${index}`} className={styles.light}>
               <div className={styles.header}>
                 <Field label="Type" className={styles.typeField}>
-                  <Select
+                  <Combobox
                     options={lightTypes}
                     value={light.type}
-                    onChange={(selected) => patchLight(index, { ...defaultLight(selected.value ?? 'point', index), id: light.id })}
+                    onChange={(selected) => patchLight(index, { ...defaultLight(selected.value, index), id: light.id })}
                   />
                 </Field>
                 <IconButton name="trash-alt" tooltip="Remove light" onClick={() => removeLight(index)} />

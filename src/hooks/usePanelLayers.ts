@@ -143,7 +143,7 @@ export function usePanelLayers(
       });
       allLayers.push(...applyLayerExtensions(layers, layerConfig));
     }
-    console.log('allLayers', allLayers);
+    // console.log('allLayers', allLayers);
     return allLayers;
-  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers, selectedKey, onFeatureClick]);
+  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 }
