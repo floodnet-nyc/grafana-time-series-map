@@ -14,11 +14,24 @@ import {
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig, ColorStep } from '../types';
+import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig } from '../types';
 import { extractSharedLayerOptions, getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
+import {
+  appendThresholdStep,
+  createColorModePatch,
+  createPatchedColorScale,
+  createPatchedShader,
+  DEFAULT_THRESHOLD_STEPS,
+  getActiveScheme,
+  getColorMode,
+  groupOptionsBySection,
+  patchThresholdStep,
+  removeThresholdStep,
+  splitOptionSections,
+} from './layerEditorModel';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -52,15 +65,6 @@ const SCHEME_OPTIONS: Array<ComboboxOption<string>> = [
   ...COLOR_SCHEMES.filter((s) => s.group === 'singlehue').map((s) => ({ label: s.label, value: s.name })),
 ];
 
-const DEFAULT_THRESHOLD_STEPS: ColorStep[] = [
-  { value: 0,  color: [0,   155, 104, 255] },
-  { value: 4,  color: [0,   204, 255, 255] },
-  { value: 12, color: [253, 191, 75,  255] },
-  { value: 24, color: [254, 77,  76,  255] },
-  { value: 48, color: [215, 77,  254, 255] },
-];
-
-const ADVANCED_COLOR_SECTIONS = new Set(['Blending', 'Material']);
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;
 
@@ -78,20 +82,6 @@ function hexToRgba(hex: string): [number, number, number, number] {
   const b = parseInt(c.slice(4, 6), 16) || 0;
   const a = c.length >= 8 ? parseInt(c.slice(6, 8), 16) : 255;
   return [r, g, b, a];
-}
-
-function colorMode(layer: LayerConfig): string {
-  if (!layer.colorScale || layer.colorScale.type === 'fixed') {
-    return 'fixed';
-  }
-  if (layer.colorScale.type === 'threshold') {
-    return 'threshold';
-  }
-  return 'gradient';
-}
-
-function activeScheme(layer: LayerConfig): string {
-  return layer.colorScale?.schemeName ?? '';
 }
 
 // ─── FieldSelect: autocomplete field picker ───────────────────────────────────
@@ -171,10 +161,10 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
     patch({ options: resolveLayerOptions(layer.type, { ...layer.options, [key]: value }) });
 
   const patchShader = (updates: Partial<NonNullable<typeof layer.shader>>) =>
-    patch({ shader: { enabled: false, valueField: '', ...layer.shader, ...updates } });
+    patch({ shader: createPatchedShader(layer.shader, updates) });
 
   const patchColor = (updates: Partial<NonNullable<typeof layer.colorScale>>) =>
-    patch({ colorScale: { type: 'fixed', ...layer.colorScale, ...updates } });
+    patch({ colorScale: createPatchedColorScale(layer.colorScale, updates) });
 
   const currentRenderer = getAllLayerTypes().find((r) => r.type === layer.type);
   const normalizedOptions = useMemo(() => resolveLayerOptions(layer.type, layer.options), [layer.type, layer.options]);
@@ -183,27 +173,14 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
     if (!currentRenderer) {
       return new Map<string | undefined, LayerOptionField[]>();
     }
-    const map = new Map<string | undefined, LayerOptionField[]>();
-    for (const f of currentRenderer.optionsSchema) {
-      const s = f.section;
-      if (!map.has(s)) {
-        map.set(s, []);
-      }
-      map.get(s)!.push(f);
-    }
-    return map;
+    return groupOptionsBySection(currentRenderer.optionsSchema);
   }, [currentRenderer]);
 
   const fixedColor = layer.colorScale?.fixedColor ?? [0, 155, 104, 255];
-  const mode = colorMode(layer);
-  const scheme = activeScheme(layer);
+  const mode = getColorMode(layer);
+  const scheme = getActiveScheme(layer);
   const zoomRange = [layer.minZoom ?? DEFAULT_MIN_ZOOM, layer.maxZoom ?? DEFAULT_MAX_ZOOM];
-  const regularOptionSections = Array.from(optionsBySections.entries()).filter(
-    ([section]) => !ADVANCED_COLOR_SECTIONS.has(section ?? ''),
-  );
-  const advancedColorOptionSections = Array.from(optionsBySections.entries()).filter(([section]) =>
-    ADVANCED_COLOR_SECTIONS.has(section ?? ''),
-  );
+  const { regular: regularOptionSections, advancedColor: advancedColorOptionSections } = splitOptionSections(optionsBySections);
 
   const renderOptionField = (f: LayerOptionField) => (
     <Field key={f.key} label={f.label}>
@@ -431,31 +408,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
           <Combobox
             options={COLOR_MODES}
             value={mode}
-            onChange={(v) => {
-              if (v.value === 'fixed') {
-                patch({ colorScale: { type: 'fixed', fixedColor: [0, 155, 104, 255] } });
-              } else if (v.value === 'threshold') {
-                patch({
-                  colorScale: {
-                    type: 'threshold',
-                    field: layer.colorScale?.field ?? '',
-                    steps: DEFAULT_THRESHOLD_STEPS,
-                  },
-                  shader: { enabled: true, valueField: layer.colorScale?.field ?? '', vsDecl: '', vsFilterColor: DEFAULT_VS_FILTER_COLOR },
-                });
-              } else {
-                patch({
-                  colorScale: {
-                    type: 'gradient',
-                    schemeName: 'FloodDepth',
-                    scaleMin: 0,
-                    scaleMax: 40,
-                    field: layer.colorScale?.field ?? '',
-                  },
-                  shader: { enabled: true, valueField: layer.colorScale?.field ?? '', vsDecl: '', vsFilterColor: DEFAULT_VS_FILTER_COLOR },
-                });
-              }
-            }}
+            onChange={(v) => patch(createColorModePatch(v.value as 'fixed' | 'threshold' | 'gradient', layer, DEFAULT_VS_FILTER_COLOR))}
           />
         </Field>
 
@@ -499,16 +452,13 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
                     <ColorPicker
                       color={rgbaToHex(step.color)}
                       onChange={(hex) => {
-                        const next = steps.map((s, j) =>
-                          j === i ? { ...s, color: hexToRgba(hex) } : s,
-                        );
-                        patchColor({ steps: next });
+                        patchColor({ steps: patchThresholdStep(steps, i, { color: hexToRgba(hex) }) });
                       }}
                     />
                   </div>
                   <button
                     className={styles.thresholdRemove}
-                    onClick={() => patchColor({ steps: steps.filter((_, j) => j !== i) })}
+                    onClick={() => patchColor({ steps: removeThresholdStep(steps, i) })}
                     disabled={steps.length <= 1}
                   >
                     ×
@@ -520,8 +470,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
               className={styles.thresholdAdd}
               onClick={() => {
                 const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
-                const last = steps[steps.length - 1];
-                patchColor({ steps: [...steps, { value: (last?.value ?? 0) + 10, color: [200, 200, 200, 255] }] });
+                patchColor({ steps: appendThresholdStep(steps) });
               }}
             >
               + Add threshold
