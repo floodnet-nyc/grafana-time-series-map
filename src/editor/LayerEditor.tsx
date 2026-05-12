@@ -14,7 +14,7 @@ import {
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig } from '../types';
-import { extractSharedLayerOptions, getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
+import { extractSharedLayerOptions, getAllLayerTypes, getLayer } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
@@ -142,7 +142,10 @@ interface Props {
 
 export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [] }: Props) {
   const styles = useStyles2(getStyles);
-  const layerTypes = getAllLayerTypes().map((r) => ({ label: r.label, value: r.type }));
+  const layerTypes = useMemo(
+    () => getAllLayerTypes().map((r) => ({ label: r.label, value: r.type })),
+    []
+  );
   const refIdOptions = useMemo(
     () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
     [availableRefIds]
@@ -170,8 +173,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
   const patchTimeFilter = (updates: Partial<typeof layer.timeFilter>) =>
     patch({ timeFilter: { ...layer.timeFilter, ...updates } });
 
-  const patchOpts = (key: string, value: unknown) =>
-    patch({ options: resolveLayerOptions(layer.type, { ...layer.options, [key]: value }) });
+  const patchOpts = (key: string, value: unknown) => patch({ options: { ...layer.options, [key]: value } });
 
   const patchShader = (updates: Partial<NonNullable<typeof layer.shader>>) =>
     patch({ shader: createPatchedShader(layer.shader, updates) });
@@ -191,8 +193,8 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
     [patch]
   );
 
-  const currentRenderer = getAllLayerTypes().find((r) => r.type === layer.type);
-  const normalizedOptions = useMemo(() => resolveLayerOptions(layer.type, layer.options), [layer.type, layer.options]);
+  const currentRenderer = useMemo(() => getLayer(layer.type), [layer.type]);
+  const defaultOptions = useMemo(() => currentRenderer?.defaultOptions ?? {}, [currentRenderer]);
 
   const optionsBySections = useMemo(() => {
     if (!currentRenderer) {
@@ -206,30 +208,36 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
   const scheme = getActiveScheme(layer);
   const zoomRange = [layer.minZoom ?? DEFAULT_MIN_ZOOM, layer.maxZoom ?? DEFAULT_MAX_ZOOM];
   const { regular: regularOptionSections, advancedColor: advancedColorOptionSections } = splitOptionSections(optionsBySections);
+  const getOptionValue = useCallback(
+    (field: LayerOptionField) => layer.options[field.key] ?? defaultOptions[field.key] ?? field.defaultValue,
+    [defaultOptions, layer.options]
+  );
 
-  const renderOptionField = (f: LayerOptionField) => (
+  const renderOptionField = (f: LayerOptionField) => {
+    const value = getOptionValue(f);
+    return (
     <Field key={f.key} label={f.label}>
       {f.type === 'boolean' ? (
         <Switch
-          value={Boolean(normalizedOptions[f.key] ?? f.defaultValue)}
+          value={Boolean(value)}
           onChange={(e) => patchOpts(f.key, e.currentTarget.checked)}
         />
       ) : f.type === 'select' ? (
         <Combobox
           options={f.selectOptions ?? []}
-          value={(normalizedOptions[f.key] ?? f.defaultValue) as string | number}
+          value={value as string | number}
           onChange={(v) => patchOpts(f.key, v.value)}
         />
       ) : f.type === 'fieldPicker' ? (
         <FieldSelect
-          value={String(normalizedOptions[f.key] ?? f.defaultValue ?? '')}
+          value={String(value ?? '')}
           onChange={(v) => patchOpts(f.key, v)}
           availableFields={availableFields}
         />
       ) : f.type === 'color' ? (
         <div className={styles.colorPickerRow}>
           <ColorPicker
-            color={rgbaToHex((normalizedOptions[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
+            color={rgbaToHex((value ?? [255, 255, 255, 255]) as [number, number, number, number])}
             onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
           />
         </div>
@@ -239,20 +247,21 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
           min={f.min}
           max={f.max}
           step={f.step ?? 1}
-          value={Number(normalizedOptions[f.key] ?? f.defaultValue ?? f.min)}
+          value={Number(value ?? f.min)}
           onChange={(v) => patchOpts(f.key, v)}
         />
       ) : (
         <Input
           type={f.type === 'number' ? 'number' : 'text'}
-          value={String(normalizedOptions[f.key] ?? f.defaultValue ?? '')}
+          value={String(value ?? '')}
           onChange={(e) =>
             patchOpts(f.key, f.type === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value)
           }
         />
       )}
     </Field>
-  );
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -275,7 +284,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             onChange={(v) =>
               patch({
                 type: v.value,
-                options: resolveLayerOptions(v.value, extractSharedLayerOptions(layer.options)),
+                options: extractSharedLayerOptions(layer.options),
               })
             }
           />
