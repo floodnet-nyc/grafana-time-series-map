@@ -86,7 +86,7 @@
     "@grafana/i18n": "12.4.2",
     "@grafana/runtime": "12.4.2",
     "@grafana/schema": "12.4.2",
-    "@grafana/ui": "12.4.2",
+    "@grafana/ui": "13.0.1",
     "@loaders.gl/core": "^4.4.1",
     "@loaders.gl/wkt": "^4.4.1",
     "@luma.gl/core": "^9.3.3",
