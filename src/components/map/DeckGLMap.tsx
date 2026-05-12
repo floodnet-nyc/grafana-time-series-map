@@ -1,15 +1,16 @@
 import React from 'react';
 import type { Layer } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
-import { MaplibreMap, type ViewportSnapshot } from './MaplibreMap';
+import { MaplibreMap } from './MaplibreMap';
 import { GoogleMap } from './GoogleMap';
+import type { FitBounds, ViewportSnapshot } from './types';
 
 interface DeckGLMapProps {
   width: number;
   height: number;
   options: MapPanelOptions;
   layers: Layer[];
-  fitBounds?: [[number, number], [number, number]];
+  fitBounds?: FitBounds;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
   interleaved?: boolean;
 }
