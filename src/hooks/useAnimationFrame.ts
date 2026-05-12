@@ -16,7 +16,7 @@ export default function useAnimationFrame({
   onUpdateRef.current = onUpdate; 
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {return;}
     const loop = (timestamp: number) => {
       timestamp = performance.timeOrigin + timestamp;
       if (lastFrameTime.current) {
