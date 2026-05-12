@@ -1,8 +1,8 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createCommonLayerProps } from '../utils';
 
 const schema: LayerOptionField[] = [
   { key: 'pointRadiusMinPixels', label: 'Point min radius (px)', type: 'number', defaultValue: 4 },
@@ -26,17 +26,17 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+  renderLayers(context: LayerRenderContext) {
+    const { config, features } = context;
     const opts = config.options as Record<string, any>;
     const getColor = buildColorAccessor(config.colorScale);
+    const commonProps = createCommonLayerProps(context);
 
     return [
       new GeoJsonLayer({
+        ...commonProps,
         id: `geojson/${config.id}`,
         data: { type: 'FeatureCollection', features },
-        visible: config.visible,
-        opacity: config.opacity,
-        pickable: config.pickable ?? true,
         filled: opts.filled ?? true,
         stroked: opts.stroked ?? true,
         extruded: opts.extruded ?? false,
@@ -47,16 +47,6 @@ const renderer: LayerRenderer = {
         lineWidthMinPixels: opts.lineWidthMinPixels ?? 1,
         getFillColor: getColor as any,
         getLineColor: [200, 200, 240, 200],
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        onClick: onFeatureClick
-          ? (info: any) => info.object && onFeatureClick(info.object, info)
-          : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
-        extensions: [new DataFilterExtension({ filterSize: 1 })],
-        updateTriggers: { getFilterValue: [timeFilterFlags] },
-        parameters: { depthTest: false },
       }),
     ];
   },

@@ -1,9 +1,9 @@
 import { TextLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 
 const schema: LayerOptionField[] = [
   { key: 'textField', label: 'Text field', type: 'fieldPicker', defaultValue: '', section: 'Text' },
@@ -83,23 +83,19 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, selectedKey, onFeatureClick }: LayerRenderContext) {
+  renderLayers(context: LayerRenderContext) {
+    const { config, selectedKey } = context;
     const opts = config.options as Record<string, any>;
-    const getColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
-
-    const keyField = config.timeFilter?.groupByField ?? '';
-    const isSelected = (f: Feature) =>
-      selectedKey != null && keyField && String(f.properties?.[keyField]) === selectedKey;
-    const hasSelection = selectedKey != null && keyField;
+    const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
+    const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
+    const getColor = createSelectionColorAccessor(baseColor, selectionState);
+    const commonProps = createCommonLayerProps(context);
 
     const textField: string = opts.textField ?? '';
 
     return [
       new TextLayer({
-        id: `text/${config.id}`,
-        data: features,
-        visible: config.visible,
-        opacity: config.opacity,
+        ...commonProps,
         billboard: opts.billboard ?? true,
         background: opts.background ?? false,
         backgroundPadding: [4, 2, 4, 2],
@@ -108,18 +104,7 @@ const renderer: LayerRenderer = {
         sizeScale: 1,
         sizeMinPixels: opts.sizeMinPixels ?? 6,
         sizeMaxPixels: opts.sizeMaxPixels ?? 64,
-        pickable: config.pickable ?? true,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        getPosition: (f: Feature) => {
-          const coords = (f.geometry as any)?.coordinates;
-          if (!coords) { return [0, 0, 0]; }
-          let z = 0;
-          if (config.elevation?.field) {
-            z = Number(f.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1);
-          }
-          return [coords[0], coords[1], z];
-        },
+        getPosition: (f: Feature) => getFeaturePosition(f, config),
         getText: (f: Feature) => {
           const v = f.properties?.[textField];
           if (v == null) { return ''; }
@@ -129,25 +114,16 @@ const renderer: LayerRenderer = {
         getSize: opts.sizeField
           ? (f: Feature) => Number(f.properties?.[opts.sizeField] ?? opts.fontSize ?? 14)
           : (opts.fontSize ?? 14),
-        getColor: hasSelection
-          ? (f: Feature) => (isSelected(f) ? ([255, 230, 60, 255] as [number, number, number, number]) : getColor(f))
-          : getColor,
+        getColor,
         getTextAnchor: opts.anchor ?? 'middle',
         getAlignmentBaseline: opts.baseline ?? 'center',
         getPixelOffset: [opts.pixelOffsetX ?? 0, opts.pixelOffsetY ?? 0] as [number, number],
-        onClick: onFeatureClick
-          ? (info: any) => info.object && onFeatureClick(info.object, info)
-          : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
-        extensions: [new DataFilterExtension({ filterSize: 1 })],
         updateTriggers: {
-          getFilterValue: [timeFilterFlags],
+          ...commonProps.updateTriggers,
           getColor: [selectedKey],
           getText: [textField],
           getSize: [opts.sizeField, opts.fontSize],
         },
-        parameters: { depthTest: false },
       }),
     ];
   },

@@ -1,11 +1,17 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
+import {
+  createCommonLayerProps,
+  createLineSelectionAccessors,
+  createSelectionState,
+  getFeaturePosition,
+} from '../utils';
+import { DataFilterExtension } from '@deck.gl/extensions';
 
 const schema: LayerOptionField[] = [
   { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4, section: 'Point' },
@@ -38,7 +44,8 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, selectedKey, onFeatureClick }: LayerRenderContext) {
+  renderLayers(context: LayerRenderContext) {
+    const { config, features, timeFilterFlags, selectedKey } = context;
     const opts = config.options as Record<string, any>;
 
     // Value field: prefer colorScale.field, then shader.valueField, then legacy fieldMapping
@@ -52,9 +59,7 @@ const renderer: LayerRenderer = {
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField);
 
-    const extensions: any[] = [
-      new DataFilterExtension({ filterSize: 1 }),
-    ];
+    const extensions: any[] = [];
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
       const userDecl = config.shader?.vsDecl?.trim() ?? '';
@@ -72,42 +77,26 @@ const renderer: LayerRenderer = {
     }
 
     const getColor = buildColorAccessor(config.colorScale);
-
-    const keyField = config.timeFilter?.groupByField ?? '';
-    const isSelected = (f: Feature) =>
-      selectedKey != null && keyField && String(f.properties?.[keyField]) === selectedKey;
-    const hasSelection = selectedKey != null && keyField;
+    const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
+    const commonProps = createCommonLayerProps(context);
+    const lineAccessors = createLineSelectionAccessors(selectionState);
 
     const layers: any[] = [];
 
     layers.push(
       new ScatterplotLayer({
+        ...commonProps,
         id: `scatterplot/${config.id}`,
         data: features,
-        visible: config.visible,
-        opacity: config.opacity,
         radiusMinPixels: opts.radiusMinPixels ?? 4,
         radiusMaxPixels: opts.radiusMaxPixels ?? 20,
         radiusUnits: 'pixels' as const,
         stroked: opts.stroked ?? true,
         filled: true,
-        getLineColor: hasSelection
-          ? (f: Feature) => (isSelected(f) ? [255, 230, 60, 255] : [200, 200, 240, 60])
-          : [200, 200, 240, 200],
-        getLineWidth: hasSelection ? (f: Feature) => (isSelected(f) ? 3 : 1) : 2,
+        getLineColor: lineAccessors.getLineColor,
+        getLineWidth: lineAccessors.getLineWidth,
         lineWidthMinPixels: 0,
-        pickable: config.pickable ?? true,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        getPosition: (f: Feature) => {
-          const coords = (f.geometry as any)?.coordinates;
-          if (!coords) {return [0, 0, 0];}
-          let z = 0;
-          if (config.elevation?.field) {
-            z = Number(f.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1);
-          }
-          return [coords[0], coords[1], z];
-        },
+        getPosition: (f: Feature) => getFeaturePosition(f, config),
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
         getRadius: opts.radiusField
           ? (f: Feature) => {
@@ -115,15 +104,10 @@ const renderer: LayerRenderer = {
               return Math.max(opts.radiusMinPixels ?? 4, v * (opts.radiusScale ?? 1));
             }
           : opts.radiusMinPixels ?? 4,
-        onClick: onFeatureClick
-          ? (info: any) => info.object && onFeatureClick(info.object, info)
-          : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
         ...(useShader ? { getValue: (f: Feature) => Number(f.properties?.[valueField] ?? 0) } : {}),
-        extensions,
+        extensions: commonProps.extensions,
         updateTriggers: {
-          getFilterValue: [timeFilterFlags],
+          ...commonProps.updateTriggers,
           getLineColor: [selectedKey],
           getLineWidth: [selectedKey],
         },
@@ -132,22 +116,14 @@ const renderer: LayerRenderer = {
     );
     if (opts.showLabels) {
       const labelField = opts.labelField || valueField;
-      const getDecimals = (v: number) => (v > 6 ? 0 : 0);
+      const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
           id: `scatterplot-labels/${config.id}`,
           data: features,
           visible: config.visible,
           pickable: false,
-          getPosition: (f: Feature) => {
-            const coords = (f.geometry as any)?.coordinates;
-            if (!coords) {return [0, 0, 0];}
-            let z = 0;
-            if (config.elevation?.field) {
-              z = Number(f.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1);
-            }
-            return [coords[0], coords[1], z];
-          },
+          getPosition: (f: Feature) => getFeaturePosition(f, config),
           getText: (f: Feature) => {
             const v = f.properties?.[labelField];
             if (v === undefined || v === null) { return ''; }

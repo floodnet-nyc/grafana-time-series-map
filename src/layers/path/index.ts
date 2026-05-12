@@ -1,9 +1,9 @@
 import { PathLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createCommonLayerProps, getNumericProperty } from '../utils';
 
 const schema: LayerOptionField[] = [
   { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
@@ -35,37 +35,24 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+  renderLayers(context: LayerRenderContext) {
+    const { config } = context;
     const opts = config.options as Record<string, any>;
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
-    const lineFeatures = features.filter((f) => getPath(f) !== null);
+    const commonProps = createCommonLayerProps(context);
 
     return [
       new PathLayer({
-        id: `path/${config.id}`,
-        data: lineFeatures,
-        visible: config.visible,
-        opacity: config.opacity,
-        pickable: config.pickable ?? true,
+        ...commonProps,
         widthUnits: 'pixels' as const,
         widthMinPixels: opts.widthMinPixels ?? 2,
         widthMaxPixels: opts.widthMaxPixels ?? 10,
         capRounded: opts.capRounded ?? true,
         jointRounded: opts.jointRounded ?? true,
         getPath: (f: Feature) => getPath(f)! as any,
-        getColor: getColor as any,
+        getColor: buildColorAccessor(config.colorScale, [0, 155, 200, 200]),
         getWidth: opts.widthField
-          ? (f: Feature) => Number(f.properties?.[opts.widthField] ?? 1) * (opts.widthScale ?? 1)
+          ? (f: Feature) => getNumericProperty(f, opts.widthField) * (opts.widthScale ?? 1)
           : 1,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        onClick: onFeatureClick
-          ? (info: any) => info.object && onFeatureClick(info.object, info)
-          : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
-        extensions: [new DataFilterExtension({ filterSize: 1 })],
-        updateTriggers: { getFilterValue: [timeFilterFlags] },
       }),
     ];
   },
