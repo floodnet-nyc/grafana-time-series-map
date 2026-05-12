@@ -5,6 +5,7 @@ import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
 
 const schema: LayerOptionField[] = [
   { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4, section: 'Point' },
@@ -187,7 +188,13 @@ const renderer: LayerRenderer = {
           maxZoom: config.maxZoom,
           getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
           filterRange: [1, 1] as [number, number],
-          extensions: [new DataFilterExtension({ filterSize: 1 })],
+          collisionGroup: 'scatter-labels',
+          collisionTestProps: { sizeScale: 2 },
+          getCollisionPriority: (f: any) => Number(f.properties?.[config.elevation?.field ?? ''] ?? 0) - 1000,
+          extensions: [
+            new DataFilterExtension({ filterSize: 1 }),
+            new CollisionFilterExtension(),
+          ],
           updateTriggers: { getFilterValue: [timeFilterFlags] },
           parameters: { depthTest: false },
           polygonOffset: 1,
