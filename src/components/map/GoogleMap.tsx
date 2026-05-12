@@ -9,7 +9,7 @@ import { GoogleHashRoute } from './google/GoogleHashRoute';
 import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './google/controlMappings';
 import { getInitialViewport } from './viewState';
 
-export function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
+export default function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.interactions ?? {};
   const googleMapOptions = options.googleMapOptions ?? {};
   const interactive = interactions.interactive ?? true;

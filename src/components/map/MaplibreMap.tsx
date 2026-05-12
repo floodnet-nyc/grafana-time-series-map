@@ -12,7 +12,9 @@ import type { MapProviderProps } from './providerTypes';
 import { MaplibreDeckOverlay } from './maplibre/MaplibreDeckOverlay';
 import { getMaplibreStyleUrl } from './maplibre/style';
 import 'maplibre-gl/dist/maplibre-gl.css';
-export function MaplibreMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
+
+
+export default function MaplibreMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.maplibreStyle, options.maplibreStyleUrl);
 
   const mapRef = useRef<MapRef>(null);

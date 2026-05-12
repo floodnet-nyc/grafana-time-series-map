@@ -1,43 +1,42 @@
-import React from 'react';
-import type { Layer } from '@deck.gl/core';
-import type { MapPanelOptions } from '../../types';
-import { MaplibreMap } from './MaplibreMap';
-import { GoogleMap } from './GoogleMap';
-import type { FitBounds, ViewportSnapshot } from './types';
+import React, { Suspense, lazy } from 'react';
+import type { MapProviderProps } from './providerTypes';
+const LazyGoogleMap = lazy(() => import('./GoogleMap'));
+const LazyMaplibreMap = lazy(() => import('./MaplibreMap'));
 
-interface DeckGLMapProps {
-  width: number;
-  height: number;
-  options: MapPanelOptions;
-  layers: Layer[];
-  fitBounds?: FitBounds;
-  onViewportChange?: (viewport: ViewportSnapshot) => void;
-  interleaved?: boolean;
+function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' | 'height'>) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        background: 'rgba(14, 16, 25, 0.4)',
+      }}
+    />
+  );
 }
 
-export function DeckGLMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved }: DeckGLMapProps) {
+export function DeckGLMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved }: MapProviderProps) {
+  const providerProps: MapProviderProps = {
+    width,
+    height,
+    options,
+    layers,
+    fitBounds,
+    onViewportChange,
+    interleaved,
+  };
+
   if (options.basemapProvider === 'google') {
     return (
-      <GoogleMap
-        width={width}
-        height={height}
-        options={options}
-        layers={layers}
-        fitBounds={fitBounds}
-        interleaved={interleaved}
-        onViewportChange={onViewportChange}
-      />
+      <Suspense fallback={<MapProviderFallback width={width} height={height} />}>
+        <LazyGoogleMap {...providerProps} />
+      </Suspense>
     );
   }
+
   return (
-    <MaplibreMap
-      width={width}
-      height={height}
-      options={options}
-      layers={layers}
-      fitBounds={fitBounds}
-      onViewportChange={onViewportChange}
-      interleaved={interleaved}
-    />
+    <Suspense fallback={<MapProviderFallback width={width} height={height} />}>
+      <LazyMaplibreMap {...providerProps} />
+    </Suspense>
   );
 }
