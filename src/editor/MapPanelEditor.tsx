@@ -4,7 +4,7 @@ import { useStyles2, Button, IconButton } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import type { LayerConfig } from '../types';
 import { LayerEditor } from './LayerEditor';
-import { getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
+import { getAllLayerTypes } from '../layers/registry';
 import '../layers/_all'; // ensure registry is populated
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
@@ -19,25 +19,47 @@ function makeDefaultLayer(type: string, index: number): LayerConfig {
     timeFilter: { mode: 'none', timeField: 'time' },
     fieldMappings: [],
     opacity: 1,
-    options: resolveLayerOptions(type),
+    options: {},
   };
 }
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}
 
-function getAvailableRefIds(series: DataFrame[]): string[] {
-  return Array.from(new Set(series.map((frame) => frame.refId).filter((refId): refId is string => Boolean(refId))));
-}
+function buildFieldIndex(series: DataFrame[]) {
+  const refIds: string[] = [];
+  const seenRefIds = new Set<string>();
+  const fieldsByRefId = new Map<string, string[]>();
+  let firstFrameFields: string[] = [];
 
-function getFieldsForRefId(series: DataFrame[], refId: string | undefined): string[] {
-  const frames = refId ? series.filter((f) => f.refId === refId) : series.slice(0, 1);
-  const fieldSet = new Set<string>();
-  for (const frame of frames) {
-    for (const field of frame.fields) {
-      fieldSet.add(field.name);
+  for (const [index, frame] of series.entries()) {
+    const fieldNames = frame.fields.map((field) => field.name);
+    if (index === 0) {
+      firstFrameFields = fieldNames;
     }
+
+    if (!frame.refId) {
+      continue;
+    }
+
+    if (!seenRefIds.has(frame.refId)) {
+      seenRefIds.add(frame.refId);
+      refIds.push(frame.refId);
+    }
+
+    const existing = fieldsByRefId.get(frame.refId);
+    if (!existing) {
+      fieldsByRefId.set(frame.refId, Array.from(new Set(fieldNames)));
+      continue;
+    }
+
+    const merged = new Set(existing);
+    for (const fieldName of fieldNames) {
+      merged.add(fieldName);
+    }
+    fieldsByRefId.set(frame.refId, Array.from(merged));
   }
-  return Array.from(fieldSet);
+
+  return { refIds, fieldsByRefId, firstFrameFields };
 }
 
 export function MapPanelEditor({ value: layers, onChange, context }: Props) {
@@ -45,6 +67,11 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const layerList = useMemo(() => layers ?? [], [layers]);
+  const fieldIndex = useMemo(() => buildFieldIndex(context?.data ?? []), [context?.data]);
+  const selectedLayer = selectedIndex !== null ? layerList[selectedIndex] : undefined;
+  const availableFields = !selectedLayer?.queryRefId
+    ? fieldIndex.firstFrameFields
+    : fieldIndex.fieldsByRefId.get(selectedLayer.queryRefId) ?? [];
 
   const addLayer = useCallback(() => {
     const firstType = getAllLayerTypes()[0]?.type ?? 'scatterplot';
@@ -148,13 +175,13 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
       </div>
 
       {/* Selected layer editor */}
-      {selectedIndex !== null && layerList[selectedIndex] && (
+      {selectedLayer && (
         <div className={styles.editor}>
           <LayerEditor
-            layer={layerList[selectedIndex]}
-            onChange={(updated) => updateLayer(selectedIndex, updated)}
-            availableFields={getFieldsForRefId(context?.data ?? [], layerList[selectedIndex].queryRefId)}
-            availableRefIds={getAvailableRefIds(context?.data ?? [])}
+            layer={selectedLayer}
+            onChange={(updated) => updateLayer(selectedIndex!, updated)}
+            availableFields={availableFields}
+            availableRefIds={fieldIndex.refIds}
           />
         </div>
       )}

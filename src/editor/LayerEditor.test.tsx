@@ -67,6 +67,41 @@ jest.mock('@grafana/ui', () => {
 });
 
 jest.mock('../layers/registry', () => ({
+  getLayer: (type: string) =>
+    type === 'path'
+      ? {
+          type: 'path',
+          label: 'Path',
+          defaultOptions: {
+            widthMinPixels: 2,
+            widthMaxPixels: 10,
+            widthScale: 1,
+            widthField: '',
+            capRounded: true,
+            jointRounded: true,
+            layerBlendEnabled: false,
+          },
+          optionsSchema: [
+            { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2, section: 'Path' },
+          ],
+        }
+      : {
+          type: 'scatterplot',
+          label: 'Scatter Plot',
+          defaultOptions: {
+            radiusMinPixels: 4,
+            radiusMaxPixels: 20,
+            radiusScale: 1,
+            radiusField: '',
+            stroked: true,
+            showLabels: false,
+            labelField: '',
+            layerBlendEnabled: false,
+          },
+          optionsSchema: [
+            { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4, section: 'Point' },
+          ],
+        },
   getAllLayerTypes: () => [
     {
       type: 'scatterplot',
@@ -197,12 +232,10 @@ describe('LayerEditor interactions', () => {
     expect(currentLayer()).toMatchObject({
       type: 'path',
       options: {
-        widthMinPixels: 2,
-        widthMaxPixels: 10,
-        widthScale: 1,
         layerBlendEnabled: true,
       },
     });
+    expect(currentLayer().options).not.toHaveProperty('widthMinPixels');
     expect(currentLayer().options).not.toHaveProperty('radiusMinPixels');
   });
 
