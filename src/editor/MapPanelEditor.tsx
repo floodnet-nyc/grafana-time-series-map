@@ -68,6 +68,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
 
   const layerList = useMemo(() => layers ?? [], [layers]);
   const fieldIndex = useMemo(() => buildFieldIndex(context?.data ?? []), [context?.data]);
+  const queryFieldsByRefId = useMemo(() => Object.fromEntries(fieldIndex.fieldsByRefId), [fieldIndex.fieldsByRefId]);
   const selectedLayer = selectedIndex !== null ? layerList[selectedIndex] : undefined;
   const availableFields = !selectedLayer?.queryRefId
     ? fieldIndex.firstFrameFields
@@ -182,6 +183,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
             onChange={(updated) => updateLayer(selectedIndex!, updated)}
             availableFields={availableFields}
             availableRefIds={fieldIndex.refIds}
+            queryFieldsByRefId={queryFieldsByRefId}
           />
         </div>
       )}

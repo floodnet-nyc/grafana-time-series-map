@@ -195,7 +195,13 @@ function Harness({ initialLayer }: { initialLayer?: LayerConfig }) {
   const [layer, setLayer] = React.useState(initialLayer ?? createLayer());
   return (
     <div>
-      <LayerEditor layer={layer} onChange={setLayer} availableFields={['depth', 'sensor_id']} availableRefIds={['A', 'B']} />
+      <LayerEditor
+        layer={layer}
+        onChange={setLayer}
+        availableFields={['depth', 'sensor_id']}
+        availableRefIds={['A', 'B']}
+        queryFieldsByRefId={{ A: ['deployment_id', 'time', 'depth_inches'], B: ['sensor_id', 'time', 'status'] }}
+      />
       <pre data-testid="layer-state">{JSON.stringify(layer)}</pre>
     </div>
   );
@@ -302,5 +308,36 @@ describe('LayerEditor interactions', () => {
 
     expect(currentLayer().minZoom).toBeUndefined();
     expect(currentLayer().maxZoom).toBeUndefined();
+  });
+
+  it('adds secondary sources and derived fields through the dataflow section', () => {
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole('button', { name: '+ Add secondary source' }));
+    fireEvent.click(screen.getByRole('button', { name: '+ Add derived field' }));
+
+    expect(currentLayer()).toMatchObject({
+      secondarySources: [
+        {
+          id: 'source1',
+          queryRefId: 'A',
+          join: {
+            type: 'keyed-asof',
+            localKeyField: '',
+            remoteKeyField: '',
+            timeField: '',
+            maxLagMs: 3600000,
+          },
+          fields: [{ sourceField: '', as: '' }],
+        },
+      ],
+      derivedFields: [
+        {
+          as: 'derived1',
+          expression: '',
+          type: 'number',
+        },
+      ],
+    });
   });
 });
