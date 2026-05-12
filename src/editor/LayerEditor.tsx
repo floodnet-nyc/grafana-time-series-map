@@ -15,7 +15,7 @@ import {
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig, ColorStep } from '../types';
-import { getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
+import { extractSharedLayerOptions, getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
@@ -273,7 +273,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
           onChange={(v) =>
             patch({
               type: v.value,
-              options: resolveLayerOptions(v.value, {}),
+              options: resolveLayerOptions(v.value, extractSharedLayerOptions(layer.options)),
             })
           }
         />
