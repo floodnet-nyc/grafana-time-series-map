@@ -319,7 +319,7 @@ describe('LayerEditor interactions', () => {
     expect(currentLayer()).toMatchObject({
       secondarySources: [
         {
-          id: 'source1',
+          id: 'sensor',
           queryRefId: 'A',
           join: {
             type: 'keyed-asof',
@@ -335,6 +335,43 @@ describe('LayerEditor interactions', () => {
         {
           as: 'derived1',
           expression: '',
+          type: 'number',
+        },
+      ],
+    });
+  });
+
+  it('uses the flood depth preset for flood inundation layers', () => {
+    render(
+      <Harness
+        initialLayer={createLayer({
+          type: 'flood-inundation',
+          queryRefId: 'F',
+        })}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use flood depth preset' }));
+
+    expect(currentLayer()).toMatchObject({
+      secondarySources: [
+        {
+          id: 'sensor',
+          queryRefId: 'A',
+          join: {
+            type: 'keyed-asof',
+            localKeyField: 'deployment_id',
+            remoteKeyField: 'deployment_id',
+            timeField: 'time',
+            maxLagMs: 600000,
+          },
+          fields: [{ sourceField: 'depth_inches', as: 'depth' }],
+        },
+      ],
+      derivedFields: [
+        {
+          as: 'depthDiff',
+          expression: 'sensor.depth - primary.contour_depth_inches',
           type: 'number',
         },
       ],

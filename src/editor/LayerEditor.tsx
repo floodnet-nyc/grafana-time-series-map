@@ -99,6 +99,26 @@ function parseZoomInput(value: string, fallback: number): number {
   return Number.isFinite(parsed) ? clampZoom(parsed) : fallback;
 }
 
+function getDefaultSecondarySource(
+  primaryQueryRefId: string | undefined,
+  availableRefIds: string[],
+  index: number,
+): LayerSecondarySourceConfig {
+  const preferredQueryRefId = availableRefIds.find((refId) => refId !== primaryQueryRefId) ?? availableRefIds[0] ?? '';
+  return {
+    id: index === 0 ? 'sensor' : `source${index + 1}`,
+    queryRefId: preferredQueryRefId,
+    join: {
+      type: 'keyed-asof',
+      localKeyField: '',
+      remoteKeyField: '',
+      timeField: '',
+      maxLagMs: 3600000,
+    },
+    fields: [{ sourceField: '', as: '' }],
+  };
+}
+
 // ─── FieldSelect: autocomplete field picker ───────────────────────────────────
 
 interface FieldSelectProps {
@@ -279,6 +299,39 @@ export function LayerEditor({
 
   const updateDerivedField = (index: number, updates: Partial<LayerDerivedFieldConfig>) => {
     patchDerivedFields(derivedFields.map((field, fieldIndex) => (fieldIndex === index ? { ...field, ...updates } : field)));
+  };
+  const appendExpressionToken = (index: number, token: string) => {
+    const field = derivedFields[index];
+    if (!field) {
+      return;
+    }
+    const nextExpression = field.expression ? `${field.expression} ${token}` : token;
+    updateDerivedField(index, { expression: nextExpression });
+  };
+  const applyFloodDepthPreset = () => {
+    patch({
+      secondarySources: [
+        {
+          id: 'sensor',
+          queryRefId: availableRefIds.find((refId) => refId !== layer.queryRefId) ?? availableRefIds[0] ?? '',
+          join: {
+            type: 'keyed-asof',
+            localKeyField: 'deployment_id',
+            remoteKeyField: 'deployment_id',
+            timeField: 'time',
+            maxLagMs: 600000,
+          },
+          fields: [{ sourceField: 'depth_inches', as: 'depth' }],
+        },
+      ],
+      derivedFields: [
+        {
+          as: 'depthDiff',
+          expression: 'sensor.depth - primary.contour_depth_inches',
+          type: 'number',
+        },
+      ],
+    });
   };
 
   const renderOptionField = (f: LayerOptionField) => {
@@ -504,6 +557,36 @@ export function LayerEditor({
         <div className={styles.sectionHint}>
           Join secondary query results onto this layer and define derived values like deltas or ratios.
         </div>
+        <div className={styles.inlineActions}>
+          <button
+            type="button"
+            className={styles.inlineAction}
+            onClick={() => patchSecondarySources([...secondarySources, getDefaultSecondarySource(layer.queryRefId, availableRefIds, secondarySources.length)])}
+          >
+            + Add secondary source
+          </button>
+          <button
+            type="button"
+            className={styles.inlineAction}
+            onClick={() =>
+              patchDerivedFields([
+                ...derivedFields,
+                {
+                  as: `derived${derivedFields.length + 1}`,
+                  expression: '',
+                  type: 'number',
+                },
+              ])
+            }
+          >
+            + Add derived field
+          </button>
+          {layer.type === 'flood-inundation' && (
+            <button type="button" className={styles.inlineAction} onClick={applyFloodDepthPreset}>
+              Use flood depth preset
+            </button>
+          )}
+        </div>
         {secondarySources.map((source, sourceIndex) => {
           const secondaryFields = getFieldsForRefId(source.queryRefId);
           return (
@@ -611,29 +694,6 @@ export function LayerEditor({
             </div>
           );
         })}
-        <button
-          type="button"
-          className={styles.inlineAction}
-          onClick={() =>
-            patchSecondarySources([
-              ...secondarySources,
-              {
-                id: `source${secondarySources.length + 1}`,
-                queryRefId: availableRefIds[0] ?? '',
-                join: {
-                  type: 'keyed-asof',
-                  localKeyField: '',
-                  remoteKeyField: '',
-                  timeField: '',
-                  maxLagMs: 3600000,
-                },
-                fields: [{ sourceField: '', as: '' }],
-              },
-            ])
-          }
-        >
-          + Add secondary source
-        </button>
 
         {derivedFields.map((derivedField, index) => (
           <div key={index} className={styles.dataflowBlock}>
@@ -649,6 +709,35 @@ export function LayerEditor({
                 onChange={(e) => updateDerivedField(index, { expression: e.currentTarget.value })}
               />
             </Field>
+            <div className={styles.tokenHelp}>
+              <span className={styles.tokenLabel}>Insert:</span>
+              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, 'primary.')}>
+                primary.
+              </button>
+              {secondarySources.map((source) => (
+                <button
+                  key={source.id}
+                  type="button"
+                  className={styles.tokenButton}
+                  onClick={() => appendExpressionToken(index, `${source.id}.`)}
+                >
+                  {source.id}.
+                </button>
+              ))}
+              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, '-')}>
+                -
+              </button>
+              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, '(')}>
+                (
+              </button>
+              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, ')')}>
+                )
+              </button>
+            </div>
+            <div className={styles.sectionHint}>
+              Available namespaces: `primary.*`
+              {secondarySources.length > 0 ? ` and ${secondarySources.map((source) => `${source.id}.*`).join(', ')}` : ''}.
+            </div>
             <button
               type="button"
               className={styles.inlineRemove}
@@ -658,22 +747,6 @@ export function LayerEditor({
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          className={styles.inlineAction}
-          onClick={() =>
-            patchDerivedFields([
-              ...derivedFields,
-              {
-                as: `derived${derivedFields.length + 1}`,
-                expression: '',
-                type: 'number',
-              },
-            ])
-          }
-        >
-          + Add derived field
-        </button>
       </CollapsableSection>
 
       <CollapsableSection label="Appearance" isOpen={false}>
@@ -970,6 +1043,7 @@ function getStyles(theme: GrafanaTheme2) {
       gap: theme.spacing(1),
       flexWrap: 'wrap',
       marginTop: theme.spacing(0.5),
+      marginBottom: theme.spacing(1),
     }),
     inlineAction: css({
       background: 'none',
@@ -991,6 +1065,27 @@ function getStyles(theme: GrafanaTheme2) {
       padding: 0,
       textAlign: 'left',
       '&:hover': { color: theme.colors.error.text },
+    }),
+    tokenHelp: css({
+      display: 'flex',
+      gap: theme.spacing(0.5),
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      marginBottom: theme.spacing(0.5),
+    }),
+    tokenLabel: css({
+      fontSize: 12,
+      color: theme.colors.text.secondary,
+    }),
+    tokenButton: css({
+      background: 'none',
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 11,
+      padding: '2px 6px',
+      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
     }),
     zoomRangeEditor: css({
       display: 'flex',
