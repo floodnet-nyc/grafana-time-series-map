@@ -1,4 +1,5 @@
-import type { Layer, LayerContext, Accessor, LayerExtension } from '@deck.gl/core';
+import { LayerExtension } from '@deck.gl/core';
+import type { Layer, LayerContext, Accessor } from '@deck.gl/core';
 // import {deepEqual} from '../utils/deep-equal';
 // import { deepEqual } from '@deck.gl/core/utils/deep-equal';
 import type { VariableShaderType } from '@luma.gl/core';
