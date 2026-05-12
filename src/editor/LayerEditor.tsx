@@ -13,7 +13,14 @@ import {
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig } from '../types';
+import type {
+  LayerConfig,
+  GeometrySource,
+  TimeFilterMode,
+  ElevationConfig,
+  LayerSecondarySourceConfig,
+  LayerDerivedFieldConfig,
+} from '../types';
 import { extractSharedLayerOptions, getAllLayerTypes, getLayer } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
@@ -138,9 +145,16 @@ interface Props {
   onChange: (layer: LayerConfig) => void;
   availableFields?: string[];
   availableRefIds?: string[];
+  queryFieldsByRefId?: Record<string, string[]>;
 }
 
-export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [] }: Props) {
+export function LayerEditor({
+  layer,
+  onChange,
+  availableFields = [],
+  availableRefIds = [],
+  queryFieldsByRefId = {},
+}: Props) {
   const styles = useStyles2(getStyles);
   const layerTypes = useMemo(
     () => getAllLayerTypes().map((r) => ({ label: r.label, value: r.type })),
@@ -172,6 +186,8 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
 
   const patchTimeFilter = (updates: Partial<typeof layer.timeFilter>) =>
     patch({ timeFilter: { ...layer.timeFilter, ...updates } });
+  const patchSecondarySources = (secondarySources: LayerSecondarySourceConfig[]) => patch({ secondarySources });
+  const patchDerivedFields = (derivedFields: LayerDerivedFieldConfig[]) => patch({ derivedFields });
 
   const patchOpts = (key: string, value: unknown) => patch({ options: { ...layer.options, [key]: value } });
 
@@ -208,10 +224,62 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
   const scheme = getActiveScheme(layer);
   const zoomRange = [layer.minZoom ?? DEFAULT_MIN_ZOOM, layer.maxZoom ?? DEFAULT_MAX_ZOOM];
   const { regular: regularOptionSections, advancedColor: advancedColorOptionSections } = splitOptionSections(optionsBySections);
+  const secondarySources = layer.secondarySources ?? [];
+  const derivedFields = layer.derivedFields ?? [];
   const getOptionValue = useCallback(
     (field: LayerOptionField) => layer.options[field.key] ?? defaultOptions[field.key] ?? field.defaultValue,
     [defaultOptions, layer.options]
   );
+  const getFieldsForRefId = useCallback(
+    (refId: string | undefined) => (refId ? queryFieldsByRefId[refId] ?? [] : []),
+    [queryFieldsByRefId]
+  );
+
+  const updateSecondarySource = (index: number, updates: Partial<LayerSecondarySourceConfig>) => {
+    const next = secondarySources.map((source, sourceIndex) =>
+      sourceIndex === index ? { ...source, ...updates } : source
+    );
+    patchSecondarySources(next);
+  };
+
+  const updateSecondarySourceJoin = (
+    index: number,
+    updates: Partial<LayerSecondarySourceConfig['join']>
+  ) => {
+    const source = secondarySources[index];
+    if (!source) {
+      return;
+    }
+    updateSecondarySource(index, { join: { ...source.join, ...updates } });
+  };
+
+  const updateSecondarySourceField = (
+    sourceIndex: number,
+    fieldIndex: number,
+    updates: Partial<LayerSecondarySourceConfig['fields'][number]>
+  ) => {
+    const source = secondarySources[sourceIndex];
+    if (!source) {
+      return;
+    }
+
+    patchSecondarySources(
+      secondarySources.map((candidate, candidateIndex) =>
+        candidateIndex === sourceIndex
+          ? {
+              ...candidate,
+              fields: candidate.fields.map((field, candidateFieldIndex) =>
+                candidateFieldIndex === fieldIndex ? { ...field, ...updates } : field
+              ),
+            }
+          : candidate
+      )
+    );
+  };
+
+  const updateDerivedField = (index: number, updates: Partial<LayerDerivedFieldConfig>) => {
+    patchDerivedFields(derivedFields.map((field, fieldIndex) => (fieldIndex === index ? { ...field, ...updates } : field)));
+  };
 
   const renderOptionField = (f: LayerOptionField) => {
     const value = getOptionValue(f);
@@ -430,6 +498,182 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             </Field>
           </>
         )}
+      </CollapsableSection>
+
+      <CollapsableSection label="Dataflow" isOpen={false}>
+        <div className={styles.sectionHint}>
+          Join secondary query results onto this layer and define derived values like deltas or ratios.
+        </div>
+        {secondarySources.map((source, sourceIndex) => {
+          const secondaryFields = getFieldsForRefId(source.queryRefId);
+          return (
+            <div key={sourceIndex} className={styles.dataflowBlock}>
+              <Field label="Source ID">
+                <Input
+                  value={source.id}
+                  onChange={(e) => updateSecondarySource(sourceIndex, { id: e.currentTarget.value })}
+                />
+              </Field>
+              <Field label="Source query">
+                <Combobox
+                  options={refIdOptions.filter((option) => option.value !== '')}
+                  value={source.queryRefId}
+                  onChange={(v) => updateSecondarySource(sourceIndex, { queryRefId: String(v.value) })}
+                />
+              </Field>
+              <Field label="Join type">
+                <Combobox
+                  options={[{ label: 'Keyed ASOF', value: 'keyed-asof' }]}
+                  value={source.join.type}
+                  onChange={() => undefined}
+                />
+              </Field>
+              <Field label="Local key field">
+                <FieldSelect
+                  value={source.join.localKeyField}
+                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { localKeyField: v })}
+                  availableFields={availableFields}
+                />
+              </Field>
+              <Field label="Remote key field">
+                <FieldSelect
+                  value={source.join.remoteKeyField}
+                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { remoteKeyField: v })}
+                  availableFields={secondaryFields}
+                />
+              </Field>
+              <Field label="Remote time field">
+                <FieldSelect
+                  value={source.join.timeField}
+                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { timeField: v })}
+                  availableFields={secondaryFields}
+                />
+              </Field>
+              <Field label="Max lag (ms)">
+                <Input
+                  type="number"
+                  value={source.join.maxLagMs ?? 3600000}
+                  onChange={(e) => updateSecondarySourceJoin(sourceIndex, { maxLagMs: Number(e.currentTarget.value) })}
+                />
+              </Field>
+              {source.fields.map((field, fieldIndex) => (
+                <div key={fieldIndex} className={styles.dataflowRow}>
+                  <Field label="Source field">
+                    <FieldSelect
+                      value={field.sourceField}
+                      onChange={(v) => updateSecondarySourceField(sourceIndex, fieldIndex, { sourceField: v })}
+                      availableFields={secondaryFields}
+                    />
+                  </Field>
+                  <Field label="Expose as">
+                    <Input
+                      value={field.as}
+                      onChange={(e) => updateSecondarySourceField(sourceIndex, fieldIndex, { as: e.currentTarget.value })}
+                    />
+                  </Field>
+                  <button
+                    type="button"
+                    className={styles.inlineRemove}
+                    onClick={() =>
+                      patchSecondarySources(
+                        secondarySources.map((candidate, candidateIndex) =>
+                          candidateIndex === sourceIndex
+                            ? { ...candidate, fields: candidate.fields.filter((_, candidateFieldIndex) => candidateFieldIndex !== fieldIndex) }
+                            : candidate
+                        )
+                      )
+                    }
+                  >
+                    Remove field
+                  </button>
+                </div>
+              ))}
+              <div className={styles.inlineActions}>
+                <button
+                  type="button"
+                  className={styles.inlineAction}
+                  onClick={() =>
+                    updateSecondarySource(sourceIndex, {
+                      fields: [...source.fields, { sourceField: '', as: '' }],
+                    })
+                  }
+                >
+                  + Add source field
+                </button>
+                <button
+                  type="button"
+                  className={styles.inlineRemove}
+                  onClick={() => patchSecondarySources(secondarySources.filter((_, index) => index !== sourceIndex))}
+                >
+                  Remove source
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        <button
+          type="button"
+          className={styles.inlineAction}
+          onClick={() =>
+            patchSecondarySources([
+              ...secondarySources,
+              {
+                id: `source${secondarySources.length + 1}`,
+                queryRefId: availableRefIds[0] ?? '',
+                join: {
+                  type: 'keyed-asof',
+                  localKeyField: '',
+                  remoteKeyField: '',
+                  timeField: '',
+                  maxLagMs: 3600000,
+                },
+                fields: [{ sourceField: '', as: '' }],
+              },
+            ])
+          }
+        >
+          + Add secondary source
+        </button>
+
+        {derivedFields.map((derivedField, index) => (
+          <div key={index} className={styles.dataflowBlock}>
+            <Field label="Derived field name">
+              <Input
+                value={derivedField.as}
+                onChange={(e) => updateDerivedField(index, { as: e.currentTarget.value })}
+              />
+            </Field>
+            <Field label="Expression">
+              <Input
+                value={derivedField.expression}
+                onChange={(e) => updateDerivedField(index, { expression: e.currentTarget.value })}
+              />
+            </Field>
+            <button
+              type="button"
+              className={styles.inlineRemove}
+              onClick={() => patchDerivedFields(derivedFields.filter((_, fieldIndex) => fieldIndex !== index))}
+            >
+              Remove derived field
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className={styles.inlineAction}
+          onClick={() =>
+            patchDerivedFields([
+              ...derivedFields,
+              {
+                as: `derived${derivedFields.length + 1}`,
+                expression: '',
+                type: 'number',
+              },
+            ])
+          }
+        >
+          + Add derived field
+        </button>
       </CollapsableSection>
 
       <CollapsableSection label="Appearance" isOpen={false}>
@@ -708,6 +952,45 @@ function getStyles(theme: GrafanaTheme2) {
     thresholdSummary: css({
       fontSize: 12,
       color: theme.colors.text.secondary,
+    }),
+    dataflowBlock: css({
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      padding: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+    }),
+    dataflowRow: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.5),
+      marginBottom: theme.spacing(1),
+    }),
+    inlineActions: css({
+      display: 'flex',
+      gap: theme.spacing(1),
+      flexWrap: 'wrap',
+      marginTop: theme.spacing(0.5),
+    }),
+    inlineAction: css({
+      background: 'none',
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 12,
+      padding: '4px 8px',
+      marginBottom: theme.spacing(1),
+      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
+    }),
+    inlineRemove: css({
+      background: 'none',
+      border: 'none',
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 12,
+      padding: 0,
+      textAlign: 'left',
+      '&:hover': { color: theme.colors.error.text },
     }),
     zoomRangeEditor: css({
       display: 'flex',
