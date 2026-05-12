@@ -5,6 +5,19 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 
+interface IconLayerOptions {
+  fixedIcon: string;
+  iconField: string;
+  iconAtlasUrl: string;
+  iconMappingUrl: string;
+  sizeScale: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  billboard: boolean;
+  alphaCutoff: number;
+}
+
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
   { label: 'Marker (shaded)', value: 'marker-shaded' },
@@ -69,7 +82,7 @@ function getBuiltInIconName(iconName: string) {
   return iconName in BUILT_IN_ICON_MAPPING ? iconName : 'marker';
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<IconLayerOptions> = {
   type: 'icon',
   label: 'Icon',
   defaultOptions: {
@@ -86,18 +99,17 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, features, selectedKey } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<IconLayerOptions>) {
+    const { config, features, selectedKey, options } = context;
     const baseColor = buildColorAccessor(config.colorScale);
     const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
     const commonProps = createCommonLayerProps(context);
 
-    const iconAtlas = (opts.iconAtlasUrl as string)?.trim();
-    const iconMapping = (opts.iconMappingUrl as string)?.trim();
+    const iconAtlas = options.iconAtlasUrl.trim();
+    const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);
-    const fixedIcon: string = opts.fixedIcon ?? 'marker';
+    const fixedIcon = options.fixedIcon;
 
     return [
       new IconLayer({
@@ -106,27 +118,27 @@ const renderer: LayerRenderer = {
         data: features,
         iconAtlas: useCustomAtlas ? iconAtlas : BUILT_IN_ICON_ATLAS,
         iconMapping: useCustomAtlas ? iconMapping : BUILT_IN_ICON_MAPPING,
-        billboard: opts.billboard ?? true,
-        alphaCutoff: opts.alphaCutoff ?? 0.05,
+        billboard: options.billboard,
+        alphaCutoff: options.alphaCutoff,
         sizeScale: 1,
-        sizeMinPixels: opts.sizeMinPixels ?? 8,
-        sizeMaxPixels: opts.sizeMaxPixels ?? 64,
+        sizeMinPixels: options.sizeMinPixels,
+        sizeMaxPixels: options.sizeMaxPixels,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
-        getIcon: opts.iconField
+        getIcon: options.iconField
           ? (f: Feature) => {
-              const iconName = String(f.properties?.[opts.iconField] ?? fixedIcon);
+              const iconName = String(f.properties?.[options.iconField] ?? fixedIcon);
               return useCustomAtlas ? iconName : getBuiltInIconName(iconName);
             }
           : () => (useCustomAtlas ? fixedIcon : getBuiltInIconName(fixedIcon)),
-        getSize: opts.sizeField
-          ? (f: Feature) => Number(f.properties?.[opts.sizeField] ?? opts.sizeScale ?? 32)
-          : (opts.sizeScale ?? 32),
+        getSize: options.sizeField
+          ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.sizeScale)
+          : options.sizeScale,
         getColor,
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: [selectedKey],
-          getIcon: [opts.iconField, opts.fixedIcon],
-          getSize: [opts.sizeField, opts.sizeScale],
+          getIcon: [options.iconField, options.fixedIcon],
+          getSize: [options.sizeField, options.sizeScale],
         },
       }),
     ];

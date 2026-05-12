@@ -13,6 +13,16 @@ import {
 } from '../utils';
 import { DataFilterExtension } from '@deck.gl/extensions';
 
+interface ScatterplotLayerOptions {
+  radiusMinPixels: number;
+  radiusMaxPixels: number;
+  radiusField: string;
+  radiusScale: number;
+  stroked: boolean;
+  showLabels: boolean;
+  labelField: string;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4, section: 'Point' },
   { key: 'radiusMaxPixels', label: 'Max radius (px)', type: 'number', defaultValue: 20, section: 'Point' },
@@ -30,7 +40,7 @@ const ScatterColorExtension = CreateMathExtensionSubclass({
   inject: {},
 });
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<ScatterplotLayerOptions> = {
   type: 'scatterplot',
   label: 'Scatter Plot',
   defaultOptions: {
@@ -44,9 +54,8 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, features, timeFilterFlags, selectedKey } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<ScatterplotLayerOptions>) {
+    const { config, features, timeFilterFlags, selectedKey, options } = context;
 
     // Value field: prefer colorScale.field, then shader.valueField, then legacy fieldMapping
     const valueField =
@@ -88,22 +97,22 @@ const renderer: LayerRenderer = {
         ...commonProps,
         id: `scatterplot/${config.id}`,
         data: features,
-        radiusMinPixels: opts.radiusMinPixels ?? 4,
-        radiusMaxPixels: opts.radiusMaxPixels ?? 20,
+        radiusMinPixels: options.radiusMinPixels,
+        radiusMaxPixels: options.radiusMaxPixels,
         radiusUnits: 'pixels' as const,
-        stroked: opts.stroked ?? true,
+        stroked: options.stroked,
         filled: true,
         getLineColor: lineAccessors.getLineColor,
         getLineWidth: lineAccessors.getLineWidth,
         lineWidthMinPixels: 0,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
-        getRadius: opts.radiusField
+        getRadius: options.radiusField
           ? (f: Feature) => {
-              const v = Number(f.properties?.[opts.radiusField] ?? 0);
-              return Math.max(opts.radiusMinPixels ?? 4, v * (opts.radiusScale ?? 1));
+              const v = Number(f.properties?.[options.radiusField] ?? 0);
+              return Math.max(options.radiusMinPixels, v * options.radiusScale);
             }
-          : opts.radiusMinPixels ?? 4,
+          : options.radiusMinPixels,
         ...(useShader ? { getValue: (f: Feature) => Number(f.properties?.[valueField] ?? 0) } : {}),
         extensions: commonProps.extensions,
         updateTriggers: {
@@ -114,8 +123,8 @@ const renderer: LayerRenderer = {
         parameters: { blend: true, depthTest: false },
       }),
     );
-    if (opts.showLabels) {
-      const labelField = opts.labelField || valueField;
+    if (options.showLabels) {
+      const labelField = options.labelField || valueField;
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
@@ -133,14 +142,14 @@ const renderer: LayerRenderer = {
             return String(v);
           },
           getSize: (f: Feature) => {
-            const v = Number(f.properties?.[opts.radiusField] ?? 0);
+            const v = Number(f.properties?.[options.radiusField] ?? 0);
             const decs = getDecimals(v);
             const chars = String(v.toFixed(decs)).length;
             return (
-              (opts.radiusMinPixels ?? 4) +
+              options.radiusMinPixels +
               Math.max(0, Math.min(
-                opts.radiusMaxPixels ?? 20, 
-                v * (opts.radiusScale ?? 1)
+                options.radiusMaxPixels,
+                v * options.radiusScale
               )) / chars
             )
             // return Math.max(Math.max((opts.radiusMinPixels ?? 4)*1.5, 10), Math.min(opts.radiusMaxPixels, v * (opts.radiusScale ?? 1)) * 1.2);

@@ -14,7 +14,12 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
 }
 
 
-export function createCommonLayerProps({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+export function createCommonLayerProps<TOptions extends object>({
+  config,
+  features,
+  timeFilterFlags,
+  onFeatureClick,
+}: LayerRenderContext<TOptions>) {
   return {
     id: `${config.type}/${config.id}`,
     data: features,

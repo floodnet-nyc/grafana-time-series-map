@@ -181,6 +181,10 @@ export function renderPreparedLayers({
 
     const renderContext: LayerRenderContext = {
       config: preparedLayerState.config,
+      options: {
+        ...renderer.defaultOptions,
+        ...preparedLayerState.config.options,
+      },
       panelOptions: options,
       features: preparedLayerState.features,
       cursorTimeMs,

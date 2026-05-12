@@ -6,6 +6,12 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import type { ColorScaleConfig } from '../../types';
 
+interface FloodInundationLayerOptions {
+  contourDepthField: string;
+  sensorKeyField: string;
+  fillOpacity: number;
+}
+
 const VS_FILTER_COLOR = `
 float depthDiff = instanceCurrentDepth - instanceContourDepth;
 float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
@@ -59,7 +65,7 @@ function getPolygonCoords(f: Feature): number[][][] | null {
   return null;
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<FloodInundationLayerOptions> = {
   type: 'flood-inundation',
   label: 'Flood Inundation',
   defaultOptions: {
@@ -69,11 +75,10 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, lookupValues, onFeatureClick }: LayerRenderContext) {
-    const opts = config.options as Record<string, any>;
-    const contourDepthField: string = opts.contourDepthField ?? '';
-    const sensorKeyField: string = opts.sensorKeyField ?? '';
-    const fillOpacity: number = opts.fillOpacity ?? 1;
+  renderLayers({ config, features, lookupValues, onFeatureClick, options }: LayerRenderContext<FloodInundationLayerOptions>) {
+    const contourDepthField = options.contourDepthField;
+    const sensorKeyField = options.sensorKeyField;
+    const fillOpacity = options.fillOpacity;
 
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
 
@@ -109,12 +114,12 @@ const renderer: LayerRenderer = {
           }),
         ],
         updateTriggers: {
-          getElevation: [opts.elevation?.field, lookupValues],
+          getElevation: [config.elevation?.field, lookupValues],
           getContourDepth: [contourDepthField],
           getCurrentDepth: [lookupValues, sensorKeyField],
         },
         // getPolygonOffset: (f: Feature) => -Number(f.properties?.[contourDepthField] ?? 0),
-        parameters: { depthTest: !!opts.depthTest },
+        parameters: { depthTest: false },
       }),
     ];
   },

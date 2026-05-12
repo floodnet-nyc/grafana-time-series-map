@@ -4,6 +4,15 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps } from '../utils';
 
+interface GeoJsonLayerOptions {
+  pointRadiusMinPixels: number;
+  pointRadiusMaxPixels: number;
+  lineWidthMinPixels: number;
+  filled: boolean;
+  stroked: boolean;
+  extruded: boolean;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'pointRadiusMinPixels', label: 'Point min radius (px)', type: 'number', defaultValue: 4 },
   { key: 'pointRadiusMaxPixels', label: 'Point max radius (px)', type: 'number', defaultValue: 20 },
@@ -13,7 +22,7 @@ const schema: LayerOptionField[] = [
   { key: 'extruded', label: 'Extruded (3D)', type: 'boolean', defaultValue: false },
 ];
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<GeoJsonLayerOptions> = {
   type: 'geojson',
   label: 'GeoJSON',
   defaultOptions: {
@@ -26,9 +35,8 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config, features } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<GeoJsonLayerOptions>) {
+    const { config, features, options } = context;
     const getColor = buildColorAccessor(config.colorScale);
     const commonProps = createCommonLayerProps(context);
 
@@ -37,14 +45,14 @@ const renderer: LayerRenderer = {
         ...commonProps,
         id: `geojson/${config.id}`,
         data: { type: 'FeatureCollection', features },
-        filled: opts.filled ?? true,
-        stroked: opts.stroked ?? true,
-        extruded: opts.extruded ?? false,
+        filled: options.filled,
+        stroked: options.stroked,
+        extruded: options.extruded,
         pointRadiusUnits: 'pixels' as const,
-        pointRadiusMinPixels: opts.pointRadiusMinPixels ?? 4,
-        pointRadiusMaxPixels: opts.pointRadiusMaxPixels ?? 20,
+        pointRadiusMinPixels: options.pointRadiusMinPixels,
+        pointRadiusMaxPixels: options.pointRadiusMaxPixels,
         lineWidthUnits: 'pixels' as const,
-        lineWidthMinPixels: opts.lineWidthMinPixels ?? 1,
+        lineWidthMinPixels: options.lineWidthMinPixels,
         getFillColor: getColor as any,
         getLineColor: [200, 200, 240, 200],
       }),

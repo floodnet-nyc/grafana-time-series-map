@@ -3,6 +3,20 @@ import type { Feature, Point } from 'geojson';
 import { registerLayer } from '../registry';
 import type { LayerOptionField, LayerRenderContext, LayerRenderer } from '../types';
 
+interface HexagonLayerOptions {
+  radius: number;
+  coverage: number;
+  extruded: boolean;
+  elevationScale: number;
+  elevationWeightField: string;
+  elevationAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorWeightField: string;
+  colorAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorRange: string;
+  lowerPercentile: number;
+  upperPercentile: number;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'radius', label: 'Radius (m)', type: 'number', defaultValue: 250, section: 'Hexagon' },
   { key: 'coverage', label: 'Coverage (0-1)', type: 'number', defaultValue: 0.9, section: 'Hexagon' },
@@ -90,7 +104,7 @@ function getWeight(feature: Feature, field: unknown) {
   return Number.isFinite(value) ? value : 0;
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<HexagonLayerOptions> = {
   type: 'hexagon',
   label: 'Hexagon',
   defaultOptions: {
@@ -108,10 +122,9 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags }: LayerRenderContext) {
-    const opts = config.options as Record<string, unknown>;
+  renderLayers({ config, features, timeFilterFlags, options }: LayerRenderContext<HexagonLayerOptions>) {
     const data = getPointFeatures(features, timeFilterFlags);
-    const colorRange = COLOR_RANGES[String(opts.colorRange ?? 'teal')] ?? COLOR_RANGES.teal;
+    const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
 
     return [
       new HexagonLayer({
@@ -122,18 +135,18 @@ const renderer: LayerRenderer = {
         pickable: config.pickable ?? true,
         minZoom: config.minZoom,
         maxZoom: config.maxZoom,
-        radius: Number(opts.radius ?? 250),
-        coverage: Number(opts.coverage ?? 0.9),
-        extruded: Boolean(opts.extruded ?? true),
-        elevationScale: Number(opts.elevationScale ?? 50),
-        elevationAggregation: opts.elevationAggregation ?? 'SUM',
-        colorAggregation: opts.colorAggregation ?? 'SUM',
+        radius: options.radius,
+        coverage: options.coverage,
+        extruded: options.extruded,
+        elevationScale: options.elevationScale,
+        elevationAggregation: options.elevationAggregation,
+        colorAggregation: options.colorAggregation,
         colorRange,
-        lowerPercentile: Number(opts.lowerPercentile ?? 0),
-        upperPercentile: Number(opts.upperPercentile ?? 100),
+        lowerPercentile: options.lowerPercentile,
+        upperPercentile: options.upperPercentile,
         getPosition: (feature: Feature) => (feature.geometry as Point).coordinates as [number, number],
-        getColorWeight: (feature: Feature) => getWeight(feature, opts.colorWeightField),
-        getElevationWeight: (feature: Feature) => getWeight(feature, opts.elevationWeightField),
+        getColorWeight: (feature: Feature) => getWeight(feature, options.colorWeightField),
+        getElevationWeight: (feature: Feature) => getWeight(feature, options.elevationWeightField),
         parameters: { depthTest: config.elevation?.depthTest ?? false },
       } as any),
     ];

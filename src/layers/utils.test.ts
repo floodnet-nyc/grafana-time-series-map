@@ -39,6 +39,7 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
   return {
     config: createConfig(),
+    options: {},
     panelOptions: {} as any,
     features: [createPointFeature()],
     cursorTimeMs: 0,

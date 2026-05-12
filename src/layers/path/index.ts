@@ -5,6 +5,15 @@ import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
 import { createCommonLayerProps, getNumericProperty } from '../utils';
 
+interface PathLayerOptions {
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
 const schema: LayerOptionField[] = [
   { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
   { key: 'widthMaxPixels', label: 'Max width (px)', type: 'number', defaultValue: 10 },
@@ -22,7 +31,7 @@ function getPath(f: Feature): number[][] | null {
   return null;
 }
 
-const renderer: LayerRenderer = {
+const renderer: LayerRenderer<PathLayerOptions> = {
   type: 'path',
   label: 'Path (line)',
   defaultOptions: {
@@ -35,23 +44,22 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers(context: LayerRenderContext) {
-    const { config } = context;
-    const opts = config.options as Record<string, any>;
+  renderLayers(context: LayerRenderContext<PathLayerOptions>) {
+    const { config, options } = context;
     const commonProps = createCommonLayerProps(context);
 
     return [
       new PathLayer({
         ...commonProps,
         widthUnits: 'pixels' as const,
-        widthMinPixels: opts.widthMinPixels ?? 2,
-        widthMaxPixels: opts.widthMaxPixels ?? 10,
-        capRounded: opts.capRounded ?? true,
-        jointRounded: opts.jointRounded ?? true,
+        widthMinPixels: options.widthMinPixels,
+        widthMaxPixels: options.widthMaxPixels,
+        capRounded: options.capRounded,
+        jointRounded: options.jointRounded,
         getPath: (f: Feature) => getPath(f)! as any,
         getColor: buildColorAccessor(config.colorScale, [0, 155, 200, 200]),
-        getWidth: opts.widthField
-          ? (f: Feature) => getNumericProperty(f, opts.widthField) * (opts.widthScale ?? 1)
+        getWidth: options.widthField
+          ? (f: Feature) => getNumericProperty(f, options.widthField) * options.widthScale
           : 1,
       }),
     ];

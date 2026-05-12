@@ -2,8 +2,9 @@ import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { LayerConfig, MapPanelOptions } from '../types';
 
-export interface LayerRenderContext {
+export interface LayerRenderContext<TOptions extends object = Record<string, unknown>> {
   config: LayerConfig;
+  options: TOptions;
   panelOptions: MapPanelOptions;
   features: Feature[];
   cursorTimeMs: number;
@@ -30,10 +31,10 @@ export interface LayerOptionField {
   section?: string;
 }
 
-export interface LayerRenderer {
+export interface LayerRenderer<TOptions extends object = Record<string, unknown>> {
   type: string;
   label: string;
-  defaultOptions: Record<string, unknown>;
+  defaultOptions: TOptions;
   optionsSchema: LayerOptionField[];
-  renderLayers(ctx: LayerRenderContext): Layer[];
+  renderLayers(ctx: LayerRenderContext<TOptions>): Layer[];
 }
