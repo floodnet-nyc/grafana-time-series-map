@@ -532,19 +532,33 @@
               "timeField": ""
             },
             "fieldMappings": [],
+            "derivedFields": [
+              {
+                "as": "depthDiff",
+                "expression": "sensor.depth - primary.contour_depth_inches",
+                "type": "number"
+              }
+            ],
             "opacity": 1,
-            "lookup": {
-              "queryRefId": "A",
-              "keyField": "deployment_id",
-              "timeField": "time",
-              "maxLagMs": 600000,
-              "fields": [
-                {
-                  "sourceField": "depth_inches",
-                  "as": "depth"
-                }
-              ]
-            },
+            "secondarySources": [
+              {
+                "id": "sensor",
+                "queryRefId": "A",
+                "join": {
+                  "type": "keyed-asof",
+                  "localKeyField": "deployment_id",
+                  "remoteKeyField": "deployment_id",
+                  "timeField": "time",
+                  "maxLagMs": 600000
+                },
+                "fields": [
+                  {
+                    "sourceField": "depth_inches",
+                    "as": "depth"
+                  }
+                ]
+              }
+            ],
             "colorScale": {
               "type": "gradient",
               "schemeName": "FloodDepth",
@@ -552,8 +566,7 @@
               "scaleMax": 24
             },
             "options": {
-              "contourDepthField": "contour_depth_inches",
-              "sensorKeyField": "deployment_id",
+              "depthDiffField": "depthDiff",
               "fillOpacity": 0.5
             }
           },

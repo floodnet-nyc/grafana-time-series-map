@@ -4,7 +4,8 @@ import type { Feature } from 'geojson';
 import { applyLayerExtensions } from '../layers/extensions/registry';
 import { getLayer, resolveLayerOptions } from '../layers/registry';
 import type { LayerRenderContext, LayerRenderer } from '../layers/types';
-import type { LayerConfig, MapPanelOptions } from '../types';
+import type { LayerConfig, LayerSecondarySourceConfig, MapPanelOptions } from '../types';
+import { compileExpression } from '../utils/expressionEngine';
 import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../utils/deckgl/closestTimeFiltering';
 import type { PanelFeaturesByLayerId } from './usePanelFeatures';
@@ -19,6 +20,12 @@ export interface PreparedLayerState {
   features: Feature[];
   timeFilterFlags: Uint8Array;
   lookupValues?: Map<string, Record<string, number>>;
+  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
+  derivedValues?: Array<Record<string, unknown>>;
+}
+
+function getLayerSecondarySources(layerConfig: LayerConfig): LayerSecondarySourceConfig[] {
+  return layerConfig.secondarySources ?? [];
 }
 
 export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresByLayerId: PanelFeaturesByLayerId) {
@@ -82,6 +89,83 @@ export function buildLookupValuesByLayerId(
   return lookupValuesByLayerId;
 }
 
+export function buildSecondarySourcePackedByLayerId(layerConfigs: LayerConfig[], series: DataFrame[]) {
+  const packedByLayerId = new Map<string, Map<string, PackedLookupEntry>>();
+
+  for (const layerConfig of layerConfigs) {
+    const secondarySources = getLayerSecondarySources(layerConfig);
+    if (secondarySources.length === 0) {
+      continue;
+    }
+
+    const packedBySourceId = new Map<string, PackedLookupEntry>();
+
+    for (const secondarySource of secondarySources) {
+      if (secondarySource.join.type !== 'keyed-asof') {
+        continue;
+      }
+
+      const features = dataFramesToFeatures(series, secondarySource.queryRefId, { type: 'none' }, undefined, []);
+      packedBySourceId.set(secondarySource.id, {
+        features,
+        packed: buildPacked(features, secondarySource.join.remoteKeyField, secondarySource.join.timeField),
+      });
+    }
+
+    if (packedBySourceId.size > 0) {
+      packedByLayerId.set(layerConfig.id, packedBySourceId);
+    }
+  }
+
+  return packedByLayerId;
+}
+
+export function buildSecondarySourceValuesByLayerId(
+  layerConfigs: LayerConfig[],
+  packedByLayerId: Map<string, Map<string, PackedLookupEntry>>,
+  cursorTimeMs: number,
+) {
+  const valuesByLayerId = new Map<string, Map<string, Map<string, Record<string, number>>>>();
+
+  for (const layerConfig of layerConfigs) {
+    const secondarySources = getLayerSecondarySources(layerConfig);
+    if (secondarySources.length === 0) {
+      continue;
+    }
+
+    const packedBySourceId = packedByLayerId.get(layerConfig.id);
+    if (!packedBySourceId) {
+      continue;
+    }
+
+    const valuesBySourceId = new Map<string, Map<string, Record<string, number>>>();
+
+    for (const secondarySource of secondarySources) {
+      const entry = packedBySourceId.get(secondarySource.id);
+      if (!entry || secondarySource.join.type !== 'keyed-asof') {
+        continue;
+      }
+
+      valuesBySourceId.set(
+        secondarySource.id,
+        resolveAsofLookup(
+          entry.features,
+          entry.packed,
+          secondarySource.fields,
+          cursorTimeMs,
+          secondarySource.join.maxLagMs,
+        ),
+      );
+    }
+
+    if (valuesBySourceId.size > 0) {
+      valuesByLayerId.set(layerConfig.id, valuesBySourceId);
+    }
+  }
+
+  return valuesByLayerId;
+}
+
 export function buildTimeFilterFlagsByLayerId(
   layerConfigs: LayerConfig[],
   featuresByLayerId: PanelFeaturesByLayerId,
@@ -135,12 +219,19 @@ export function buildPreparedLayerStates(
   featuresByLayerId: PanelFeaturesByLayerId,
   flagsByLayerId: Map<string, Uint8Array>,
   lookupValuesByLayerId: Map<string, Map<string, Record<string, number>>>,
+  secondarySourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, number>>>> = new Map(),
 ): PreparedLayerState[] {
   return layerConfigs.map((config) => ({
     config,
     features: featuresByLayerId.get(config.id) ?? [],
     timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(),
     lookupValues: lookupValuesByLayerId.get(config.id),
+    secondarySourceValues: secondarySourceValuesByLayerId.get(config.id),
+    derivedValues: buildDerivedValues(
+      config,
+      featuresByLayerId.get(config.id) ?? [],
+      secondarySourceValuesByLayerId.get(config.id),
+    ),
   }));
 }
 
@@ -189,6 +280,8 @@ export function renderPreparedLayers({
       toTimeMs,
       timeFilterFlags: preparedLayerState.timeFilterFlags,
       lookupValues: preparedLayerState.lookupValues,
+      secondarySourceValues: preparedLayerState.secondarySourceValues,
+      derivedValues: preparedLayerState.derivedValues,
       selectedKey,
       onFeatureClick,
     };
@@ -198,4 +291,53 @@ export function renderPreparedLayers({
   }
 
   return renderedLayers;
+}
+
+function buildDerivedValues(
+  config: LayerConfig,
+  features: Feature[],
+  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>,
+): Array<Record<string, unknown>> | undefined {
+  if (!config.derivedFields?.length) {
+    return undefined;
+  }
+
+  const compiledDerivedFields = config.derivedFields.map((derivedField) => ({
+    as: derivedField.as,
+    evaluate: compileExpression(derivedField.expression),
+  }));
+
+  return features.map((feature) => {
+    const scope = buildFeatureScope(config, feature, secondarySourceValues);
+    const derived: Record<string, unknown> = {};
+
+    for (const derivedField of compiledDerivedFields) {
+      derived[derivedField.as] = derivedField.evaluate({
+        ...scope,
+        derived,
+      });
+    }
+
+    return derived;
+  });
+}
+
+function buildFeatureScope(
+  config: LayerConfig,
+  feature: Feature,
+  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>,
+) {
+  const primary = { ...(feature.properties ?? {}) };
+  const sources: Record<string, Record<string, unknown>> = {};
+
+  for (const secondarySource of getLayerSecondarySources(config)) {
+    const localKey = String(feature.properties?.[secondarySource.join.localKeyField] ?? '');
+    const values = secondarySourceValues?.get(secondarySource.id)?.get(localKey) ?? {};
+    sources[secondarySource.id] = values;
+  }
+
+  return {
+    primary,
+    ...sources,
+  };
 }

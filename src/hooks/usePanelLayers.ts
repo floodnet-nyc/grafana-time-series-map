@@ -6,6 +6,8 @@ import type { MapPanelOptions } from '../types';
 import type { PanelFeaturesByLayerId } from './usePanelFeatures';
 import {
   buildLookupPackedByLayerId,
+  buildSecondarySourcePackedByLayerId,
+  buildSecondarySourceValuesByLayerId,
   buildLookupValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
@@ -35,13 +37,27 @@ export function usePanelLayers(
     return buildLookupValuesByLayerId(options.layers, lookupPackedByLayerId, cursorTimeMs);
   }, [lookupPackedByLayerId, options.layers, cursorTimeMs]);
 
+  const secondarySourcePackedByLayerId = useMemo(() => {
+    return buildSecondarySourcePackedByLayerId(options.layers, data.series);
+  }, [data.series, options.layers]);
+
+  const secondarySourceValuesByLayerId = useMemo(() => {
+    return buildSecondarySourceValuesByLayerId(options.layers, secondarySourcePackedByLayerId, cursorTimeMs);
+  }, [cursorTimeMs, options.layers, secondarySourcePackedByLayerId]);
+
   const flagsByLayerId = useMemo(() => {
     return buildTimeFilterFlagsByLayerId(options.layers, featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
   }, [featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
-    return buildPreparedLayerStates(options.layers, featuresByLayerId, flagsByLayerId, lookupByLayerId);
-  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, options.layers]);
+    return buildPreparedLayerStates(
+      options.layers,
+      featuresByLayerId,
+      flagsByLayerId,
+      lookupByLayerId,
+      secondarySourceValuesByLayerId,
+    );
+  }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, options.layers, secondarySourceValuesByLayerId]);
 
   return useMemo(() => {
     return renderPreparedLayers({
