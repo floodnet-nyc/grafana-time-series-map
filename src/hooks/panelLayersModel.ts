@@ -2,7 +2,7 @@ import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { applyLayerExtensions } from '../layers/extensions/registry';
-import { getLayer } from '../layers/registry';
+import { getLayer, resolveLayerOptions } from '../layers/registry';
 import type { LayerRenderContext, LayerRenderer } from '../layers/types';
 import type { LayerConfig, MapPanelOptions } from '../types';
 import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
@@ -181,10 +181,7 @@ export function renderPreparedLayers({
 
     const renderContext: LayerRenderContext = {
       config: preparedLayerState.config,
-      options: {
-        ...renderer.defaultOptions,
-        ...preparedLayerState.config.options,
-      },
+      options: resolveLayerOptions(preparedLayerState.config.type, preparedLayerState.config.options),
       panelOptions: options,
       features: preparedLayerState.features,
       cursorTimeMs,

@@ -29,3 +29,8 @@ export function getLayer(type: string): LayerRenderer<any> | undefined {
 export function getAllLayerTypes(): Array<LayerRenderer<any>> {
   return Array.from(registry.values()).map(withRegisteredExtensions);
 }
+
+export function resolveLayerOptions(type: string, options?: Record<string, unknown>): Record<string, unknown> {
+  const renderer = getLayer(type);
+  return renderer ? { ...renderer.defaultOptions, ...(options ?? {}) } : { ...(options ?? {}) };
+}

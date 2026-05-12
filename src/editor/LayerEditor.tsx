@@ -15,7 +15,7 @@ import {
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerConfig, GeometrySource, TimeFilterMode, ElevationConfig, ColorStep } from '../types';
-import { getAllLayerTypes } from '../layers/registry';
+import { getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
@@ -168,7 +168,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
     patch({ timeFilter: { ...layer.timeFilter, ...updates } });
 
   const patchOpts = (key: string, value: unknown) =>
-    patch({ options: { ...layer.options, [key]: value } });
+    patch({ options: resolveLayerOptions(layer.type, { ...layer.options, [key]: value }) });
 
   const patchShader = (updates: Partial<NonNullable<typeof layer.shader>>) =>
     patch({ shader: { enabled: false, valueField: '', ...layer.shader, ...updates } });
@@ -177,6 +177,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
     patch({ colorScale: { type: 'fixed', ...layer.colorScale, ...updates } });
 
   const currentRenderer = getAllLayerTypes().find((r) => r.type === layer.type);
+  const normalizedOptions = useMemo(() => resolveLayerOptions(layer.type, layer.options), [layer.type, layer.options]);
 
   const optionsBySections = useMemo(() => {
     if (!currentRenderer) {
@@ -208,25 +209,25 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
     <Field key={f.key} label={f.label}>
       {f.type === 'boolean' ? (
         <Switch
-          value={Boolean(layer.options[f.key] ?? f.defaultValue)}
+          value={Boolean(normalizedOptions[f.key] ?? f.defaultValue)}
           onChange={(e) => patchOpts(f.key, e.currentTarget.checked)}
         />
       ) : f.type === 'select' ? (
         <Combobox
           options={f.selectOptions ?? []}
-          value={(layer.options[f.key] ?? f.defaultValue) as string | number}
+          value={(normalizedOptions[f.key] ?? f.defaultValue) as string | number}
           onChange={(v) => patchOpts(f.key, v.value)}
         />
       ) : f.type === 'fieldPicker' ? (
         <FieldSelect
-          value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
+          value={String(normalizedOptions[f.key] ?? f.defaultValue ?? '')}
           onChange={(v) => patchOpts(f.key, v)}
           availableFields={availableFields}
         />
       ) : f.type === 'color' ? (
         <div className={styles.colorPickerRow}>
           <ColorPicker
-            color={rgbaToHex((layer.options[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
+            color={rgbaToHex((normalizedOptions[f.key] ?? f.defaultValue ?? [255, 255, 255, 255]) as [number, number, number, number])}
             onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
           />
         </div>
@@ -236,13 +237,13 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
           min={f.min}
           max={f.max}
           step={f.step ?? 1}
-          value={Number(layer.options[f.key] ?? f.defaultValue ?? f.min)}
+          value={Number(normalizedOptions[f.key] ?? f.defaultValue ?? f.min)}
           onChange={(v) => patchOpts(f.key, v)}
         />
       ) : (
         <Input
           type={f.type === 'number' ? 'number' : 'text'}
-          value={String(layer.options[f.key] ?? f.defaultValue ?? '')}
+          value={String(normalizedOptions[f.key] ?? f.defaultValue ?? '')}
           onChange={(e) =>
             patchOpts(f.key, f.type === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value)
           }
@@ -266,7 +267,16 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         />
       </Field>
       <Field label="Layer type">
-        <Combobox options={layerTypes} value={layer.type} onChange={(v) => patch({ type: v.value })} />
+        <Combobox
+          options={layerTypes}
+          value={layer.type}
+          onChange={(v) =>
+            patch({
+              type: v.value,
+              options: resolveLayerOptions(v.value, {}),
+            })
+          }
+        />
       </Field>
       <Field label="Query (ref ID)">
         <Input

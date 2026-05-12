@@ -4,7 +4,7 @@ import { useStyles2, Button, IconButton } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import type { LayerConfig } from '../types';
 import { LayerEditor } from './LayerEditor';
-import { getAllLayerTypes } from '../layers/registry';
+import { getAllLayerTypes, resolveLayerOptions } from '../layers/registry';
 import '../layers/_all'; // ensure registry is populated
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
@@ -19,7 +19,7 @@ function makeDefaultLayer(type: string, index: number): LayerConfig {
     timeFilter: { mode: 'none', timeField: 'time' },
     fieldMappings: [],
     opacity: 1,
-    options: renderer ? { ...renderer.defaultOptions } : {},
+    options: resolveLayerOptions(type),
   };
 }
 
