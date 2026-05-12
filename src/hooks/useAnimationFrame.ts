@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLatestRef } from './useLatestRef';
 
 export default function useAnimationFrame({
   enabled,
@@ -11,22 +12,23 @@ export default function useAnimationFrame({
 }) {
   const frameRef = useRef<number | null>(null);
   const lastFrameTime = useRef<number | null>(null);
-  const onUpdateRef = useRef(onUpdate);
-  // eslint-disable-next-line react-hooks/refs
-  onUpdateRef.current = onUpdate; 
+  const onUpdateRef = useLatestRef(onUpdate);
 
   useEffect(() => {
-    if (!enabled) {return;}
+    if (!enabled) {
+      return;
+    }
+
     const loop = (timestamp: number) => {
-      timestamp = performance.timeOrigin + timestamp;
+      const absoluteTimestamp = performance.timeOrigin + timestamp;
       if (lastFrameTime.current) {
-        const delta = timestamp - lastFrameTime.current;
+        const delta = absoluteTimestamp - lastFrameTime.current;
         if (delta >= interval) {
-          onUpdateRef.current(timestamp, delta);
-          lastFrameTime.current = timestamp;
+          onUpdateRef.current(absoluteTimestamp, delta);
+          lastFrameTime.current = absoluteTimestamp;
         }
       } else {
-        lastFrameTime.current = timestamp;
+        lastFrameTime.current = absoluteTimestamp;
       }
       frameRef.current = requestAnimationFrame(loop);
     };
@@ -34,11 +36,11 @@ export default function useAnimationFrame({
     lastFrameTime.current = null;
     frameRef.current = requestAnimationFrame(loop);
     return () => {
-      if (frameRef.current) {
+      if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current);
         frameRef.current = null;
         lastFrameTime.current = null;
       }
     };
-  }, [enabled, interval]);
+  }, [enabled, interval, onUpdateRef]);
 }
