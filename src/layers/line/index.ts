@@ -1,9 +1,9 @@
 import { LineLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
 const schema: LayerOptionField[] = [
   { key: 'srcLngField', label: 'Source longitude field', type: 'fieldPicker', defaultValue: '', section: 'Source' },
@@ -31,53 +31,30 @@ const renderer: LayerRenderer = {
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext) {
+  renderLayers(context: LayerRenderContext) {
+    const { config, features } = context;
     const opts = config.options as Record<string, any>;
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
+    const commonProps = createCommonLayerProps(context);
+    const getSourcePosition = createSourcePositionAccessor(opts);
+    const getTargetPosition = createTargetPositionAccessor(opts);
 
     return [
       new LineLayer({
+        ...commonProps,
         id: `line/${config.id}`,
         data: features,
-        visible: config.visible,
-        opacity: config.opacity,
-        pickable: config.pickable ?? true,
         widthUnits: 'pixels' as const,
         widthMinPixels: opts.widthMinPixels ?? 1,
         widthMaxPixels: opts.widthMaxPixels ?? 20,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        getSourcePosition: (f: Feature) => {
-          if (opts.srcLngField && opts.srcLatField) {
-            return [
-              Number(f.properties?.[opts.srcLngField] ?? 0),
-              Number(f.properties?.[opts.srcLatField] ?? 0),
-            ] as [number, number];
-          }
-          const coords = (f.geometry as any)?.coordinates;
-          return coords ? [coords[0], coords[1]] : [0, 0];
-        },
-        getTargetPosition: (f: Feature) => {
-          if (opts.tgtLngField && opts.tgtLatField) {
-            return [
-              Number(f.properties?.[opts.tgtLngField] ?? 0),
-              Number(f.properties?.[opts.tgtLatField] ?? 0),
-            ] as [number, number];
-          }
-          return [0, 0];
-        },
+        getSourcePosition: (f: Feature) => getSourcePosition(f),
+        getTargetPosition: (f: Feature) => getTargetPosition(f),
         getColor: getColor as any,
         getWidth: opts.widthField
           ? (f: Feature) => Number(f.properties?.[opts.widthField] ?? 1) * (opts.widthScale ?? 1)
           : 1,
-        onClick: onFeatureClick
-          ? (info: any) => info.object && onFeatureClick(info.object, info)
-          : undefined,
-        getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-        filterRange: [1, 1] as [number, number],
-        extensions: [new DataFilterExtension({ filterSize: 1 })],
         updateTriggers: {
-          getFilterValue: [timeFilterFlags],
+          ...commonProps.updateTriggers,
           getWidth: [opts.widthField, opts.widthScale],
         },
         parameters: { depthTest: false },
