@@ -1,8 +1,9 @@
-import { COGLayer, texture as geotiffTexture, type GetTileDataOptions, type MinimalTileData } from '@developmentseed/deck.gl-geotiff';
+import { texture as geotiffTexture, type GetTileDataOptions, type MinimalTileData } from '@developmentseed/deck.gl-geotiff';
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
 import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu-modules';
 import type { Texture } from '@luma.gl/core';
+import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
 
 import { registerLayer } from '../registry';
 import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
@@ -145,17 +146,6 @@ function getStableRenderTile(
   return renderTileCache.get(key)!;
 }
 
-function snapToNearest(timeMs: number, timestamps: number[]): number | null {
-  if (timestamps.length === 0) {return null;}
-  let best = timestamps[0];
-  let bestDist = Math.abs(timeMs - best);
-  for (const t of timestamps) {
-    const d = Math.abs(timeMs - t);
-    if (d < bestDist) { best = t; bestDist = d; }
-  }
-  return best;
-}
-
 const renderer: LayerRenderer = {
   type: 'cog',
   label: 'COG Raster',
@@ -175,37 +165,32 @@ const renderer: LayerRenderer = {
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
     const maxRequests: number = opts.maxRequests ?? 4;
 
-    const entries: Array<{ timeMs: number; url: string }> = [];
+    const frames: TimeCOGFrame[] = [];
     for (const f of features) {
       const url = f.properties?.[urlField];
       const ts = f.properties?.[timestampField];
       if (url && ts != null) {
-        entries.push({ timeMs: Number(ts), url: String(url) });
+        frames.push({ time: Number(ts), url: String(url) });
       }
     }
 
-    if (entries.length === 0) {return [];}
-
-    const timestamps = entries.map((e) => e.timeMs);
-    const activeTimeMs = snapToNearest(cursorTimeMs, timestamps);
+    if (frames.length === 0) {return [];}
 
     const renderTile = getStableRenderTile(colorMaxValue, colorScale);
-    // console.log(entries.slice(700,720))
-    return entries.map(({ timeMs, url }) =>
-      // config.visible && timeMs === activeTimeMs && console.log(url) || 
-      new COGLayer<CogTileData>({
-        id: `cog/${config.id}-${timeMs}`,
-        geotiff: url,
-        // geotiff: buildPrecipCogUrl(timeMs),
+
+    return [
+      new TimeCOGLayer<CogTileData>({
+        id: `cog/${config.id}`,
+        frames,
+        currentTime: cursorTimeMs,
         getTileData,
         renderTile,
         opacity: config.opacity,
-        visible: config.visible && timeMs === activeTimeMs,
-        pickable: false,
+        visible: config.visible,
         maxRequests,
         pool: mainThreadPool,
       }),
-    );
+    ];
   },
 };
 
