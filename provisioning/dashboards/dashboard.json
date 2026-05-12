@@ -4,7 +4,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 2,
   "id": 1,
   "links": [],
   "liveNow": false,
@@ -410,7 +410,7 @@
             "id": "flood-summary",
             "type": "scatterplot",
             "label": "Flood Events",
-            "visible": true,
+            "visible": false,
             "showInLegend": true,
             "queryRefId": "C",
             "geometry": {
@@ -631,105 +631,6 @@
               "stroked": true,
               "radiusField": "depth_inches",
               "labelField": ""
-            },
-            "elevation": {
-              "field": "depth_inches",
-              "scale": 0.0254,
-              "depthTest": false
-            }
-          },
-          {
-            "id": "event-depth",
-            "type": "text",
-            "label": "Flood Depth (in)",
-            "visible": true,
-            "queryRefId": "A",
-            "geometry": {
-              "type": "latlng",
-              "latField": "lat",
-              "lngField": "lng",
-              "elevationField": "depth_inches"
-            },
-            "timeFilter": {
-              "mode": "asof",
-              "timeField": "time",
-              "groupByField": "deployment_id",
-              "maxLagMs": 600000
-            },
-            "fieldMappings": [
-              {
-                "fieldName": "depth_inches",
-                "alias": "value"
-              }
-            ],
-            "opacity": 1,
-            "shader": {
-              "enabled": true,
-              "valueField": "depth_inches"
-            },
-            "colorScale": {
-              "type": "threshold",
-              "field": "depth_inches",
-              "steps": [
-                {
-                  "value": 0,
-                  "color": [
-                    0,
-                    155,
-                    104,
-                    255
-                  ]
-                },
-                {
-                  "value": 1,
-                  "color": [
-                    0,
-                    204,
-                    255,
-                    255
-                  ]
-                },
-                {
-                  "value": 4,
-                  "color": [
-                    253,
-                    191,
-                    75,
-                    255
-                  ]
-                },
-                {
-                  "value": 12,
-                  "color": [
-                    254,
-                    77,
-                    76,
-                    255
-                  ]
-                },
-                {
-                  "value": 24,
-                  "color": [
-                    215,
-                    77,
-                    254,
-                    255
-                  ]
-                }
-              ]
-            },
-            "options": {
-              "elevateByValue": true,
-              "labelField": "",
-              "radiusField": "depth_inches",
-              "radiusMaxPixels": 12,
-              "radiusMinPixels": 8,
-              "showLabels": true,
-              "stroked": true,
-              "collisionEnabled": true,
-              "collisionPriorityField": "depth_inches",
-              "textField": "depth_inches",
-              "sizeField": "depth_inches"
             },
             "elevation": {
               "field": "depth_inches",
