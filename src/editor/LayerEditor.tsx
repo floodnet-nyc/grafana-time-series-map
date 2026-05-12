@@ -231,66 +231,48 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
 
   return (
     <div className={styles.container}>
-      {/* ── Basic ─────────────────────────────── */}
-      <Field label="Label">
-        <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
-      </Field>
-      <Field label="Description" description="Shown as a tooltip on the legend info icon">
-        <TextArea
-          rows={2}
-          value={layer.description ?? ''}
-          onChange={(e) => patch({ description: e.currentTarget.value || undefined })}
-          placeholder="Optional description…"
-        />
-      </Field>
-      <Field label="Layer type">
-        <Combobox
-          options={layerTypes}
-          value={layer.type}
-          onChange={(v) =>
-            patch({
-              type: v.value,
-              options: resolveLayerOptions(v.value, extractSharedLayerOptions(layer.options)),
-            })
-          }
-        />
-      </Field>
-      <Field label="Query (ref ID)">
-        <Input
-          placeholder="A (leave blank for first query)"
-          value={layer.queryRefId ?? ''}
-          onChange={(e) => patch({ queryRefId: e.currentTarget.value || undefined })}
-        />
-      </Field>
-      <Field label="Visible">
-        <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
-      </Field>
-      <Field label="Show in legend">
-        <Switch
-          value={layer.showInLegend ?? true}
-          onChange={(e) => patch({ showInLegend: e.currentTarget.checked })}
-        />
-      </Field>
-      <Field label="Opacity">
-        <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
-      </Field>
-      <Field label="Zoom range" description="Visible from the first zoom value through the second. Full range means no zoom limit.">
-        <RangeSlider
-          min={DEFAULT_MIN_ZOOM}
-          max={DEFAULT_MAX_ZOOM}
-          step={1}
-          value={zoomRange}
-          onChange={(value) =>
-            patch({
-              minZoom: value[0] <= DEFAULT_MIN_ZOOM ? undefined : value[0],
-              maxZoom: value[1] >= DEFAULT_MAX_ZOOM ? undefined : value[1],
-            })
-          }
-          formatTooltipResult={(value) => `${value}`}
-        />
-      </Field>
+      <CollapsableSection label="General" isOpen>
+        <Field label="Label">
+          <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
+        </Field>
+        <Field label="Description" description="Shown as a tooltip on the legend info icon">
+          <TextArea
+            rows={2}
+            value={layer.description ?? ''}
+            onChange={(e) => patch({ description: e.currentTarget.value || undefined })}
+            placeholder="Optional description…"
+          />
+        </Field>
+        <Field label="Layer type">
+          <Combobox
+            options={layerTypes}
+            value={layer.type}
+            onChange={(v) =>
+              patch({
+                type: v.value,
+                options: resolveLayerOptions(v.value, extractSharedLayerOptions(layer.options)),
+              })
+            }
+          />
+        </Field>
+        <Field label="Query (ref ID)">
+          <Input
+            placeholder="A (leave blank for first query)"
+            value={layer.queryRefId ?? ''}
+            onChange={(e) => patch({ queryRefId: e.currentTarget.value || undefined })}
+          />
+        </Field>
+        <Field label="Visible">
+          <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
+        </Field>
+        <Field label="Show in legend">
+          <Switch
+            value={layer.showInLegend ?? true}
+            onChange={(e) => patch({ showInLegend: e.currentTarget.checked })}
+          />
+        </Field>
+      </CollapsableSection>
 
-      {/* ── Geometry + Elevation ──────────────── */}
       <CollapsableSection label="Geometry" isOpen>
         <Field label="Geometry source">
           <Combobox
@@ -308,6 +290,14 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
             />
           </Field>
         )}
+
+        <div className={styles.sectionHint}>
+          {layer.geometry.type === 'latlng'
+            ? 'Coordinates come from the selected latitude and longitude fields.'
+            : layer.geometry.type === 'none'
+              ? 'This layer does not read map geometry from the query.'
+              : 'Geometry is read directly from the selected field.'}
+        </div>
         {layer.geometry.type === 'latlng' && (
           <>
             <Field label="Latitude field">
@@ -355,8 +345,14 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         )}
       </CollapsableSection>
 
-      {/* ── Time filter ───────────────────────── */}
       <CollapsableSection label="Time" isOpen={false}>
+        <div className={styles.sectionHint}>
+          {layer.timeFilter.mode === 'none'
+            ? 'All rows are shown.'
+            : layer.timeFilter.mode === 'window'
+              ? 'Rows are filtered to the dashboard time range.'
+              : 'Closest row per series key is shown at the playback cursor.'}
+        </div>
         <Field label="Mode">
           <Combobox
             options={TIME_FILTER_MODES}
@@ -402,8 +398,38 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         )}
       </CollapsableSection>
 
-      {/* ── Color ─────────────────────────────── */}
+      <CollapsableSection label="Appearance" isOpen={false}>
+        <div className={styles.sectionHint}>
+          {`${Math.round(layer.opacity * 100)}% opacity · visible from zoom ${layer.minZoom ?? 0} to ${layer.maxZoom ?? 24}`}
+        </div>
+        <Field label="Opacity">
+          <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
+        </Field>
+        <Field label="Zoom range" description="Visible from the first zoom value through the second. Full range means no zoom limit.">
+          <RangeSlider
+            min={DEFAULT_MIN_ZOOM}
+            max={DEFAULT_MAX_ZOOM}
+            step={1}
+            value={zoomRange}
+            onChange={(value) =>
+              patch({
+                minZoom: value[0] <= DEFAULT_MIN_ZOOM ? undefined : value[0],
+                maxZoom: value[1] >= DEFAULT_MAX_ZOOM ? undefined : value[1],
+              })
+            }
+            formatTooltipResult={(value) => `${value}`}
+          />
+        </Field>
+      </CollapsableSection>
+
       <CollapsableSection label="Color" isOpen={false}>
+        <div className={styles.sectionHint}>
+          {mode === 'fixed'
+            ? 'Every feature uses the same color.'
+            : mode === 'threshold'
+              ? `Thresholds${layer.colorScale?.field ? ` based on ${layer.colorScale.field}` : ''}.`
+              : `${layer.colorScale?.schemeName || 'Gradient'}${layer.colorScale?.field ? ` based on ${layer.colorScale.field}` : ''}.`}
+        </div>
         <Field label="Color mode">
           <Combobox
             options={COLOR_MODES}
@@ -413,7 +439,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
         </Field>
 
         {mode === 'fixed' && (
-          <Field label="Color">
+          <Field label="Color" description="Use one color for every feature in this layer.">
             <div className={styles.colorPickerRow}>
               <ColorPicker
                 color={rgbaToHex(fixedColor as [number, number, number, number])}
@@ -425,12 +451,17 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
 
         {mode === 'threshold' && (
           <>
-            <Field label="Value field">
+            <Field label="Value field" description="Pick the field that drives threshold coloring.">
               <FieldSelect
                 value={layer.colorScale?.field ?? ''}
                 onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
                 availableFields={availableFields}
               />
+            </Field>
+            <Field label="Threshold preview">
+              <div className={styles.thresholdSummary}>
+                {(layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS).length} steps
+              </div>
             </Field>
             {(layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS).map((step, i) => {
               const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
@@ -442,10 +473,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
                     className={styles.thresholdValue}
                     value={step.value}
                     onChange={(e) => {
-                      const next = steps.map((s, j) =>
-                        j === i ? { ...s, value: Number(e.currentTarget.value) } : s,
-                      );
-                      patchColor({ steps: next });
+                      patchColor({ steps: patchThresholdStep(steps, i, { value: Number(e.currentTarget.value) }) });
                     }}
                   />
                   <div className={styles.colorPickerRow}>
@@ -480,7 +508,7 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
 
         {mode === 'gradient' && (
           <>
-            <Field label="Value field">
+            <Field label="Value field" description="Pick the field that drives the color ramp.">
               <FieldSelect
                 value={layer.colorScale?.field ?? layer.shader?.valueField ?? ''}
                 onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
@@ -583,6 +611,12 @@ function getStyles(theme: GrafanaTheme2) {
       alignItems: 'center',
       height: 32,
     }),
+    sectionHint: css({
+      fontSize: 12,
+      color: theme.colors.text.secondary,
+      marginBottom: theme.spacing(1),
+      lineHeight: 1.4,
+    }),
     schemePreview: css({
       height: 10,
       borderRadius: theme.shape.radius.default,
@@ -624,6 +658,10 @@ function getStyles(theme: GrafanaTheme2) {
       padding: '4px 8px',
       marginTop: theme.spacing(0.5),
       '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
+    }),
+    thresholdSummary: css({
+      fontSize: 12,
+      color: theme.colors.text.secondary,
     }),
   };
 }
