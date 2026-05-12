@@ -121,6 +121,12 @@ export type GoogleControlPosition =
   | 'BOTTOM_CENTER'
   | 'BOTTOM_RIGHT';
 
+export type MapControlPosition =
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
 export interface MapInteractionOptions {
   /** Toggle all map user gestures where supported. */
   interactive?: boolean;
@@ -140,13 +146,27 @@ export interface MapControlOptions {
   scaleControl?: boolean;
 }
 
-export interface MaplibreControlOptions {
-  geolocateControl?: boolean;
-  geolocateTrackUserLocation?: boolean;
-  navigationShowZoom?: boolean;
-  navigationShowCompass?: boolean;
-  navigationVisualizePitch?: boolean;
-  navigationVisualizeRoll?: boolean;
+export interface SharedNavigationControlOptions {
+  position?: MapControlPosition;
+  showZoom?: boolean;
+  showCompass?: boolean;
+  visualizePitch?: boolean;
+  visualizeRoll?: boolean;
+}
+
+export interface SharedGeolocateControlOptions {
+  position?: MapControlPosition;
+  trackUserLocation?: boolean;
+}
+
+export interface SharedFullscreenControlOptions {
+  position?: MapControlPosition;
+}
+
+export interface SharedMapControlSettings {
+  navigation?: SharedNavigationControlOptions;
+  geolocate?: SharedGeolocateControlOptions;
+  fullscreen?: SharedFullscreenControlOptions;
 }
 
 export interface GoogleMapOptions {
@@ -154,8 +174,6 @@ export interface GoogleMapOptions {
   mapTypeControl?: boolean;
   streetViewControl?: boolean;
   rotateControl?: boolean;
-  cameraControlPosition?: GoogleControlPosition;
-  fullscreenControlPosition?: GoogleControlPosition;
   mapTypeControlPosition?: GoogleControlPosition;
   mapTypeControlStyle?: GoogleMapTypeControlStyle;
   streetViewControlPosition?: GoogleControlPosition;
@@ -226,7 +244,7 @@ export interface MapPanelOptions {
   googleMapsMapId?: string;
   interactions?: MapInteractionOptions;
   controls?: MapControlOptions;
-  maplibreControls?: MaplibreControlOptions;
+  controlSettings?: SharedMapControlSettings;
   googleMapOptions?: GoogleMapOptions;
   deckParameters?: DeckRenderParametersOptions;
   deckLighting?: DeckLightingOptions;
