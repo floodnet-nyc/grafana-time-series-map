@@ -90,7 +90,17 @@ export interface LayerConfig {
 }
 
 export type BasemapProvider = 'maplibre' | 'google';
-export type MaplibreStyle = 'carto-dark' | 'carto-light' | 'osm' | 'custom';
+export type MaplibreStyle =
+  | 'carto-dark'
+  | 'carto-light'
+  | 'carto-voyager'
+  | 'osm'
+  | 'versatiles-colorful'
+  | 'versatiles-graybeard'
+  | 'versatiles-eclipse'
+  | 'versatiles-neutrino'
+  | 'versatiles-shadow'
+  | 'custom';
 export type MaplibreProjection = 'mercator' | 'globe';
 export type InitialViewMode = 'manual' | 'fitData';
 export type GoogleMapColorScheme = 'LIGHT' | 'DARK' | 'FOLLOW_SYSTEM';

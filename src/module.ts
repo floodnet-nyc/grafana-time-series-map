@@ -110,13 +110,19 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addSelect({
         path: 'maplibreStyle',
-        name: 'Maplibre style',
+        name: 'Map style',
         defaultValue: 'carto-dark',
         settings: {
           options: [
             { label: 'Carto Dark Matter', value: 'carto-dark' },
             { label: 'Carto Positron (light)', value: 'carto-light' },
+            { label: 'Carto Voyager', value: 'carto-voyager' },
             { label: 'OpenStreetMap', value: 'osm' },
+            { label: 'VersaTiles Colorful', value: 'versatiles-colorful' },
+            { label: 'VersaTiles Graybeard', value: 'versatiles-graybeard' },
+            { label: 'VersaTiles Eclipse', value: 'versatiles-eclipse' },
+            { label: 'VersaTiles Neutrino', value: 'versatiles-neutrino' },
+            { label: 'VersaTiles Shadow', value: 'versatiles-shadow' },
             { label: 'Custom URL', value: 'custom' },
           ],
         },
@@ -125,14 +131,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addTextInput({
         path: 'maplibreStyleUrl',
-        name: 'Maplibre style URL',
+        name: 'Map style URL',
         defaultValue: '',
         showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.maplibreStyle === 'custom',
         category: ['Basemap', 'MapLibre'],
       })
       .addSelect({
         path: 'maplibreProjection',
-        name: 'MapLibre projection',
+        name: 'Map projection',
         description: 'Google globe/3D behavior is configured through the Google Maps Map ID style console.',
         defaultValue: 'mercator',
         settings: {
@@ -161,7 +167,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addSelect({
         path: 'googleMapOptions.colorScheme',
-        name: 'Google Maps color scheme',
+        name: 'Color Mode',
         defaultValue: 'LIGHT',
         settings: {
           options: [
