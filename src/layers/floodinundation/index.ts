@@ -113,7 +113,7 @@ const renderer: LayerRenderer = {
           getContourDepth: [contourDepthField],
           getCurrentDepth: [lookupValues, sensorKeyField],
         },
-        getPolygonOffset: (f: Feature) => -Number(f.properties?.[contourDepthField] ?? 0),
+        // getPolygonOffset: (f: Feature) => -Number(f.properties?.[contourDepthField] ?? 0),
         parameters: { depthTest: !!opts.depthTest },
       }),
     ];
