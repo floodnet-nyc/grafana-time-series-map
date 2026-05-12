@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type EventBus, DataHoverEvent, DataHoverClearEvent } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
+import { useLatestRef } from './useLatestRef';
 
 const PUBLISH_INTERVAL_MS = 100;
 const ECHO_COOLDOWN_MS = 500;
@@ -32,14 +33,8 @@ export function useGrafanaEventBridge(
   publish: boolean,
   subscribe: boolean,
 ): UseGrafanaEventBridgeResult {
-  const playbackRef = useRef(playback);
-  // eslint-disable-next-line react-hooks/refs
-  playbackRef.current = playback;
-
-  const rangeRef = useRef({ fromTimeMs, toTimeMs });
-  // eslint-disable-next-line react-hooks/refs
-  rangeRef.current = { fromTimeMs, toTimeMs };
-
+  const playbackRef = useLatestRef(playback);
+  const rangeRef = useLatestRef({ fromTimeMs, toTimeMs });
   const lastReceivedAtRef = useRef<number>(0);
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -63,15 +58,14 @@ export function useGrafanaEventBridge(
     }, PUBLISH_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [eventBus, publish]);
+  }, [eventBus, playbackRef, publish]);
 
   // Subscribe to incoming events from other panels
   useEffect(() => {
     if (!eventBus || !subscribe) { return; }
 
     const hoverSub = eventBus.subscribe(DataHoverEvent, (event) => {
-      const { point, data, columnIndex, rowIndex } = event.payload ?? {};
-      console.log('Received DataHoverEvent', columnIndex, rowIndex, data);
+      const { point } = event.payload ?? {};
 
       // Cursor sync: always seek if point.time is in range
       const timeMs = point?.time;
@@ -83,17 +77,6 @@ export function useGrafanaEventBridge(
         }
       }
 
-      // // Series selection: data frame present means a specific series is being hovered.
-      // // After partitionByValues, data.name is the deployment_id of the hovered series.
-      // if (data != null && columnIndex != null) {
-      //   const key = data.fields[columnIndex].labels?.deployment_id ?? null;
-      //   // const key = data.labels?.deployment_id ?? null;
-      //   // const key = data.name ?? null;
-      //   setSelectedKey(key ?? null);
-      //   // Suppress echo on the cursor publish for a moment since we just received
-      //   lastReceivedAtRef.current = Date.now();
-      //   void columnIndex; void rowIndex; // available if needed for sub-field resolution
-      // }
     });
 
     const clearSub = eventBus.subscribe(DataHoverClearEvent, () => {
@@ -111,7 +94,7 @@ export function useGrafanaEventBridge(
       clearSub.unsubscribe();
       // selectSub.unsubscribe();
     };
-  }, [eventBus, subscribe]);
+  }, [eventBus, playbackRef, rangeRef, subscribe]);
 
   return { selectedKey, selectKey };
 }
