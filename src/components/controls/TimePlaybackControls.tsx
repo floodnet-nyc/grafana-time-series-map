@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, IconButton, Slider, Select } from '@grafana/ui';
-import type { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { useStyles2, IconButton, Slider, Combobox, type ComboboxOption } from '@grafana/ui';
+import type { GrafanaTheme2 } from '@grafana/data';
 import type { UsePlaybackResult } from '../../hooks/usePlayback';
 
-const SPEED_OPTIONS: Array<SelectableValue<number>> = [
+const SPEED_OPTIONS: Array<ComboboxOption<number>> = [
   { label: '15 min/s', value: 1000 * 60 * 15 },
   { label: '30 min/s', value: 1000 * 60 * 30 },
   { label: '1 hr/s', value: 1000 * 60 * 60 },
@@ -61,12 +61,11 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
         />
         <span className={styles.timeLabel}>{formatTime(cursorTimeMs)}</span>
       </div>
-      <Select
+      <Combobox
         width={14}
         options={SPEED_OPTIONS}
         value={playbackSpeed}
-        onChange={(v) => v.value != null && setSpeed(v.value)}
-        menuPlacement="top"
+        onChange={(v) => setSpeed(v.value)}
       />
     </div>
   );

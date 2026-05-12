@@ -1,8 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Button, Icon, IconButton } from '@grafana/ui';
-import type { GrafanaTheme2, DataFrame } from '@grafana/data';
-import type { StandardEditorProps } from '@grafana/data';
+import { useStyles2, Button, IconButton } from '@grafana/ui';
+import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import type { LayerConfig } from '../types';
 import { LayerEditor } from './LayerEditor';
 import { getAllLayerTypes } from '../layers/registry';
@@ -30,7 +29,9 @@ function getFieldsForRefId(series: DataFrame[], refId: string | undefined): stri
   const frames = refId ? series.filter((f) => f.refId === refId) : series.slice(0, 1);
   const fieldSet = new Set<string>();
   for (const frame of frames) {
-    for (const field of frame.fields) fieldSet.add(field.name);
+    for (const field of frame.fields) {
+      fieldSet.add(field.name);
+    }
   }
   return Array.from(fieldSet);
 }
@@ -39,7 +40,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const styles = useStyles2(getStyles);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const layerList = layers ?? [];
+  const layerList = useMemo(() => layers ?? [], [layers]);
 
   const addLayer = useCallback(() => {
     const firstType = getAllLayerTypes()[0]?.type ?? 'scatterplot';
@@ -61,7 +62,10 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const moveLayer = useCallback(
     (i: number, dir: -1 | 1) => {
       const j = i + dir;
-      if (j < 0 || j >= layerList.length) return;
+      if (j < 0 || j >= layerList.length) {
+        return;
+      }
+
       const next = [...layerList];
       [next[i], next[j]] = [next[j], next[i]];
       onChange(next);
@@ -79,6 +83,18 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
     [layerList, onChange],
   );
 
+  const toggleLayerVisibility = useCallback(
+    (i: number) => {
+      const layer = layerList[i];
+      if (!layer) {
+        return;
+      }
+
+      updateLayer(i, { ...layer, visible: !layer.visible });
+    },
+    [layerList, updateLayer],
+  );
+
   return (
     <div className={styles.root}>
       {/* Layer list */}
@@ -89,7 +105,16 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
             className={`${styles.listItem} ${selectedIndex === i ? styles.listItemActive : ''}`}
             onClick={() => setSelectedIndex(selectedIndex === i ? null : i)}
           >
-            <Icon name={layer.visible ? 'eye' : 'eye-slash'} className={styles.visIcon} />
+            <IconButton
+              name={layer.visible ? 'eye' : 'eye-slash'}
+              size="sm"
+              tooltip={layer.visible ? 'Hide layer' : 'Show layer'}
+              className={styles.visButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleLayerVisibility(i);
+              }}
+            />
             <span className={styles.layerName}>{layer.label || layer.type}</span>
             <div className={styles.listActions}>
               <IconButton
@@ -148,7 +173,7 @@ function getStyles(theme: GrafanaTheme2) {
     listItemActive: css({
       background: theme.colors.action.selected,
     }),
-    visIcon: css({ marginRight: theme.spacing(0.5), color: theme.colors.text.secondary }),
+    visButton: css({ marginRight: theme.spacing(0.5), color: theme.colors.text.secondary }),
     layerName: css({ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }),
     listActions: css({ display: 'flex', gap: 2, marginLeft: theme.spacing(0.5) }),
     editor: css({
