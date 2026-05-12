@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 const HASH_VIEW_KEY = 'v';
+const HASH_WRITE_DEBOUNCE_MS = 1000;
 
 export interface MapHashView {
   latitude: number;
@@ -58,7 +59,17 @@ function getHashWithView(view: MapHashView) {
 export function useMapHashRoute(enabled: boolean, onHashView?: (view: MapHashView) => void) {
   const onHashViewRef = useRef(onHashView);
   const lastWrittenHashRef = useRef<string | null>(null);
+  const pendingHashRef = useRef<string | null>(null);
+  const pendingWriteTimerRef = useRef<number | null>(null);
   const initialView = useMemo(() => enabled ? parseMapHashView() : null, [enabled]);
+
+  const clearPendingWrite = useCallback(() => {
+    if (pendingWriteTimerRef.current) {
+      window.clearTimeout(pendingWriteTimerRef.current);
+      pendingWriteTimerRef.current = null;
+    }
+    pendingHashRef.current = null;
+  }, []);
 
   useEffect(() => {
     onHashViewRef.current = onHashView;
@@ -69,11 +80,38 @@ export function useMapHashRoute(enabled: boolean, onHashView?: (view: MapHashVie
       return;
     }
     const nextHash = getHashWithView(view);
-    lastWrittenHashRef.current = nextHash;
-    if (window.location.hash !== nextHash) {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+    clearPendingWrite();
+
+    if (window.location.hash === nextHash) {
+      lastWrittenHashRef.current = nextHash;
+      return;
     }
-  }, [enabled]);
+
+    pendingHashRef.current = nextHash;
+    pendingWriteTimerRef.current = window.setTimeout(() => {
+      const hashToWrite = pendingHashRef.current;
+      pendingHashRef.current = null;
+      pendingWriteTimerRef.current = null;
+
+      if (!hashToWrite || window.location.hash === hashToWrite) {
+        if (hashToWrite) {
+          lastWrittenHashRef.current = hashToWrite;
+        }
+        return;
+      }
+
+      lastWrittenHashRef.current = hashToWrite;
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hashToWrite}`);
+    }, HASH_WRITE_DEBOUNCE_MS);
+  }, [clearPendingWrite, enabled]);
+
+  useEffect(() => {
+    if (!enabled) {
+      clearPendingWrite();
+    }
+
+    return clearPendingWrite;
+  }, [clearPendingWrite, enabled]);
 
   useEffect(() => {
     if (!enabled || !onHashView) {
