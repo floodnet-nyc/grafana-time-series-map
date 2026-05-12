@@ -129,7 +129,7 @@ export function usePanelLayers(
       const features = featuresByLayerId.get(layerConfig.id)!;
       const timeFilterFlags = flagsByLayerId.get(layerConfig.id)!;
       const lookupValues = lookupByLayerId.get(layerConfig.id);
-      const layers = renderer.renderLayers({
+      let layers = renderer.renderLayers({
         config: layerConfig,
         panelOptions: options,
         features,
@@ -141,9 +141,9 @@ export function usePanelLayers(
         selectedKey,
         onFeatureClick,
       });
-      allLayers.push(...applyLayerExtensions(layers, layerConfig));
+      layers = applyLayerExtensions(layers, layerConfig)
+      allLayers.push(...layers);
     }
-    // console.log('allLayers', allLayers);
     return allLayers;
   }, [featuresByLayerId, flagsByLayerId, lookupByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 }

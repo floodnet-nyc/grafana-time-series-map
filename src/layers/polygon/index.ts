@@ -70,13 +70,13 @@ const renderer: LayerRenderer = {
     return [
       new SolidPolygonLayer({
         id: `polygon/${config.id}`,
-        data: features.filter((f) => getPolygonCoords(f) !== null),
+        data: features,
         visible: config.visible,
         opacity: config.opacity,
         pickable: config.pickable ?? false,
         filled: true,
         extruded: opts.extruded ?? false,
-        getPolygon: (f: Feature) => getPolygonCoords(f)![0] as any,
+        getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
         getFillColor: useShader
           ? [0, 0, 0, fillOpacity]
           : (f: Feature) => {

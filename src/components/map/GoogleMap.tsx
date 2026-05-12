@@ -1,12 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { APIProvider, ColorScheme, ControlPosition, Map, useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay, type GoogleMapsOverlayProps } from '@deck.gl/google-maps';
 import type { Layer } from '@deck.gl/core';
 import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapPanelOptions } from '../../types';
 import type { ViewportSnapshot } from './MaplibreMap';
-import { useMapHashRoute } from '../../hooks/useMapHashRoute';
-import { buildDeckEffects } from '../../utils/deckgl/lighting';
-import { buildDeckParameters } from '../../utils/deckgl/parameters';
+import { MapHashView, useMapHashRoute } from '../../hooks/useMapHashRoute';
 
 function OverlayController(props: GoogleMapsOverlayProps) {
   const map = useMap();
@@ -54,6 +52,51 @@ function GoogleHashRoute({ enabled }: { enabled: boolean }) {
       });
     }
   });
+
+  return null;
+}
+
+function GoogleFitBounds({
+  disabled,
+  initialHashView,
+  fitBounds,
+}: {
+  disabled: boolean;
+  initialHashView?: MapHashView;
+  fitBounds?: [[number, number], [number, number]];
+}) {
+  const map = useMap();
+  const prevFitBoundsRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const key = fitBounds ? JSON.stringify(fitBounds) : null;
+    if (disabled || !map) {
+      return;
+    }
+
+    if (initialHashView) {
+      map.moveCamera({
+        center: { lat: initialHashView.latitude, lng: initialHashView.longitude },
+        zoom: initialHashView.zoom,
+        heading: initialHashView.bearing,
+        tilt: initialHashView.pitch,
+      });
+      return; // Don't override URL hash view with fitBounds
+    }
+
+    if (!fitBounds || key === prevFitBoundsRef.current) {
+      return;
+    }
+
+    prevFitBoundsRef.current = key;
+    map.fitBounds(
+      new google.maps.LatLngBounds(
+        { lat: fitBounds[0][1], lng: fitBounds[0][0] },
+        { lat: fitBounds[1][1], lng: fitBounds[1][0] },
+      ),
+      48,
+    );
+  }, [disabled, fitBounds, initialHashView, map]);
 
   return null;
 }
@@ -131,6 +174,7 @@ interface GoogleMapProps {
   height: number;
   options: MapPanelOptions;
   layers: Layer[];
+  fitBounds?: [[number, number], [number, number]];
   interleaved?: boolean;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
 }
@@ -178,11 +222,12 @@ function getControlPosition(position: GoogleControlPosition | undefined, fallbac
   return googleControlPositionValues[position ?? fallback];
 }
 
-export function GoogleMap({ width, height, options, layers, interleaved = true, onViewportChange }: GoogleMapProps) {
+export function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: GoogleMapProps) {
   const interactions = options.interactions ?? {};
   const googleMapOptions = options.googleMapOptions ?? {};
   const interactive = interactions.interactive ?? true;
-  const { initialView: hashView, writeHashView } = useMapHashRoute(interactions.syncViewToUrl ?? false);
+  const hashRoutingEnabled = interactions.syncViewToUrl ?? false;
+  const [initialHashView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
   const cameraControl = options.controls?.navigationControl;
   const geolocateControl = options.controls?.geolocateControl ?? false;
   const fullscreenControl = options.controls?.fullscreenControl;
@@ -193,12 +238,12 @@ export function GoogleMap({ width, height, options, layers, interleaved = true, 
     <APIProvider apiKey={options.googleMapsApiKey ?? ''}>
       <Map
         defaultCenter={{
-          lat: hashView?.latitude ?? options.initialLatitude,
-          lng: hashView?.longitude ?? options.initialLongitude,
+          lat: initialHashView?.latitude ?? options.initialLatitude,
+          lng: initialHashView?.longitude ?? options.initialLongitude,
         }}
-        defaultZoom={hashView?.zoom ?? options.initialZoom}
-        defaultHeading={hashView?.bearing ?? options.initialBearing ?? 0}
-        defaultTilt={hashView?.pitch ?? options.initialPitch ?? 0}
+        defaultZoom={initialHashView?.zoom ?? options.initialZoom}
+        defaultHeading={initialHashView?.bearing ?? options.initialBearing ?? 0}
+        defaultTilt={initialHashView?.pitch ?? options.initialPitch ?? 0}
         style={{ width, height }}
         mapId={options.googleMapsMapId || undefined}
         colorScheme={colorScheme}
@@ -234,10 +279,11 @@ export function GoogleMap({ width, height, options, layers, interleaved = true, 
         <OverlayController
           layers={layers}
           interleaved={interleaved}
-          effects={buildDeckEffects(options.deckLighting)}
-          parameters={buildDeckParameters(options.deckParameters)}
+          // effects={buildDeckEffects(options.deckLighting)}
+          // parameters={buildDeckParameters(options.deckParameters)}
         />
-        <GoogleHashRoute enabled={interactions.syncViewToUrl ?? false} />
+        <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} />
+        <GoogleHashRoute enabled={hashRoutingEnabled} />
         <GoogleGeolocateControl enabled={geolocateControl && interactive} />
       </Map>
     </APIProvider>

@@ -22,6 +22,7 @@ export function DeckGLMap({ width, height, options, layers, fitBounds, onViewpor
         height={height}
         options={options}
         layers={layers}
+        fitBounds={fitBounds}
         interleaved={interleaved}
         onViewportChange={onViewportChange}
       />

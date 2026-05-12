@@ -203,7 +203,7 @@
           "type": "json",
           "source": "url",
           "format": "table",
-          "hide": true,
+          "hide": false,
           "url": "http://localhost:3000/public/sample-data/flood_inundation.geojson",
           "url_options": {
             "method": "GET",
@@ -249,6 +249,9 @@
         "syncSubscribe": false,
         "googleMapOptions": {
           "colorScheme": "DARK"
+        },
+        "interactions": {
+          "syncViewToUrl": true
         },
         "layers": [
           {
@@ -500,7 +503,9 @@
               "field": "geometry"
             },
             "elevation": {
-              "field": "contour_depth_inches"
+              "field": null,
+              "scale": 0.254,
+              "depthTest": false
             },
             "timeFilter": {
               "mode": "none",
@@ -524,7 +529,7 @@
               "type": "gradient",
               "schemeName": "FloodDepth",
               "scaleMin": 0,
-              "scaleMax": 40
+              "scaleMax": 24
             },
             "options": {
               "contourDepthField": "contour_depth_inches",

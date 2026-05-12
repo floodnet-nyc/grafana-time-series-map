@@ -9,15 +9,17 @@ import type { ColorScaleConfig } from '../../types';
 const VS_FILTER_COLOR = `
 float depthDiff = instanceCurrentDepth - instanceContourDepth;
 float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
-//if (alpha < 0.005) discard;
 vec4 c = interpolateColor(depthDiff);
+if (solidPolygon.extruded) {
+  c.rgb = lighting_getLightColor(c.rgb, project.cameraPosition, geometry.position.xyz, geometry.normal);
+}
 color = vec4(c.rgb, alpha);
 `.trim();
 
 // // Calls interpolateColor() defined in fs:#decl via buildInterpolateColorGlsl.
 // const FS_FILTER_COLOR = `
 // float depthDiff = vInstanceCurrentDepth - vInstanceContourDepth;
-// float alpha = smoothstep(0.0, 3.0, depthDiff) * vInstanceFillOpacity;
+// float alpha = smoothstep(0.0, 3.0, depthDiff);
 // if (alpha < 0.005) discard;
 // vec4 c = interpolateColor(depthDiff);
 // color = vec4(c.rgb, alpha);
@@ -71,9 +73,10 @@ const renderer: LayerRenderer = {
     const opts = config.options as Record<string, any>;
     const contourDepthField: string = opts.contourDepthField ?? '';
     const sensorKeyField: string = opts.sensorKeyField ?? '';
-    const fillOpacity: number = opts.fillOpacity ?? 0.5;
+    const fillOpacity: number = opts.fillOpacity ?? 1;
 
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
+
     return [
       new SolidPolygonLayer({
         id: `flood-inundation/${config.id}`,
@@ -83,9 +86,9 @@ const renderer: LayerRenderer = {
         filled: true,
         stroked: false,
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
-        extruded: config.elevation?.field ? true : false,
+        // extruded: config.elevation?.field ? true : false,
         elevationScale: config.elevation?.scale ?? 1,
-        getElevation: config?.elevation?.field ? (f: Feature) => Number(f.properties?.[config.elevation!.field!] ?? 0) : 0,
+        getElevation: config?.elevation?.field ? (f: Feature) => (lookupValues?.get(String(f.properties?.[sensorKeyField] ?? ''))?.depth ?? 0) - Number(f.properties?.[config.elevation!.field!] ?? 0) : 0,
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: fillOpacity,
         minZoom: config.minZoom,
@@ -106,10 +109,11 @@ const renderer: LayerRenderer = {
           }),
         ],
         updateTriggers: {
-          getElevation: [opts.elevation?.field],
+          getElevation: [opts.elevation?.field, lookupValues],
           getContourDepth: [contourDepthField],
           getCurrentDepth: [lookupValues, sensorKeyField],
         },
+        getPolygonOffset: (f: Feature) => -Number(f.properties?.[contourDepthField] ?? 0),
         parameters: { depthTest: !!opts.depthTest },
       }),
     ];

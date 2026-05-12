@@ -108,6 +108,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   // }, [options, onOptionsChange]);
 
   // ── Fit-to-data bounds ──────────────────────────────────────────────────────
+  
   const fitBounds = useMemo((): [[number, number], [number, number]] | undefined => {
     if (options.initialViewMode !== 'fitData') {
       return undefined;
