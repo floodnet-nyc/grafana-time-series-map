@@ -6,7 +6,6 @@ import {
   Switch,
   Combobox,
   Slider,
-  RangeSlider,
   Field,
   TextArea,
   CollapsableSection,
@@ -82,6 +81,15 @@ function hexToRgba(hex: string): [number, number, number, number] {
   const b = parseInt(c.slice(4, 6), 16) || 0;
   const a = c.length >= 8 ? parseInt(c.slice(6, 8), 16) : 255;
   return [r, g, b, a];
+}
+
+function clampZoom(value: number): number {
+  return Math.max(DEFAULT_MIN_ZOOM, Math.min(DEFAULT_MAX_ZOOM, value));
+}
+
+function parseZoomInput(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? clampZoom(parsed) : fallback;
 }
 
 // ─── FieldSelect: autocomplete field picker ───────────────────────────────────
@@ -170,6 +178,18 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
 
   const patchColor = (updates: Partial<NonNullable<typeof layer.colorScale>>) =>
     patch({ colorScale: createPatchedColorScale(layer.colorScale, updates) });
+
+  const patchZoomRange = useCallback(
+    (min: number, max: number) => {
+      const nextMin = clampZoom(Math.min(min, max));
+      const nextMax = clampZoom(Math.max(min, max));
+      patch({
+        minZoom: nextMin <= DEFAULT_MIN_ZOOM ? undefined : nextMin,
+        maxZoom: nextMax >= DEFAULT_MAX_ZOOM ? undefined : nextMax,
+      });
+    },
+    [patch]
+  );
 
   const currentRenderer = getAllLayerTypes().find((r) => r.type === layer.type);
   const normalizedOptions = useMemo(() => resolveLayerOptions(layer.type, layer.options), [layer.type, layer.options]);
@@ -411,19 +431,31 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
           <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
         </Field>
         <Field label="Zoom range" description="Visible from the first zoom value through the second. Full range means no zoom limit.">
-          <RangeSlider
-            min={DEFAULT_MIN_ZOOM}
-            max={DEFAULT_MAX_ZOOM}
-            step={1}
-            value={zoomRange}
-            onChange={(value) =>
-              patch({
-                minZoom: value[0] <= DEFAULT_MIN_ZOOM ? undefined : value[0],
-                maxZoom: value[1] >= DEFAULT_MAX_ZOOM ? undefined : value[1],
-              })
-            }
-            formatTooltipResult={(value) => `${value}`}
-          />
+          <div className={styles.zoomRangeEditor}>
+            <div className={styles.zoomRangeInputs}>
+              <Input
+                type="number"
+                value={zoomRange[0]}
+                min={DEFAULT_MIN_ZOOM}
+                max={zoomRange[1]}
+                onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, zoomRange[0]), zoomRange[1])}
+              />
+              <span className={styles.zoomRangeSeparator}>to</span>
+              <Input
+                type="number"
+                value={zoomRange[1]}
+                min={zoomRange[0]}
+                max={DEFAULT_MAX_ZOOM}
+                onChange={(e) => patchZoomRange(zoomRange[0], parseZoomInput(e.currentTarget.value, zoomRange[1]))}
+              />
+              <button type="button" className={styles.zoomRangeReset} onClick={() => patchZoomRange(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)}>
+                Full range
+              </button>
+            </div>
+            <div className={styles.zoomRangeHint}>
+              Visible from zoom {zoomRange[0]} through {zoomRange[1]}.
+            </div>
+          </div>
         </Field>
       </CollapsableSection>
 
@@ -665,6 +697,37 @@ function getStyles(theme: GrafanaTheme2) {
       '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
     }),
     thresholdSummary: css({
+      fontSize: 12,
+      color: theme.colors.text.secondary,
+    }),
+    zoomRangeEditor: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+    }),
+    zoomRangeInputs: css({
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
+      gap: theme.spacing(1),
+      alignItems: 'center',
+    }),
+    zoomRangeSeparator: css({
+      color: theme.colors.text.secondary,
+      textAlign: 'center',
+    }),
+    zoomRangeReset: css({
+      gridColumn: '1 / -1',
+      justifySelf: 'start',
+      background: 'none',
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      color: theme.colors.text.secondary,
+      cursor: 'pointer',
+      fontSize: 12,
+      padding: '4px 8px',
+      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
+    }),
+    zoomRangeHint: css({
       fontSize: 12,
       color: theme.colors.text.secondary,
     }),

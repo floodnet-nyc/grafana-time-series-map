@@ -51,11 +51,6 @@ jest.mock('@grafana/ui', () => {
         onChange={(event) => onChange(Number(event.currentTarget.value))}
       />
     ),
-    RangeSlider: ({ value, onChange }: any) => (
-      <button type="button" onClick={() => onChange(value)}>
-        range-slider
-      </button>
-    ),
     TextArea: ({ value, onChange, placeholder }: any) => (
       <textarea aria-label={placeholder ?? undefined} value={value} onChange={onChange} />
     ),
@@ -251,12 +246,28 @@ describe('LayerEditor interactions', () => {
     fireEvent.click(screen.getByRole('button', { name: '+ Add threshold' }));
     expect(currentLayer().colorScale?.steps).toHaveLength(6);
 
-    const thresholdInputs = screen.getAllByDisplayValue(/^(0|4|12|24|48|58)$/);
-    fireEvent.change(thresholdInputs[5], { target: { value: '60' } });
+    fireEvent.change(screen.getByDisplayValue('58'), { target: { value: '60' } });
     expect(currentLayer().colorScale?.steps?.[5].value).toBe(60);
 
     const removeButtons = screen.getAllByRole('button', { name: '×' });
     fireEvent.click(removeButtons[5]);
     expect(currentLayer().colorScale?.steps).toHaveLength(5);
+  });
+
+  it('updates and resets the zoom range with explicit min/max inputs', () => {
+    render(<Harness initialLayer={createLayer({ minZoom: 4, maxZoom: 18 })} />);
+
+    fireEvent.change(screen.getByDisplayValue('4'), { target: { value: '6' } });
+    fireEvent.change(screen.getByDisplayValue('18'), { target: { value: '20' } });
+
+    expect(currentLayer()).toMatchObject({
+      minZoom: 6,
+      maxZoom: 20,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Full range' }));
+
+    expect(currentLayer().minZoom).toBeUndefined();
+    expect(currentLayer().maxZoom).toBeUndefined();
   });
 });
