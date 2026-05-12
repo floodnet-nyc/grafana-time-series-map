@@ -11,11 +11,13 @@ import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from './vi
 import type { MapProviderProps } from './providerTypes';
 import { MaplibreDeckOverlay } from './maplibre/MaplibreDeckOverlay';
 import { getMaplibreStyleUrl } from './maplibre/style';
+import { getMaplibreControlPosition, resolveMapControlSettings } from './controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
 export default function MaplibreMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.maplibreStyle, options.maplibreStyleUrl);
+  const controlSettings = resolveMapControlSettings(options);
 
   const mapRef = useRef<MapRef>(null);
   const hashRoutingEnabled = options.interactions?.syncViewToUrl ?? false;
@@ -52,10 +54,7 @@ export default function MaplibreMap({ width, height, options, layers, fitBounds,
     ? { bounds: fitBounds as any, fitBoundsOptions: { padding: FIT_BOUNDS_PADDING_PX } }
     : initialViewport;
   const interactions = options.interactions ?? {};
-  const controls = options.controls ?? {};
-  const maplibreControls = options.maplibreControls ?? {};
   const interactive = interactions.interactive ?? true;
-  const showNavigationControl = options.controls?.navigationControl ?? false;
   return (
     <Map
       ref={mapRef}
@@ -68,24 +67,24 @@ export default function MaplibreMap({ width, height, options, layers, fitBounds,
       rollEnabled={interactive ? interactions.rollEnabled ?? false : false}
       onMoveEnd={handleMoveEnd}
     >
-      {showNavigationControl && (
+      {controlSettings.navigation.enabled && (
         <NavigationControl
-          position="top-right"
-          showZoom={maplibreControls.navigationShowZoom ?? true}
-          showCompass={maplibreControls.navigationShowCompass ?? true}
-          visualizePitch={maplibreControls.navigationVisualizePitch ?? false}
-          visualizeRoll={maplibreControls.navigationVisualizeRoll ?? false}
+          position={getMaplibreControlPosition(controlSettings.navigation.position)}
+          showZoom={controlSettings.navigation.showZoom}
+          showCompass={controlSettings.navigation.showCompass}
+          visualizePitch={controlSettings.navigation.visualizePitch}
+          visualizeRoll={controlSettings.navigation.visualizeRoll}
         />
       )}
-      {(controls.geolocateControl || maplibreControls.geolocateControl) && interactive && (
+      {controlSettings.geolocate.enabled && interactive && (
         <GeolocateControl
-          position="top-right"
-          trackUserLocation={maplibreControls.geolocateTrackUserLocation ?? false}
+          position={getMaplibreControlPosition(controlSettings.geolocate.position)}
+          trackUserLocation={controlSettings.geolocate.trackUserLocation}
           positionOptions={{ enableHighAccuracy: true }}
         />
       )}
-      {controls.fullscreenControl && <FullscreenControl position="top-right" />}
-      {controls.scaleControl && <ScaleControl position="bottom-left" />}
+      {controlSettings.fullscreen.enabled && <FullscreenControl position={getMaplibreControlPosition(controlSettings.fullscreen.position)} />}
+      {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
       <MaplibreDeckOverlay layers={layers} interleaved={interleaved} options={options} />
     </Map>
   );

@@ -250,6 +250,20 @@
         "googleMapOptions": {
           "colorScheme": "DARK"
         },
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "geolocate": {
+            "position": "top-right",
+            "trackUserLocation": false
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
         "interactions": {
           "syncViewToUrl": true
         },

@@ -8,17 +8,15 @@ import { GoogleGeolocateControl } from './google/GoogleGeolocateControl';
 import { GoogleHashRoute } from './google/GoogleHashRoute';
 import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './google/controlMappings';
 import { getInitialViewport } from './viewState';
+import { getGoogleCameraControlPosition, getGoogleFullscreenControlPosition, resolveMapControlSettings } from './controlSettings';
 
 export default function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.interactions ?? {};
   const googleMapOptions = options.googleMapOptions ?? {};
+  const controlSettings = resolveMapControlSettings(options);
   const interactive = interactions.interactive ?? true;
   const hashRoutingEnabled = interactions.syncViewToUrl ?? false;
   const [initialHashView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
-  const cameraControl = options.controls?.navigationControl;
-  const geolocateControl = options.controls?.geolocateControl ?? false;
-  const fullscreenControl = options.controls?.fullscreenControl;
-  const scaleControl = options.controls?.scaleControl;
   const colorScheme = getGoogleColorScheme(googleMapOptions.colorScheme);
   const initialViewport = getInitialViewport(options, initialHashView);
 
@@ -38,20 +36,20 @@ export default function GoogleMap({ width, height, options, layers, fitBounds, i
         gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
         keyboardShortcuts={interactive}
         clickableIcons={interactive}
-        cameraControl={cameraControl}
-        cameraControlOptions={{ position: getControlPosition(googleMapOptions.cameraControlPosition, 'INLINE_START_BLOCK_END') }}
-        fullscreenControl={fullscreenControl}
-        fullscreenControlOptions={{ position: getControlPosition(googleMapOptions.fullscreenControlPosition, 'TOP_RIGHT') }}
-        scaleControl={scaleControl}
-        mapTypeControl={googleMapOptions.mapTypeControl}
+        cameraControl={controlSettings.navigation.enabled}
+        cameraControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
+        fullscreenControl={controlSettings.fullscreen.enabled}
+        fullscreenControlOptions={{ position: getControlPosition(getGoogleFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT') }}
+        scaleControl={controlSettings.scale.enabled}
+        mapTypeControl={controlSettings.google.mapTypeControl}
         mapTypeControlOptions={{
-          position: getControlPosition(googleMapOptions.mapTypeControlPosition, 'TOP_LEFT'),
-          style: mapTypeControlStyleValues[googleMapOptions.mapTypeControlStyle ?? 'DEFAULT'],
+          position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
+          style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
         }}
-        streetViewControl={googleMapOptions.streetViewControl}
-        streetViewControlOptions={{ position: getControlPosition(googleMapOptions.streetViewControlPosition, 'RIGHT_BOTTOM') }}
-        rotateControl={googleMapOptions.rotateControl}
-        rotateControlOptions={{ position: getControlPosition(googleMapOptions.rotateControlPosition, 'RIGHT_BOTTOM') }}
+        streetViewControl={controlSettings.google.streetViewControl}
+        streetViewControlOptions={{ position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM') }}
+        rotateControl={controlSettings.google.rotateControl}
+        rotateControlOptions={{ position: getControlPosition(controlSettings.google.rotateControlPosition, 'RIGHT_BOTTOM') }}
         onCameraChanged={(event) => {
           const viewport = {
             latitude: event.detail.center.lat,
@@ -70,7 +68,7 @@ export default function GoogleMap({ width, height, options, layers, fitBounds, i
         />
         <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} />
         <GoogleHashRoute enabled={hashRoutingEnabled} />
-        <GoogleGeolocateControl enabled={geolocateControl && interactive} />
+        <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
       </Map>
     </APIProvider>
   );

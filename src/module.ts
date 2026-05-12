@@ -298,11 +298,46 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map controls'],
       })
       .addSelect({
-        path: 'googleMapOptions.cameraControlPosition',
-        name: 'Camera control position',
-        defaultValue: 'INLINE_START_BLOCK_END',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.navigationControl !== false,
+        path: 'controlSettings.navigation.position',
+        name: 'Navigation control position',
+        defaultValue: 'top-right',
+        settings: {
+          options: [
+            { label: 'Top left', value: 'top-left' },
+            { label: 'Top right', value: 'top-right' },
+            { label: 'Bottom left', value: 'bottom-left' },
+            { label: 'Bottom right', value: 'bottom-right' },
+          ],
+        },
+        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controlSettings.navigation.showZoom',
+        name: 'Show zoom buttons',
+        defaultValue: true,
+        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controlSettings.navigation.showCompass',
+        name: 'Show compass button',
+        defaultValue: true,
+        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controlSettings.navigation.visualizePitch',
+        name: 'Visualize pitch',
+        defaultValue: false,
+        showIf: (cfg) => cfg.controls?.navigationControl !== false && cfg.basemapProvider !== 'google',
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controlSettings.navigation.visualizeRoll',
+        name: 'Visualize roll',
+        defaultValue: false,
+        showIf: (cfg) => cfg.controls?.navigationControl !== false && cfg.basemapProvider !== 'google',
         category: ['Map controls'],
       })
       .addBooleanSwitch({
@@ -313,10 +348,48 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.interactions?.interactive !== false,
         category: ['Map controls'],
       })
+      .addSelect({
+        path: 'controlSettings.geolocate.position',
+        name: 'Geolocate control position',
+        defaultValue: 'top-right',
+        settings: {
+          options: [
+            { label: 'Top left', value: 'top-left' },
+            { label: 'Top right', value: 'top-right' },
+            { label: 'Bottom left', value: 'bottom-left' },
+            { label: 'Bottom right', value: 'bottom-right' },
+          ],
+        },
+        showIf: (cfg) => cfg.interactions?.interactive !== false && cfg.controls?.geolocateControl === true,
+        category: ['Map controls'],
+      })
+      .addBooleanSwitch({
+        path: 'controlSettings.geolocate.trackUserLocation',
+        name: 'Track user location',
+        description: 'MapLibre only. Keep watching the user position after geolocation is enabled.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.interactions?.interactive !== false && cfg.controls?.geolocateControl === true && cfg.basemapProvider !== 'google',
+        category: ['Map controls'],
+      })
       .addBooleanSwitch({
         path: 'controls.fullscreenControl',
         name: 'Fullscreen control',
         defaultValue: false,
+        category: ['Map controls'],
+      })
+      .addSelect({
+        path: 'controlSettings.fullscreen.position',
+        name: 'Fullscreen control position',
+        defaultValue: 'top-right',
+        settings: {
+          options: [
+            { label: 'Top left', value: 'top-left' },
+            { label: 'Top right', value: 'top-right' },
+            { label: 'Bottom left', value: 'bottom-left' },
+            { label: 'Bottom right', value: 'bottom-right' },
+          ],
+        },
+        showIf: (cfg) => cfg.controls?.fullscreenControl === true,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
@@ -324,44 +397,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Scale control',
         defaultValue: false,
         category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'maplibreControls.geolocateTrackUserLocation',
-        name: 'Track user location',
-        description: 'Keep watching the user position after geolocation is enabled.',
-        defaultValue: false,
-        showIf: (cfg) =>
-          cfg.basemapProvider !== 'google' &&
-          (cfg.controls?.geolocateControl === true || cfg.maplibreControls?.geolocateControl === true),
-        category: ['Map controls', 'MapLibre'],
-      })
-      .addBooleanSwitch({
-        path: 'maplibreControls.navigationShowZoom',
-        name: 'Show zoom buttons',
-        defaultValue: true,
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
-        category: ['Map controls', 'MapLibre navigation'],
-      })
-      .addBooleanSwitch({
-        path: 'maplibreControls.navigationShowCompass',
-        name: 'Show compass button',
-        defaultValue: true,
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
-        category: ['Map controls', 'MapLibre navigation'],
-      })
-      .addBooleanSwitch({
-        path: 'maplibreControls.navigationVisualizePitch',
-        name: 'Visualize pitch',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
-        category: ['Map controls', 'MapLibre navigation'],
-      })
-      .addBooleanSwitch({
-        path: 'maplibreControls.navigationVisualizeRoll',
-        name: 'Visualize roll',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.controls?.navigationControl !== false,
-        category: ['Map controls', 'MapLibre navigation'],
       })
       .addBooleanSwitch({
         path: 'googleMapOptions.mapTypeControl',
@@ -384,14 +419,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: false,
         showIf: (cfg) => cfg.basemapProvider === 'google',
         category: ['Map controls', 'Google Maps controls'],
-      })
-      .addSelect({
-        path: 'googleMapOptions.fullscreenControlPosition',
-        name: 'Fullscreen control position',
-        defaultValue: 'TOP_RIGHT',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.controls?.fullscreenControl === true,
-        category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
         path: 'googleMapOptions.mapTypeControlPosition',
