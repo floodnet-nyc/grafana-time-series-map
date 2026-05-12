@@ -45,6 +45,33 @@ function lerpRgb(c0: [number, number, number], c1: [number, number, number], f: 
   return `rgb(${Math.round(c0[0] + f * (c1[0] - c0[0]))},${Math.round(c0[1] + f * (c1[1] - c0[1]))},${Math.round(c0[2] + f * (c1[2] - c0[2]))})`;
 }
 
+// const FLOOD_DEPTH_SCALE = [
+//   {
+//     "value": 0,
+//     "color": [0, 155, 104, 255]
+//   },
+//   {
+//     "value": 1,
+//     "color": [0, 155, 104, 255]
+//   },
+//   {
+//     "value": 4,
+//     "color": [0, 204, 255, 255]
+//   },
+//   {
+//     "value": 12,
+//     "color": [253, 191, 75, 255]
+//   },
+//   {
+//     "value": 24,
+//     "color": [254, 77, 76, 255]
+//   },
+//   {
+//     "value": 48,
+//     "color": [215, 77, 254, 255]
+//   }
+// ]
+
 // Flood-depth: 5 uniformly-spaced stops (teal→blue→amber→red→purple)
 function interpolateFloodDepth(t: number): string {
   const s: Array<[number, number, number]> = [

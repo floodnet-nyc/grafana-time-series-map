@@ -83,14 +83,7 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
 
   const mapRef = useRef<MapRef>(null);
   const hashRoutingEnabled = options.interactions?.syncViewToUrl ?? false;
-  const { initialView: hashInitialView, writeHashView } = useMapHashRoute(hashRoutingEnabled, (view) => {
-    mapRef.current?.getMap().jumpTo({
-      center: [view.longitude, view.latitude],
-      zoom: view.zoom,
-      bearing: view.bearing,
-      pitch: view.pitch,
-    });
-  });
+  const [hashInitialView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
 
   // When fitBounds changes (data loaded or mode changed), refit the map.
   const prevFitBoundsRef = useRef<string | null>(null);
@@ -116,13 +109,14 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
     writeHashView(viewport);
   }, [onViewportChange, writeHashView]);
 
-  const initialViewState = hashInitialView
+  const initialHashView = hashInitialView;
+  const initialViewState = initialHashView
     ? {
-        latitude: hashInitialView.latitude,
-        longitude: hashInitialView.longitude,
-        zoom: hashInitialView.zoom,
-        bearing: hashInitialView.bearing,
-        pitch: hashInitialView.pitch,
+        latitude: initialHashView.latitude,
+        longitude: initialHashView.longitude,
+        zoom: initialHashView.zoom,
+        bearing: initialHashView.bearing,
+        pitch: initialHashView.pitch,
       }
     : fitBounds
     ? { bounds: fitBounds as any, fitBoundsOptions: { padding: 48 } }
