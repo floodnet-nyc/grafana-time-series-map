@@ -129,11 +129,16 @@ interface Props {
   layer: LayerConfig;
   onChange: (layer: LayerConfig) => void;
   availableFields?: string[];
+  availableRefIds?: string[];
 }
 
-export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
+export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [] }: Props) {
   const styles = useStyles2(getStyles);
   const layerTypes = getAllLayerTypes().map((r) => ({ label: r.label, value: r.type }));
+  const refIdOptions = useMemo(
+    () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
+    [availableRefIds]
+  );
 
   const patch = useCallback(
     (updates: Partial<LayerConfig>) => onChange({ ...layer, ...updates }),
@@ -256,10 +261,10 @@ export function LayerEditor({ layer, onChange, availableFields = [] }: Props) {
           />
         </Field>
         <Field label="Query (ref ID)">
-          <Input
-            placeholder="A (leave blank for first query)"
+          <Combobox
+            options={refIdOptions}
             value={layer.queryRefId ?? ''}
-            onChange={(e) => patch({ queryRefId: e.currentTarget.value || undefined })}
+            onChange={(v) => patch({ queryRefId: v.value ? String(v.value) : undefined })}
           />
         </Field>
         <Field label="Visible">
