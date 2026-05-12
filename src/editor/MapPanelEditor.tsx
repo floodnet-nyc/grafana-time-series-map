@@ -25,6 +25,10 @@ function makeDefaultLayer(type: string, index: number): LayerConfig {
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}
 
+function getAvailableRefIds(series: DataFrame[]): string[] {
+  return Array.from(new Set(series.map((frame) => frame.refId).filter((refId): refId is string => Boolean(refId))));
+}
+
 function getFieldsForRefId(series: DataFrame[], refId: string | undefined): string[] {
   const frames = refId ? series.filter((f) => f.refId === refId) : series.slice(0, 1);
   const fieldSet = new Set<string>();
@@ -150,6 +154,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
             layer={layerList[selectedIndex]}
             onChange={(updated) => updateLayer(selectedIndex, updated)}
             availableFields={getFieldsForRefId(context?.data ?? [], layerList[selectedIndex].queryRefId)}
+            availableRefIds={getAvailableRefIds(context?.data ?? [])}
           />
         </div>
       )}

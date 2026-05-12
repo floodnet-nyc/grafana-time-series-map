@@ -165,7 +165,7 @@ function Harness({ initialLayer }: { initialLayer?: LayerConfig }) {
   const [layer, setLayer] = React.useState(initialLayer ?? createLayer());
   return (
     <div>
-      <LayerEditor layer={layer} onChange={setLayer} availableFields={['depth', 'sensor_id']} />
+      <LayerEditor layer={layer} onChange={setLayer} availableFields={['depth', 'sensor_id']} availableRefIds={['A', 'B']} />
       <pre data-testid="layer-state">{JSON.stringify(layer)}</pre>
     </div>
   );
@@ -176,10 +176,23 @@ function currentLayer(): LayerConfig {
 }
 
 function colorModeSelect(): HTMLSelectElement {
-  return screen.getAllByRole('combobox')[4] as HTMLSelectElement;
+  return screen.getAllByRole('combobox')[5] as HTMLSelectElement;
 }
 
 describe('LayerEditor interactions', () => {
+  it('uses a query refId picker instead of free text', () => {
+    render(<Harness />);
+
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: 'B' } });
+
+    expect(currentLayer().queryRefId).toBe('B');
+
+    fireEvent.change(selects[1], { target: { value: '' } });
+
+    expect(currentLayer().queryRefId).toBeUndefined();
+  });
+
   it('preserves shared options and resets renderer-specific options when switching layer type', () => {
     render(<Harness />);
 
