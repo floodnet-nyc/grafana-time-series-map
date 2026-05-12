@@ -26,6 +26,10 @@ export function getExtensionOptionsSchema(): LayerOptionField[] {
   return registry.flatMap((extension) => extension.optionsSchema);
 }
 
+export function getExtensionOptionKeys(): string[] {
+  return registry.flatMap((extension) => extension.optionsSchema.map((field) => field.key));
+}
+
 export function appendDeckExtension(layer: Layer, extension: unknown) {
   const props = (layer as any).props ?? {};
   const existing = props.extensions ?? [];

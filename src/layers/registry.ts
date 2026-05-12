@@ -1,5 +1,5 @@
 import type { LayerRenderer } from './types';
-import { getExtensionDefaultOptions, getExtensionOptionsSchema } from './extensions/registry';
+import { getExtensionDefaultOptions, getExtensionOptionKeys, getExtensionOptionsSchema } from './extensions/registry';
 
 const registry = new Map<string, LayerRenderer<any>>();
 
@@ -33,4 +33,13 @@ export function getAllLayerTypes(): Array<LayerRenderer<any>> {
 export function resolveLayerOptions(type: string, options?: Record<string, unknown>): Record<string, unknown> {
   const renderer = getLayer(type);
   return renderer ? { ...renderer.defaultOptions, ...(options ?? {}) } : { ...(options ?? {}) };
+}
+
+export function extractSharedLayerOptions(options?: Record<string, unknown>): Record<string, unknown> {
+  if (!options) {
+    return {};
+  }
+
+  const sharedOptionKeys = new Set(getExtensionOptionKeys());
+  return Object.fromEntries(Object.entries(options).filter(([key]) => sharedOptionKeys.has(key)));
 }
