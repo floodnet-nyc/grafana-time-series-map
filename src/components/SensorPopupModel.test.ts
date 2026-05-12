@@ -4,7 +4,7 @@ import { buildSensorPopupModel } from './SensorPopupModel';
 function createFeature(properties: Record<string, unknown>): Feature {
   return {
     type: 'Feature',
-    geometry: null,
+    geometry: { type: 'Point', coordinates: [0, 0] },
     properties,
   };
 }

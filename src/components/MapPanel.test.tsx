@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { PanelProps } from '@grafana/data';
+import type { EventBus, PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { MapPanel } from './MapPanel';
@@ -121,7 +121,8 @@ function createProps(options = createOptions()): PanelProps<MapPanelOptions> {
     replaceVariables: (value: string) => value,
     onOptionsChange: jest.fn(),
     onFieldConfigChange: jest.fn(),
-    eventBus: undefined,
+    onChangeTimeRange: jest.fn(),
+    eventBus: {} as EventBus,
     title: 'Map Panel',
   };
 }
@@ -181,7 +182,7 @@ describe('MapPanel', () => {
     const props = createProps();
     const feature: Feature = {
       type: 'Feature',
-      geometry: null,
+      geometry: { type: 'Point', coordinates: [0, 0] },
       properties: { deployment_id: 'sensor-1', depth_inches: 3.2 },
     };
 
@@ -208,7 +209,7 @@ describe('MapPanel', () => {
     const props = createProps();
     const feature: Feature = {
       type: 'Feature',
-      geometry: null,
+      geometry: { type: 'Point', coordinates: [0, 0] },
       properties: { deployment_id: 'sensor-1' },
     };
 
