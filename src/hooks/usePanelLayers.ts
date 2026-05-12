@@ -7,36 +7,18 @@ import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../utils/deckgl/closestTimeFiltering';
 import { getLayer } from '../layers/registry';
 import { applyLayerExtensions } from '../layers/extensions/registry';
+import type { PanelFeaturesByLayerId } from './usePanelFeatures';
 
 export function usePanelLayers(
-  data: PanelData,
   options: MapPanelOptions,
+  featuresByLayerId: PanelFeaturesByLayerId,
+  data: PanelData,
   cursorTimeMs: number,
   fromTimeMs: number,
   toTimeMs: number,
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: any) => void,
 ): Layer[] {
-  // console.log('usePanelLayers', { data, options, cursorTimeMs, fromTimeMs, toTimeMs });
-  // Stage 1: parse DataFrames → GeoJSON features per layer
-  const featuresByLayerId = useMemo(() => {
-    const map = new Map<string, Feature[]>();
-    for (const layerConfig of options.layers) {
-      const features = dataFramesToFeatures(
-        data.series,
-        layerConfig.queryRefId,
-        layerConfig.geometry,
-        layerConfig.elevation,
-        layerConfig.fieldMappings,
-      );
-      map.set(
-        layerConfig.id,
-        features,
-      );
-    }
-    return map;
-  }, [data.series, options.layers]);
-
   // Stage 3: build ASOF packed buckets (only for asof layers)
   const packedByLayerId = useMemo(() => {
     const map = new Map<string, ReturnType<typeof buildPacked>>();

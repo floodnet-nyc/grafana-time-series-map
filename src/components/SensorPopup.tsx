@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Feature } from 'geojson';
+import { buildSensorPopupModel } from './SensorPopupModel';
 
 interface SensorPopupProps {
   selectedKey: string;
@@ -62,9 +63,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export function SensorPopup({ selectedKey, feature, onClose }: SensorPopupProps) {
-  const props = feature?.properties ?? {};
-  const depthRaw = props.depth_inches ?? props.value ?? props.depth ?? null;
-  const depth = depthRaw != null ? Number(depthRaw) : null;
+  const model = buildSensorPopupModel(selectedKey, feature);
 
   return (
     <div style={styles.card}>
@@ -73,14 +72,14 @@ export function SensorPopup({ selectedKey, feature, onClose }: SensorPopupProps)
       </button>
 
       <div style={styles.label}>Sensor</div>
-      <div style={styles.value}>{selectedKey}</div>
+      <div style={styles.value}>{model.sensorLabel}</div>
 
-      {depth != null && (
+      {model.depthDisplay && (
         <>
           <div style={styles.label}>Depth</div>
           <div>
-            <span style={styles.depthValue}>{depth.toFixed(1)}</span>
-            <span style={styles.depthUnit}>in</span>
+            <span style={styles.depthValue}>{model.depthDisplay}</span>
+            <span style={styles.depthUnit}>{model.depthUnit}</span>
           </div>
         </>
       )}

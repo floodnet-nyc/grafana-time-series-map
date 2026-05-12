@@ -1,37 +1,21 @@
 import '../layers/_all'; // side-effect: registers all built-in layer types
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';
-import type { Feature, Geometry } from 'geojson';
+import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { DeckGLMap } from './map/DeckGLMap';
-import type { ViewportSnapshot } from './map/MaplibreMap';
+import type { ViewportSnapshot } from './map/types';
 import { TimePlaybackControls } from './controls/TimePlaybackControls';
 import { SensorPopup } from './SensorPopup';
 import { MapLegend } from './MapLegend';
 import { usePlayback } from '../hooks/usePlayback';
 import { usePanelLayers } from '../hooks/usePanelLayers';
+import { usePanelFeatures } from '../hooks/usePanelFeatures';
+import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
-import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 
 const CONTROLS_HEIGHT = 48;
-
-// Recursively collect [lng, lat] coordinate pairs from any GeoJSON geometry.
-function collectCoords(geom: Geometry | null | undefined): Array<[number, number]> {
-  if (!geom) {
-    return [];
-  }
-  switch (geom.type) {
-    case 'Point': return [geom.coordinates as [number, number]];
-    case 'MultiPoint':
-    case 'LineString': return geom.coordinates as Array<[number, number]>;
-    case 'MultiLineString':
-    case 'Polygon': return (geom.coordinates as Array<Array<[number, number]>>).flat();
-    case 'MultiPolygon': return (geom.coordinates as Array<Array<Array<[number, number]>>>).flat(2);
-    case 'GeometryCollection': return geom.geometries.flatMap((g) => collectCoords(g));
-    default: return [];
-  }
-}
 
 export function MapPanel({ data, options, onOptionsChange, width, height, eventBus }: PanelProps<MapPanelOptions>) {
   const fromTimeMs = data.timeRange.from.valueOf();
@@ -107,45 +91,14 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   //   setViewportMoved(false);
   // }, [options, onOptionsChange]);
 
-  // ── Fit-to-data bounds ──────────────────────────────────────────────────────
-  
-  const fitBounds = useMemo((): [[number, number], [number, number]] | undefined => {
-    if (options.initialViewMode !== 'fitData') {
-      return undefined;
-    }
-    let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
-    for (const layerConfig of options.layers) {
-      if (layerConfig.geometry.type === 'none') {
-        continue;
-      }
-      const features = dataFramesToFeatures(
-        data.series,
-        layerConfig.queryRefId,
-        layerConfig.geometry,
-        undefined,
-        [],
-      );
-      for (const f of features) {
-        for (const [lng, lat] of collectCoords(f.geometry)) {
-          if (!isFinite(lng) || !isFinite(lat)) {
-            continue;
-          }
-          minLng = Math.min(minLng, lng); maxLng = Math.max(maxLng, lng);
-          minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
-        }
-      }
-    }
-    if (!isFinite(minLng) || minLng === maxLng) {
-      return undefined;
-    }
-    return [[minLng, minLat], [maxLng, maxLat]];
-  }, [data.series, options.layers, options.initialViewMode]);
-
   const mapHeight = options.showTimeControls ? height - CONTROLS_HEIGHT : height;
+  const featuresByLayerId = usePanelFeatures(data, options);
+  const fitBounds = useFitBounds(options, featuresByLayerId);
 
   const layers = usePanelLayers(
-    data,
     options,
+    featuresByLayerId,
+    data,
     playback.cursorTimeMs,
     fromTimeMs,
     toTimeMs,

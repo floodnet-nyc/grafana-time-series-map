@@ -13,6 +13,8 @@ import type { MapPanelOptions } from '../../types';
 import { useMapHashRoute } from '../../hooks/useMapHashRoute';
 import { buildDeckEffects } from '../../utils/deckgl/lighting';
 import { buildDeckParameters } from '../../utils/deckgl/parameters';
+import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from './viewState';
+import type { FitBounds, ViewportSnapshot } from './types';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const STYLE_URLS: Record<string, string> = {
@@ -57,20 +59,12 @@ function OverlayController({ layers, interleaved, options }: { layers: Layer[]; 
   return null;
 }
 
-export interface ViewportSnapshot {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-  bearing: number;
-  pitch: number;
-}
-
 interface MaplibreMapProps {
   width: number;
   height: number;
   options: MapPanelOptions;
   layers: Layer[];
-  fitBounds?: [[number, number], [number, number]];
+  fitBounds?: FitBounds;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
   interleaved?: boolean;
 }
@@ -91,14 +85,14 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
     if (hashInitialView) {
       return;
     }
-    const key = fitBounds ? JSON.stringify(fitBounds) : null;
+    const key = getFitBoundsKey(fitBounds);
     if (!fitBounds || key === prevFitBoundsRef.current) {
       return;
     }
     prevFitBoundsRef.current = key;
     const map = mapRef.current?.getMap();
     if (map) {
-      map.fitBounds(fitBounds as any, { padding: 48, duration: 800 });
+      map.fitBounds(fitBounds as any, { padding: FIT_BOUNDS_PADDING_PX, duration: 800 });
     }
   }, [fitBounds, hashInitialView]);
 
@@ -109,24 +103,12 @@ export function MaplibreMap({ width, height, options, layers, fitBounds, onViewp
     writeHashView(viewport);
   }, [onViewportChange, writeHashView]);
 
-  const initialHashView = hashInitialView;
-  const initialViewState = initialHashView
-    ? {
-        latitude: initialHashView.latitude,
-        longitude: initialHashView.longitude,
-        zoom: initialHashView.zoom,
-        bearing: initialHashView.bearing,
-        pitch: initialHashView.pitch,
-      }
+  const initialViewport = getInitialViewport(options, hashInitialView);
+  const initialViewState = hashInitialView
+    ? initialViewport
     : fitBounds
-    ? { bounds: fitBounds as any, fitBoundsOptions: { padding: 48 } }
-    : {
-        latitude: options.initialLatitude,
-        longitude: options.initialLongitude,
-        zoom: options.initialZoom,
-        bearing: options.initialBearing ?? 0,
-        pitch: options.initialPitch ?? 0,
-      };
+    ? { bounds: fitBounds as any, fitBoundsOptions: { padding: FIT_BOUNDS_PADDING_PX } }
+    : initialViewport;
   const interactions = options.interactions ?? {};
   const controls = options.controls ?? {};
   const maplibreControls = options.maplibreControls ?? {};

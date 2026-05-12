@@ -3,8 +3,9 @@ import { APIProvider, ColorScheme, ControlPosition, Map, useMap } from '@vis.gl/
 import { GoogleMapsOverlay, type GoogleMapsOverlayProps } from '@deck.gl/google-maps';
 import type { Layer } from '@deck.gl/core';
 import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapPanelOptions } from '../../types';
-import type { ViewportSnapshot } from './MaplibreMap';
 import { MapHashView, useMapHashRoute } from '../../hooks/useMapHashRoute';
+import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from './viewState';
+import type { FitBounds, ViewportSnapshot } from './types';
 
 function OverlayController(props: GoogleMapsOverlayProps) {
   const map = useMap();
@@ -63,13 +64,13 @@ function GoogleFitBounds({
 }: {
   disabled: boolean;
   initialHashView?: MapHashView;
-  fitBounds?: [[number, number], [number, number]];
+  fitBounds?: FitBounds;
 }) {
   const map = useMap();
   const prevFitBoundsRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const key = fitBounds ? JSON.stringify(fitBounds) : null;
+    const key = getFitBoundsKey(fitBounds);
     if (disabled || !map) {
       return;
     }
@@ -94,7 +95,7 @@ function GoogleFitBounds({
         { lat: fitBounds[0][1], lng: fitBounds[0][0] },
         { lat: fitBounds[1][1], lng: fitBounds[1][0] },
       ),
-      48,
+      FIT_BOUNDS_PADDING_PX,
     );
   }, [disabled, fitBounds, initialHashView, map]);
 
@@ -174,7 +175,7 @@ interface GoogleMapProps {
   height: number;
   options: MapPanelOptions;
   layers: Layer[];
-  fitBounds?: [[number, number], [number, number]];
+  fitBounds?: FitBounds;
   interleaved?: boolean;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
 }
@@ -233,17 +234,18 @@ export function GoogleMap({ width, height, options, layers, fitBounds, interleav
   const fullscreenControl = options.controls?.fullscreenControl;
   const scaleControl = options.controls?.scaleControl;
   const colorScheme = googleColorSchemeValues[googleMapOptions.colorScheme ?? 'LIGHT'];
+  const initialViewport = getInitialViewport(options, initialHashView);
 
   return (
     <APIProvider apiKey={options.googleMapsApiKey ?? ''}>
       <Map
         defaultCenter={{
-          lat: initialHashView?.latitude ?? options.initialLatitude,
-          lng: initialHashView?.longitude ?? options.initialLongitude,
+          lat: initialViewport.latitude,
+          lng: initialViewport.longitude,
         }}
-        defaultZoom={initialHashView?.zoom ?? options.initialZoom}
-        defaultHeading={initialHashView?.bearing ?? options.initialBearing ?? 0}
-        defaultTilt={initialHashView?.pitch ?? options.initialPitch ?? 0}
+        defaultZoom={initialViewport.zoom}
+        defaultHeading={initialViewport.bearing}
+        defaultTilt={initialViewport.pitch}
         style={{ width, height }}
         mapId={options.googleMapsMapId || undefined}
         colorScheme={colorScheme}
