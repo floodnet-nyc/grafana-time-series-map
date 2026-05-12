@@ -257,7 +257,7 @@
           {
             "id": "precip-cog",
             "type": "cog",
-            "label": "Precipitation (MRMS)",
+            "label": "Precipitation",
             "visible": false,
             "queryRefId": "E",
             "geometry": {
@@ -397,7 +397,7 @@
                 0,
                 155,
                 104,
-                180
+                230
               ]
             },
             "options": {
@@ -409,13 +409,19 @@
           {
             "id": "flood-summary",
             "type": "scatterplot",
-            "label": "Flood Event Summary",
-            "visible": false,
+            "label": "Flood Events",
+            "visible": true,
+            "showInLegend": true,
             "queryRefId": "C",
             "geometry": {
               "type": "latlng",
               "latField": "lat",
               "lngField": "lng"
+            },
+            "elevation": {
+              "field": "max_depth_inches",
+              "scale": 0.0254,
+              "depthTest": false
             },
             "timeFilter": {
               "mode": "none",
@@ -446,7 +452,7 @@
                   ]
                 },
                 {
-                  "value": 4,
+                  "value": 1,
                   "color": [
                     0,
                     204,
@@ -455,7 +461,7 @@
                   ]
                 },
                 {
-                  "value": 12,
+                  "value": 4,
                   "color": [
                     253,
                     191,
@@ -464,7 +470,7 @@
                   ]
                 },
                 {
-                  "value": 24,
+                  "value": 12,
                   "color": [
                     254,
                     77,
@@ -473,7 +479,7 @@
                   ]
                 },
                 {
-                  "value": 48,
+                  "value": 24,
                   "color": [
                     215,
                     77,

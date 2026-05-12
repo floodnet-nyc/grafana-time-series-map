@@ -51,7 +51,7 @@ function GradientLegend({ colorScale }: { colorScale: ColorScaleConfig }) {
   const max = colorScale.scaleMax ?? 1;
   return (
     <div>
-      <div style={{ height: 10, borderRadius: 3, background: gradient }} />
+      <div style={{ height: 8, borderRadius: 10, background: gradient }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
         <span style={{ fontSize: 10, color: '#999' }}>{formatValue(min)}</span>
         <span style={{ fontSize: 10, color: '#999' }}>{formatValue(max)}</span>
