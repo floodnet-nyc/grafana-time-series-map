@@ -149,7 +149,7 @@ export function usePlayback({
   });
 
   // Compute current cursor from latest state; tick in deps forces re-eval on each animation frame
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/refs
   const cursorTimeMs = useMemo(() => getCursor(), [getCursor, tick]);
 
   // Reset cursor when time range shifts out of bounds

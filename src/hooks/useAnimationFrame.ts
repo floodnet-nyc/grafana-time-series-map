@@ -12,7 +12,8 @@ export default function useAnimationFrame({
   const frameRef = useRef<number | null>(null);
   const lastFrameTime = useRef<number | null>(null);
   const onUpdateRef = useRef(onUpdate);
-  onUpdateRef.current = onUpdate;
+  // eslint-disable-next-line react-hooks/refs
+  onUpdateRef.current = onUpdate; 
 
   useEffect(() => {
     if (!enabled) return;
