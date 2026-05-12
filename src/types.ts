@@ -65,10 +65,38 @@ export interface LookupConfig {
   fields: LookupField[];
 }
 
+export interface LayerSecondarySourceField {
+  sourceField: string;
+  as: string;
+}
+
+export interface LayerSecondarySourceJoinConfig {
+  type: 'keyed-asof';
+  localKeyField: string;
+  remoteKeyField: string;
+  timeField: string;
+  maxLagMs?: number;
+}
+
+export interface LayerSecondarySourceConfig {
+  id: string;
+  queryRefId: string;
+  join: LayerSecondarySourceJoinConfig;
+  fields: LayerSecondarySourceField[];
+}
+
+export interface LayerDerivedFieldConfig {
+  as: string;
+  expression: string;
+  type?: 'number' | 'string' | 'boolean';
+}
+
 export interface LayerConfig {
   id: string;
   type: string;
   lookup?: LookupConfig;
+  secondarySources?: LayerSecondarySourceConfig[];
+  derivedFields?: LayerDerivedFieldConfig[];
   label: string;
   visible: boolean;
   queryRefId?: string;

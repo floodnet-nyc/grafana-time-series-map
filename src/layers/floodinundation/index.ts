@@ -7,13 +7,12 @@ import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../typ
 import type { ColorScaleConfig } from '../../types';
 
 interface FloodInundationLayerOptions {
-  contourDepthField: string;
-  sensorKeyField: string;
+  depthDiffField: string;
   fillOpacity: number;
 }
 
 const VS_FILTER_COLOR = `
-float depthDiff = instanceCurrentDepth - instanceContourDepth;
+float depthDiff = instanceDepthDiff;
 float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
 vec4 c = interpolateColor(depthDiff);
 if (solidPolygon.extruded) {
@@ -39,8 +38,7 @@ const DEFAULT_COLOR_SCALE: ColorScaleConfig = {
 };
 
 const schema: LayerOptionField[] = [
-  { key: 'contourDepthField', label: 'Contour depth field (inches)', type: 'fieldPicker', defaultValue: '' },
-  { key: 'sensorKeyField', label: 'Sensor key field', type: 'fieldPicker', defaultValue: '' },
+  { key: 'depthDiffField', label: 'Depth difference field', type: 'string', defaultValue: 'depthDiff' },
   { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
 ];
 
@@ -49,8 +47,7 @@ const schema: LayerOptionField[] = [
 const InundationExtension = CreateMathExtensionSubclass({
   name: 'FloodInundation',
   attrs: {
-    contourDepth: { type: 'float' },
-    currentDepth: { type: 'float' },
+    depthDiff: { type: 'float' },
     fillOpacity: { type: 'float' },
   },
   uniforms: {},
@@ -65,19 +62,32 @@ function getPolygonCoords(f: Feature): number[][][] | null {
   return null;
 }
 
+function getDerivedNumber(
+  feature: Feature,
+  derivedValues: Array<Record<string, unknown>> | undefined,
+  field: string,
+): number {
+  const index = (feature as Feature & { __idx?: number }).__idx;
+  return Number(derivedValues?.[index ?? -1]?.[field] ?? 0);
+}
+
 const renderer: LayerRenderer<FloodInundationLayerOptions> = {
   type: 'flood-inundation',
   label: 'Flood Inundation',
   defaultOptions: {
-    contourDepthField: '',
-    sensorKeyField: '',
+    depthDiffField: 'depthDiff',
     fillOpacity: 0.5,
   },
   optionsSchema: schema,
 
-  renderLayers({ config, features, lookupValues, onFeatureClick, options }: LayerRenderContext<FloodInundationLayerOptions>) {
-    const contourDepthField = options.contourDepthField;
-    const sensorKeyField = options.sensorKeyField;
+  renderLayers({
+    config,
+    features,
+    derivedValues,
+    onFeatureClick,
+    options,
+  }: LayerRenderContext<FloodInundationLayerOptions>) {
+    const depthDiffField = options.depthDiffField;
     const fillOpacity = options.fillOpacity;
 
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
@@ -93,7 +103,7 @@ const renderer: LayerRenderer<FloodInundationLayerOptions> = {
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
         // extruded: config.elevation?.field ? true : false,
         elevationScale: config.elevation?.scale ?? 1,
-        getElevation: config?.elevation?.field ? (f: Feature) => (lookupValues?.get(String(f.properties?.[sensorKeyField] ?? ''))?.depth ?? 0) - Number(f.properties?.[config.elevation!.field!] ?? 0) : 0,
+        getElevation: (f: Feature) => (config.elevation ? getDerivedNumber(f, derivedValues, depthDiffField) : 0),
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: fillOpacity,
         minZoom: config.minZoom,
@@ -101,8 +111,7 @@ const renderer: LayerRenderer<FloodInundationLayerOptions> = {
         onClick: onFeatureClick
           ? (info: any) => info.object && onFeatureClick(info.object, info)
           : undefined,
-        getContourDepth: (f: Feature) => Number(f.properties?.[contourDepthField] ?? 0),
-        getCurrentDepth: (f: Feature) => lookupValues?.get(String(f.properties?.[sensorKeyField] ?? ''))?.depth ?? 0,
+        getDepthDiff: (f: Feature) => getDerivedNumber(f, derivedValues, depthDiffField),
         extensions: [
           new InundationExtension({
             name: `floodinundation_${config.id}`,
@@ -114,9 +123,7 @@ const renderer: LayerRenderer<FloodInundationLayerOptions> = {
           }),
         ],
         updateTriggers: {
-          getElevation: [config.elevation?.field, lookupValues],
-          getContourDepth: [contourDepthField],
-          getCurrentDepth: [lookupValues, sensorKeyField],
+          getDepthDiff: [derivedValues, depthDiffField],
         },
         // getPolygonOffset: (f: Feature) => -Number(f.properties?.[contourDepthField] ?? 0),
         parameters: { depthTest: false },

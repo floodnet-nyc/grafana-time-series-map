@@ -13,6 +13,10 @@ export interface LayerRenderContext<TOptions extends object = Record<string, unk
   timeFilterFlags: Uint8Array;
   /** Per-group scalar values resolved from the layer's lookup query at the current cursor time. */
   lookupValues?: Map<string, Record<string, number>>;
+  /** Per-secondary-source values keyed by source id, then by local feature key. */
+  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
+  /** Per-feature derived values aligned to the features array. */
+  derivedValues?: Array<Record<string, unknown>>;
   /** Key of the currently selected feature (matched against timeFilter.groupByField). */
   selectedKey?: string | null;
   onFeatureClick?: (feature: Feature, info: any) => void;

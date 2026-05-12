@@ -1,6 +1,7 @@
 import type { Layer } from '@deck.gl/core';
 import {
   buildLookupValuesByLayerId,
+  buildSecondarySourceValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
   renderPreparedLayers,
@@ -132,20 +133,99 @@ describe('panelLayersModel', () => {
   });
 
   it('builds prepared layer state objects from feature and lookup maps', () => {
-    const config = createLayerConfig();
-    const features = [createFeature({ time: 1000 }, undefined, 0)];
+    const config = createLayerConfig({
+      secondarySources: [
+        {
+          id: 'sensor',
+          queryRefId: 'A',
+          join: {
+            type: 'keyed-asof',
+            localKeyField: 'deployment_id',
+            remoteKeyField: 'deployment_id',
+            timeField: 'time',
+          },
+          fields: [{ sourceField: 'depth', as: 'depth' }],
+        },
+      ],
+      derivedFields: [
+        {
+          as: 'depthDiff',
+          expression: 'sensor.depth - primary.contour_depth_inches',
+          type: 'number',
+        },
+      ],
+    });
+    const features = [createFeature({ time: 1000, deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
     const featuresByLayerId = new Map([[config.id, features]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
     const lookupValues = new Map([[config.id, new Map([['sensor-1', { depth: 2 }]])]]);
+    const secondarySourceValues = new Map([
+      [config.id, new Map([['sensor', new Map([['sensor-1', { depth: 5 }]])]])],
+    ]);
 
-    expect(buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, lookupValues)).toEqual([
+    expect(buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, lookupValues, secondarySourceValues)).toEqual([
       {
         config,
         features,
         timeFilterFlags: new Uint8Array([1]),
         lookupValues: new Map([['sensor-1', { depth: 2 }]]),
+        secondarySourceValues: new Map([['sensor', new Map([['sensor-1', { depth: 5 }]])]]),
+        derivedValues: [{ depthDiff: 3 }],
       },
     ]);
+  });
+
+  it('resolves keyed as-of secondary source values at the current cursor time', () => {
+    const config = createLayerConfig({
+      secondarySources: [
+        {
+          id: 'sensor',
+          queryRefId: 'B',
+          join: {
+            type: 'keyed-asof',
+            localKeyField: 'deployment_id',
+            remoteKeyField: 'deployment_id',
+            timeField: 'time',
+            maxLagMs: 1000,
+          },
+          fields: [{ sourceField: 'depth', as: 'currentDepth' }],
+        },
+      ],
+    });
+
+    const sourceFeatures = [
+      createFeature({ deployment_id: 'sensor-1', time: 1000, depth: 3 }, undefined, 0),
+      createFeature({ deployment_id: 'sensor-1', time: 2000, depth: 5 }, undefined, 1),
+      createFeature({ deployment_id: 'sensor-2', time: 1500, depth: 7 }, undefined, 2),
+    ];
+    const packedByLayerId = new Map([
+      [
+        config.id,
+        new Map([
+          [
+            'sensor',
+            {
+              features: sourceFeatures,
+              packed: buildPacked(sourceFeatures, 'deployment_id', 'time'),
+            },
+          ],
+        ]),
+      ],
+    ]);
+
+    const valuesByLayerId = buildSecondarySourceValuesByLayerId([config], packedByLayerId, 2100);
+
+    expect(valuesByLayerId.get(config.id)).toEqual(
+      new Map([
+        [
+          'sensor',
+          new Map([
+            ['sensor-1', { currentDepth: 5 }],
+            ['sensor-2', { currentDepth: 7 }],
+          ]),
+        ],
+      ])
+    );
   });
 
   it('renders prepared layers in order and skips hidden or unknown types', () => {
