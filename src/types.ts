@@ -53,22 +53,8 @@ export interface FieldMapping {
   alias: string;
 }
 
-export interface LookupField {
-  sourceField: string;
-  as: string;
-}
-
-export interface LookupConfig {
-  queryRefId: string;
-  keyField: string;
-  timeField: string;
-  maxLagMs?: number;
-  fields: LookupField[];
-}
-
 export interface LayerSecondarySourceField {
   sourceField: string;
-  as: string;
 }
 
 export interface LayerSecondarySourceJoinConfig {
@@ -80,7 +66,6 @@ export interface LayerSecondarySourceJoinConfig {
 }
 
 export interface LayerSecondarySourceConfig {
-  id: string;
   queryRefId: string;
   join: LayerSecondarySourceJoinConfig;
   fields: LayerSecondarySourceField[];

@@ -4,7 +4,6 @@ jest.mock('../layers/registry', () => ({
   getLayer: jest.fn(),
 }));
 import {
-  buildLookupValuesByLayerId,
   buildSecondarySourceValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
@@ -109,46 +108,10 @@ describe('panelLayersModel', () => {
     expect(Array.from(flags.get(config.id) ?? [])).toEqual([0, 1, 1]);
   });
 
-  it('resolves as-of lookup values at the current cursor time', () => {
-    const config = createLayerConfig({
-      lookup: {
-        queryRefId: 'A',
-        keyField: 'deployment_id',
-        timeField: 'time',
-        fields: [{ sourceField: 'depth', as: 'depth' }],
-        maxLagMs: 1000,
-      },
-    });
-    const lookupFeatures = [
-      createFeature({ deployment_id: 'sensor-1', time: 1000, depth: 3 }, undefined, 0),
-      createFeature({ deployment_id: 'sensor-1', time: 2000, depth: 5 }, undefined, 1),
-      createFeature({ deployment_id: 'sensor-2', time: 1500, depth: 7 }, undefined, 2),
-    ];
-    const lookupPackedByLayerId = new Map([
-      [
-        config.id,
-        {
-          features: lookupFeatures,
-          packed: buildPacked(lookupFeatures, 'deployment_id', 'time'),
-        },
-      ],
-    ]);
-
-    const lookupValues = buildLookupValuesByLayerId([config], lookupPackedByLayerId, 2100);
-
-    expect(lookupValues.get(config.id)).toEqual(
-      new Map([
-        ['sensor-1', { depth: 5 }],
-        ['sensor-2', { depth: 7 }],
-      ])
-    );
-  });
-
-  it('builds prepared layer state objects from feature and lookup maps', () => {
+  it('builds prepared layer state objects from feature and secondary source maps', () => {
     const config = createLayerConfig({
       secondarySources: [
         {
-          id: 'sensor',
           queryRefId: 'A',
           join: {
             type: 'keyed-asof',
@@ -156,13 +119,13 @@ describe('panelLayersModel', () => {
             remoteKeyField: 'deployment_id',
             timeField: 'time',
           },
-          fields: [{ sourceField: 'depth', as: 'depth' }],
+          fields: [{ sourceField: 'depth' }],
         },
       ],
       derivedFields: [
         {
           as: 'depthDiff',
-          expression: 'sensor.depth - this.contour_depth_inches',
+          expression: 'A.depth - this.contour_depth_inches',
           type: 'number',
         },
       ],
@@ -170,18 +133,16 @@ describe('panelLayersModel', () => {
     const features = [createFeature({ time: 1000, deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
     const featuresByLayerId = new Map([[config.id, features]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
-    const lookupValues = new Map([[config.id, new Map([['sensor-1', { depth: 2 }]])]]);
     const secondarySourceValues = new Map([
-      [config.id, new Map([['sensor', new Map([['sensor-1', { depth: 5 }]])]])],
+      [config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])],
     ]);
 
-    expect(buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, lookupValues, secondarySourceValues)).toEqual([
+    expect(buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, secondarySourceValues)).toEqual([
       {
         config,
         features,
         timeFilterFlags: new Uint8Array([1]),
-        lookupValues: new Map([['sensor-1', { depth: 2 }]]),
-        secondarySourceValues: new Map([['sensor', new Map([['sensor-1', { depth: 5 }]])]]),
+        secondarySourceValues: new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]),
         derivedValues: [{ depthDiff: 3 }],
       },
     ]);
@@ -191,7 +152,6 @@ describe('panelLayersModel', () => {
     const config = createLayerConfig({
       secondarySources: [
         {
-          id: 'sensor',
           queryRefId: 'B',
           join: {
             type: 'keyed-asof',
@@ -200,7 +160,7 @@ describe('panelLayersModel', () => {
             timeField: 'time',
             maxLagMs: 1000,
           },
-          fields: [{ sourceField: 'depth', as: 'currentDepth' }],
+          fields: [{ sourceField: 'depth' }],
         },
       ],
     });
@@ -215,7 +175,7 @@ describe('panelLayersModel', () => {
         config.id,
         new Map([
           [
-            'sensor',
+            'B',
             {
               features: sourceFeatures,
               packed: buildPacked(sourceFeatures, 'deployment_id', 'time'),
@@ -230,10 +190,10 @@ describe('panelLayersModel', () => {
     expect(valuesByLayerId.get(config.id)).toEqual(
       new Map([
         [
-          'sensor',
+          'B',
           new Map([
-            ['sensor-1', { currentDepth: 5 }],
-            ['sensor-2', { currentDepth: 7 }],
+            ['sensor-1', { depth: 5 }],
+            ['sensor-2', { depth: 7 }],
           ]),
         ],
       ])

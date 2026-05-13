@@ -52,6 +52,12 @@ const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
   { label: 'ASOF (closest per series key)', value: 'asof' },
 ];
 
+const DERIVED_FIELD_TYPES: Array<ComboboxOption<string>> = [
+  { label: 'Number', value: 'number' },
+  { label: 'String', value: 'string' },
+  { label: 'Boolean', value: 'boolean' },
+];
+
 const COLOR_MODES: Array<ComboboxOption<string>> = [
   { label: 'Fixed color', value: 'fixed' },
   { label: 'By threshold', value: 'threshold' },
@@ -95,14 +101,9 @@ function parseZoomInput(value: string, fallback: number): number {
   return Number.isFinite(parsed) ? clampZoom(parsed) : fallback;
 }
 
-function getSourceNamespace(source: LayerSecondarySourceConfig): string {
-  return source.queryRefId || source.id || 'source';
-}
-
 function getDefaultSecondarySource(primaryQueryRefId: string | undefined, availableRefIds: string[]): LayerSecondarySourceConfig {
   const preferredQueryRefId = availableRefIds.find((refId) => refId !== primaryQueryRefId) ?? availableRefIds[0] ?? '';
   return {
-    id: preferredQueryRefId,
     queryRefId: preferredQueryRefId,
     join: {
       type: 'keyed-asof',
@@ -111,7 +112,7 @@ function getDefaultSecondarySource(primaryQueryRefId: string | undefined, availa
       timeField: '',
       maxLagMs: 3600000,
     },
-    fields: [{ sourceField: '', as: '' }],
+    fields: [{ sourceField: '' }],
   };
 }
 
@@ -450,6 +451,22 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             <Field label="Expression">
               <TextArea value={field.expression} onChange={(e) => patchDerivedFields(derivedFields.map((item, i) => (i === index ? { ...item, expression: e.currentTarget.value } : item)))} />
             </Field>
+            <Field label="Type">
+              <Combobox
+                options={DERIVED_FIELD_TYPES}
+                value={field.type ?? 'number'}
+                onChange={(value) =>
+                  patchDerivedFields(
+                    derivedFields.map((item, i) =>
+                      i === index ? { ...item, type: value?.value as 'number' | 'string' | 'boolean' } : item,
+                    ),
+                  )
+                }
+              />
+            </Field>
+            <Button size="sm" variant="destructive" onClick={() => patchDerivedFields(derivedFields.filter((_, i) => i !== index))}>
+              Remove derived field
+            </Button>
           </div>
         ))}
         <Field label="Secondary sources">
@@ -460,24 +477,17 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         {secondarySources.map((source, index) => {
           const sourceFields = getFieldsForRefId(source.queryRefId);
           return (
-            <div key={source.id || index} className={styles.card}>
+            <div key={source.queryRefId || index} className={styles.card}>
               <Field label="Query">
                 <Combobox
                   options={refIdOptions}
                   value={source.queryRefId}
                   onChange={(v) =>
                     patchSecondarySources(
-                      secondarySources.map((item, i) =>
-                        i === index
-                          ? { ...item, id: String(v?.value ?? ''), queryRefId: String(v?.value ?? '') }
-                          : item,
-                      ),
+                      secondarySources.map((item, i) => (i === index ? { ...item, queryRefId: String(v?.value ?? '') } : item)),
                     )
                   }
                 />
-              </Field>
-              <Field label="Namespace">
-                <Input value={getSourceNamespace(source)} disabled />
               </Field>
               <Field label="Local key field">
                 <FieldSelect
@@ -501,6 +511,87 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
                   availableFields={sourceFields}
                 />
               </Field>
+              <Field label="Time field">
+                <FieldSelect
+                  value={source.join.timeField}
+                  onChange={(value) =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) => (i === index ? { ...item, join: { ...item.join, timeField: value } } : item)),
+                    )
+                  }
+                  availableFields={sourceFields}
+                />
+              </Field>
+              <Field label="Max lag (ms)">
+                <Input
+                  type="number"
+                  value={String(source.join.maxLagMs ?? 3600000)}
+                  onChange={(e) =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) =>
+                        i === index ? { ...item, join: { ...item.join, maxLagMs: Number(e.currentTarget.value) } } : item,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Source fields">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) =>
+                        i === index ? { ...item, fields: [...item.fields, { sourceField: '' }] } : item,
+                      ),
+                    )
+                  }
+                >
+                  Add source field
+                </Button>
+              </Field>
+              {source.fields.map((mappedField, fieldIndex) => (
+                <div key={`${source.queryRefId || index}-field-${fieldIndex}`} className={styles.nestedCard}>
+                  <Field label="Source field">
+                    <FieldSelect
+                      value={mappedField.sourceField}
+                      onChange={(value) =>
+                        patchSecondarySources(
+                          secondarySources.map((item, i) =>
+                            i === index
+                              ? {
+                                  ...item,
+                                  fields: item.fields.map((fieldItem, j) => (j === fieldIndex ? { ...fieldItem, sourceField: value } : fieldItem)),
+                                }
+                              : item,
+                          ),
+                        )
+                      }
+                      availableFields={sourceFields}
+                    />
+                  </Field>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() =>
+                      patchSecondarySources(
+                        secondarySources.map((item, i) =>
+                          i === index ? { ...item, fields: item.fields.filter((_, j) => j !== fieldIndex) } : item,
+                        ),
+                      )
+                    }
+                  >
+                    Remove source field
+                  </Button>
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => patchSecondarySources(secondarySources.filter((_, i) => i !== index))}
+              >
+                Remove secondary source
+              </Button>
             </div>
           );
         })}
@@ -617,5 +708,6 @@ function getStyles(theme: GrafanaTheme2) {
     zoomRow: css({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(1) }),
     thresholdRow: css({ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: theme.spacing(1), alignItems: 'center', marginBottom: theme.spacing(1) }),
     card: css({ border: `1px solid ${theme.colors.border.weak}`, padding: theme.spacing(1), borderRadius: theme.shape.radius.default, marginBottom: theme.spacing(1) }),
+    nestedCard: css({ border: `1px solid ${theme.colors.border.weak}`, padding: theme.spacing(1), borderRadius: theme.shape.radius.default, marginBottom: theme.spacing(1) }),
   };
 }

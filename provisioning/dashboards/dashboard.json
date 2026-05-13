@@ -543,14 +543,13 @@
             "derivedFields": [
               {
                 "as": "depthDiff",
-                "expression": "A.depth - this.contour_depth_inches",
+                "expression": "A.depth_inches - this.contour_depth_inches",
                 "type": "number"
               }
             ],
             "opacity": 1,
             "secondarySources": [
               {
-                "id": "A",
                 "queryRefId": "A",
                 "join": {
                   "type": "keyed-asof",
@@ -561,8 +560,7 @@
                 },
                 "fields": [
                   {
-                    "sourceField": "depth_inches",
-                    "as": "depth"
+                    "sourceField": "depth_inches"
                   }
                 ]
               }
