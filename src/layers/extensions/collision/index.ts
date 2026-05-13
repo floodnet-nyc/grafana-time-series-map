@@ -1,7 +1,18 @@
 import type { LayerCollisionConfig } from '../../../types';
 import CollisionFilterExtension from '../../../utils/deckgl/collisionFilterFix';
 import { getFeatureProperties } from '../utils';
-import { appendDeckExtension, type LayerExtensionDefinition } from '../registry';
+import type { LayerExtensionDefinition } from '..';
+
+function appendDeckExtension(layer: any, extension: unknown) {
+  const props = layer.props ?? {};
+  const existing = props.extensions ?? [];
+  const extensionName = (extension as any).constructor?.extensionName ?? (extension as any).constructor?.name;
+  const hasExtension = existing.some((item: any) => {
+    const itemName = item?.constructor?.extensionName ?? item?.constructor?.name;
+    return itemName === extensionName;
+  });
+  return hasExtension ? existing : [...existing, extension];
+}
 
 export function createDefaultCollisionConfig(): LayerCollisionConfig {
   return {

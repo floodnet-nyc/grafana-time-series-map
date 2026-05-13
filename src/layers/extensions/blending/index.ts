@@ -1,6 +1,6 @@
 import { DEFAULT_DECK_PARAMETERS } from '../../../utils/deckgl/parameters';
 import type { LayerBlendingConfig } from '../../../types';
-import type { LayerExtensionDefinition } from '../registry';
+import type { LayerExtensionDefinition } from '..';
 
 const blendOperations = [
   { label: 'Add', value: 'add' },

@@ -1,11 +1,10 @@
 import type { GeometrySource, LayerExtensionsConfig } from '../types';
-import type { BaseLayerConfig, LayerConfig, LayerType } from './types';
+import type { BaseLayerConfig, LayerConfig, LayerType, LayerEditorSection, LayerOptionField } from './types';
 import {
   createDefaultBlendingConfig,
 } from './extensions/blending';
 import { createDefaultCollisionConfig } from './extensions/collision';
 import { createDefaultMaterialConfig } from './extensions/material';
-import type { LayerEditorSection, LayerOptionField } from './types';
 
 export function createDefaultLayerExtensions(): LayerExtensionsConfig {
   return {
@@ -39,11 +38,4 @@ export function createBaseLayerConfig<TType extends LayerType, TSettings>(
 
 export function section(title: string, fields: LayerOptionField[]): LayerEditorSection {
   return { title, fields };
-}
-
-export function isLayerType<TType extends LayerType>(
-  config: LayerConfig,
-  type: TType,
-): config is Extract<LayerConfig, { type: TType }> {
-  return config.type === type;
 }

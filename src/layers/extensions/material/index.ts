@@ -1,5 +1,5 @@
 import type { LayerMaterialConfig } from '../../../types';
-import type { LayerExtensionDefinition } from '../registry';
+import type { LayerExtensionDefinition } from '..';
 
 const DEFAULT_SPECULAR_COLOR: [number, number, number, number] = [51, 51, 51, 255];
 
