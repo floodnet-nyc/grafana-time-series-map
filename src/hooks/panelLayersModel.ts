@@ -1,7 +1,9 @@
 import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
-import { applyConfiguredLayerExtensions, getLayer } from '../layers/registry';
+import { layerExtensionDefinitions } from '../layers/extensions';
+import type { LayerExtensionDefinition } from 'layers/extensions';
+import { layerDefinitions } from '../layers/_all';
 import type { LayerDefinition, LayerRenderContext } from '../layers/types';
 import type { LayerSecondarySourceConfig, MapPanelOptions } from '../types';
 import type { LayerConfig } from '../layers/types';
@@ -207,7 +209,7 @@ export function renderPreparedLayers({
   toTimeMs,
   selectedKey,
   onFeatureClick,
-  getRenderer = getLayer,
+  getRenderer = getLayerDefinition,
   applyExtensions = applyConfiguredLayerExtensions,
 }: RenderPreparedLayersArgs): Layer[] {
   const renderedLayers: Layer[] = [];
@@ -241,6 +243,18 @@ export function renderPreparedLayers({
   }
 
   return renderedLayers;
+}
+
+function getLayerDefinition(type: string) {
+  return layerDefinitions.find((definition) => definition.type === type);
+}
+
+function applyConfiguredLayerExtensions(layers: Layer[], config: LayerConfig) {
+  return applyLayerExtensions(layers, config, layerExtensionDefinitions);
+}
+
+function applyLayerExtensions(layers: Layer[], config: LayerConfig, definitions: LayerExtensionDefinition[]): Layer[] {
+  return layers.map((layer) => definitions.reduce((current, extension) => extension.apply(current, config), layer));
 }
 
 function buildDerivedValues(

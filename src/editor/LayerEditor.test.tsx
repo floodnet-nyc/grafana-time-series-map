@@ -3,63 +3,62 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { LayerConfig, ScatterplotLayerConfig } from '../layers/types';
 import { LayerEditor } from './LayerEditor';
 
-jest.mock('../layers/registry', () => ({
-  getLayer: (type: string) =>
-    type === 'path'
-      ? {
-          type: 'path',
-          label: 'Path',
-          createDefaultConfig: () => ({
-            id: 'path-1',
-            type: 'path',
-            label: 'Path 1',
-            visible: true,
-            settings: {
-              widthMinPixels: 2,
-              widthMaxPixels: 10,
-              widthField: '',
-              widthScale: 1,
-              capRounded: true,
-              jointRounded: true,
-            },
-            geometry: { type: 'none' },
-            timeFilter: { mode: 'none', timeField: 'time' },
-            fieldMappings: [],
-            opacity: 1,
-          }),
-          editorSections: [{ title: 'Path', fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }] }],
-          renderLayers: jest.fn(() => []),
-        }
-      : {
-          type: 'scatterplot',
-          label: 'Scatter Plot',
-          createDefaultConfig: () => ({
-            id: 'scatter-1',
-            type: 'scatterplot',
-            label: 'Scatter Plot 1',
-            visible: true,
-            settings: {
-              radiusMinPixels: 4,
-              radiusMaxPixels: 20,
-              radiusScale: 1,
-              radiusField: '',
-              stroked: true,
-              showLabels: false,
-              labelField: '',
-            },
-            geometry: { type: 'none' },
-            timeFilter: { mode: 'none', timeField: 'time' },
-            fieldMappings: [],
-            opacity: 1,
-          }),
-          editorSections: [{ title: 'Point', fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }] }],
-          renderLayers: jest.fn(() => []),
+jest.mock('../layers/_all', () => ({
+  layerDefinitions: [
+    {
+      type: 'scatterplot',
+      label: 'Scatter Plot',
+      createDefaultConfig: () => ({
+        id: 'scatter-1',
+        type: 'scatterplot',
+        label: 'Scatter Plot 1',
+        visible: true,
+        settings: {
+          radiusMinPixels: 4,
+          radiusMaxPixels: 20,
+          radiusScale: 1,
+          radiusField: '',
+          stroked: true,
+          showLabels: false,
+          labelField: '',
         },
-  getAllLayerTypes: () => [
-    { type: 'scatterplot', label: 'Scatter Plot', createDefaultConfig: jest.fn(), editorSections: [], renderLayers: jest.fn(() => []) },
-    { type: 'path', label: 'Path', createDefaultConfig: jest.fn(), editorSections: [], renderLayers: jest.fn(() => []) },
+        geometry: { type: 'none' },
+        timeFilter: { mode: 'none', timeField: 'time' },
+        fieldMappings: [],
+        opacity: 1,
+      }),
+      editorSections: [{ title: 'Point', fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }] }],
+      renderLayers: jest.fn(() => []),
+    },
+    {
+      type: 'path',
+      label: 'Path',
+      createDefaultConfig: () => ({
+        id: 'path-1',
+        type: 'path',
+        label: 'Path 1',
+        visible: true,
+        settings: {
+          widthMinPixels: 2,
+          widthMaxPixels: 10,
+          widthField: '',
+          widthScale: 1,
+          capRounded: true,
+          jointRounded: true,
+        },
+        geometry: { type: 'none' },
+        timeFilter: { mode: 'none', timeField: 'time' },
+        fieldMappings: [],
+        opacity: 1,
+      }),
+      editorSections: [{ title: 'Path', fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }] }],
+      renderLayers: jest.fn(() => []),
+    },
   ],
-  getAllLayerExtensions: () => [],
+}));
+
+jest.mock('../layers/extensions/_all', () => ({
+  layerExtensionDefinitions: [],
 }));
 
 jest.mock('@grafana/ui', () => {

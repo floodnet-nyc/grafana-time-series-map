@@ -1,7 +1,9 @@
 import type { Layer } from '@deck.gl/core';
-jest.mock('../layers/registry', () => ({
-  applyConfiguredLayerExtensions: (layers: unknown[]) => layers,
-  getLayer: jest.fn(),
+jest.mock('../layers/_all', () => ({
+  layerDefinitions: [],
+}));
+jest.mock('../layers/extensions/_all', () => ({
+  layerExtensionDefinitions: [],
 }));
 import {
   buildSecondarySourceValuesByLayerId,

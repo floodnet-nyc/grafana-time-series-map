@@ -23,8 +23,9 @@ import type {
   TimeFilterMode,
 } from '../types';
 import type { LayerConfig } from '../layers/types';
-import { getAllLayerExtensions, getAllLayerTypes, getLayer } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
+import { layerExtensionDefinitions } from '../layers/extensions';
+import { layerDefinitions } from '../layers/_all';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
 import {
@@ -153,14 +154,13 @@ interface Props {
 
 export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [], queryFieldsByRefId = {} }: Props) {
   const styles = useStyles2(getStyles);
-  const layerDefinitions = useMemo(() => getAllLayerTypes(), []);
-  const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), [layerDefinitions]);
-  const extensionDefinitions = useMemo(() => getAllLayerExtensions(), []);
+  const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), []);
+  const extensionDefinitions = useMemo(() => layerExtensionDefinitions, []);
   const refIdOptions = useMemo(
     () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
     [availableRefIds],
   );
-  const currentRenderer = useMemo(() => getLayer(layer.type), [layer.type]);
+  const currentRenderer = useMemo(() => layerDefinitions.find((definition) => definition.type === layer.type), [layer.type]);
   const fixedColor = layer.colorScale?.fixedColor ?? [0, 155, 104, 255];
   const mode = getColorMode(layer);
   const scheme = getActiveScheme(layer);
@@ -270,7 +270,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
 
   const handleTypeChange = useCallback(
     (type: string) => {
-      const definition = getLayer(type);
+      const definition = layerDefinitions.find((item) => item.type === type);
       if (!definition) {
         return;
       }

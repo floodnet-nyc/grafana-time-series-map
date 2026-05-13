@@ -3,12 +3,12 @@ import { css } from '@emotion/css';
 import { useStyles2, Button, IconButton } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import type { LayerConfig } from '../layers/types';
+import { layerDefinitions } from '../layers/_all';
 import { LayerEditor } from './LayerEditor';
-import { getAllLayerTypes } from '../layers/registry';
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
-  const renderer = getAllLayerTypes().find((r) => r.type === type);
-  return renderer ? renderer.createDefaultConfig(index) : getAllLayerTypes()[0].createDefaultConfig(index);
+  const renderer = layerDefinitions.find((definition) => definition.type === type);
+  return renderer ? renderer.createDefaultConfig(index) : layerDefinitions[0].createDefaultConfig(index);
 }
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}
@@ -63,7 +63,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
     : fieldIndex.fieldsByRefId.get(selectedLayer.queryRefId) ?? [];
 
   const addLayer = useCallback(() => {
-    const firstType = getAllLayerTypes()[0]?.type ?? 'scatterplot';
+    const firstType = layerDefinitions[0]?.type ?? 'scatterplot';
     const newLayer = makeDefaultLayer(firstType, layerList.length);
     const next = [...layerList, newLayer];
     onChange(next);
