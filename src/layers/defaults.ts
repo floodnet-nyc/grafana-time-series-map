@@ -1,18 +1,7 @@
-import type { GeometrySource, LayerExtensionsConfig } from '../types';
+import type { GeometrySource } from '../types';
 import type { BaseLayerConfig, LayerType, LayerEditorSection, LayerOptionField } from './types';
-import {
-  createDefaultBlendingConfig,
-} from './extensions/blending';
-import { createDefaultCollisionConfig } from './extensions/collision';
-import { createDefaultMaterialConfig } from './extensions/material';
+import { createDefaultLayerExtensions } from './extensions';
 
-export function createDefaultLayerExtensions(): LayerExtensionsConfig {
-  return {
-    blending: createDefaultBlendingConfig(),
-    collision: createDefaultCollisionConfig(),
-    material: createDefaultMaterialConfig(),
-  };
-}
 
 export function createBaseLayerConfig<TType extends LayerType, TSettings>(
   type: TType,

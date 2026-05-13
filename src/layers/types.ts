@@ -6,11 +6,11 @@ import type {
   FieldMapping,
   GeometrySource,
   LayerDerivedFieldConfig,
-  LayerExtensionsConfig,
   LayerSecondarySourceConfig,
   ShaderConfig,
   TimeFilterConfig,
 } from '../types';
+import type { LayerExtensionsConfig } from './extensions/types';
 
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;

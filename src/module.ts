@@ -1,6 +1,7 @@
 import { PanelPlugin } from '@grafana/data';
 // import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
-import type { DeckBlendFactor, DeckBlendOperation, DeckDepthCompare, MapPanelOptions } from './types';
+import type { DeckDepthCompare, MapPanelOptions } from './types';
+import type { DeckBlendFactor, DeckBlendOperation } from "types";
 import { MapPanel } from './components/MapPanel';
 import { LightingEditor } from './editor/LightingEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';

@@ -102,39 +102,6 @@ export type DeckDepthCompare =
   | 'greater-equal'
   | 'always';
 
-export interface LayerBlendingConfig {
-  enabled: boolean;
-  blend: boolean;
-  colorOperation: DeckBlendOperation;
-  colorSrcFactor: DeckBlendFactor;
-  colorDstFactor: DeckBlendFactor;
-  alphaOperation: DeckBlendOperation;
-  alphaSrcFactor: DeckBlendFactor;
-  alphaDstFactor: DeckBlendFactor;
-}
-
-export interface LayerMaterialConfig {
-  enabled: boolean;
-  ambient: number;
-  diffuse: number;
-  shininess: number;
-  specularColor: [number, number, number, number];
-}
-
-export interface LayerCollisionConfig {
-  enabled: boolean;
-  group: string;
-  priorityField: string;
-  priorityScale: number;
-  priorityOffset: number;
-  testScale: number;
-}
-
-export interface LayerExtensionsConfig {
-  blending?: LayerBlendingConfig;
-  material?: LayerMaterialConfig;
-  collision?: LayerCollisionConfig;
-}
 
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle =
