@@ -1,6 +1,6 @@
 import { TextLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { TextLayerConfig, TextLayerSettings } from '../../types';
+import type { TextLayerConfig, TextLayerSettings } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import type { LayerDefinition, LayerRenderContext } from '../types';

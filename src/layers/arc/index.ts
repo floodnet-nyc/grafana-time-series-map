@@ -1,6 +1,6 @@
 import { ArcLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { ArcLayerConfig, ArcLayerSettings } from '../../types';
+import type { ArcLayerConfig, ArcLayerSettings } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import type { LayerDefinition, LayerRenderContext } from '../types';

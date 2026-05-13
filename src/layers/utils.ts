@@ -2,7 +2,7 @@ import type { LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { LayerRenderContext } from './types';
-import type { LayerConfig } from '../types';
+import type { LayerConfig } from './types';
 
 type LayerFeature = Feature & { __idx: number };
 

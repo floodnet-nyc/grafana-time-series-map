@@ -1,5 +1,6 @@
 import type { Layer } from '@deck.gl/core';
-import type { LayerConfig, LayerExtensionsConfig } from '../../types';
+import type { LayerExtensionsConfig } from '../../types';
+import type { LayerConfig } from '../types';
 import type { LayerEditorSection } from '../types';
 
 export interface LayerExtensionDefinition {

@@ -1,6 +1,6 @@
 import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HexagonLayerConfig, HexagonLayerSettings } from '../../types';
+import type { HexagonLayerConfig, HexagonLayerSettings } from '../types';
 import { createBaseLayerConfig, section } from '../defaults';
 import type { LayerDefinition, LayerRenderContext } from '../types';
 
