@@ -1,16 +1,15 @@
 import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
-import { layerExtensionDefinitions } from '../layers/extensions';
+import { layerExtensionDefinitions } from '../../layers/extensions';
 import type { LayerExtensionDefinition } from 'layers/extensions/types';
-import { layerDefinitions } from '../layers/_all';
-import type { LayerDefinition, LayerRenderContext } from '../layers/types';
-import type { LayerSecondarySourceConfig, MapPanelOptions } from '../types';
-import type { LayerConfig } from '../layers/types';
-import { compileExpression } from '../utils/expressionEngine';
-import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
-import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../utils/deckgl/closestTimeFiltering';
-import type { PanelFeaturesByLayerId } from './usePanelFeatures';
+import { layerDefinitions } from '../../layers/_all';
+import type { LayerDefinition, LayerRenderContext, LayerConfig } from '../../layers/types';
+import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';
+import { compileExpression } from '../expressionEngine';
+import { dataFramesToFeatures } from './toGeoJsonFeatures';
+import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../deckgl/closestTimeFiltering';
+import type { PanelFeaturesByLayerId } from '../../hooks/usePanelLayers';
 
 type PackedLookupEntry = {
   features: Feature[];
