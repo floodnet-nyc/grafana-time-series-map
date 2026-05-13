@@ -2,13 +2,11 @@ import type { LayerExtensionsConfig } from './types';
 import { blendingExtensionDefinition } from './blending';
 import { collisionExtensionDefinition } from './collision';
 import { materialExtensionDefinition } from './material';
-import { tooltipExtensionDefinition } from './tooltip';
 
 export const layerExtensionDefinitions = [
   blendingExtensionDefinition,
   collisionExtensionDefinition,
   materialExtensionDefinition,
-  tooltipExtensionDefinition,
 ];
 
 export function createDefaultLayerExtensions(): LayerExtensionsConfig {

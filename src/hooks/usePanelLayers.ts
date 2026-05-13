@@ -4,7 +4,7 @@ import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import type { DeckTooltipContent } from '../components/map/types';
-import { buildDeckTooltip } from '../layers/extensions/tooltip';
+import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from '../layers/extensions/tooltip';
 import {
   buildSecondarySourcePackedByLayerId,
   buildSecondarySourceValuesByLayerId,
@@ -62,7 +62,10 @@ export function usePanelLayers(
     });
   }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 
-  const getTooltip = useMemo(() => buildDeckTooltip(preparedLayerStates), [preparedLayerStates]);
+  const getTooltip = useMemo(
+    () => (options.showTooltip !== false ? buildDeckTooltip(options.tooltipTemplate ?? DEFAULT_TOOLTIP_TEMPLATE) : null),
+    [options.showTooltip, options.tooltipTemplate],
+  );
 
   return useMemo(
     () => ({

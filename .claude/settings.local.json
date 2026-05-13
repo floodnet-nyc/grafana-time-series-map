@@ -12,7 +12,8 @@
       "Bash(find /opt/gh/floodnet-event-map-v2 -name \"past_flood_event_contours.ts\" 2>/dev/null | head -5)",
       "Bash(npx tsc *)",
       "mcp__Claude_in_Chrome__tabs_context_mcp",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx jest *)"
     ]
   }
 }

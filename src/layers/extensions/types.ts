@@ -30,16 +30,10 @@ export interface LayerCollisionConfig {
   testScale: number;
 }
 
-export interface LayerTooltipConfig {
-  enabled: boolean;
-  template: string;
-}
-
 export interface LayerExtensionsConfig {
   blending?: LayerBlendingConfig;
   material?: LayerMaterialConfig;
   collision?: LayerCollisionConfig;
-  tooltip?: LayerTooltipConfig;
 }
 
 export interface LayerExtensionDefinition {

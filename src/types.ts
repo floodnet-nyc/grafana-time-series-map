@@ -259,4 +259,6 @@ export interface MapPanelOptions {
   syncPublish: boolean;
   syncSubscribe: boolean;
   selectionKeyField?: string;
+  showTooltip?: boolean;
+  tooltipTemplate?: string;
 }
