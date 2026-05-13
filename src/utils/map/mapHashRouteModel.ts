@@ -1,4 +1,4 @@
-import type { MapHashView } from './useMapHashRoute';
+import type { MapHashView } from '../../hooks/useMapHashRoute';
 
 export const HASH_VIEW_KEY = 'v';
 
