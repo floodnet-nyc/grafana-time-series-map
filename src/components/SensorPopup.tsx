@@ -1,87 +1,68 @@
 import React from 'react';
 import type { Feature } from 'geojson';
-import { buildSensorPopupModel } from './SensorPopupModel';
+import { buildLiquidScope, renderLiquidTemplate } from '../utils/liquid';
+import { mapCardStyle } from './mapCard';
+
+export const DEFAULT_POPUP_TEMPLATE = [
+  '<div style="font-weight:700;font-size:14px;margin-bottom:10px">{{ _key }}</div>',
+  '<table style="border-collapse:collapse;font-size:12px;line-height:1.5">',
+  '  {%- for p in properties -%}',
+  '  <tr>',
+  '    <td style="padding:2px 10px 2px 0;opacity:.7;white-space:nowrap">{{ p.key }}</td>',
+  '    <td style="padding:2px 0">{{ p.value }}</td>',
+  '  </tr>',
+  '  {%- endfor -%}',
+  '</table>',
+].join('\n');
 
 interface SensorPopupProps {
   selectedKey: string;
   feature: Feature | null;
+  template: string;
   onClose: () => void;
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  card: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    background: 'rgba(16, 18, 28, 0.93)',
-    border: '1px solid rgba(255, 230, 60, 0.35)',
-    borderRadius: 8,
-    padding: '12px 16px 14px',
-    color: '#e8e8e8',
-    minWidth: 180,
-    zIndex: 100,
-    backdropFilter: 'blur(6px)',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-    fontFamily: 'inherit',
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: 6,
-    right: 10,
-    background: 'none',
-    border: 'none',
-    color: '#888',
-    cursor: 'pointer',
-    fontSize: 18,
-    lineHeight: 1,
-    padding: 0,
-  },
-  label: {
-    fontSize: 10,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase' as const,
-    color: '#888',
-    marginBottom: 2,
-  },
-  value: {
-    fontWeight: 700,
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  depthValue: {
-    fontWeight: 700,
-    fontSize: 22,
-    color: '#00cbff',
-    lineHeight: 1,
-  },
-  depthUnit: {
-    fontSize: 13,
-    color: '#00cbff',
-    opacity: 0.7,
-    marginLeft: 2,
-  },
-};
-
-export function SensorPopup({ selectedKey, feature, onClose }: SensorPopupProps) {
-  const model = buildSensorPopupModel(selectedKey, feature);
+export function SensorPopup({ selectedKey, feature, template, onClose }: SensorPopupProps) {
+  const scope = buildLiquidScope(feature?.properties ?? {}, selectedKey);
+  const html = renderLiquidTemplate(template, scope);
 
   return (
-    <div style={styles.card}>
-      <button style={styles.closeBtn} onClick={onClose} aria-label="Close">
+    <div
+      style={{
+        ...mapCardStyle,
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        padding: '12px 16px 14px',
+        color: '#e8e8e8',
+        minWidth: 180,
+        maxWidth: 320,
+        zIndex: 100,
+        fontFamily: 'inherit',
+      }}
+    >
+      <button
+        style={{
+          position: 'absolute',
+          top: 6,
+          right: 10,
+          background: 'none',
+          border: 'none',
+          color: '#888',
+          cursor: 'pointer',
+          fontSize: 18,
+          lineHeight: 1,
+          padding: 0,
+        }}
+        onClick={onClose}
+        aria-label="Close"
+      >
         ×
       </button>
-
-      <div style={styles.label}>Sensor</div>
-      <div style={styles.value}>{model.sensorLabel}</div>
-
-      {model.depthDisplay && (
-        <>
-          <div style={styles.label}>Depth</div>
-          <div>
-            <span style={styles.depthValue}>{model.depthDisplay}</span>
-            <span style={styles.depthUnit}>{model.depthUnit}</span>
-          </div>
-        </>
+      {html ? (
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+      ) : (
+        <div style={{ opacity: 0.5, fontSize: 12 }}>{selectedKey}</div>
       )}
     </div>
   );

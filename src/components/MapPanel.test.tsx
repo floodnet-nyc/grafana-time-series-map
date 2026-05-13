@@ -46,7 +46,7 @@ jest.mock('./MapLegend', () => ({
 }));
 
 jest.mock('./SensorPopup', () => ({
-  SensorPopup: ({ selectedKey, onClose }: { selectedKey: string; onClose: () => void }) => (
+  SensorPopup: ({ selectedKey, onClose }: { selectedKey: string; template: string; onClose: () => void }) => (
     <div>
       <span>{selectedKey}</span>
       <button type="button" onClick={onClose}>
@@ -54,6 +54,7 @@ jest.mock('./SensorPopup', () => ({
       </button>
     </div>
   ),
+  DEFAULT_POPUP_TEMPLATE: '',
 }));
 
 jest.mock('./controls/TimePlaybackControls', () => ({
@@ -89,6 +90,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
         timeFilter: { mode: 'none', timeField: '' },
         fieldMappings: [],
         opacity: 1,
+        selectionKeyField: 'deployment_id',
       },
     ],
     defaultPlaybackSpeed: 1,
@@ -98,7 +100,6 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
     interleaved: true,
     syncPublish: true,
     syncSubscribe: true,
-    selectionKeyField: 'deployment_id',
     ...overrides,
   };
 }
@@ -194,7 +195,7 @@ describe('MapPanel', () => {
     expect(latestFeatureClick).toBeDefined();
 
     act(() => {
-      latestFeatureClick?.(feature, {});
+      latestFeatureClick?.(feature, { layer: { id: 'layer-1' } });
     });
     view.rerender(<MapPanel {...props} />);
 
@@ -220,7 +221,7 @@ describe('MapPanel', () => {
     render(<MapPanel {...props} />);
     expect(latestFeatureClick).toBeDefined();
 
-    latestFeatureClick?.(feature, {});
+    latestFeatureClick?.(feature, { layer: { id: 'layer-1' } });
 
     expect(selectKey).toHaveBeenCalledWith(null);
   });

@@ -6,7 +6,7 @@ import type { MapPanelOptions } from '../types';
 import { DeckGLMap } from './map/DeckGLMap';
 import type { ViewportSnapshot } from './map/types';
 import { TimePlaybackControls } from './controls/TimePlaybackControls';
-import { SensorPopup } from './SensorPopup';
+import { SensorPopup, DEFAULT_POPUP_TEMPLATE } from './SensorPopup';
 import { MapLegend } from './MapLegend';
 import { usePlayback } from '../hooks/usePlayback';
 import { usePanelFeatures, usePanelLayers } from '../hooks/usePanelLayers';
@@ -40,8 +40,10 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
   const onFeatureClick = useCallback(
-    (feature: Feature, _info: any) => {
-      const keyField = options.selectionKeyField;
+    (feature: Feature, info: any) => {
+      // const layerConfig = options.layers.find((l) => l.id === info?.layer?.id);
+      const layerConfig = info.layer.props.config;
+      const keyField = layerConfig?.selectionKeyField;
       if (!keyField) { return; }
       const key = String(feature.properties?.[keyField] ?? '');
       if (!key) { return; }
@@ -54,7 +56,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         setSelectedFeature(feature);
       }
     },
-    [options.selectionKeyField, selectedKey, selectKey],
+    [options.layers, selectedKey, selectKey],
   );
 
   const onToggleLayerVisibility = useCallback((layerId: string) => {
@@ -135,6 +137,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         <SensorPopup
           selectedKey={selectedKey}
           feature={selectedFeature}
+          template={options.popupTemplate ?? DEFAULT_POPUP_TEMPLATE}
           onClose={handlePopupClose}
         />
       )}

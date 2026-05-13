@@ -1,15 +1,12 @@
 import type React from 'react';
+import { mapCardStyle } from '../mapCard';
 
 export const legendBoxStyle: React.CSSProperties = {
+  ...mapCardStyle,
   position: 'absolute',
   top: 16,
   left: 12,
-  background: 'rgba(14, 16, 25, 0.63)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8,
   zIndex: 100,
-  backdropFilter: 'blur(6px)',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
 };
 
 export const tooltipStyle: React.CSSProperties = {

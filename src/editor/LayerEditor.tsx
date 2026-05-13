@@ -293,6 +293,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         minZoom: layer.minZoom,
         maxZoom: layer.maxZoom,
         pickable: layer.pickable,
+        selectionKeyField: layer.selectionKeyField,
         shader: layer.shader,
         extensions: layer.extensions ?? next.extensions,
       });
@@ -372,6 +373,12 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         </Field>
         <Field label="Visible">
           <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
+        </Field>
+        <Field label="Pickable">
+          <Switch value={layer.pickable ?? true} onChange={(e) => patch({ pickable: e.currentTarget.checked })} />
+        </Field>
+        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
+          <FieldSelect value={layer.selectionKeyField ?? ''} onChange={(v) => patch({ selectionKeyField: v || undefined })} availableFields={availableFields} placeholder="None (click disabled)" />
         </Field>
         <Field label="Show in legend">
           <Switch value={layer.showInLegend ?? true} onChange={(e) => patch({ showInLegend: e.currentTarget.checked })} />
