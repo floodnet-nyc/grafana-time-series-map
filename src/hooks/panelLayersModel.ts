@@ -1,9 +1,8 @@
 import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
-import { applyLayerExtensions } from '../layers/extensions/registry';
-import { getLayer, resolveLayerOptions } from '../layers/registry';
-import type { LayerRenderContext, LayerRenderer } from '../layers/types';
+import { applyConfiguredLayerExtensions, getLayer } from '../layers/registry';
+import type { LayerDefinition, LayerRenderContext } from '../layers/types';
 import type { LayerConfig, LayerSecondarySourceConfig, MapPanelOptions } from '../types';
 import { compileExpression } from '../utils/expressionEngine';
 import { dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
@@ -243,7 +242,7 @@ interface RenderPreparedLayersArgs {
   toTimeMs: number;
   selectedKey: string | null;
   onFeatureClick?: (feature: Feature, info: any) => void;
-  getRenderer?: (type: string) => LayerRenderer | undefined;
+  getRenderer?: (type: string) => LayerDefinition<any> | undefined;
   applyExtensions?: (layers: Layer[], config: LayerConfig) => Layer[];
 }
 
@@ -256,7 +255,7 @@ export function renderPreparedLayers({
   selectedKey,
   onFeatureClick,
   getRenderer = getLayer,
-  applyExtensions = applyLayerExtensions,
+  applyExtensions = applyConfiguredLayerExtensions,
 }: RenderPreparedLayersArgs): Layer[] {
   const renderedLayers: Layer[] = [];
 
@@ -272,7 +271,6 @@ export function renderPreparedLayers({
 
     const renderContext: LayerRenderContext = {
       config: preparedLayerState.config,
-      options: resolveLayerOptions(preparedLayerState.config.type, preparedLayerState.config.options),
       panelOptions: options,
       features: preparedLayerState.features,
       cursorTimeMs,

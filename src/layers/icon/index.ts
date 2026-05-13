@@ -1,22 +1,10 @@
 import { IconLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
+import type { IconLayerConfig, IconLayerSettings } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { registerLayer } from '../registry';
-import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createBaseLayerConfig, section } from '../defaults';
+import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
-
-interface IconLayerOptions {
-  fixedIcon: string;
-  iconField: string;
-  iconAtlasUrl: string;
-  iconMappingUrl: string;
-  sizeScale: number;
-  sizeMinPixels: number;
-  sizeMaxPixels: number;
-  sizeField: string;
-  billboard: boolean;
-  alphaCutoff: number;
-}
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -24,26 +12,6 @@ const BUILT_IN_ICONS = [
   { label: 'Marker (outline)', value: 'marker-outline' },
   { label: 'Flag', value: 'flag' },
   { label: 'Circle', value: 'plain-circle' },
-];
-
-const schema: LayerOptionField[] = [
-  {
-    key: 'fixedIcon',
-    label: 'Icon',
-    type: 'select',
-    defaultValue: 'marker',
-    selectOptions: BUILT_IN_ICONS,
-    section: 'Icon',
-  },
-  { key: 'iconField', label: 'Icon name field (overrides above)', type: 'fieldPicker', defaultValue: '', section: 'Icon' },
-  { key: 'iconAtlasUrl', label: 'Custom atlas URL', type: 'string', defaultValue: '', section: 'Icon' },
-  { key: 'iconMappingUrl', label: 'Custom mapping URL', type: 'string', defaultValue: '', section: 'Icon' },
-  { key: 'sizeScale', label: 'Size (px)', type: 'number', defaultValue: 32, section: 'Size' },
-  { key: 'sizeMinPixels', label: 'Min size (px)', type: 'number', defaultValue: 8, section: 'Size' },
-  { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64, section: 'Size' },
-  { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '', section: 'Size' },
-  { key: 'billboard', label: 'Billboard (face camera)', type: 'boolean', defaultValue: true, section: 'Style' },
-  { key: 'alphaCutoff', label: 'Alpha cutoff', type: 'number', defaultValue: 0.05, section: 'Style' },
 ];
 
 function svgDataUrl(svg: string) {
@@ -82,35 +50,54 @@ function getBuiltInIconName(iconName: string) {
   return iconName in BUILT_IN_ICON_MAPPING ? iconName : 'marker';
 }
 
-const renderer: LayerRenderer<IconLayerOptions> = {
+const defaultSettings: IconLayerSettings = {
+  fixedIcon: 'marker',
+  iconField: '',
+  iconAtlasUrl: '',
+  iconMappingUrl: '',
+  sizeScale: 32,
+  sizeMinPixels: 8,
+  sizeMaxPixels: 64,
+  sizeField: '',
+  billboard: true,
+  alphaCutoff: 0.05,
+};
+
+export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
   type: 'icon',
   label: 'Icon',
-  defaultOptions: {
-    fixedIcon: 'marker',
-    iconField: '',
-    iconAtlasUrl: '',
-    iconMappingUrl: '',
-    sizeScale: 32,
-    sizeMinPixels: 8,
-    sizeMaxPixels: 64,
-    sizeField: '',
-    billboard: true,
-    alphaCutoff: 0.05,
+  createDefaultConfig(index) {
+    return createBaseLayerConfig('icon', 'Icon', index, defaultSettings);
   },
-  optionsSchema: schema,
-
-  renderLayers(context: LayerRenderContext<IconLayerOptions>) {
-    const { config, features, selectedKey, options } = context;
+  editorSections: [
+    section('Icon', [
+      { key: 'fixedIcon', label: 'Icon', type: 'select', defaultValue: 'marker', selectOptions: BUILT_IN_ICONS },
+      { key: 'iconField', label: 'Icon name field (overrides above)', type: 'fieldPicker', defaultValue: '' },
+      { key: 'iconAtlasUrl', label: 'Custom atlas URL', type: 'string', defaultValue: '' },
+      { key: 'iconMappingUrl', label: 'Custom mapping URL', type: 'string', defaultValue: '' },
+    ]),
+    section('Size', [
+      { key: 'sizeScale', label: 'Size (px)', type: 'number', defaultValue: 32 },
+      { key: 'sizeMinPixels', label: 'Min size (px)', type: 'number', defaultValue: 8 },
+      { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64 },
+      { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '' },
+    ]),
+    section('Style', [
+      { key: 'billboard', label: 'Billboard (face camera)', type: 'boolean', defaultValue: true },
+      { key: 'alphaCutoff', label: 'Alpha cutoff', type: 'number', defaultValue: 0.05 },
+    ]),
+  ],
+  renderLayers(context: LayerRenderContext<IconLayerConfig>) {
+    const { config, features, selectedKey } = context;
+    const options = config.settings;
     const baseColor = buildColorAccessor(config.colorScale);
     const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
     const commonProps = createCommonLayerProps(context);
-
     const iconAtlas = options.iconAtlasUrl.trim();
     const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);
     const fixedIcon = options.fixedIcon;
-
     return [
       new IconLayer({
         ...commonProps,
@@ -130,9 +117,7 @@ const renderer: LayerRenderer<IconLayerOptions> = {
               return useCustomAtlas ? iconName : getBuiltInIconName(iconName);
             }
           : () => (useCustomAtlas ? fixedIcon : getBuiltInIconName(fixedIcon)),
-        getSize: options.sizeField
-          ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.sizeScale)
-          : options.sizeScale,
+        getSize: options.sizeField ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.sizeScale) : options.sizeScale,
         getColor,
         updateTriggers: {
           ...commonProps.updateTriggers,
@@ -145,5 +130,4 @@ const renderer: LayerRenderer<IconLayerOptions> = {
   },
 };
 
-registerLayer(renderer);
-export default renderer;
+export default iconLayerDefinition;

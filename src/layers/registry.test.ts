@@ -1,57 +1,33 @@
-import './extensions/_all';
-import { extractSharedLayerOptions, getLayer, registerLayer, resolveLayerOptions } from './registry';
-import type { LayerRenderer } from './types';
+jest.mock('./_all', () => ({
+  layerDefinitions: [
+    {
+      type: 'scatterplot',
+      label: 'Scatter Plot',
+      createDefaultConfig: jest.fn(),
+      editorSections: [],
+      renderLayers: jest.fn(() => []),
+    },
+  ],
+}));
 
-interface TestLayerOptions {
-  enabled: boolean;
-  size: number;
-}
+jest.mock('./extensions/_all', () => ({
+  layerExtensionDefinitions: [
+    { id: 'blending', createDefaults: jest.fn(), editorSections: [], apply: jest.fn((layer) => layer) },
+    { id: 'collision', createDefaults: jest.fn(), editorSections: [], apply: jest.fn((layer) => layer) },
+    { id: 'material', createDefaults: jest.fn(), editorSections: [], apply: jest.fn((layer) => layer) },
+  ],
+}));
 
-const testRenderer: LayerRenderer<TestLayerOptions> = {
-  type: 'test-layer',
-  label: 'Test Layer',
-  defaultOptions: {
-    enabled: true,
-    size: 5,
-  },
-  optionsSchema: [],
-  renderLayers: () => [],
-};
+import { getAllLayerExtensions, getAllLayerTypes, getLayer } from './registry';
 
-registerLayer(testRenderer);
-
-describe('layer registry option normalization', () => {
-  it('merges renderer defaults with provided options', () => {
-    expect(resolveLayerOptions('test-layer', { size: 3 })).toMatchObject({
-      enabled: true,
-      size: 3,
-    });
+describe('layer registry', () => {
+  it('exposes built-in layer definitions through a pure catalog', () => {
+    expect(getAllLayerTypes().length).toBeGreaterThan(0);
+    expect(getLayer('scatterplot')?.type).toBe('scatterplot');
   });
 
-  it('returns provided options when the renderer type is unknown', () => {
-    expect(resolveLayerOptions('missing-type', { custom: 1 })).toEqual({ custom: 1 });
-  });
-
-  it('extracts only shared extension options for layer-type switches', () => {
-    expect(
-      extractSharedLayerOptions({
-        size: 9,
-        enabled: false,
-        layerBlendEnabled: true,
-        materialEnabled: true,
-        collisionEnabled: true,
-      })
-    ).toEqual({
-      layerBlendEnabled: true,
-      materialEnabled: true,
-      collisionEnabled: true,
-    });
-  });
-
-  it('includes extension defaults on registered renderers', () => {
-    const renderer = getLayer('test-layer');
-
-    expect(renderer).toBeDefined();
-    expect(renderer?.defaultOptions).toHaveProperty('layerBlendEnabled');
+  it('exposes shared extension definitions through a pure catalog', () => {
+    const extensionIds = getAllLayerExtensions().map((extension) => extension.id);
+    expect(extensionIds).toEqual(expect.arrayContaining(['blending', 'collision', 'material']));
   });
 });

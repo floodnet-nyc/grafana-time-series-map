@@ -289,11 +289,12 @@
               "scaleMin": 0,
               "scaleMax": 1
             },
-            "options": {
+            "settings": {
               "urlField": "url",
               "timestampField": "time",
               "colorMaxValue": 200,
-              "maxRequests": 4
+              "maxRequests": 4,
+              "maxFrameRate": 0
             }
           },
           {
@@ -373,12 +374,14 @@
                 }
               ]
             },
-            "options": {
+            "settings": {
               "radiusMinPixels": 3,
               "radiusMaxPixels": 14,
               "radiusField": "max_depth_inches",
               "radiusScale": 0.4,
-              "stroked": false
+              "stroked": false,
+              "showLabels": false,
+              "labelField": ""
             }
           },
           {
@@ -414,10 +417,14 @@
                 230
               ]
             },
-            "options": {
+            "settings": {
               "radiusMinPixels": 4,
               "radiusMaxPixels": 10,
-              "stroked": false
+              "radiusField": "",
+              "radiusScale": 1,
+              "stroked": false,
+              "showLabels": false,
+              "labelField": ""
             }
           },
           {
@@ -503,13 +510,14 @@
                 }
               ]
             },
-            "options": {
+            "settings": {
               "radiusMinPixels": 5,
               "radiusMaxPixels": 22,
               "radiusField": "max_depth_inches",
               "radiusScale": 0.6,
               "stroked": true,
-              "elevateByValue": false
+              "showLabels": false,
+              "labelField": ""
             }
           },
           {
@@ -523,7 +531,7 @@
               "field": "geometry"
             },
             "elevation": {
-              "field": null,
+              "field": "",
               "scale": 0.254,
               "depthTest": false
             },
@@ -542,6 +550,7 @@
             "opacity": 1,
             "secondarySources": [
               {
+                "id": "A",
                 "queryRefId": "A",
                 "join": {
                   "type": "keyed-asof",
@@ -564,7 +573,7 @@
               "scaleMin": 0,
               "scaleMax": 24
             },
-            "options": {
+            "settings": {
               "depthDiffField": "depthDiff",
               "fillOpacity": 0.5
             }
@@ -578,8 +587,7 @@
             "geometry": {
               "type": "latlng",
               "latField": "lat",
-              "lngField": "lng",
-              "elevationField": "depth_inches"
+              "lngField": "lng"
             },
             "timeFilter": {
               "mode": "asof",
@@ -649,10 +657,10 @@
                 }
               ]
             },
-            "options": {
+            "settings": {
               "radiusMinPixels": 8,
               "radiusMaxPixels": 12,
-              "elevateByValue": true,
+              "radiusScale": 1,
               "showLabels": true,
               "stroked": true,
               "radiusField": "depth_inches",

@@ -2,6 +2,7 @@ import type { LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { LayerRenderContext } from './types';
+import type { LayerConfig } from '../types';
 
 type LayerFeature = Feature & { __idx: number };
 
@@ -14,12 +15,12 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
 }
 
 
-export function createCommonLayerProps<TOptions extends object>({
+export function createCommonLayerProps<TLayerConfig extends LayerConfig>({
   config,
   features,
   timeFilterFlags,
   onFeatureClick,
-}: LayerRenderContext<TOptions>) {
+}: LayerRenderContext<TLayerConfig>) {
   return {
     id: `${config.type}/${config.id}`,
     data: features,

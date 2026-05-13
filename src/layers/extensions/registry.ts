@@ -1,33 +1,12 @@
 import type { Layer } from '@deck.gl/core';
-import type { LayerConfig } from '../../types';
-import type { LayerOptionField } from '../types';
+import type { LayerConfig, LayerExtensionsConfig } from '../../types';
+import type { LayerEditorSection } from '../types';
 
-export interface RegisteredLayerExtension {
-  id: string;
-  defaultOptions: Record<string, unknown>;
-  optionsSchema: LayerOptionField[];
+export interface LayerExtensionDefinition {
+  id: keyof NonNullable<LayerExtensionsConfig>;
+  createDefaults: () => NonNullable<LayerExtensionsConfig>[keyof NonNullable<LayerExtensionsConfig>];
+  editorSections: LayerEditorSection[];
   apply: (layer: Layer, config: LayerConfig) => Layer;
-}
-
-const registry: RegisteredLayerExtension[] = [];
-
-export function registerLayerExtension(extension: RegisteredLayerExtension): void {
-  registry.push(extension);
-}
-
-export function getExtensionDefaultOptions(): Record<string, unknown> {
-  return registry.reduce(
-    (acc, extension) => ({ ...acc, ...extension.defaultOptions }),
-    {} as Record<string, unknown>,
-  );
-}
-
-export function getExtensionOptionsSchema(): LayerOptionField[] {
-  return registry.flatMap((extension) => extension.optionsSchema);
-}
-
-export function getExtensionOptionKeys(): string[] {
-  return registry.flatMap((extension) => extension.optionsSchema.map((field) => field.key));
 }
 
 export function appendDeckExtension(layer: Layer, extension: unknown) {
@@ -41,6 +20,10 @@ export function appendDeckExtension(layer: Layer, extension: unknown) {
   return hasExtension ? existing : [...existing, extension];
 }
 
-export function applyLayerExtensions(layers: Layer[], config: LayerConfig): Layer[] {
-  return layers.map((layer) => registry.reduce((current, extension) => extension.apply(current, config), layer));
+export function applyLayerExtensions(
+  layers: Layer[],
+  config: LayerConfig,
+  definitions: LayerExtensionDefinition[],
+): Layer[] {
+  return layers.map((layer) => definitions.reduce((current, extension) => extension.apply(current, config), layer));
 }

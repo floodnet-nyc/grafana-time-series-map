@@ -25,16 +25,15 @@ export type ColorScaleType = 'fixed' | 'threshold' | 'gradient';
 
 export interface ColorStep {
   value: number;
-  color: [number, number, number, number]; // RGBA 0-255
+  color: [number, number, number, number];
 }
 
 export interface ColorScaleConfig {
   type: ColorScaleType;
   fixedColor?: [number, number, number, number];
-  /** Sorted threshold steps for type='threshold'. The lowest step is the base color. */
   steps?: ColorStep[];
   field?: string;
-  schemeName?: string; // d3 or custom interpolator name
+  schemeName?: string;
   scaleMin?: number;
   scaleMax?: number;
   invert?: boolean;
@@ -91,9 +90,216 @@ export interface LayerDerivedFieldConfig {
   type?: 'number' | 'string' | 'boolean';
 }
 
-export interface LayerConfig {
+export type DeckBlendOperation = 'add' | 'subtract' | 'reverse-subtract' | 'min' | 'max';
+export type DeckBlendFactor =
+  | 'zero'
+  | 'one'
+  | 'src'
+  | 'one-minus-src'
+  | 'src-alpha'
+  | 'one-minus-src-alpha'
+  | 'dst'
+  | 'one-minus-dst'
+  | 'dst-alpha'
+  | 'one-minus-dst-alpha'
+  | 'src-alpha-saturated'
+  | 'constant'
+  | 'one-minus-constant';
+export type DeckDepthCompare =
+  | 'never'
+  | 'less'
+  | 'equal'
+  | 'less-equal'
+  | 'greater'
+  | 'not-equal'
+  | 'greater-equal'
+  | 'always';
+
+export interface LayerBlendingConfig {
+  enabled: boolean;
+  blend: boolean;
+  colorOperation: DeckBlendOperation;
+  colorSrcFactor: DeckBlendFactor;
+  colorDstFactor: DeckBlendFactor;
+  alphaOperation: DeckBlendOperation;
+  alphaSrcFactor: DeckBlendFactor;
+  alphaDstFactor: DeckBlendFactor;
+}
+
+export interface LayerMaterialConfig {
+  enabled: boolean;
+  ambient: number;
+  diffuse: number;
+  shininess: number;
+  specularColor: [number, number, number, number];
+}
+
+export interface LayerCollisionConfig {
+  enabled: boolean;
+  group: string;
+  priorityField: string;
+  priorityScale: number;
+  priorityOffset: number;
+  testScale: number;
+}
+
+export interface LayerExtensionsConfig {
+  blending?: LayerBlendingConfig;
+  material?: LayerMaterialConfig;
+  collision?: LayerCollisionConfig;
+}
+
+export interface ScatterplotLayerSettings {
+  radiusMinPixels: number;
+  radiusMaxPixels: number;
+  radiusField: string;
+  radiusScale: number;
+  stroked: boolean;
+  showLabels: boolean;
+  labelField: string;
+}
+
+export interface ArcLayerSettings {
+  widthMinPixels: number;
+  greatCircle: boolean;
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+}
+
+export interface HeatmapLayerSettings {
+  radiusPixels: number;
+  intensity: number;
+  threshold: number;
+  weightField: string;
+  colorRange: string;
+}
+
+export interface HexagonLayerSettings {
+  radius: number;
+  coverage: number;
+  extruded: boolean;
+  elevationScale: number;
+  elevationWeightField: string;
+  elevationAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorWeightField: string;
+  colorAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorRange: string;
+  lowerPercentile: number;
+  upperPercentile: number;
+}
+
+export interface PathLayerSettings {
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
+export interface LineLayerSettings {
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+}
+
+export interface PolygonLayerSettings {
+  fillOpacity: number;
+  extruded: boolean;
+  elevationField: string;
+  elevationScale: number;
+}
+
+export interface GeoJsonLayerSettings {
+  pointRadiusMinPixels: number;
+  pointRadiusMaxPixels: number;
+  lineWidthMinPixels: number;
+  filled: boolean;
+  stroked: boolean;
+  extruded: boolean;
+}
+
+export interface IconLayerSettings {
+  fixedIcon: string;
+  iconField: string;
+  iconAtlasUrl: string;
+  iconMappingUrl: string;
+  sizeScale: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  billboard: boolean;
+  alphaCutoff: number;
+}
+
+export interface TextLayerSettings {
+  textField: string;
+  fontSize: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  fontFamily: string;
+  fontWeight: string;
+  anchor: 'start' | 'middle' | 'end';
+  baseline: 'top' | 'center' | 'bottom';
+  billboard: boolean;
+  background: boolean;
+  pixelOffsetX: number;
+  pixelOffsetY: number;
+}
+
+export interface TripsLayerSettings {
+  timestampsField: string;
+  timestampUnit: 'ms' | 's';
+  trailLengthMs: number;
+  fadeTrail: boolean;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
+export interface CogLayerSettings {
+  urlField: string;
+  timestampField: string;
+  colorMaxValue: number;
+  maxRequests: number;
+  maxFrameRate: number;
+}
+
+export interface FloodInundationLayerSettings {
+  depthDiffField: string;
+  fillOpacity: number;
+}
+
+export type LayerType =
+  | 'scatterplot'
+  | 'arc'
+  | 'heatmap'
+  | 'hexagon'
+  | 'path'
+  | 'line'
+  | 'polygon'
+  | 'geojson'
+  | 'icon'
+  | 'text'
+  | 'trips'
+  | 'cog'
+  | 'flood-inundation';
+
+export interface BaseLayerConfig<TType extends LayerType, TSettings> {
   id: string;
-  type: string;
+  type: TType;
+  settings: TSettings;
   lookup?: LookupConfig;
   secondarySources?: LayerSecondarySourceConfig[];
   derivedFields?: LayerDerivedFieldConfig[];
@@ -106,16 +312,43 @@ export interface LayerConfig {
   fieldMappings: FieldMapping[];
   opacity: number;
   colorScale?: ColorScaleConfig;
-  /** Whether this layer appears in the map legend. Defaults to true. */
   showInLegend?: boolean;
-  /** Optional description shown as a tooltip in the legend. */
   description?: string;
   minZoom?: number;
   maxZoom?: number;
   pickable?: boolean;
   shader?: ShaderConfig;
-  options: Record<string, unknown>;
+  extensions?: LayerExtensionsConfig;
 }
+
+export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
+export type ArcLayerConfig = BaseLayerConfig<'arc', ArcLayerSettings>;
+export type HeatmapLayerConfig = BaseLayerConfig<'heatmap', HeatmapLayerSettings>;
+export type HexagonLayerConfig = BaseLayerConfig<'hexagon', HexagonLayerSettings>;
+export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
+export type LineLayerConfig = BaseLayerConfig<'line', LineLayerSettings>;
+export type PolygonLayerConfig = BaseLayerConfig<'polygon', PolygonLayerSettings>;
+export type GeoJsonLayerConfig = BaseLayerConfig<'geojson', GeoJsonLayerSettings>;
+export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
+export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
+export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
+export type CogLayerConfig = BaseLayerConfig<'cog', CogLayerSettings>;
+export type FloodInundationLayerConfig = BaseLayerConfig<'flood-inundation', FloodInundationLayerSettings>;
+
+export type LayerConfig =
+  | ScatterplotLayerConfig
+  | ArcLayerConfig
+  | HeatmapLayerConfig
+  | HexagonLayerConfig
+  | PathLayerConfig
+  | LineLayerConfig
+  | PolygonLayerConfig
+  | GeoJsonLayerConfig
+  | IconLayerConfig
+  | TextLayerConfig
+  | TripsLayerConfig
+  | CogLayerConfig
+  | FloodInundationLayerConfig;
 
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle =
@@ -159,25 +392,16 @@ export type GoogleControlPosition =
   | 'BOTTOM_CENTER'
   | 'BOTTOM_RIGHT';
 
-export type MapControlPosition =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right';
+export type MapControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 export interface MapInteractionOptions {
-  /** Toggle all map user gestures where supported. */
   interactive?: boolean;
-  /** Require Ctrl/Cmd or two-finger gestures for scroll zoom and rotation. */
   cooperativeGestures?: boolean;
-  /** Sync the map camera to URL hash parameter v=zoom/lat/lon. */
   syncViewToUrl?: boolean;
-  /** MapLibre only: enable camera roll with Ctrl + drag. */
   rollEnabled?: boolean;
 }
 
 export interface MapControlOptions {
-  /** MapLibre NavigationControl or Google camera control. */
   navigationControl?: boolean;
   geolocateControl?: boolean;
   fullscreenControl?: boolean;
@@ -215,23 +439,6 @@ export interface GoogleMapOptions {
   mapTypeControlStyle?: GoogleMapTypeControlStyle;
   streetViewControlPosition?: GoogleControlPosition;
 }
-
-export type DeckBlendOperation = 'add' | 'subtract' | 'reverse-subtract' | 'min' | 'max';
-export type DeckBlendFactor =
-  | 'zero'
-  | 'one'
-  | 'src'
-  | 'one-minus-src'
-  | 'src-alpha'
-  | 'one-minus-src-alpha'
-  | 'dst'
-  | 'one-minus-dst'
-  | 'dst-alpha'
-  | 'one-minus-dst-alpha'
-  | 'src-alpha-saturated'
-  | 'constant'
-  | 'one-minus-constant';
-export type DeckDepthCompare = 'never' | 'less' | 'equal' | 'less-equal' | 'greater' | 'not-equal' | 'greater-equal' | 'always';
 
 export interface DeckRenderParametersOptions {
   blend?: boolean;

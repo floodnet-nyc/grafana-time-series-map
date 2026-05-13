@@ -10,18 +10,20 @@ import {
   TextArea,
   CollapsableSection,
   ColorPicker,
+  Button,
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type {
-  LayerConfig,
-  GeometrySource,
-  TimeFilterMode,
+  ColorScaleConfig,
   ElevationConfig,
-  LayerSecondarySourceConfig,
+  GeometrySource,
+  LayerConfig,
   LayerDerivedFieldConfig,
+  LayerSecondarySourceConfig,
+  TimeFilterMode,
 } from '../types';
-import { extractSharedLayerOptions, getAllLayerTypes, getLayer } from '../layers/registry';
+import { getAllLayerExtensions, getAllLayerTypes, getLayer } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
@@ -30,22 +32,18 @@ import {
   createColorModePatch,
   createPatchedColorScale,
   createPatchedShader,
-  DEFAULT_THRESHOLD_STEPS,
   getActiveScheme,
   getColorMode,
-  groupOptionsBySection,
   patchThresholdStep,
   removeThresholdStep,
-  splitOptionSections,
 } from './layerEditorModel';
-
-// ─── Constants ───────────────────────────────────────────────────────────────
 
 const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Lat / Lng columns', value: 'latlng' },
   { label: 'WKB hex', value: 'wkb' },
   { label: 'WKT string', value: 'wkt' },
   { label: 'GeoJSON string', value: 'geojson' },
+  { label: 'None', value: 'none' },
 ];
 
 const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
@@ -74,8 +72,6 @@ const SCHEME_OPTIONS: Array<ComboboxOption<string>> = [
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
   const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}${a < 255 ? h(a) : ''}`;
@@ -103,10 +99,7 @@ function getSourceNamespace(source: LayerSecondarySourceConfig): string {
   return source.queryRefId || source.id || 'source';
 }
 
-function getDefaultSecondarySource(
-  primaryQueryRefId: string | undefined,
-  availableRefIds: string[],
-): LayerSecondarySourceConfig {
+function getDefaultSecondarySource(primaryQueryRefId: string | undefined, availableRefIds: string[]): LayerSecondarySourceConfig {
   const preferredQueryRefId = availableRefIds.find((refId) => refId !== primaryQueryRefId) ?? availableRefIds[0] ?? '';
   return {
     id: preferredQueryRefId,
@@ -122,8 +115,6 @@ function getDefaultSecondarySource(
   };
 }
 
-// ─── FieldSelect: autocomplete field picker ───────────────────────────────────
-
 interface FieldSelectProps {
   value: string;
   onChange: (v: string) => void;
@@ -132,10 +123,7 @@ interface FieldSelectProps {
 }
 
 function FieldSelect({ value, onChange, availableFields, placeholder }: FieldSelectProps) {
-  const opts = useMemo(
-    () => availableFields.map((f) => ({ label: f, value: f })),
-    [availableFields],
-  );
+  const opts = useMemo(() => availableFields.map((f) => ({ label: f, value: f })), [availableFields]);
   return (
     <Combobox
       options={opts}
@@ -148,20 +136,11 @@ function FieldSelect({ value, onChange, availableFields, placeholder }: FieldSel
   );
 }
 
-// ─── ColorSchemePreview ───────────────────────────────────────────────────────
-
-interface ColorSchemePreviewProps {
-  schemeName: string;
-  invert?: boolean;
-}
-
-function ColorSchemePreview({ schemeName, invert }: ColorSchemePreviewProps) {
+function ColorSchemePreview({ schemeName, invert }: { schemeName: string; invert?: boolean }) {
   const styles = useStyles2(getStyles);
   const gradient = useMemo(() => schemeToGradientCss(schemeName, invert), [schemeName, invert]);
   return <div className={styles.schemePreview} style={{ background: gradient }} />;
 }
-
-// ─── Main editor ─────────────────────────────────────────────────────────────
 
 interface Props {
   layer: LayerConfig;
@@ -171,54 +150,108 @@ interface Props {
   queryFieldsByRefId?: Record<string, string[]>;
 }
 
-export function LayerEditor({
-  layer,
-  onChange,
-  availableFields = [],
-  availableRefIds = [],
-  queryFieldsByRefId = {},
-}: Props) {
+export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [], queryFieldsByRefId = {} }: Props) {
   const styles = useStyles2(getStyles);
-  const layerTypes = useMemo(
-    () => getAllLayerTypes().map((r) => ({ label: r.label, value: r.type })),
-    []
-  );
+  const layerDefinitions = useMemo(() => getAllLayerTypes(), []);
+  const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), [layerDefinitions]);
+  const extensionDefinitions = useMemo(() => getAllLayerExtensions(), []);
   const refIdOptions = useMemo(
     () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
-    [availableRefIds]
+    [availableRefIds],
+  );
+  const currentRenderer = useMemo(() => getLayer(layer.type), [layer.type]);
+  const fixedColor = layer.colorScale?.fixedColor ?? [0, 155, 104, 255];
+  const mode = getColorMode(layer);
+  const scheme = getActiveScheme(layer);
+  const secondarySources = layer.secondarySources ?? [];
+  const derivedFields = layer.derivedFields ?? [];
+  const settingsRecord = layer.settings as unknown as Record<string, unknown>;
+
+  const patch = useCallback((updates: Partial<LayerConfig>) => onChange({ ...(layer as any), ...updates } as LayerConfig), [layer, onChange]);
+  const patchTimeFilter = useCallback((updates: Partial<typeof layer.timeFilter>) => patch({ timeFilter: { ...layer.timeFilter, ...updates } }), [layer.timeFilter, patch]);
+  const patchSecondarySources = useCallback((value: LayerSecondarySourceConfig[]) => patch({ secondarySources: value }), [patch]);
+  const patchDerivedFields = useCallback((value: LayerDerivedFieldConfig[]) => patch({ derivedFields: value }), [patch]);
+  const patchShader = useCallback((updates: Partial<NonNullable<typeof layer.shader>>) => patch({ shader: createPatchedShader(layer.shader, updates) }), [layer.shader, patch]);
+  const patchColor = useCallback((updates: Partial<NonNullable<ColorScaleConfig>>) => patch({ colorScale: createPatchedColorScale(layer.colorScale, updates) }), [layer.colorScale, patch]);
+
+  const patchElevation = useCallback(
+    (updates: Partial<ElevationConfig>) =>
+      patch({
+        elevation: {
+          field: '',
+          scale: 0.0254,
+          depthTest: false,
+          ...layer.elevation,
+          ...updates,
+        },
+      }),
+    [layer.elevation, patch],
   );
 
-  const patch = useCallback(
-    (updates: Partial<LayerConfig>) => onChange({ ...layer, ...updates }),
-    [layer, onChange],
+  const patchSettings = useCallback(
+    (key: string, value: unknown) =>
+      patch({ settings: { ...(layer.settings as any), [key]: value } as typeof layer.settings } as Partial<LayerConfig>),
+    [layer.settings, patch],
   );
 
-  const patchGeom = (updates: Partial<GeometrySource>) =>
-    patch({ geometry: { ...layer.geometry, ...updates } as GeometrySource });
+  const patchExtensionValue = useCallback(
+    (extensionKey: string, key: string, value: unknown) => {
+      const current = (layer.extensions ?? {}) as Record<string, Record<string, unknown>>;
+      patch({
+        extensions: {
+          ...layer.extensions,
+          [extensionKey]: {
+            ...(current[extensionKey] ?? {}),
+            [key]: value,
+          },
+        },
+      });
+    },
+    [layer.extensions, patch],
+  );
 
-  const patchElevation = (updates: Partial<ElevationConfig>) =>
-    patch({
-      elevation: {
-        field: '',
-        scale: 0.0254,
-        depthTest: false,
-        ...layer.elevation,
-        ...updates,
-      },
-    });
+  const patchGeometryType = useCallback(
+    (type: GeometrySource['type']) => {
+      const geometry: GeometrySource =
+        type === 'none'
+          ? { type: 'none' }
+          : type === 'latlng'
+            ? { type: 'latlng', latField: '', lngField: '' }
+            : { type, field: '' };
+      patch({ geometry });
+    },
+    [patch],
+  );
 
-  const patchTimeFilter = (updates: Partial<typeof layer.timeFilter>) =>
-    patch({ timeFilter: { ...layer.timeFilter, ...updates } });
-  const patchSecondarySources = (secondarySources: LayerSecondarySourceConfig[]) => patch({ secondarySources });
-  const patchDerivedFields = (derivedFields: LayerDerivedFieldConfig[]) => patch({ derivedFields });
+  const patchGeometryField = useCallback(
+    (value: string) => {
+      const geometry = layer.geometry;
+      if (geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') {
+        patch({ geometry: { ...geometry, field: value } });
+      }
+    },
+    [layer.geometry, patch],
+  );
 
-  const patchOpts = (key: string, value: unknown) => patch({ options: { ...layer.options, [key]: value } });
+  const patchGeometryLat = useCallback(
+    (value: string) => {
+      const geometry = layer.geometry;
+      if (geometry.type === 'latlng') {
+        patch({ geometry: { ...geometry, latField: value } });
+      }
+    },
+    [layer.geometry, patch],
+  );
 
-  const patchShader = (updates: Partial<NonNullable<typeof layer.shader>>) =>
-    patch({ shader: createPatchedShader(layer.shader, updates) });
-
-  const patchColor = (updates: Partial<NonNullable<typeof layer.colorScale>>) =>
-    patch({ colorScale: createPatchedColorScale(layer.colorScale, updates) });
+  const patchGeometryLng = useCallback(
+    (value: string) => {
+      const geometry = layer.geometry;
+      if (geometry.type === 'latlng') {
+        patch({ geometry: { ...geometry, lngField: value } });
+      }
+    },
+    [layer.geometry, patch],
+  );
 
   const patchZoomRange = useCallback(
     (min: number, max: number) => {
@@ -229,880 +262,360 @@ export function LayerEditor({
         maxZoom: nextMax >= DEFAULT_MAX_ZOOM ? undefined : nextMax,
       });
     },
-    [patch]
+    [patch],
   );
 
-  const currentRenderer = useMemo(() => getLayer(layer.type), [layer.type]);
-  const defaultOptions = useMemo(() => currentRenderer?.defaultOptions ?? {}, [currentRenderer]);
+  const getFieldsForRefId = useCallback((refId: string | undefined) => (refId ? queryFieldsByRefId[refId] ?? [] : []), [queryFieldsByRefId]);
 
-  const optionsBySections = useMemo(() => {
-    if (!currentRenderer) {
-      return new Map<string | undefined, LayerOptionField[]>();
-    }
-    return groupOptionsBySection(currentRenderer.optionsSchema);
-  }, [currentRenderer]);
-
-  const fixedColor = layer.colorScale?.fixedColor ?? [0, 155, 104, 255];
-  const mode = getColorMode(layer);
-  const scheme = getActiveScheme(layer);
-  const zoomRange = [layer.minZoom ?? DEFAULT_MIN_ZOOM, layer.maxZoom ?? DEFAULT_MAX_ZOOM];
-  const { regular: regularOptionSections, advancedColor: advancedColorOptionSections } = splitOptionSections(optionsBySections);
-  const secondarySources = layer.secondarySources ?? [];
-  const derivedFields = layer.derivedFields ?? [];
-  const getOptionValue = useCallback(
-    (field: LayerOptionField) => layer.options[field.key] ?? defaultOptions[field.key] ?? field.defaultValue,
-    [defaultOptions, layer.options]
+  const handleTypeChange = useCallback(
+    (type: string) => {
+      const definition = getLayer(type);
+      if (!definition) {
+        return;
+      }
+      const next = definition.createDefaultConfig(0);
+      onChange({
+        ...next,
+        id: layer.id,
+        label: layer.label,
+        visible: layer.visible,
+        queryRefId: layer.queryRefId,
+        geometry: layer.geometry,
+        elevation: layer.elevation,
+        timeFilter: layer.timeFilter,
+        fieldMappings: layer.fieldMappings,
+        opacity: layer.opacity,
+        colorScale: layer.colorScale,
+        showInLegend: layer.showInLegend,
+        description: layer.description,
+        minZoom: layer.minZoom,
+        maxZoom: layer.maxZoom,
+        pickable: layer.pickable,
+        shader: layer.shader,
+        extensions: layer.extensions ?? next.extensions,
+      });
+    },
+    [layer, onChange],
   );
-  const getFieldsForRefId = useCallback(
-    (refId: string | undefined) => (refId ? queryFieldsByRefId[refId] ?? [] : []),
-    [queryFieldsByRefId]
+
+  const renderOptionField = useCallback(
+    (field: LayerOptionField, source: Record<string, unknown>, onFieldChange: (key: string, value: unknown) => void) => {
+      const value = source[field.key] ?? field.defaultValue;
+      if (field.showIf && !field.showIf(source)) {
+        return null;
+      }
+      if (field.type === 'boolean') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <Switch value={Boolean(value)} onChange={(e) => onFieldChange(field.key, e.currentTarget.checked)} />
+          </Field>
+        );
+      }
+      if (field.type === 'select') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <Combobox
+              options={field.selectOptions ?? []}
+              value={value as string | number | null}
+              onChange={(v) => onFieldChange(field.key, v?.value)}
+            />
+          </Field>
+        );
+      }
+      if (field.type === 'fieldPicker') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <FieldSelect value={String(value ?? '')} onChange={(v) => onFieldChange(field.key, v)} availableFields={availableFields} />
+          </Field>
+        );
+      }
+      if (field.type === 'color') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <ColorPicker color={rgbaToHex((value as [number, number, number, number]) ?? [0, 0, 0, 255])} onChange={(hex) => onFieldChange(field.key, hexToRgba(hex))} />
+          </Field>
+        );
+      }
+      if (field.type === 'number') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <Input
+              type="number"
+              value={String(value ?? field.defaultValue ?? '')}
+              onChange={(e) => onFieldChange(field.key, Number(e.currentTarget.value))}
+            />
+          </Field>
+        );
+      }
+      return (
+        <Field key={field.key} label={field.label}>
+          <Input value={String(value ?? '')} onChange={(e) => onFieldChange(field.key, e.currentTarget.value)} />
+        </Field>
+      );
+    },
+    [availableFields],
   );
-
-  const updateSecondarySource = (index: number, updates: Partial<LayerSecondarySourceConfig>) => {
-    const next = secondarySources.map((source, sourceIndex) =>
-      sourceIndex === index ? { ...source, ...updates } : source
-    );
-    patchSecondarySources(next);
-  };
-  const updateSecondarySourceQuery = (index: number, queryRefId: string) => {
-    const source = secondarySources[index];
-    if (!source) {
-      return;
-    }
-    updateSecondarySource(index, {
-      queryRefId,
-      id: queryRefId || source.id,
-      fields: source.fields.map((field) => ({ ...field, as: field.sourceField || field.as })),
-    });
-  };
-
-  const updateSecondarySourceJoin = (
-    index: number,
-    updates: Partial<LayerSecondarySourceConfig['join']>
-  ) => {
-    const source = secondarySources[index];
-    if (!source) {
-      return;
-    }
-    updateSecondarySource(index, { join: { ...source.join, ...updates } });
-  };
-
-  const updateSecondarySourceField = (
-    sourceIndex: number,
-    fieldIndex: number,
-    updates: Partial<LayerSecondarySourceConfig['fields'][number]>
-  ) => {
-    const source = secondarySources[sourceIndex];
-    if (!source) {
-      return;
-    }
-
-    patchSecondarySources(
-      secondarySources.map((candidate, candidateIndex) =>
-        candidateIndex === sourceIndex
-          ? {
-              ...candidate,
-              fields: candidate.fields.map((field, candidateFieldIndex) =>
-                candidateFieldIndex === fieldIndex
-                  ? {
-                      ...field,
-                      ...updates,
-                      ...(updates.sourceField !== undefined ? { as: updates.sourceField } : {}),
-                    }
-                  : field
-              ),
-            }
-          : candidate
-      )
-    );
-  };
-
-  const updateDerivedField = (index: number, updates: Partial<LayerDerivedFieldConfig>) => {
-    patchDerivedFields(derivedFields.map((field, fieldIndex) => (fieldIndex === index ? { ...field, ...updates } : field)));
-  };
-  const appendExpressionToken = (index: number, token: string) => {
-    const field = derivedFields[index];
-    if (!field) {
-      return;
-    }
-    const nextExpression = field.expression ? `${field.expression} ${token}` : token;
-    updateDerivedField(index, { expression: nextExpression });
-  };
-  const renderOptionField = (f: LayerOptionField) => {
-    const value = getOptionValue(f);
-    return (
-    <Field key={f.key} label={f.label}>
-      {f.type === 'boolean' ? (
-        <Switch
-          value={Boolean(value)}
-          onChange={(e) => patchOpts(f.key, e.currentTarget.checked)}
-        />
-      ) : f.type === 'select' ? (
-        <Combobox
-          options={f.selectOptions ?? []}
-          value={value as string | number}
-          onChange={(v) => patchOpts(f.key, v.value)}
-        />
-      ) : f.type === 'fieldPicker' ? (
-        <FieldSelect
-          value={String(value ?? '')}
-          onChange={(v) => patchOpts(f.key, v)}
-          availableFields={availableFields}
-        />
-      ) : f.type === 'color' ? (
-        <div className={styles.colorPickerRow}>
-          <ColorPicker
-            color={rgbaToHex((value ?? [255, 255, 255, 255]) as [number, number, number, number])}
-            onChange={(hex) => patchOpts(f.key, hexToRgba(hex))}
-          />
-        </div>
-      ) : f.type === 'number' && f.min !== undefined && f.max !== undefined ? (
-        <Slider
-          inputId={`layer-option-${f.key}`}
-          min={f.min}
-          max={f.max}
-          step={f.step ?? 1}
-          value={Number(value ?? f.min)}
-          onChange={(v) => patchOpts(f.key, v)}
-        />
-      ) : (
-        <Input
-          type={f.type === 'number' ? 'number' : 'text'}
-          value={String(value ?? '')}
-          onChange={(e) =>
-            patchOpts(f.key, f.type === 'number' ? Number(e.currentTarget.value) : e.currentTarget.value)
-          }
-        />
-      )}
-    </Field>
-    );
-  };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.root}>
       <CollapsableSection label="General" isOpen>
-        <Field label="Label">
+        <Field label="Layer name">
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
-        <Field label="Description" description="Shown as a tooltip on the legend info icon">
-          <TextArea
-            rows={2}
-            value={layer.description ?? ''}
-            onChange={(e) => patch({ description: e.currentTarget.value || undefined })}
-            placeholder="Optional description…"
-          />
-        </Field>
         <Field label="Layer type">
-          <Combobox
-            options={layerTypes}
-            value={layer.type}
-            onChange={(v) =>
-              patch({
-                type: v.value,
-                options: extractSharedLayerOptions(layer.options),
-              })
-            }
-          />
+          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
         </Field>
-        <Field label="Query (ref ID)">
-          <Combobox
-            options={refIdOptions}
-            value={layer.queryRefId ?? ''}
-            onChange={(v) => patch({ queryRefId: v.value ? String(v.value) : undefined })}
-          />
+        <Field label="Query">
+          <Combobox options={refIdOptions} value={layer.queryRefId ?? ''} onChange={(v) => patch({ queryRefId: String(v?.value ?? '') || undefined })} />
         </Field>
         <Field label="Visible">
           <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
         </Field>
         <Field label="Show in legend">
-          <Switch
-            value={layer.showInLegend ?? true}
-            onChange={(e) => patch({ showInLegend: e.currentTarget.checked })}
-          />
+          <Switch value={layer.showInLegend ?? true} onChange={(e) => patch({ showInLegend: e.currentTarget.checked })} />
         </Field>
       </CollapsableSection>
 
       <CollapsableSection label="Geometry" isOpen>
         <Field label="Geometry source">
-          <Combobox
-            options={GEOMETRY_TYPES}
-            value={layer.geometry.type}
-            onChange={(v) => patchGeom({ type: v.value as GeometrySource['type'] })}
-          />
+          <Combobox options={GEOMETRY_TYPES} value={layer.geometry.type} onChange={(v) => patchGeometryType(v.value as GeometrySource['type'])} />
         </Field>
         {(layer.geometry.type === 'wkb' || layer.geometry.type === 'wkt' || layer.geometry.type === 'geojson') && (
           <Field label="Geometry field">
-            <FieldSelect
-              value={(layer.geometry as any).field ?? ''}
-              onChange={(v) => patchGeom({ field: v } as any)}
-              availableFields={availableFields}
-            />
+            <FieldSelect value={layer.geometry.field} onChange={patchGeometryField} availableFields={availableFields} />
           </Field>
         )}
-
-        <div className={styles.sectionHint}>
-          {layer.geometry.type === 'latlng'
-            ? 'Coordinates come from the selected latitude and longitude fields.'
-            : layer.geometry.type === 'none'
-              ? 'This layer does not read map geometry from the query.'
-              : 'Geometry is read directly from the selected field.'}
-        </div>
         {layer.geometry.type === 'latlng' && (
           <>
             <Field label="Latitude field">
-              <FieldSelect
-                value={(layer.geometry as any).latField ?? ''}
-                onChange={(v) => patchGeom({ latField: v } as any)}
-                availableFields={availableFields}
-              />
+              <FieldSelect value={layer.geometry.latField} onChange={patchGeometryLat} availableFields={availableFields} />
             </Field>
             <Field label="Longitude field">
-              <FieldSelect
-                value={(layer.geometry as any).lngField ?? ''}
-                onChange={(v) => patchGeom({ lngField: v } as any)}
-                availableFields={availableFields}
-              />
+              <FieldSelect value={layer.geometry.lngField} onChange={patchGeometryLng} availableFields={availableFields} />
             </Field>
           </>
         )}
-
-        {/* Elevation (merged into geometry) */}
         <Field label="Elevation field" description="Leave empty to render flat">
-          <FieldSelect
-            value={layer.elevation?.field ?? ''}
-            onChange={(v) => patchElevation({ field: v })}
-            availableFields={availableFields}
-            placeholder="None"
-          />
+          <FieldSelect value={layer.elevation?.field ?? ''} onChange={(v) => patchElevation({ field: v })} availableFields={availableFields} placeholder="None" />
         </Field>
         {layer.elevation?.field && (
           <>
-            <Field label="Elevation scale" description="Multiply field value to get meters (e.g. 0.0254 = inches to meters)">
-              <Input
-                type="number"
-                value={layer.elevation?.scale ?? 1}
-                onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
-              />
+            <Field label="Elevation scale">
+              <Input type="number" value={String(layer.elevation.scale ?? 0.0254)} onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })} />
             </Field>
             <Field label="Depth test">
-              <Switch
-                value={layer.elevation?.depthTest ?? false}
-                onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
-              />
+              <Switch value={layer.elevation?.depthTest ?? false} onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })} />
             </Field>
           </>
         )}
       </CollapsableSection>
 
       <CollapsableSection label="Time" isOpen={false}>
-        <div className={styles.sectionHint}>
-          {layer.timeFilter.mode === 'none'
-            ? 'All rows are shown.'
-            : layer.timeFilter.mode === 'window'
-              ? 'Rows are filtered to the dashboard time range.'
-              : 'Closest row per series key is shown at the playback cursor.'}
-        </div>
         <Field label="Mode">
-          <Combobox
-            options={TIME_FILTER_MODES}
-            value={layer.timeFilter.mode}
-            onChange={(v) => patchTimeFilter({ mode: v.value })}
-          />
+          <Combobox options={TIME_FILTER_MODES} value={layer.timeFilter.mode} onChange={(v) => patchTimeFilter({ mode: v.value as TimeFilterMode })} />
         </Field>
         {layer.timeFilter.mode !== 'none' && (
           <Field label="Time field">
-            <FieldSelect
-              value={layer.timeFilter.timeField ?? ''}
-              onChange={(v) => patchTimeFilter({ timeField: v })}
-              availableFields={availableFields}
-            />
-          </Field>
-        )}
-        {layer.timeFilter.mode === 'window' && (
-          <Field label="Tolerance (ms)" description="Extend the window by this many ms on each side">
-            <Input
-              type="number"
-              value={layer.timeFilter.windowToleranceMs ?? 0}
-              onChange={(e) => patchTimeFilter({ windowToleranceMs: Number(e.currentTarget.value) })}
-            />
+            <FieldSelect value={layer.timeFilter.timeField} onChange={(v) => patchTimeFilter({ timeField: v })} availableFields={availableFields} />
           </Field>
         )}
         {layer.timeFilter.mode === 'asof' && (
           <>
             <Field label="Group-by field">
-              <FieldSelect
-                value={layer.timeFilter.groupByField ?? ''}
-                onChange={(v) => patchTimeFilter({ groupByField: v })}
-                availableFields={availableFields}
-              />
+              <FieldSelect value={layer.timeFilter.groupByField ?? ''} onChange={(v) => patchTimeFilter({ groupByField: v })} availableFields={availableFields} />
             </Field>
             <Field label="Max lag (ms)">
-              <Input
-                type="number"
-                value={layer.timeFilter.maxLagMs ?? 3600000}
-                onChange={(e) => patchTimeFilter({ maxLagMs: Number(e.currentTarget.value) })}
-              />
+              <Input type="number" value={String(layer.timeFilter.maxLagMs ?? 0)} onChange={(e) => patchTimeFilter({ maxLagMs: Number(e.currentTarget.value) })} />
             </Field>
           </>
         )}
+        {layer.timeFilter.mode === 'window' && (
+          <Field label="Window tolerance (ms)">
+            <Input type="number" value={String(layer.timeFilter.windowToleranceMs ?? 0)} onChange={(e) => patchTimeFilter({ windowToleranceMs: Number(e.currentTarget.value) })} />
+          </Field>
+        )}
       </CollapsableSection>
 
-      <CollapsableSection label="Multi-Query Join" isOpen={false}>
-        <div className={styles.sectionHint}>
-          Bring values from another query into this layer, then use them in derived expressions.
-        </div>
-        <div className={styles.inlineActions}>
-          <button
-            type="button"
-            className={styles.inlineAction}
-            onClick={() => patchSecondarySources([...secondarySources, getDefaultSecondarySource(layer.queryRefId, availableRefIds)])}
-          >
-            + Add secondary source
-          </button>
-          <button
-            type="button"
-            className={styles.inlineAction}
-            onClick={() =>
-              patchDerivedFields([
-                ...derivedFields,
-                {
-                  as: `derived${derivedFields.length + 1}`,
-                  expression: '',
-                  type: 'number',
-                },
-              ])
-            }
-          >
-            + Add derived field
-          </button>
-        </div>
-        {secondarySources.map((source, sourceIndex) => {
-          const secondaryFields = getFieldsForRefId(source.queryRefId);
+      <CollapsableSection label="Data" isOpen={false}>
+        <Field label="Derived fields">
+          <Button size="sm" variant="secondary" onClick={() => patchDerivedFields([...(derivedFields ?? []), { as: '', expression: '', type: 'number' }])}>
+            Add derived field
+          </Button>
+        </Field>
+        {derivedFields.map((field, index) => (
+          <div key={`derived-${index}`} className={styles.card}>
+            <Field label="Name">
+              <Input value={field.as} onChange={(e) => patchDerivedFields(derivedFields.map((item, i) => (i === index ? { ...item, as: e.currentTarget.value } : item)))} />
+            </Field>
+            <Field label="Expression">
+              <TextArea value={field.expression} onChange={(e) => patchDerivedFields(derivedFields.map((item, i) => (i === index ? { ...item, expression: e.currentTarget.value } : item)))} />
+            </Field>
+          </div>
+        ))}
+        <Field label="Secondary sources">
+          <Button size="sm" variant="secondary" onClick={() => patchSecondarySources([...(secondarySources ?? []), getDefaultSecondarySource(layer.queryRefId, availableRefIds)])}>
+            Add secondary source
+          </Button>
+        </Field>
+        {secondarySources.map((source, index) => {
+          const sourceFields = getFieldsForRefId(source.queryRefId);
           return (
-            <div key={sourceIndex} className={styles.dataflowBlock}>
-              <Field label="This layer key field">
+            <div key={source.id || index} className={styles.card}>
+              <Field label="Query">
+                <Combobox
+                  options={refIdOptions}
+                  value={source.queryRefId}
+                  onChange={(v) =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) =>
+                        i === index
+                          ? { ...item, id: String(v?.value ?? ''), queryRefId: String(v?.value ?? '') }
+                          : item,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Namespace">
+                <Input value={getSourceNamespace(source)} disabled />
+              </Field>
+              <Field label="Local key field">
                 <FieldSelect
                   value={source.join.localKeyField}
-                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { localKeyField: v })}
+                  onChange={(value) =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) => (i === index ? { ...item, join: { ...item.join, localKeyField: value } } : item)),
+                    )
+                  }
                   availableFields={availableFields}
-                  placeholder="local key"
                 />
               </Field>
-              <Field label="Source query">
-                <Combobox
-                  options={refIdOptions.filter((option) => option.value !== '')}
-                  value={source.queryRefId}
-                  onChange={(v) => updateSecondarySourceQuery(sourceIndex, String(v.value))}
-                />
-              </Field>
-              <Field label="Source query key field">
+              <Field label="Remote key field">
                 <FieldSelect
                   value={source.join.remoteKeyField}
-                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { remoteKeyField: v })}
-                  availableFields={secondaryFields}
-                  placeholder="remote key"
-                />
-              </Field>
-              <Field label="Time field">
-                <FieldSelect
-                  value={source.join.timeField}
-                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { timeField: v })}
-                  availableFields={secondaryFields}
-                  placeholder="time field"
-                />
-              </Field>
-              <Field label="Max lag (ms)">
-                <Input
-                  type="number"
-                  value={source.join.maxLagMs ?? 3600000}
-                  onChange={(e) => updateSecondarySourceJoin(sourceIndex, { maxLagMs: Number(e.currentTarget.value) })}
-                />
-              </Field>
-              <Field label="Fields">
-                <div>
-                  {source.fields.map((field, fieldIndex) => (
-                    <div key={fieldIndex} className={styles.dataflowRow}>
-                      <FieldSelect
-                        value={field.sourceField}
-                        onChange={(v) => updateSecondarySourceField(sourceIndex, fieldIndex, { sourceField: v })}
-                        availableFields={secondaryFields}
-                        placeholder="source field"
-                      />
-                      <button
-                        type="button"
-                        className={styles.inlineRemove}
-                        onClick={() =>
-                          patchSecondarySources(
-                            secondarySources.map((candidate, candidateIndex) =>
-                              candidateIndex === sourceIndex
-                                ? { ...candidate, fields: candidate.fields.filter((_, candidateFieldIndex) => candidateFieldIndex !== fieldIndex) }
-                                : candidate
-                            )
-                          )
-                        }
-                      >
-                        Remove field
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </Field>
-              <div className={styles.inlineActions}>
-                <button
-                  type="button"
-                  className={styles.inlineAction}
-                  onClick={() =>
-                    updateSecondarySource(sourceIndex, {
-                      fields: [...source.fields, { sourceField: '', as: '' }],
-                    })
+                  onChange={(value) =>
+                    patchSecondarySources(
+                      secondarySources.map((item, i) => (i === index ? { ...item, join: { ...item.join, remoteKeyField: value } } : item)),
+                    )
                   }
-                >
-                  + Add source field
-                </button>
-                <button
-                  type="button"
-                  className={styles.inlineRemove}
-                  onClick={() => patchSecondarySources(secondarySources.filter((_, index) => index !== sourceIndex))}
-                >
-                  Remove source
-                </button>
-              </div>
+                  availableFields={sourceFields}
+                />
+              </Field>
             </div>
           );
         })}
-
-        {derivedFields.map((derivedField, index) => (
-          <div key={index} className={styles.dataflowBlock}>
-            <div className={styles.sectionHint}>
-              {derivedField.as || 'derived value'}
-            </div>
-            <Field label="Derived field name">
-              <Input
-                value={derivedField.as}
-                onChange={(e) => updateDerivedField(index, { as: e.currentTarget.value })}
-              />
-            </Field>
-            <Field label="Expression">
-              <Input
-                value={derivedField.expression}
-                onChange={(e) => updateDerivedField(index, { expression: e.currentTarget.value })}
-              />
-            </Field>
-            <div className={styles.tokenHelp}>
-              <span className={styles.tokenLabel}>Insert:</span>
-              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, 'this.')}>
-                this.
-              </button>
-              {secondarySources.map((source) => (
-                <button
-                  key={source.id || source.queryRefId}
-                  type="button"
-                  className={styles.tokenButton}
-                  onClick={() => appendExpressionToken(index, `${getSourceNamespace(source)}.`)}
-                >
-                  {getSourceNamespace(source)}.
-                </button>
-              ))}
-              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, '-')}>
-                -
-              </button>
-              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, '(')}>
-                (
-              </button>
-              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, ')')}>
-                )
-              </button>
-            </div>
-            <div className={styles.sectionHint}>
-              Available namespaces: `this.*`
-              {secondarySources.length > 0 ? ` and ${secondarySources.map((source) => `${getSourceNamespace(source)}.*`).join(', ')}` : ''}.
-            </div>
-            <button
-              type="button"
-              className={styles.inlineRemove}
-              onClick={() => patchDerivedFields(derivedFields.filter((_, fieldIndex) => fieldIndex !== index))}
-            >
-              Remove derived field
-            </button>
-          </div>
-        ))}
       </CollapsableSection>
 
       <CollapsableSection label="Appearance" isOpen={false}>
-        <div className={styles.sectionHint}>
-          {`${Math.round(layer.opacity * 100)}% opacity · visible from zoom ${layer.minZoom ?? 0} to ${layer.maxZoom ?? 24}`}
-        </div>
         <Field label="Opacity">
-          <Slider inputId="layer-opacity" min={0} max={1} step={0.05} value={layer.opacity} onChange={(v) => patch({ opacity: v })} />
+          <Slider value={layer.opacity} min={0} max={1} step={0.01} onChange={(value) => patch({ opacity: Number(value) })} inputId="opacity" />
         </Field>
-        <Field label="Zoom range" description="Visible from the first zoom value through the second. Full range means no zoom limit.">
-          <div className={styles.zoomRangeEditor}>
-            <div className={styles.zoomRangeInputs}>
-              <Input
-                type="number"
-                value={zoomRange[0]}
-                min={DEFAULT_MIN_ZOOM}
-                max={zoomRange[1]}
-                onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, zoomRange[0]), zoomRange[1])}
-              />
-              <span className={styles.zoomRangeSeparator}>to</span>
-              <Input
-                type="number"
-                value={zoomRange[1]}
-                min={zoomRange[0]}
-                max={DEFAULT_MAX_ZOOM}
-                onChange={(e) => patchZoomRange(zoomRange[0], parseZoomInput(e.currentTarget.value, zoomRange[1]))}
-              />
-              <button type="button" className={styles.zoomRangeReset} onClick={() => patchZoomRange(DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM)}>
-                Full range
-              </button>
-            </div>
-            <div className={styles.zoomRangeHint}>
-              Visible from zoom {zoomRange[0]} through {zoomRange[1]}.
-            </div>
+        <Field label="Description">
+          <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
+        </Field>
+        <Field label="Zoom range">
+          <div className={styles.zoomRow}>
+            <Input value={String(layer.minZoom ?? DEFAULT_MIN_ZOOM)} onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, layer.minZoom ?? DEFAULT_MIN_ZOOM), layer.maxZoom ?? DEFAULT_MAX_ZOOM)} />
+            <Input value={String(layer.maxZoom ?? DEFAULT_MAX_ZOOM)} onChange={(e) => patchZoomRange(layer.minZoom ?? DEFAULT_MIN_ZOOM, parseZoomInput(e.currentTarget.value, layer.maxZoom ?? DEFAULT_MAX_ZOOM))} />
           </div>
         </Field>
       </CollapsableSection>
 
       <CollapsableSection label="Color" isOpen={false}>
-        <div className={styles.sectionHint}>
-          {mode === 'fixed'
-            ? 'Every feature uses the same color.'
-            : mode === 'threshold'
-              ? `Thresholds${layer.colorScale?.field ? ` based on ${layer.colorScale.field}` : ''}.`
-              : `${layer.colorScale?.schemeName || 'Gradient'}${layer.colorScale?.field ? ` based on ${layer.colorScale.field}` : ''}.`}
-        </div>
-        <Field label="Color mode">
+        <Field label="Mode">
           <Combobox
             options={COLOR_MODES}
             value={mode}
             onChange={(v) => patch(createColorModePatch(v.value as 'fixed' | 'threshold' | 'gradient', layer, DEFAULT_VS_FILTER_COLOR))}
           />
         </Field>
-
         {mode === 'fixed' && (
-          <Field label="Color" description="Use one color for every feature in this layer.">
-            <div className={styles.colorPickerRow}>
-              <ColorPicker
-                color={rgbaToHex(fixedColor as [number, number, number, number])}
-                onChange={(hex) => patchColor({ type: 'fixed', fixedColor: hexToRgba(hex) })}
-              />
-            </div>
+          <Field label="Fixed color">
+            <ColorPicker color={rgbaToHex(fixedColor)} onChange={(hex) => patchColor({ fixedColor: hexToRgba(hex), type: 'fixed' })} />
           </Field>
         )}
-
         {mode === 'threshold' && (
           <>
-            <Field label="Value field" description="Pick the field that drives threshold coloring.">
-              <FieldSelect
-                value={layer.colorScale?.field ?? ''}
-                onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
-                availableFields={availableFields}
-              />
+            <Field label="Value field">
+              <FieldSelect value={layer.colorScale?.field ?? ''} onChange={(v) => patchColor({ field: v })} availableFields={availableFields} />
             </Field>
-            <Field label="Threshold preview">
-              <div className={styles.thresholdSummary}>
-                {(layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS).length} steps
+            {(layer.colorScale?.steps ?? []).map((step, index) => (
+              <div key={`threshold-${index}`} className={styles.thresholdRow}>
+                <Input value={String(step.value)} onChange={(e) => patchColor({ steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, { value: Number(e.currentTarget.value) }) })} />
+                <ColorPicker
+                  color={rgbaToHex(step.color)}
+                  onChange={(hex) => patchColor({ steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, { color: hexToRgba(hex) }) })}
+                />
+                <Button size="sm" variant="destructive" onClick={() => patchColor({ steps: removeThresholdStep(layer.colorScale?.steps ?? [], index) })}>
+                  Remove
+                </Button>
               </div>
-            </Field>
-            {(layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS).map((step, i) => {
-              const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
-              return (
-                <div key={i} className={styles.thresholdRow}>
-                  <span className={styles.thresholdLabel}>≥</span>
-                  <Input
-                    type="number"
-                    className={styles.thresholdValue}
-                    value={step.value}
-                    onChange={(e) => {
-                      patchColor({ steps: patchThresholdStep(steps, i, { value: Number(e.currentTarget.value) }) });
-                    }}
-                  />
-                  <div className={styles.colorPickerRow}>
-                    <ColorPicker
-                      color={rgbaToHex(step.color)}
-                      onChange={(hex) => {
-                        patchColor({ steps: patchThresholdStep(steps, i, { color: hexToRgba(hex) }) });
-                      }}
-                    />
-                  </div>
-                  <button
-                    className={styles.thresholdRemove}
-                    onClick={() => patchColor({ steps: removeThresholdStep(steps, i) })}
-                    disabled={steps.length <= 1}
-                  >
-                    ×
-                  </button>
-                </div>
-              );
-            })}
-            <button
-              className={styles.thresholdAdd}
-              onClick={() => {
-                const steps = layer.colorScale?.steps ?? DEFAULT_THRESHOLD_STEPS;
-                patchColor({ steps: appendThresholdStep(steps) });
-              }}
-            >
-              + Add threshold
-            </button>
+            ))}
+            <Button size="sm" variant="secondary" onClick={() => patchColor({ steps: appendThresholdStep(layer.colorScale?.steps ?? []) })}>
+              Add threshold
+            </Button>
           </>
         )}
-
         {mode === 'gradient' && (
           <>
-            <Field label="Value field" description="Pick the field that drives the color ramp.">
-              <FieldSelect
-                value={layer.colorScale?.field ?? layer.shader?.valueField ?? ''}
-                onChange={(v) => { patchColor({ field: v }); patchShader({ valueField: v }); }}
-                availableFields={availableFields}
-              />
+            <Field label="Value field">
+              <FieldSelect value={layer.colorScale?.field ?? ''} onChange={(v) => patchColor({ field: v })} availableFields={availableFields} />
             </Field>
-            <Field label="Color scheme">
-              <Combobox
-                options={SCHEME_OPTIONS.filter((o) => o.value !== '')}
-                value={scheme || null}
-                isClearable
-                onChange={(v) => patchColor({ schemeName: v?.value || undefined })}
-                placeholder="Choose scheme…"
-              />
+            <Field label="Scheme">
+              <Combobox options={SCHEME_OPTIONS} value={scheme || ''} onChange={(v) => patchColor({ schemeName: String(v?.value ?? '') })} />
             </Field>
-            {scheme && (
-              <>
-                <Field label="">
-                  <ColorSchemePreview schemeName={scheme} invert={layer.colorScale?.invert} />
-                </Field>
-                <Field label="Invert">
-                  <Switch
-                    value={layer.colorScale?.invert ?? false}
-                    onChange={(e) => patchColor({ invert: e.currentTarget.checked })}
-                  />
-                </Field>
-                <Field label="Scale min">
-                  <Input
-                    type="number"
-                    value={layer.colorScale?.scaleMin}
-                    onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })}
-                  />
-                </Field>
-                <Field label="Scale max">
-                  <Input
-                    type="number"
-                    value={layer.colorScale?.scaleMax}
-                    onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })}
-                  />
-                </Field>
-              </>
-            )}
-            <CollapsableSection label="Advanced color shader" isOpen={false}>
-              {advancedColorOptionSections.map(([section, fields]) => (
-                <CollapsableSection key={section ?? '__advanced'} label={section ?? 'Advanced'} isOpen={false}>
-                  {fields.map(renderOptionField)}
-                </CollapsableSection>
-              ))}
-              <Field
-                label="Additional GLSL declarations"
-                description="Injected after the auto-generated interpolateColor(float v)."
-              >
-                <TextArea
-                  rows={4}
-                  value={layer.shader?.vsDecl ?? ''}
-                  onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })}
-                  placeholder="// e.g. custom normalization or helper functions"
-                />
-              </Field>
-              <Field
-                label="Color filter (vs:DECKGL_FILTER_COLOR)"
-                description="GLSL injected into the vertex shader to set the final color."
-              >
-                <TextArea
-                  rows={5}
-                  value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR}
-                  onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })}
-                />
-              </Field>
-            </CollapsableSection>
+            {scheme && <ColorSchemePreview schemeName={scheme} invert={layer.colorScale?.invert} />}
+            <Field label="Scale min">
+              <Input type="number" value={String(layer.colorScale?.scaleMin ?? 0)} onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })} />
+            </Field>
+            <Field label="Scale max">
+              <Input type="number" value={String(layer.colorScale?.scaleMax ?? 1)} onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })} />
+            </Field>
+            <Field label="Invert">
+              <Switch value={layer.colorScale?.invert ?? false} onChange={(e) => patchColor({ invert: e.currentTarget.checked })} />
+            </Field>
           </>
         )}
+        <CollapsableSection label="Shader" isOpen={false}>
+          <Field label="Enabled">
+            <Switch value={layer.shader?.enabled ?? false} onChange={(e) => patchShader({ enabled: e.currentTarget.checked })} />
+          </Field>
+          <Field label="Value field">
+            <FieldSelect value={layer.shader?.valueField ?? ''} onChange={(v) => patchShader({ valueField: v })} availableFields={availableFields} />
+          </Field>
+          <Field label="Custom vertex declarations">
+            <TextArea value={layer.shader?.vsDecl ?? ''} onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })} />
+          </Field>
+          <Field label="Vertex filter color">
+            <TextArea value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR} onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })} />
+          </Field>
+        </CollapsableSection>
       </CollapsableSection>
 
-      {/* ── Layer-type options (grouped by section) ── */}
-      {currentRenderer && currentRenderer.optionsSchema.length > 0 &&
-        regularOptionSections.map(([section, fields]) => (
-          <CollapsableSection
-            key={section ?? '__default'}
-            label={section ? section : currentRenderer.label}
-            isOpen={false}
-          >
-            {fields.map(renderOptionField)}
+      {extensionDefinitions.map((extension) => {
+        const source = ((layer.extensions ?? {}) as Record<string, Record<string, unknown>>)[extension.id] ?? {};
+        return extension.editorSections.map((editorSection) => (
+          <CollapsableSection key={`${extension.id}-${editorSection.title}`} label={editorSection.title} isOpen={false}>
+            {editorSection.fields.map((field) => renderOptionField(field, source, (key, value) => patchExtensionValue(extension.id, key, value)))}
           </CollapsableSection>
-        ))}
+        ));
+      })}
+
+      {currentRenderer?.editorSections.map((editorSection) => (
+        <CollapsableSection key={editorSection.title} label={editorSection.title} isOpen={false}>
+          {editorSection.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
+        </CollapsableSection>
+      ))}
     </div>
   );
 }
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    container: css({
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(0.5),
-      padding: theme.spacing(1),
-    }),
-    colorPickerRow: css({
-      display: 'flex',
-      alignItems: 'center',
-      height: 32,
-    }),
-    sectionHint: css({
-      fontSize: 12,
-      color: theme.colors.text.secondary,
-      marginBottom: theme.spacing(1),
-      lineHeight: 1.4,
-    }),
-    schemePreview: css({
-      height: 10,
-      borderRadius: theme.shape.radius.default,
-      width: '100%',
-    }),
-    thresholdRow: css({
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(0.75),
-      marginBottom: theme.spacing(0.5),
-    }),
-    thresholdLabel: css({
-      fontSize: 12,
-      color: theme.colors.text.secondary,
-      width: 12,
-      flexShrink: 0,
-    }),
-    thresholdValue: css({
-      width: 72,
-      flexShrink: 0,
-    }),
-    thresholdRemove: css({
-      background: 'none',
-      border: 'none',
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 16,
-      padding: '0 4px',
-      '&:hover': { color: theme.colors.error.text },
-      '&:disabled': { opacity: 0.3, cursor: 'default' },
-    }),
-    thresholdAdd: css({
-      background: 'none',
-      border: `1px solid ${theme.colors.border.medium}`,
-      borderRadius: theme.shape.radius.default,
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 12,
-      padding: '4px 8px',
-      marginTop: theme.spacing(0.5),
-      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
-    }),
-    thresholdSummary: css({
-      fontSize: 12,
-      color: theme.colors.text.secondary,
-    }),
-    dataflowBlock: css({
-      border: `1px solid ${theme.colors.border.medium}`,
-      borderRadius: theme.shape.radius.default,
-      padding: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    }),
-    dataflowRow: css({
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(0.5),
-      marginBottom: theme.spacing(1),
-    }),
-    groupLabel: css({
-      fontSize: 12,
-      fontWeight: 600,
-      color: theme.colors.text.primary,
-      marginTop: theme.spacing(0.5),
-      marginBottom: theme.spacing(0.5),
-    }),
-    inlineActions: css({
-      display: 'flex',
-      gap: theme.spacing(1),
-      flexWrap: 'wrap',
-      marginTop: theme.spacing(0.5),
-      marginBottom: theme.spacing(1),
-    }),
-    inlineAction: css({
-      background: 'none',
-      border: `1px solid ${theme.colors.border.medium}`,
-      borderRadius: theme.shape.radius.default,
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 12,
-      padding: '4px 8px',
-      marginBottom: theme.spacing(1),
-      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
-    }),
-    inlineRemove: css({
-      background: 'none',
-      border: 'none',
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 12,
-      padding: 0,
-      textAlign: 'left',
-      '&:hover': { color: theme.colors.error.text },
-    }),
-    tokenHelp: css({
-      display: 'flex',
-      gap: theme.spacing(0.5),
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      marginBottom: theme.spacing(0.5),
-    }),
-    tokenLabel: css({
-      fontSize: 12,
-      color: theme.colors.text.secondary,
-    }),
-    tokenButton: css({
-      background: 'none',
-      border: `1px solid ${theme.colors.border.medium}`,
-      borderRadius: theme.shape.radius.default,
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 11,
-      padding: '2px 6px',
-      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
-    }),
-    zoomRangeEditor: css({
-      display: 'flex',
-      flexDirection: 'column',
-      gap: theme.spacing(1),
-    }),
-    zoomRangeInputs: css({
-      display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
-      gap: theme.spacing(1),
-      alignItems: 'center',
-    }),
-    zoomRangeSeparator: css({
-      color: theme.colors.text.secondary,
-      textAlign: 'center',
-    }),
-    zoomRangeReset: css({
-      gridColumn: '1 / -1',
-      justifySelf: 'start',
-      background: 'none',
-      border: `1px solid ${theme.colors.border.medium}`,
-      borderRadius: theme.shape.radius.default,
-      color: theme.colors.text.secondary,
-      cursor: 'pointer',
-      fontSize: 12,
-      padding: '4px 8px',
-      '&:hover': { color: theme.colors.text.primary, borderColor: theme.colors.border.strong },
-    }),
-    zoomRangeHint: css({
-      fontSize: 12,
-      color: theme.colors.text.secondary,
-    }),
+    root: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), padding: theme.spacing(1) }),
+    schemePreview: css({ height: 18, borderRadius: theme.shape.radius.default, marginBottom: theme.spacing(1) }),
+    zoomRow: css({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(1) }),
+    thresholdRow: css({ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: theme.spacing(1), alignItems: 'center', marginBottom: theme.spacing(1) }),
+    card: css({ border: `1px solid ${theme.colors.border.weak}`, padding: theme.spacing(1), borderRadius: theme.shape.radius.default, marginBottom: theme.spacing(1) }),
   };
 }

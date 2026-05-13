@@ -1,4 +1,8 @@
 import type { Layer } from '@deck.gl/core';
+jest.mock('../layers/registry', () => ({
+  applyConfiguredLayerExtensions: (layers: unknown[]) => layers,
+  getLayer: jest.fn(),
+}));
 import {
   buildLookupValuesByLayerId,
   buildSecondarySourceValuesByLayerId,
@@ -8,23 +12,30 @@ import {
   type PreparedLayerState,
 } from './panelLayersModel';
 import { buildPacked } from '../utils/deckgl/closestTimeFiltering';
-import type { LayerRenderer } from '../layers/types';
-import type { LayerConfig, MapPanelOptions } from '../types';
+import type { LayerConfig, MapPanelOptions, ScatterplotLayerConfig } from '../types';
 import type { GeoFeature } from '../utils/dataframe/toGeoJsonFeatures';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
-  return {
+  const base: ScatterplotLayerConfig = {
     id: 'layer-1',
     type: 'scatterplot',
     label: 'Layer 1',
     visible: true,
+    settings: {
+      radiusMinPixels: 4,
+      radiusMaxPixels: 20,
+      radiusField: '',
+      radiusScale: 1,
+      stroked: true,
+      showLabels: false,
+      labelField: '',
+    },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: 'time' },
     fieldMappings: [],
     opacity: 1,
-    options: {},
-    ...overrides,
   };
+  return { ...base, ...overrides } as LayerConfig;
 }
 
 function createFeature(properties: Record<string, unknown>, id?: string, index = 0): GeoFeature {
@@ -229,21 +240,21 @@ describe('panelLayersModel', () => {
   });
 
   it('renders prepared layers in order and skips hidden or unknown types', () => {
-    const visibleConfig = createLayerConfig({ id: 'visible', type: 'known' });
-    const hiddenConfig = createLayerConfig({ id: 'hidden', type: 'known', visible: false });
-    const missingConfig = createLayerConfig({ id: 'missing', type: 'missing' });
+    const visibleConfig = createLayerConfig({ id: 'visible', type: 'scatterplot' });
+    const hiddenConfig = createLayerConfig({ id: 'hidden', type: 'scatterplot', visible: false });
+    const missingConfig = createLayerConfig({ id: 'missing', type: 'line' });
     const preparedLayerStates: PreparedLayerState[] = [
       { config: visibleConfig, features: [createFeature({ value: 1 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
       { config: hiddenConfig, features: [createFeature({ value: 2 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
       { config: missingConfig, features: [createFeature({ value: 3 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
     ];
 
-    const renderer: LayerRenderer = {
-      type: 'known',
+    const renderer = {
+      type: 'scatterplot',
       label: 'Known',
-      defaultOptions: {},
-      optionsSchema: [],
-      renderLayers: (ctx) =>
+      createDefaultConfig: () => visibleConfig,
+      editorSections: [],
+      renderLayers: (ctx: any) =>
         [{ id: `deck-${ctx.config.id}` } as Layer],
     };
 
@@ -254,7 +265,7 @@ describe('panelLayersModel', () => {
       fromTimeMs: 1000,
       toTimeMs: 2000,
       selectedKey: 'sensor-1',
-      getRenderer: (type) => (type === 'known' ? renderer : undefined),
+      getRenderer: (type) => (type === 'scatterplot' ? (renderer as any) : undefined),
       applyExtensions: (layers) => layers,
     });
 

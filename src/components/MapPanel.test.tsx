@@ -5,8 +5,6 @@ import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { MapPanel } from './MapPanel';
 
-jest.mock('../layers/_all', () => ({}));
-
 const mockUsePlayback = jest.fn();
 const mockUseGrafanaEventBridge = jest.fn();
 const mockUsePanelFeatures = jest.fn();
@@ -81,11 +79,19 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
         type: 'scatterplot',
         label: 'Layer 1',
         visible: true,
+        settings: {
+          radiusMinPixels: 4,
+          radiusMaxPixels: 20,
+          radiusField: '',
+          radiusScale: 1,
+          stroked: true,
+          showLabels: false,
+          labelField: '',
+        },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', timeField: '' },
         fieldMappings: [],
         opacity: 1,
-        options: {},
       },
     ],
     defaultPlaybackSpeed: 1,

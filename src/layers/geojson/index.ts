@@ -1,45 +1,40 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
+import type { GeoJsonLayerConfig, GeoJsonLayerSettings } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { registerLayer } from '../registry';
-import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createBaseLayerConfig, section } from '../defaults';
+import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps } from '../utils';
 
-interface GeoJsonLayerOptions {
-  pointRadiusMinPixels: number;
-  pointRadiusMaxPixels: number;
-  lineWidthMinPixels: number;
-  filled: boolean;
-  stroked: boolean;
-  extruded: boolean;
-}
+const defaultSettings: GeoJsonLayerSettings = {
+  pointRadiusMinPixels: 4,
+  pointRadiusMaxPixels: 20,
+  lineWidthMinPixels: 1,
+  filled: true,
+  stroked: true,
+  extruded: false,
+};
 
-const schema: LayerOptionField[] = [
-  { key: 'pointRadiusMinPixels', label: 'Point min radius (px)', type: 'number', defaultValue: 4 },
-  { key: 'pointRadiusMaxPixels', label: 'Point max radius (px)', type: 'number', defaultValue: 20 },
-  { key: 'lineWidthMinPixels', label: 'Line width (px)', type: 'number', defaultValue: 1 },
-  { key: 'filled', label: 'Fill', type: 'boolean', defaultValue: true },
-  { key: 'stroked', label: 'Stroke', type: 'boolean', defaultValue: true },
-  { key: 'extruded', label: 'Extruded (3D)', type: 'boolean', defaultValue: false },
-];
-
-const renderer: LayerRenderer<GeoJsonLayerOptions> = {
+export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
   type: 'geojson',
   label: 'GeoJSON',
-  defaultOptions: {
-    pointRadiusMinPixels: 4,
-    pointRadiusMaxPixels: 20,
-    lineWidthMinPixels: 1,
-    filled: true,
-    stroked: true,
-    extruded: false,
+  createDefaultConfig(index) {
+    return createBaseLayerConfig('geojson', 'GeoJSON', index, defaultSettings);
   },
-  optionsSchema: schema,
-
-  renderLayers(context: LayerRenderContext<GeoJsonLayerOptions>) {
-    const { config, features, options } = context;
+  editorSections: [
+    section('GeoJSON', [
+      { key: 'pointRadiusMinPixels', label: 'Point min radius (px)', type: 'number', defaultValue: 4 },
+      { key: 'pointRadiusMaxPixels', label: 'Point max radius (px)', type: 'number', defaultValue: 20 },
+      { key: 'lineWidthMinPixels', label: 'Line width (px)', type: 'number', defaultValue: 1 },
+      { key: 'filled', label: 'Fill', type: 'boolean', defaultValue: true },
+      { key: 'stroked', label: 'Stroke', type: 'boolean', defaultValue: true },
+      { key: 'extruded', label: 'Extruded (3D)', type: 'boolean', defaultValue: false },
+    ]),
+  ],
+  renderLayers(context: LayerRenderContext<GeoJsonLayerConfig>) {
+    const { config, features } = context;
+    const options = config.settings;
     const getColor = buildColorAccessor(config.colorScale);
     const commonProps = createCommonLayerProps(context);
-
     return [
       new GeoJsonLayer({
         ...commonProps,
@@ -60,5 +55,4 @@ const renderer: LayerRenderer<GeoJsonLayerOptions> = {
   },
 };
 
-registerLayer(renderer);
-export default renderer;
+export default geoJsonLayerDefinition;
