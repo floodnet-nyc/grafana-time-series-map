@@ -1,14 +1,14 @@
 import React from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
-import { useMapHashRoute } from '../../hooks/useMapHashRoute';
-import type { MapProviderProps } from './providerTypes';
-import { GoogleDeckOverlay } from './google/GoogleDeckOverlay';
-import { GoogleFitBounds } from './google/GoogleFitBounds';
-import { GoogleGeolocateControl } from './google/GoogleGeolocateControl';
-import { GoogleHashRoute } from './google/GoogleHashRoute';
-import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './google/controlMappings';
-import { getInitialViewport } from './viewState';
-import { getGoogleCameraControlPosition, getGoogleFullscreenControlPosition, resolveMapControlSettings } from './controlSettings';
+import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
+import type { MapProviderProps } from '../providerTypes';
+import { GoogleDeckOverlay } from './GoogleDeckOverlay';
+import { GoogleFitBounds } from './GoogleFitBounds';
+import { GoogleGeolocateControl } from './GoogleGeolocateControl';
+import { GoogleHashRoute } from './GoogleHashRoute';
+import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './controlMappings';
+import { getInitialViewport } from '../viewState';
+import { getGoogleCameraControlPosition, getGoogleFullscreenControlPosition, resolveMapControlSettings } from '../controlSettings';
 
 export default function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.interactions ?? {};
