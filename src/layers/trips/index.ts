@@ -1,9 +1,8 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
-import type { TripsLayerConfig, TripsLayerSettings } from '../types';
+import type { TripsLayerConfig, TripsLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 
 interface TripDatum {
   feature: Feature;

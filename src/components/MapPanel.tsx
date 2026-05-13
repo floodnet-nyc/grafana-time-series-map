@@ -56,10 +56,11 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   );
 
   const onToggleLayerVisibility = useCallback((layerId: string) => {
-    onOptionsChange({
-      ...options,
-      layers: options.layers.map((l) => l.id === layerId ? { ...l, visible: !l.visible } : l),
-    });
+    const idx = options.layers.findIndex((l) => l.id === layerId);
+    if (idx === -1) { return; }
+    const layers = [...options.layers];
+    layers[idx] = { ...layers[idx], visible: !layers[idx].visible };
+    onOptionsChange({ ...options, layers });
   }, [options, onOptionsChange]);
 
   const handlePopupClose = useCallback(() => {

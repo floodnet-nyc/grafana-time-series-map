@@ -1,8 +1,7 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HeatmapLayerConfig, HeatmapLayerSettings } from '../types';
+import type { HeatmapLayerConfig, HeatmapLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   fire: [

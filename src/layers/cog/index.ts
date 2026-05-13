@@ -5,10 +5,9 @@ import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geoti
 import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
 import type { Texture } from '@luma.gl/core';
 import type { ColorScaleConfig } from '../../types';
-import type { CogLayerConfig, CogLayerSettings } from '../types';
+import type { CogLayerConfig, CogLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
   type: 'gradient',

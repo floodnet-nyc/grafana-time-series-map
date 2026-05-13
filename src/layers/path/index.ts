@@ -1,9 +1,8 @@
 import { PathLayer } from '@deck.gl/layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
-import type { PathLayerConfig, PathLayerSettings } from '../types';
+import type { PathLayerConfig, PathLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps, getNumericProperty } from '../utils';
 
 function getPath(f: Feature): number[][] | null {

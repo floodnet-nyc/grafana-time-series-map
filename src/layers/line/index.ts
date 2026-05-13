@@ -1,9 +1,8 @@
 import { LineLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { LineLayerConfig, LineLayerSettings } from '../types';
+import type { LineLayerConfig, LineLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
 const defaultSettings: LineLayerSettings = {
