@@ -44,8 +44,8 @@ export function SensorPopup({ selectedKey, feature, template, onClose }: SensorP
       <button
         style={{
           position: 'absolute',
-          top: 6,
-          right: 10,
+          top: 4,
+          right: 6,
           background: 'none',
           border: 'none',
           color: '#888',
