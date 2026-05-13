@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import type { MapProviderProps } from './providerTypes';
+import type { MapProviderProps } from './types';
 const LazyGoogleMap = lazy(() => import('./google/GoogleMap'));
 const LazyMaplibreMap = lazy(() => import('./maplibre/MaplibreMap'));
 
