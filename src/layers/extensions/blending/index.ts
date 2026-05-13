@@ -1,6 +1,6 @@
 import { DEFAULT_DECK_PARAMETERS } from '../../../utils/deckgl/parameters';
-import type { LayerBlendingConfig } from '../../../types';
-import type { LayerExtensionDefinition } from '..';
+import type { LayerBlendingConfig } from '../types';
+import type { LayerExtensionDefinition } from '../types';
 
 const blendOperations = [
   { label: 'Add', value: 'add' },
@@ -26,22 +26,20 @@ const blendFactors = [
   { label: 'One minus constant', value: 'one-minus-constant' },
 ];
 
-export function createDefaultBlendingConfig(): LayerBlendingConfig {
-  return {
-    enabled: false,
-    blend: DEFAULT_DECK_PARAMETERS.blend,
-    colorOperation: DEFAULT_DECK_PARAMETERS.blendColorOperation,
-    colorSrcFactor: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
-    colorDstFactor: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
-    alphaOperation: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
-    alphaSrcFactor: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
-    alphaDstFactor: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
-  };
-}
-
 export const blendingExtensionDefinition: LayerExtensionDefinition = {
   id: 'blending',
-  createDefaults: createDefaultBlendingConfig,
+  createDefaults(): LayerBlendingConfig {
+    return {
+      enabled: false,
+      blend: DEFAULT_DECK_PARAMETERS.blend,
+      colorOperation: DEFAULT_DECK_PARAMETERS.blendColorOperation,
+      colorSrcFactor: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
+      colorDstFactor: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
+      alphaOperation: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
+      alphaSrcFactor: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
+      alphaDstFactor: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
+    };
+  },
   editorSections: [
     {
       title: 'Blending',
