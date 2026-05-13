@@ -8,7 +8,6 @@ import type {
   LayerDerivedFieldConfig,
   LayerExtensionsConfig,
   LayerSecondarySourceConfig,
-  LookupConfig,
   ShaderConfig,
   TimeFilterConfig,
 } from '../types';
@@ -164,7 +163,6 @@ export interface BaseLayerConfig<TType extends LayerType, TSettings> {
   id: string;
   type: TType;
   settings: TSettings;
-  lookup?: LookupConfig;
   secondarySources?: LayerSecondarySourceConfig[];
   derivedFields?: LayerDerivedFieldConfig[];
   label: string;
@@ -222,7 +220,6 @@ export interface LayerRenderContext<TLayerConfig extends LayerConfig = LayerConf
   fromTimeMs: number;
   toTimeMs: number;
   timeFilterFlags: Uint8Array;
-  lookupValues?: Map<string, Record<string, number>>;
   secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
   derivedValues?: Array<Record<string, unknown>>;
   selectedKey?: string | null;

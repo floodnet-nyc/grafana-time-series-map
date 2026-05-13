@@ -19,7 +19,6 @@ export interface PreparedLayerState {
   config: LayerConfig;
   features: Feature[];
   timeFilterFlags: Uint8Array;
-  lookupValues?: Map<string, Record<string, number>>;
   secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
   derivedValues?: Array<Record<string, unknown>>;
 }
@@ -44,51 +43,6 @@ export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresBy
   return packedByLayerId;
 }
 
-export function buildLookupPackedByLayerId(layerConfigs: LayerConfig[], series: DataFrame[]) {
-  const lookupPackedByLayerId = new Map<string, PackedLookupEntry>();
-
-  for (const layerConfig of layerConfigs) {
-    if (!layerConfig.lookup) {
-      continue;
-    }
-
-    const { queryRefId, keyField, timeField } = layerConfig.lookup;
-    const features = dataFramesToFeatures(series, queryRefId, { type: 'none' }, undefined, []);
-    lookupPackedByLayerId.set(layerConfig.id, {
-      features,
-      packed: buildPacked(features, keyField, timeField),
-    });
-  }
-
-  return lookupPackedByLayerId;
-}
-
-export function buildLookupValuesByLayerId(
-  layerConfigs: LayerConfig[],
-  lookupPackedByLayerId: Map<string, PackedLookupEntry>,
-  cursorTimeMs: number,
-) {
-  const lookupValuesByLayerId = new Map<string, Map<string, Record<string, number>>>();
-
-  for (const layerConfig of layerConfigs) {
-    if (!layerConfig.lookup) {
-      continue;
-    }
-
-    const entry = lookupPackedByLayerId.get(layerConfig.id);
-    if (!entry) {
-      continue;
-    }
-
-    lookupValuesByLayerId.set(
-      layerConfig.id,
-      resolveAsofLookup(entry.features, entry.packed, layerConfig.lookup.fields, cursorTimeMs, layerConfig.lookup.maxLagMs),
-    );
-  }
-
-  return lookupValuesByLayerId;
-}
-
 export function buildSecondarySourcePackedByLayerId(layerConfigs: LayerConfig[], series: DataFrame[]) {
   const packedByLayerId = new Map<string, Map<string, PackedLookupEntry>>();
 
@@ -106,7 +60,7 @@ export function buildSecondarySourcePackedByLayerId(layerConfigs: LayerConfig[],
       }
 
       const features = dataFramesToFeatures(series, secondarySource.queryRefId, { type: 'none' }, undefined, []);
-      packedBySourceId.set(secondarySource.id, {
+      packedBySourceId.set(secondarySource.queryRefId, {
         features,
         packed: buildPacked(features, secondarySource.join.remoteKeyField, secondarySource.join.timeField),
       });
@@ -141,13 +95,13 @@ export function buildSecondarySourceValuesByLayerId(
     const valuesBySourceId = new Map<string, Map<string, Record<string, number>>>();
 
     for (const secondarySource of secondarySources) {
-      const entry = packedBySourceId.get(secondarySource.id);
+      const entry = packedBySourceId.get(secondarySource.queryRefId);
       if (!entry || secondarySource.join.type !== 'keyed-asof') {
         continue;
       }
 
       valuesBySourceId.set(
-        secondarySource.id,
+        secondarySource.queryRefId,
         resolveAsofLookup(
           entry.features,
           entry.packed,
@@ -218,14 +172,12 @@ export function buildPreparedLayerStates(
   layerConfigs: LayerConfig[],
   featuresByLayerId: PanelFeaturesByLayerId,
   flagsByLayerId: Map<string, Uint8Array>,
-  lookupValuesByLayerId: Map<string, Map<string, Record<string, number>>>,
   secondarySourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, number>>>> = new Map(),
 ): PreparedLayerState[] {
   return layerConfigs.map((config) => ({
     config,
     features: featuresByLayerId.get(config.id) ?? [],
     timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(),
-    lookupValues: lookupValuesByLayerId.get(config.id),
     secondarySourceValues: secondarySourceValuesByLayerId.get(config.id),
     derivedValues: buildDerivedValues(
       config,
@@ -278,7 +230,6 @@ export function renderPreparedLayers({
       fromTimeMs,
       toTimeMs,
       timeFilterFlags: preparedLayerState.timeFilterFlags,
-      lookupValues: preparedLayerState.lookupValues,
       secondarySourceValues: preparedLayerState.secondarySourceValues,
       derivedValues: preparedLayerState.derivedValues,
       selectedKey,
@@ -331,8 +282,8 @@ function buildFeatureScope(
 
   for (const secondarySource of getLayerSecondarySources(config)) {
     const localKey = String(feature.properties?.[secondarySource.join.localKeyField] ?? '');
-    const values = secondarySourceValues?.get(secondarySource.id)?.get(localKey) ?? {};
-    sources[secondarySource.id] = values;
+    const values = secondarySourceValues?.get(secondarySource.queryRefId)?.get(localKey) ?? {};
+    sources[secondarySource.queryRefId] = values;
   }
 
   return {
