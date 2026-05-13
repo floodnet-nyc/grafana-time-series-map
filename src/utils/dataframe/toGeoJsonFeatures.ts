@@ -111,9 +111,12 @@ export function dataFramesToFeatures(
   }
 
   if (elevation?.field) {
+    const field = elevation.field;
     all.sort((a, b) => {
-      const az = Number(a.properties?.[elevation.field ?? ''] ?? 0);
-      const bz = Number(b.properties?.[elevation.field ?? ''] ?? 0);
+      const rawA = Number(a.properties?.[field]);
+      const rawB = Number(b.properties?.[field]);
+      const az = Number.isFinite(rawA) ? rawA : 0;
+      const bz = Number.isFinite(rawB) ? rawB : 0;
       return az - bz;
     });
   }

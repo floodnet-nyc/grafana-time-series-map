@@ -183,7 +183,7 @@ function evaluateNode(node: ExpressionNode, scope: ExpressionScope): number {
         case '*':
           return left * right;
         case '/':
-          return right === 0 ? 0 : left / right;
+          return left / right;
       }
     }
   }

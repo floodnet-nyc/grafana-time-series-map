@@ -40,7 +40,7 @@ export function usePlayback({
   const [cursorTimeMs, setCursorTimeMs] = useState(fromTimeMs);
 
   useAnimationFrame({
-    enabled: playing,
+    enabled: playing && fromTimeMs < toTimeMs,
     interval: 80,
     onUpdate: (timestampMs: number) => {
       const raw = getRawCursorTimeMs(
@@ -64,8 +64,9 @@ export function usePlayback({
     },
   });
 
-  // Reset cursor when time range shifts out of bounds
+  // Reset cursor when time range shifts out of bounds (skip zero-duration ranges)
   useEffect(() => {
+    if (fromTimeMs >= toTimeMs) { return; }
     if (cursorTimeMsRef.current < fromTimeMs || cursorTimeMsRef.current > toTimeMs) {
       cursorTimeMsRef.current = fromTimeMs;
       setCursorTimeMs(fromTimeMs);
