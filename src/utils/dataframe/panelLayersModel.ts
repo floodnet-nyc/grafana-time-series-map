@@ -147,7 +147,7 @@ export function buildTimeFilterFlagsByLayerId(
       features.forEach((feature, index) => {
         const raw = feature.properties?.[timeField];
         const timeMs = raw instanceof Date ? raw.getTime() : Number(raw);
-        flags[index] = timeMs >= fromTimeMs - tolerance && timeMs <= toTimeMs + tolerance ? 1 : 0;
+        flags[index] = Number.isFinite(timeMs) && timeMs >= fromTimeMs - tolerance && timeMs <= toTimeMs + tolerance ? 1 : 0;
       });
 
       flagsByLayerId.set(layerConfig.id, flags);
@@ -265,20 +265,28 @@ function buildDerivedValues(
     return undefined;
   }
 
-  const compiledDerivedFields = config.derivedFields.map((derivedField) => ({
-    as: derivedField.as,
-    evaluate: compileExpression(derivedField.expression),
-  }));
+  const compiledDerivedFields = config.derivedFields.flatMap((derivedField) => {
+    try {
+      return [{ as: derivedField.as, evaluate: compileExpression(derivedField.expression) }];
+    } catch (e) {
+      console.warn(`[timeseriesmap] Failed to compile derived field "${derivedField.as}":`, e);
+      return [];
+    }
+  });
 
   return features.map((feature) => {
     const scope = buildFeatureScope(config, feature, secondarySourceValues);
     const derived: Record<string, unknown> = {};
 
     for (const derivedField of compiledDerivedFields) {
-      derived[derivedField.as] = derivedField.evaluate({
-        ...scope,
-        derived,
-      });
+      try {
+        derived[derivedField.as] = derivedField.evaluate({
+          ...scope,
+          derived,
+        });
+      } catch (e) {
+        console.warn(`[timeseriesmap] Error evaluating derived field "${derivedField.as}":`, e);
+      }
     }
 
     return derived;

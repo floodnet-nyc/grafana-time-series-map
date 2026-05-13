@@ -89,7 +89,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   //   setViewportMoved(false);
   // }, [options, onOptionsChange]);
 
-  const mapHeight = options.showTimeControls ? height - CONTROLS_HEIGHT : height;
+  const mapHeight = options.showTimeControls ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
   const fitBounds = useFitBounds(options, featuresByLayerId);
 

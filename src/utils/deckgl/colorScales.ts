@@ -25,14 +25,19 @@ export function buildColorAccessor(
   if (colorScale.type === 'threshold' && colorScale.steps?.length && colorScale.field) {
     const steps = [...colorScale.steps].sort((a, b) => a.value - b.value);
     const field = colorScale.field;
-    return (f: Feature) => thresholdToColor(steps, Number(f.properties?.[field] ?? 0));
+    return (f: Feature) => {
+      const raw = Number(f.properties?.[field]);
+      return thresholdToColor(steps, Number.isFinite(raw) ? raw : 0);
+    };
   }
 
   if (colorScale.schemeName && colorScale.field) {
     const { schemeName, field, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
     const range = scaleMax - scaleMin || 1;
     return (f: Feature) => {
-      const t = Math.max(0, Math.min(1, (Number(f.properties?.[field] ?? 0) - scaleMin) / range));
+      const raw = Number(f.properties?.[field]);
+      const v = Number.isFinite(raw) ? raw : scaleMin;
+      const t = Math.max(0, Math.min(1, (v - scaleMin) / range));
       return interpolateScheme(schemeName, t, invert);
     };
   }
@@ -63,7 +68,7 @@ export function buildPaletteArrays(
   const range = scaleMax - scaleMin || 1;
 
   for (let i = 0; i < n; i++) {
-    const t = i / (n - 1);
+    const t = n <= 1 ? 0 : i / (n - 1);
     let rgba: RGBA;
     if (colorScale.type === 'gradient' && colorScale.schemeName) {
       rgba = interpolateScheme(colorScale.schemeName, t, colorScale.invert ?? false);
@@ -98,6 +103,7 @@ color = interpolateColor(v);`;
  * For type='gradient':  samples the named d3 interpolator into a 16-entry palette array.
  */
 export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, paletteSteps = 16): string {
+  paletteSteps = Math.max(2, paletteSteps);
   // ── Threshold: discrete step function ─────────────────────────────────────
   if (colorScale.type === 'threshold' && colorScale.steps?.length) {
     const sorted = [...colorScale.steps].sort((a, b) => a.value - b.value);
@@ -121,7 +127,7 @@ export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, paletteS
 
   const palette: Array<[number, number, number]> = [];
   for (let i = 0; i < paletteSteps; i++) {
-    const t = i / (paletteSteps - 1);
+    const t = i / (paletteSteps - 1); // paletteSteps >= 2 guaranteed above
     const rgba = schemeName
       ? interpolateScheme(schemeName, t, invert)
       : ([128, 128, 128, 255] as RGBA);
