@@ -1,5 +1,5 @@
 import type { GeometrySource, LayerExtensionsConfig } from '../types';
-import type { BaseLayerConfig, LayerConfig, LayerType, LayerEditorSection, LayerOptionField } from './types';
+import type { BaseLayerConfig, LayerType, LayerEditorSection, LayerOptionField } from './types';
 import {
   createDefaultBlendingConfig,
 } from './extensions/blending';

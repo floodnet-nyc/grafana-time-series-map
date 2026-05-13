@@ -33,11 +33,11 @@ export function dataFrameToFeatures(
     // no geometry needed — fall through to property extraction
   } else if (geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') {
     geomField = resolveField(frame, geometry.field);
-    if (!geomField) return [];
+    if (!geomField) { return []; }
   } else if (geometry.type === 'latlng') {
     latField = resolveField(frame, geometry.latField);
     lngField = resolveField(frame, geometry.lngField);
-    if (!latField || !lngField) return [];
+    if (!latField || !lngField) { return []; }
   }
 
   const resolvedMappings = fieldMappings.map((m) => ({
@@ -74,7 +74,7 @@ export function dataFrameToFeatures(
     }
     // Aliases from fieldMappings override original names.
     for (const { alias, field } of resolvedMappings) {
-      if (field) properties[alias] = resolveValue(field, i);
+      if (field) { properties[alias] = resolveValue(field, i); }
     }
 
     features.push({
