@@ -15,12 +15,13 @@ function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' |
   );
 }
 
-export function DeckGLMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved }: MapProviderProps) {
+export function DeckGLMap({ width, height, options, layers, getTooltip, fitBounds, onViewportChange, interleaved }: MapProviderProps) {
   const providerProps: MapProviderProps = {
     width,
     height,
     options,
     layers,
+    getTooltip,
     fitBounds,
     onViewportChange,
     interleaved,

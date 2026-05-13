@@ -1,6 +1,6 @@
-import type { Layer } from "@deck.gl/core";
-import type { LayerEditorSection, LayerConfig } from "layers/types";
-import { DeckBlendOperation, DeckBlendFactor } from "types";
+import type { Layer } from '@deck.gl/core';
+import type { DeckBlendFactor, DeckBlendOperation } from '../../types';
+import type { LayerConfig, LayerEditorSection } from '../types';
 
 export interface LayerBlendingConfig {
   enabled: boolean;
@@ -30,14 +30,21 @@ export interface LayerCollisionConfig {
   testScale: number;
 }
 
+export interface LayerTooltipConfig {
+  enabled: boolean;
+  template: string;
+}
+
 export interface LayerExtensionsConfig {
   blending?: LayerBlendingConfig;
   material?: LayerMaterialConfig;
   collision?: LayerCollisionConfig;
-}export interface LayerExtensionDefinition {
+  tooltip?: LayerTooltipConfig;
+}
+
+export interface LayerExtensionDefinition {
   id: keyof NonNullable<LayerExtensionsConfig>;
   createDefaults: () => NonNullable<LayerExtensionsConfig>[keyof NonNullable<LayerExtensionsConfig>];
   editorSections: LayerEditorSection[];
   apply: (layer: Layer, config: LayerConfig) => Layer;
 }
-

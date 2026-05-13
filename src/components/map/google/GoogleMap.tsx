@@ -35,7 +35,7 @@ export function getGoogleFullscreenControlPosition(position: MapControlPosition)
 }
 
 
-export default function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
+export default function GoogleMap({ width, height, options, layers, getTooltip, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.interactions ?? {};
   const googleMapOptions = options.googleMapOptions ?? {};
   const controlSettings = resolveMapControlSettings(options);
@@ -90,6 +90,7 @@ export default function GoogleMap({ width, height, options, layers, fitBounds, i
         <GoogleDeckOverlay
           layers={layers}
           interleaved={interleaved}
+          getTooltip={getTooltip ?? undefined}
         />
         <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} />
         <GoogleHashRoute enabled={hashRoutingEnabled} />

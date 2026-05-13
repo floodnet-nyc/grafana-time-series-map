@@ -3,6 +3,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { LayerConfig, ScatterplotLayerConfig } from '../layers/types';
 import { LayerEditor } from './LayerEditor';
 
+jest.mock('./HtmlCodeEditor', () => ({
+  HtmlCodeEditor: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <textarea value={value} onChange={(event) => onChange(event.currentTarget.value)} />
+  ),
+}));
+
 jest.mock('../layers/_all', () => ({
   layerDefinitions: [
     {
@@ -57,7 +63,7 @@ jest.mock('../layers/_all', () => ({
   ],
 }));
 
-jest.mock('../layers/extensions/_all', () => ({
+jest.mock('../layers/extensions', () => ({
   layerExtensionDefinitions: [],
 }));
 

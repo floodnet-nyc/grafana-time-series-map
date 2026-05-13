@@ -21,15 +21,12 @@ jest.mock('../hooks/useGrafanaEventBridge', () => ({
   useGrafanaEventBridge: (...args: unknown[]) => mockUseGrafanaEventBridge(...args),
 }));
 
-jest.mock('../hooks/usePanelFeatures', () => ({
-  usePanelFeatures: (...args: unknown[]) => mockUsePanelFeatures(...args),
-}));
-
 jest.mock('../hooks/useFitBounds', () => ({
   useFitBounds: (...args: unknown[]) => mockUseFitBounds(...args),
 }));
 
 jest.mock('../hooks/usePanelLayers', () => ({
+  usePanelFeatures: (...args: unknown[]) => mockUsePanelFeatures(...args),
   usePanelLayers: (...args: unknown[]) => {
     latestFeatureClick = args[7] as (feature: Feature, info: any) => void;
     return mockUsePanelLayers(...args);
@@ -160,7 +157,7 @@ describe('MapPanel', () => {
     mockUseGrafanaEventBridge.mockImplementation(() => ({ selectedKey, selectKey }));
     mockUsePanelFeatures.mockReturnValue(new Map());
     mockUseFitBounds.mockReturnValue(undefined);
-    mockUsePanelLayers.mockReturnValue([]);
+    mockUsePanelLayers.mockReturnValue({ layers: [], getTooltip: null });
   });
 
   afterEach(() => {
