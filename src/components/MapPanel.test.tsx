@@ -195,7 +195,7 @@ describe('MapPanel', () => {
     expect(latestFeatureClick).toBeDefined();
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { id: 'layer-1' } });
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
     });
     view.rerender(<MapPanel {...props} />);
 
@@ -221,7 +221,7 @@ describe('MapPanel', () => {
     render(<MapPanel {...props} />);
     expect(latestFeatureClick).toBeDefined();
 
-    latestFeatureClick?.(feature, { layer: { id: 'layer-1' } });
+    latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
 
     expect(selectKey).toHaveBeenCalledWith(null);
   });
