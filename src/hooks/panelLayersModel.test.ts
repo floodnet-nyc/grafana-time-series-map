@@ -150,7 +150,7 @@ describe('panelLayersModel', () => {
       derivedFields: [
         {
           as: 'depthDiff',
-          expression: 'sensor.depth - primary.contour_depth_inches',
+          expression: 'sensor.depth - this.contour_depth_inches',
           type: 'number',
         },
       ],

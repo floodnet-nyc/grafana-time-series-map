@@ -337,7 +337,7 @@ function buildFeatureScope(
   }
 
   return {
-    primary,
+    this: primary,
     ...sources,
   };
 }

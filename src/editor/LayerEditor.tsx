@@ -99,14 +99,17 @@ function parseZoomInput(value: string, fallback: number): number {
   return Number.isFinite(parsed) ? clampZoom(parsed) : fallback;
 }
 
+function getSourceNamespace(source: LayerSecondarySourceConfig): string {
+  return source.queryRefId || source.id || 'source';
+}
+
 function getDefaultSecondarySource(
   primaryQueryRefId: string | undefined,
   availableRefIds: string[],
-  index: number,
 ): LayerSecondarySourceConfig {
   const preferredQueryRefId = availableRefIds.find((refId) => refId !== primaryQueryRefId) ?? availableRefIds[0] ?? '';
   return {
-    id: index === 0 ? 'sensor' : `source${index + 1}`,
+    id: preferredQueryRefId,
     queryRefId: preferredQueryRefId,
     join: {
       type: 'keyed-asof',
@@ -261,6 +264,17 @@ export function LayerEditor({
     );
     patchSecondarySources(next);
   };
+  const updateSecondarySourceQuery = (index: number, queryRefId: string) => {
+    const source = secondarySources[index];
+    if (!source) {
+      return;
+    }
+    updateSecondarySource(index, {
+      queryRefId,
+      id: queryRefId || source.id,
+      fields: source.fields.map((field) => ({ ...field, as: field.sourceField || field.as })),
+    });
+  };
 
   const updateSecondarySourceJoin = (
     index: number,
@@ -289,7 +303,13 @@ export function LayerEditor({
           ? {
               ...candidate,
               fields: candidate.fields.map((field, candidateFieldIndex) =>
-                candidateFieldIndex === fieldIndex ? { ...field, ...updates } : field
+                candidateFieldIndex === fieldIndex
+                  ? {
+                      ...field,
+                      ...updates,
+                      ...(updates.sourceField !== undefined ? { as: updates.sourceField } : {}),
+                    }
+                  : field
               ),
             }
           : candidate
@@ -308,32 +328,6 @@ export function LayerEditor({
     const nextExpression = field.expression ? `${field.expression} ${token}` : token;
     updateDerivedField(index, { expression: nextExpression });
   };
-  const applyFloodDepthPreset = () => {
-    patch({
-      secondarySources: [
-        {
-          id: 'sensor',
-          queryRefId: availableRefIds.find((refId) => refId !== layer.queryRefId) ?? availableRefIds[0] ?? '',
-          join: {
-            type: 'keyed-asof',
-            localKeyField: 'deployment_id',
-            remoteKeyField: 'deployment_id',
-            timeField: 'time',
-            maxLagMs: 600000,
-          },
-          fields: [{ sourceField: 'depth_inches', as: 'depth' }],
-        },
-      ],
-      derivedFields: [
-        {
-          as: 'depthDiff',
-          expression: 'sensor.depth - primary.contour_depth_inches',
-          type: 'number',
-        },
-      ],
-    });
-  };
-
   const renderOptionField = (f: LayerOptionField) => {
     const value = getOptionValue(f);
     return (
@@ -553,15 +547,15 @@ export function LayerEditor({
         )}
       </CollapsableSection>
 
-      <CollapsableSection label="Dataflow" isOpen={false}>
+      <CollapsableSection label="Multi-Query Join" isOpen={false}>
         <div className={styles.sectionHint}>
-          Join secondary query results onto this layer and define derived values like deltas or ratios.
+          Bring values from another query into this layer, then use them in derived expressions.
         </div>
         <div className={styles.inlineActions}>
           <button
             type="button"
             className={styles.inlineAction}
-            onClick={() => patchSecondarySources([...secondarySources, getDefaultSecondarySource(layer.queryRefId, availableRefIds, secondarySources.length)])}
+            onClick={() => patchSecondarySources([...secondarySources, getDefaultSecondarySource(layer.queryRefId, availableRefIds)])}
           >
             + Add secondary source
           </button>
@@ -581,55 +575,40 @@ export function LayerEditor({
           >
             + Add derived field
           </button>
-          {layer.type === 'flood-inundation' && (
-            <button type="button" className={styles.inlineAction} onClick={applyFloodDepthPreset}>
-              Use flood depth preset
-            </button>
-          )}
         </div>
         {secondarySources.map((source, sourceIndex) => {
           const secondaryFields = getFieldsForRefId(source.queryRefId);
           return (
             <div key={sourceIndex} className={styles.dataflowBlock}>
-              <Field label="Source ID">
-                <Input
-                  value={source.id}
-                  onChange={(e) => updateSecondarySource(sourceIndex, { id: e.currentTarget.value })}
+              <Field label="This layer key field">
+                <FieldSelect
+                  value={source.join.localKeyField}
+                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { localKeyField: v })}
+                  availableFields={availableFields}
+                  placeholder="local key"
                 />
               </Field>
               <Field label="Source query">
                 <Combobox
                   options={refIdOptions.filter((option) => option.value !== '')}
                   value={source.queryRefId}
-                  onChange={(v) => updateSecondarySource(sourceIndex, { queryRefId: String(v.value) })}
+                  onChange={(v) => updateSecondarySourceQuery(sourceIndex, String(v.value))}
                 />
               </Field>
-              <Field label="Join type">
-                <Combobox
-                  options={[{ label: 'Keyed ASOF', value: 'keyed-asof' }]}
-                  value={source.join.type}
-                  onChange={() => undefined}
-                />
-              </Field>
-              <Field label="Local key field">
-                <FieldSelect
-                  value={source.join.localKeyField}
-                  onChange={(v) => updateSecondarySourceJoin(sourceIndex, { localKeyField: v })}
-                  availableFields={availableFields}
-                />
-              </Field>
-              <Field label="Remote key field">
+              <Field label="Source query key field">
                 <FieldSelect
                   value={source.join.remoteKeyField}
                   onChange={(v) => updateSecondarySourceJoin(sourceIndex, { remoteKeyField: v })}
                   availableFields={secondaryFields}
+                  placeholder="remote key"
                 />
               </Field>
-              <Field label="Remote time field">
+              <Field label="Time field">
                 <FieldSelect
                   value={source.join.timeField}
                   onChange={(v) => updateSecondarySourceJoin(sourceIndex, { timeField: v })}
                   availableFields={secondaryFields}
+                  placeholder="time field"
                 />
               </Field>
               <Field label="Max lag (ms)">
@@ -639,38 +618,35 @@ export function LayerEditor({
                   onChange={(e) => updateSecondarySourceJoin(sourceIndex, { maxLagMs: Number(e.currentTarget.value) })}
                 />
               </Field>
-              {source.fields.map((field, fieldIndex) => (
-                <div key={fieldIndex} className={styles.dataflowRow}>
-                  <Field label="Source field">
-                    <FieldSelect
-                      value={field.sourceField}
-                      onChange={(v) => updateSecondarySourceField(sourceIndex, fieldIndex, { sourceField: v })}
-                      availableFields={secondaryFields}
-                    />
-                  </Field>
-                  <Field label="Expose as">
-                    <Input
-                      value={field.as}
-                      onChange={(e) => updateSecondarySourceField(sourceIndex, fieldIndex, { as: e.currentTarget.value })}
-                    />
-                  </Field>
-                  <button
-                    type="button"
-                    className={styles.inlineRemove}
-                    onClick={() =>
-                      patchSecondarySources(
-                        secondarySources.map((candidate, candidateIndex) =>
-                          candidateIndex === sourceIndex
-                            ? { ...candidate, fields: candidate.fields.filter((_, candidateFieldIndex) => candidateFieldIndex !== fieldIndex) }
-                            : candidate
-                        )
-                      )
-                    }
-                  >
-                    Remove field
-                  </button>
+              <Field label="Fields">
+                <div>
+                  {source.fields.map((field, fieldIndex) => (
+                    <div key={fieldIndex} className={styles.dataflowRow}>
+                      <FieldSelect
+                        value={field.sourceField}
+                        onChange={(v) => updateSecondarySourceField(sourceIndex, fieldIndex, { sourceField: v })}
+                        availableFields={secondaryFields}
+                        placeholder="source field"
+                      />
+                      <button
+                        type="button"
+                        className={styles.inlineRemove}
+                        onClick={() =>
+                          patchSecondarySources(
+                            secondarySources.map((candidate, candidateIndex) =>
+                              candidateIndex === sourceIndex
+                                ? { ...candidate, fields: candidate.fields.filter((_, candidateFieldIndex) => candidateFieldIndex !== fieldIndex) }
+                                : candidate
+                            )
+                          )
+                        }
+                      >
+                        Remove field
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </Field>
               <div className={styles.inlineActions}>
                 <button
                   type="button"
@@ -697,6 +673,9 @@ export function LayerEditor({
 
         {derivedFields.map((derivedField, index) => (
           <div key={index} className={styles.dataflowBlock}>
+            <div className={styles.sectionHint}>
+              {derivedField.as || 'derived value'}
+            </div>
             <Field label="Derived field name">
               <Input
                 value={derivedField.as}
@@ -711,17 +690,17 @@ export function LayerEditor({
             </Field>
             <div className={styles.tokenHelp}>
               <span className={styles.tokenLabel}>Insert:</span>
-              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, 'primary.')}>
-                primary.
+              <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, 'this.')}>
+                this.
               </button>
               {secondarySources.map((source) => (
                 <button
-                  key={source.id}
+                  key={source.id || source.queryRefId}
                   type="button"
                   className={styles.tokenButton}
-                  onClick={() => appendExpressionToken(index, `${source.id}.`)}
+                  onClick={() => appendExpressionToken(index, `${getSourceNamespace(source)}.`)}
                 >
-                  {source.id}.
+                  {getSourceNamespace(source)}.
                 </button>
               ))}
               <button type="button" className={styles.tokenButton} onClick={() => appendExpressionToken(index, '-')}>
@@ -735,8 +714,8 @@ export function LayerEditor({
               </button>
             </div>
             <div className={styles.sectionHint}>
-              Available namespaces: `primary.*`
-              {secondarySources.length > 0 ? ` and ${secondarySources.map((source) => `${source.id}.*`).join(', ')}` : ''}.
+              Available namespaces: `this.*`
+              {secondarySources.length > 0 ? ` and ${secondarySources.map((source) => `${getSourceNamespace(source)}.*`).join(', ')}` : ''}.
             </div>
             <button
               type="button"
@@ -1037,6 +1016,13 @@ function getStyles(theme: GrafanaTheme2) {
       flexDirection: 'column',
       gap: theme.spacing(0.5),
       marginBottom: theme.spacing(1),
+    }),
+    groupLabel: css({
+      fontSize: 12,
+      fontWeight: 600,
+      color: theme.colors.text.primary,
+      marginTop: theme.spacing(0.5),
+      marginBottom: theme.spacing(0.5),
     }),
     inlineActions: css({
       display: 'flex',

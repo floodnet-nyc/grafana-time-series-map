@@ -211,6 +211,10 @@ function currentLayer(): LayerConfig {
   return JSON.parse(screen.getByTestId('layer-state').textContent ?? '{}') as LayerConfig;
 }
 
+function allText(): string {
+  return document.body.textContent ?? '';
+}
+
 function colorModeSelect(): HTMLSelectElement {
   return screen.getAllByRole('combobox')[5] as HTMLSelectElement;
 }
@@ -319,7 +323,7 @@ describe('LayerEditor interactions', () => {
     expect(currentLayer()).toMatchObject({
       secondarySources: [
         {
-          id: 'sensor',
+          id: 'A',
           queryRefId: 'A',
           join: {
             type: 'keyed-asof',
@@ -341,40 +345,11 @@ describe('LayerEditor interactions', () => {
     });
   });
 
-  it('uses the flood depth preset for flood inundation layers', () => {
-    render(
-      <Harness
-        initialLayer={createLayer({
-          type: 'flood-inundation',
-          queryRefId: 'F',
-        })}
-      />
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Use flood depth preset' }));
-
-    expect(currentLayer()).toMatchObject({
-      secondarySources: [
-        {
-          id: 'sensor',
-          queryRefId: 'A',
-          join: {
-            type: 'keyed-asof',
-            localKeyField: 'deployment_id',
-            remoteKeyField: 'deployment_id',
-            timeField: 'time',
-            maxLagMs: 600000,
-          },
-          fields: [{ sourceField: 'depth_inches', as: 'depth' }],
-        },
-      ],
-      derivedFields: [
-        {
-          as: 'depthDiff',
-          expression: 'sensor.depth - primary.contour_depth_inches',
-          type: 'number',
-        },
-      ],
-    });
+  it('shows this.* as the primary expression namespace', () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: '+ Add derived field' }));
+    expect(allText()).toContain('this.*');
+    expect(allText()).toContain('Available namespaces: `this.*`');
   });
+
 });
