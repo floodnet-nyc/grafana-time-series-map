@@ -39,6 +39,16 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   // External DataSelectEvent (from time series panel) sets selectedKey without a feature.
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
+  const popupFeature =
+    selectedFeature && selectedKey
+      ? options.layers.some((layer) => {
+          const keyField = layer.selectionKeyField;
+          return keyField ? String(selectedFeature.properties?.[keyField] ?? '') === selectedKey : false;
+        })
+        ? selectedFeature
+        : null
+      : null;
+
   const onFeatureClick = useCallback(
     (feature: Feature, info: any) => {
       // const layerConfig = options.layers.find((l) => l.id === info?.layer?.id);
@@ -136,7 +146,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
       {selectedKey && (
         <SensorPopup
           selectedKey={selectedKey}
-          feature={selectedFeature}
+          feature={popupFeature}
           template={options.popupTemplate ?? DEFAULT_POPUP_TEMPLATE}
           onClose={handlePopupClose}
         />
