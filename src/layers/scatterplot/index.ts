@@ -78,7 +78,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     }
 
     const getColor = buildColorAccessor(config.colorScale);
-    const selectionState = createSelectionState(selectedKey, config.timeFilter?.groupByField);
+    const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
     const commonProps = createCommonLayerProps(context);
     const lineAccessors = createLineSelectionAccessors(selectionState);
 

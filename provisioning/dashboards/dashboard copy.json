@@ -249,7 +249,7 @@
         "loopPlayback": true,
         "defaultPlaybackSpeed": 1800000,
         "showLegend": true,
-        "syncSubscribe": false,
+        "syncSubscribe": true,
         "googleMapOptions": {
           "colorScheme": "DARK"
         },
