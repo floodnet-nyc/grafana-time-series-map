@@ -6,12 +6,12 @@ import Map, {
   ScaleControl,
   type MapRef,
 } from 'react-map-gl/maplibre';
-import { useMapHashRoute } from '../../hooks/useMapHashRoute';
-import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from './viewState';
-import type { MapProviderProps } from './providerTypes';
-import { MaplibreDeckOverlay } from './maplibre/MaplibreDeckOverlay';
-import { getMaplibreStyleUrl } from './maplibre/style';
-import { getMaplibreControlPosition, resolveMapControlSettings } from './controlSettings';
+import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
+import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from '../viewState';
+import type { MapProviderProps } from '../providerTypes';
+import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
+import { getMaplibreStyleUrl } from './style';
+import { getMaplibreControlPosition, resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 

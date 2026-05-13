@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import type { MapProviderProps } from './providerTypes';
-const LazyGoogleMap = lazy(() => import('./GoogleMap'));
-const LazyMaplibreMap = lazy(() => import('./MaplibreMap'));
+const LazyGoogleMap = lazy(() => import('./google/GoogleMap'));
+const LazyMaplibreMap = lazy(() => import('./maplibre/MaplibreMap'));
 
 function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' | 'height'>) {
   return (
