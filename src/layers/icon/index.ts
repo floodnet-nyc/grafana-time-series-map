@@ -1,9 +1,8 @@
 import { IconLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { IconLayerConfig, IconLayerSettings } from '../types';
+import type { IconLayerConfig, IconLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 
 const BUILT_IN_ICONS = [

@@ -1,8 +1,7 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
-import type { GeoJsonLayerConfig, GeoJsonLayerSettings } from '../types';
+import type { GeoJsonLayerConfig, GeoJsonLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps } from '../utils';
 
 const defaultSettings: GeoJsonLayerSettings = {

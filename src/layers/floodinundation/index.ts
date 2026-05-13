@@ -1,11 +1,10 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { ColorScaleConfig } from '../../types';
-import type { FloodInundationLayerConfig, FloodInundationLayerSettings } from '../types';
+import type { FloodInundationLayerConfig, FloodInundationLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const VS_FILTER_COLOR = `
 float depthDiff = instanceDepthDiff;

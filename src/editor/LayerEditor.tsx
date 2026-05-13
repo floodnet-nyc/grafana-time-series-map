@@ -20,10 +20,11 @@ import type {
   GeometrySource,
   LayerDerivedFieldConfig,
   LayerSecondarySourceConfig,
+  ShaderConfig,
+  TimeFilterConfig,
   TimeFilterMode,
 } from '../types';
-import type { LayerConfig } from '../layers/types';
-import type { LayerOptionField } from '../layers/types';
+import type { LayerConfig, LayerOptionField } from '../layers/types';
 import { layerExtensionDefinitions } from '../layers/extensions';
 import { layerDefinitions } from '../layers/_all';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
@@ -170,10 +171,10 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
   const settingsRecord = layer.settings as unknown as Record<string, unknown>;
 
   const patch = useCallback((updates: Partial<LayerConfig>) => onChange({ ...(layer as any), ...updates } as LayerConfig), [layer, onChange]);
-  const patchTimeFilter = useCallback((updates: Partial<typeof layer.timeFilter>) => patch({ timeFilter: { ...layer.timeFilter, ...updates } }), [layer.timeFilter, patch]);
+  const patchTimeFilter = useCallback((updates: Partial<TimeFilterConfig>) => patch({ timeFilter: { ...layer.timeFilter, ...updates } }), [layer.timeFilter, patch]);
   const patchSecondarySources = useCallback((value: LayerSecondarySourceConfig[]) => patch({ secondarySources: value }), [patch]);
   const patchDerivedFields = useCallback((value: LayerDerivedFieldConfig[]) => patch({ derivedFields: value }), [patch]);
-  const patchShader = useCallback((updates: Partial<NonNullable<typeof layer.shader>>) => patch({ shader: createPatchedShader(layer.shader, updates) }), [layer.shader, patch]);
+  const patchShader = useCallback((updates: Partial<ShaderConfig>) => patch({ shader: createPatchedShader(layer.shader, updates) }), [layer.shader, patch]);
   const patchColor = useCallback((updates: Partial<NonNullable<ColorScaleConfig>>) => patch({ colorScale: createPatchedColorScale(layer.colorScale, updates) }), [layer.colorScale, patch]);
 
   const patchElevation = useCallback(
@@ -192,7 +193,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
 
   const patchSettings = useCallback(
     (key: string, value: unknown) =>
-      patch({ settings: { ...(layer.settings as any), [key]: value } as typeof layer.settings } as Partial<LayerConfig>),
+      patch({ settings: { ...(layer.settings as any), [key]: value } } as Partial<LayerConfig>),
     [layer.settings, patch],
   );
 

@@ -1,11 +1,10 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import type { ScatterplotLayerConfig, ScatterplotLayerSettings } from '../types';
+import type { ScatterplotLayerConfig, ScatterplotLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
 import {
   createCommonLayerProps,

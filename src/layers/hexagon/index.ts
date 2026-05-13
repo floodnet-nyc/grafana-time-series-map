@@ -1,8 +1,7 @@
 import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HexagonLayerConfig, HexagonLayerSettings } from '../types';
+import type { HexagonLayerConfig, HexagonLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
 import { createBaseLayerConfig, section } from '../defaults';
-import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   teal: [[214, 245, 238], [153, 225, 210], [87, 197, 174], [24, 161, 135], [0, 124, 101], [0, 84, 70]],
