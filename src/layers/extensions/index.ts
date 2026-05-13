@@ -10,15 +10,10 @@ export const layerExtensionDefinitions = [
 ];
 
 export function createDefaultLayerExtensions(): LayerExtensionsConfig {
-  // return {
-  //   blending: createDefaultBlendingConfig(),
-  //   collision: createDefaultCollisionConfig(),
-  //   material: createDefaultMaterialConfig(),
-  // };
   return layerExtensionDefinitions.reduce((acc, { id, createDefaults }) => {
-    acc[id] = createDefaults() as NonNullable<LayerExtensionsConfig>[keyof NonNullable<LayerExtensionsConfig>];
+    acc[id] = createDefaults();
     return acc;
-  }, {} as LayerExtensionsConfig);
+  }, {} as Record<string, unknown>) as LayerExtensionsConfig;
 }
 
 
