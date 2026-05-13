@@ -8,7 +8,32 @@ import { GoogleGeolocateControl } from './GoogleGeolocateControl';
 import { GoogleHashRoute } from './GoogleHashRoute';
 import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './controlMappings';
 import { getInitialViewport } from '../viewState';
-import { getGoogleCameraControlPosition, getGoogleFullscreenControlPosition, resolveMapControlSettings } from '../controlSettings';
+import { resolveMapControlSettings } from '../controlSettings';
+import type { GoogleControlPosition, MapControlPosition } from 'types';
+
+
+export function toGooglePosition(position: MapControlPosition, fallback: GoogleControlPosition): GoogleControlPosition {
+  switch (position) {
+    case 'top-left':
+      return 'TOP_LEFT';
+    case 'bottom-left':
+      return 'BOTTOM_LEFT';
+    case 'bottom-right':
+      return 'BOTTOM_RIGHT';
+    case 'top-right':
+    default:
+      return fallback;
+  }
+}
+
+export function getGoogleCameraControlPosition(position: MapControlPosition) {
+  return toGooglePosition(position, 'INLINE_START_BLOCK_END');
+}
+
+export function getGoogleFullscreenControlPosition(position: MapControlPosition) {
+  return toGooglePosition(position, 'TOP_RIGHT');
+}
+
 
 export default function GoogleMap({ width, height, options, layers, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.interactions ?? {};

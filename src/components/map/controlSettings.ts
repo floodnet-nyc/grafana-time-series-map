@@ -36,20 +36,6 @@ export interface ResolvedMapControlSettings {
   };
 }
 
-function toGooglePosition(position: MapControlPosition, fallback: GoogleControlPosition): GoogleControlPosition {
-  switch (position) {
-    case 'top-left':
-      return 'TOP_LEFT';
-    case 'bottom-left':
-      return 'BOTTOM_LEFT';
-    case 'bottom-right':
-      return 'BOTTOM_RIGHT';
-    case 'top-right':
-    default:
-      return fallback;
-  }
-}
-
 function resolveSharedSettings(
   controls: MapPanelOptions['controls'],
   controlSettings: SharedMapControlSettings | undefined,
@@ -90,14 +76,4 @@ export function resolveMapControlSettings(options: MapPanelOptions): ResolvedMap
   return resolveSharedSettings(options.controls, options.controlSettings, options.googleMapOptions);
 }
 
-export function getMaplibreControlPosition(position: MapControlPosition): 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' {
-  return position;
-}
 
-export function getGoogleCameraControlPosition(position: MapControlPosition) {
-  return toGooglePosition(position, 'INLINE_START_BLOCK_END');
-}
-
-export function getGoogleFullscreenControlPosition(position: MapControlPosition) {
-  return toGooglePosition(position, 'TOP_RIGHT');
-}
