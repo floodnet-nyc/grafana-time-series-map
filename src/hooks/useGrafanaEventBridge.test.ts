@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { DataHoverClearEvent, DataHoverEvent, type EventBus } from '@grafana/data';
+import { DataHoverClearEvent, DataHoverEvent, DataSelectEvent, type EventBus } from '@grafana/data';
 import { useGrafanaEventBridge } from './useGrafanaEventBridge';
 import type { UsePlaybackResult } from './usePlayback';
 
@@ -96,6 +96,38 @@ describe('useGrafanaEventBridge', () => {
       hoverSubscriber?.handler(new DataHoverEvent({ point: { time: 2500 } }));
     });
     expect(playback.seekTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates selectedKey from incoming hover payload data', () => {
+    const { eventBus, subscribers } = createEventBus();
+    const { result } = renderHook(() =>
+      useGrafanaEventBridge(eventBus, createPlayback(), 1000, 2000, true, true)
+    );
+
+    const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
+    expect(hoverSubscriber).toBeDefined();
+
+    act(() => {
+      hoverSubscriber?.handler(new DataHoverEvent({ data: { name: 'sensor-2' } } as any));
+    });
+
+    expect(result.current.selectedKey).toBe('sensor-2');
+  });
+
+  it('updates selectedKey from incoming DataSelectEvent', () => {
+    const { eventBus, subscribers } = createEventBus();
+    const { result } = renderHook(() =>
+      useGrafanaEventBridge(eventBus, createPlayback(), 1000, 2000, true, true)
+    );
+
+    const selectSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataSelectEvent);
+    expect(selectSubscriber).toBeDefined();
+
+    act(() => {
+      selectSubscriber?.handler(new DataSelectEvent({ data: { name: 'sensor-3' } } as any));
+    });
+
+    expect(result.current.selectedKey).toBe('sensor-3');
   });
 
   it('publishes hover events while playing and suppresses immediate echo', () => {

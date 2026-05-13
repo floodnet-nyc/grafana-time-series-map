@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type EventBus, DataHoverEvent, DataHoverClearEvent } from '@grafana/data';
+import { type EventBus, DataHoverEvent, DataHoverClearEvent, DataSelectEvent } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
 import { useLatestRef } from './util/useLatestRef';
 
@@ -9,6 +9,20 @@ const ECHO_COOLDOWN_MS = 500;
 export interface UseGrafanaEventBridgeResult {
   selectedKey: string | null;
   selectKey: (key: string | null) => void;
+}
+
+function getSelectedKeyFromEventPayload(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const candidate = payload as {
+    data?: { name?: unknown };
+    dataId?: unknown;
+  };
+
+  const key = candidate.data?.name ?? candidate.dataId;
+  return typeof key === 'string' && key.length > 0 ? key : null;
 }
 
 /**
@@ -66,6 +80,7 @@ export function useGrafanaEventBridge(
 
     const hoverSub = eventBus.subscribe(DataHoverEvent, (event) => {
       const { point } = event.payload ?? {};
+      console.log('HOVER', event);
 
       // Cursor sync: always seek if point.time is in range
       const timeMs = point?.time;
@@ -77,22 +92,25 @@ export function useGrafanaEventBridge(
         }
       }
 
+      const incomingSelectionKey = getSelectedKeyFromEventPayload(event.payload);
+      if (incomingSelectionKey !== null) {
+        setSelectedKey(incomingSelectionKey);
+      }
     });
 
     const clearSub = eventBus.subscribe(DataHoverClearEvent, () => {
       setSelectedKey(null);
     });
 
-    // // DataSelectEvent (click) may also carry data — handle the same way as hover
-    // const selectSub = eventBus.subscribe(DataSelectEvent, (event) => {
-    //   const key = event.payload?.data?.name ?? event.payload?.dataId ?? null;
-    //   setSelectedKey(key ?? null);
-    // });
+    const selectSub = eventBus.subscribe(DataSelectEvent, (event) => {
+      console.log('SELECT', event)
+      setSelectedKey(getSelectedKeyFromEventPayload(event.payload));
+    });
 
     return () => {
       hoverSub.unsubscribe();
       clearSub.unsubscribe();
-      // selectSub.unsubscribe();
+      selectSub.unsubscribe();
     };
   }, [eventBus, playbackRef, rangeRef, subscribe]);
 

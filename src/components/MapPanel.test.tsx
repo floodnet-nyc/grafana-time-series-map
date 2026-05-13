@@ -225,4 +225,27 @@ describe('MapPanel', () => {
 
     expect(selectKey).toHaveBeenCalledWith(null);
   });
+
+  it('does not reuse stale popup feature details for an external selection change', () => {
+    const props = createProps();
+    const feature: Feature = {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [0, 0] },
+      properties: { deployment_id: 'sensor-1', depth_inches: 3.2 },
+    };
+
+    const view = render(<MapPanel {...props} />);
+
+    act(() => {
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+    });
+    view.rerender(<MapPanel {...props} />);
+    expect(screen.getByText('sensor-1')).toBeInTheDocument();
+
+    selectedKey = 'sensor-2';
+    view.rerender(<MapPanel {...props} />);
+
+    expect(screen.getByText('sensor-2')).toBeInTheDocument();
+    expect(screen.queryByText('sensor-1')).not.toBeInTheDocument();
+  });
 });
