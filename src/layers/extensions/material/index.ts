@@ -1,5 +1,5 @@
-import { registerLayerExtension } from '../registry';
-import { numericOption } from '../utils';
+import type { LayerMaterialConfig } from '../../../types';
+import type { LayerExtensionDefinition } from '../registry';
 
 const DEFAULT_SPECULAR_COLOR: [number, number, number, number] = [51, 51, 51, 255];
 
@@ -18,39 +18,44 @@ function supportsMaterial(layer: unknown): boolean {
   return 'material' in props || 'material' in defaultProps;
 }
 
-registerLayerExtension({
+export function createDefaultMaterialConfig(): LayerMaterialConfig {
+  return {
+    enabled: false,
+    ambient: 0.64,
+    diffuse: 0.6,
+    shininess: 32,
+    specularColor: DEFAULT_SPECULAR_COLOR,
+  };
+}
+
+export const materialExtensionDefinition: LayerExtensionDefinition = {
   id: 'material',
-  defaultOptions: {
-    materialEnabled: false,
-    materialAmbient: 0.64,
-    materialDiffuse: 0.6,
-    materialShininess: 32,
-    materialSpecularColor: DEFAULT_SPECULAR_COLOR,
-  },
-  optionsSchema: [
-    { key: 'materialEnabled', label: 'Override material', type: 'boolean', defaultValue: false, section: 'Material' },
-    { key: 'materialAmbient', label: 'Ambient', type: 'number', defaultValue: 0.64, min: 0, max: 1, step: 0.01, section: 'Material' },
-    { key: 'materialDiffuse', label: 'Diffuse', type: 'number', defaultValue: 0.6, min: 0, max: 1, step: 0.01, section: 'Material' },
-    { key: 'materialShininess', label: 'Shininess', type: 'number', defaultValue: 32, section: 'Material' },
-    { key: 'materialSpecularColor', label: 'Specular color', type: 'color', defaultValue: DEFAULT_SPECULAR_COLOR, section: 'Material' },
+  createDefaults: createDefaultMaterialConfig,
+  editorSections: [
+    {
+      title: 'Material',
+      fields: [
+        { key: 'enabled', label: 'Override material', type: 'boolean', defaultValue: false },
+        { key: 'ambient', label: 'Ambient', type: 'number', defaultValue: 0.64, min: 0, max: 1, step: 0.01 },
+        { key: 'diffuse', label: 'Diffuse', type: 'number', defaultValue: 0.6, min: 0, max: 1, step: 0.01 },
+        { key: 'shininess', label: 'Shininess', type: 'number', defaultValue: 32 },
+        { key: 'specularColor', label: 'Specular color', type: 'color', defaultValue: DEFAULT_SPECULAR_COLOR },
+      ],
+    },
   ],
   apply(layer, config) {
-    const options = config.options ?? {};
-    if (!Boolean(options.materialEnabled)) {
-      return layer;
-    }
-
-    if (!supportsMaterial(layer)) {
+    const options = config.extensions?.material;
+    if (!options?.enabled || !supportsMaterial(layer)) {
       return layer;
     }
 
     return layer.clone({
       material: {
-        ambient: numericOption(options, 'materialAmbient', 0.64),
-        diffuse: numericOption(options, 'materialDiffuse', 0.6),
-        shininess: numericOption(options, 'materialShininess', 32),
-        specularColor: rgbColor(options.materialSpecularColor),
+        ambient: options.ambient,
+        diffuse: options.diffuse,
+        shininess: options.shininess,
+        specularColor: rgbColor(options.specularColor),
       },
     } as any);
   },
-});
+};

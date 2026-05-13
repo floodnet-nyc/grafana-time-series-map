@@ -5,22 +5,10 @@ import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/dat
 import type { LayerConfig } from '../types';
 import { LayerEditor } from './LayerEditor';
 import { getAllLayerTypes } from '../layers/registry';
-import '../layers/_all'; // ensure registry is populated
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
   const renderer = getAllLayerTypes().find((r) => r.type === type);
-  return {
-    id: `layer-${Date.now()}-${index}`,
-    type,
-    label: renderer ? `${renderer.label} ${index + 1}` : `Layer ${index + 1}`,
-    visible: true,
-    queryRefId: undefined,
-    geometry: { type: 'wkb', field: 'geom' },
-    timeFilter: { mode: 'none', timeField: 'time' },
-    fieldMappings: [],
-    opacity: 1,
-    options: {},
-  };
+  return renderer ? renderer.createDefaultConfig(index) : getAllLayerTypes()[0].createDefaultConfig(index);
 }
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}

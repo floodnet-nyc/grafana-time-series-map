@@ -1,19 +1,27 @@
-import type { LayerConfig } from '../../types';
+import type { LayerConfig, ScatterplotLayerConfig } from '../../types';
 import { formatValue, getLegendEntries, hasLegendContent, sortThresholdSteps, swatchHex } from './helpers';
 
 function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
-  return {
+  const base: ScatterplotLayerConfig = {
     id: 'layer-1',
     type: 'scatterplot',
     label: 'Layer 1',
     visible: true,
+    settings: {
+      radiusMinPixels: 4,
+      radiusMaxPixels: 20,
+      radiusField: '',
+      radiusScale: 1,
+      stroked: true,
+      showLabels: false,
+      labelField: '',
+    },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '' },
     fieldMappings: [],
     opacity: 1,
-    options: {},
-    ...overrides,
   };
+  return { ...base, ...overrides } as LayerConfig;
 }
 
 describe('map legend helpers', () => {

@@ -1,5 +1,6 @@
 import { DEFAULT_DECK_PARAMETERS } from '../../../utils/deckgl/parameters';
-import { registerLayerExtension } from '../registry';
+import type { LayerBlendingConfig } from '../../../types';
+import type { LayerExtensionDefinition } from '../registry';
 
 const blendOperations = [
   { label: 'Add', value: 'add' },
@@ -25,73 +26,76 @@ const blendFactors = [
   { label: 'One minus constant', value: 'one-minus-constant' },
 ];
 
-registerLayerExtension({
+export function createDefaultBlendingConfig(): LayerBlendingConfig {
+  return {
+    enabled: false,
+    blend: DEFAULT_DECK_PARAMETERS.blend,
+    colorOperation: DEFAULT_DECK_PARAMETERS.blendColorOperation,
+    colorSrcFactor: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
+    colorDstFactor: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
+    alphaOperation: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
+    alphaSrcFactor: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
+    alphaDstFactor: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
+  };
+}
+
+export const blendingExtensionDefinition: LayerExtensionDefinition = {
   id: 'blending',
-  defaultOptions: {
-    layerBlendEnabled: false,
-    layerBlend: DEFAULT_DECK_PARAMETERS.blend,
-    layerBlendColorOperation: DEFAULT_DECK_PARAMETERS.blendColorOperation,
-    layerBlendColorSrcFactor: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
-    layerBlendColorDstFactor: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
-    layerBlendAlphaOperation: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
-    layerBlendAlphaSrcFactor: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
-    layerBlendAlphaDstFactor: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
-  },
-  optionsSchema: [
-    { key: 'layerBlendEnabled', label: 'Override blending', type: 'boolean', defaultValue: false, section: 'Blending' },
-    { key: 'layerBlend', label: 'Blend', type: 'boolean', defaultValue: DEFAULT_DECK_PARAMETERS.blend, section: 'Blending' },
+  createDefaults: createDefaultBlendingConfig,
+  editorSections: [
     {
-      key: 'layerBlendColorOperation',
-      label: 'Color blend operation',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
-      selectOptions: blendOperations,
-      section: 'Blending',
-    },
-    {
-      key: 'layerBlendColorSrcFactor',
-      label: 'Color source factor',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
-      selectOptions: blendFactors,
-      section: 'Blending',
-    },
-    {
-      key: 'layerBlendColorDstFactor',
-      label: 'Color destination factor',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
-      selectOptions: blendFactors,
-      section: 'Blending',
-    },
-    {
-      key: 'layerBlendAlphaOperation',
-      label: 'Alpha blend operation',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
-      selectOptions: blendOperations,
-      section: 'Blending',
-    },
-    {
-      key: 'layerBlendAlphaSrcFactor',
-      label: 'Alpha source factor',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
-      selectOptions: blendFactors,
-      section: 'Blending',
-    },
-    {
-      key: 'layerBlendAlphaDstFactor',
-      label: 'Alpha destination factor',
-      type: 'select',
-      defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
-      selectOptions: blendFactors,
-      section: 'Blending',
+      title: 'Blending',
+      fields: [
+        { key: 'enabled', label: 'Override blending', type: 'boolean', defaultValue: false },
+        { key: 'blend', label: 'Blend', type: 'boolean', defaultValue: DEFAULT_DECK_PARAMETERS.blend },
+        {
+          key: 'colorOperation',
+          label: 'Color blend operation',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
+          selectOptions: blendOperations,
+        },
+        {
+          key: 'colorSrcFactor',
+          label: 'Color source factor',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
+          selectOptions: blendFactors,
+        },
+        {
+          key: 'colorDstFactor',
+          label: 'Color destination factor',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
+          selectOptions: blendFactors,
+        },
+        {
+          key: 'alphaOperation',
+          label: 'Alpha blend operation',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
+          selectOptions: blendOperations,
+        },
+        {
+          key: 'alphaSrcFactor',
+          label: 'Alpha source factor',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
+          selectOptions: blendFactors,
+        },
+        {
+          key: 'alphaDstFactor',
+          label: 'Alpha destination factor',
+          type: 'select',
+          defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
+          selectOptions: blendFactors,
+        },
+      ],
     },
   ],
   apply(layer, config) {
-    const options = config.options ?? {};
-    if (!Boolean(options.layerBlendEnabled)) {
+    const options = config.extensions?.blending;
+    if (!options?.enabled) {
       return layer;
     }
     const props = (layer as any).props ?? {};
@@ -99,14 +103,14 @@ registerLayerExtension({
     return layer.clone({
       parameters: {
         ...(props.parameters ?? {}),
-        blend: Boolean(options.layerBlend ?? DEFAULT_DECK_PARAMETERS.blend),
-        blendColorOperation: options.layerBlendColorOperation ?? DEFAULT_DECK_PARAMETERS.blendColorOperation,
-        blendColorSrcFactor: options.layerBlendColorSrcFactor ?? DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
-        blendColorDstFactor: options.layerBlendColorDstFactor ?? DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
-        blendAlphaOperation: options.layerBlendAlphaOperation ?? DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
-        blendAlphaSrcFactor: options.layerBlendAlphaSrcFactor ?? DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
-        blendAlphaDstFactor: options.layerBlendAlphaDstFactor ?? DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
+        blend: options.blend,
+        blendColorOperation: options.colorOperation,
+        blendColorSrcFactor: options.colorSrcFactor,
+        blendColorDstFactor: options.colorDstFactor,
+        blendAlphaOperation: options.alphaOperation,
+        blendAlphaSrcFactor: options.alphaSrcFactor,
+        blendAlphaDstFactor: options.alphaDstFactor,
       },
     } as any);
   },
-});
+};

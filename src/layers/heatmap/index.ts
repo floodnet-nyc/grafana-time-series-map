@@ -1,32 +1,8 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import { registerLayer } from '../registry';
-import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
-
-interface HeatmapLayerOptions {
-  radiusPixels: number;
-  intensity: number;
-  threshold: number;
-  weightField: string;
-  colorRange: string;
-}
-
-const schema: LayerOptionField[] = [
-  { key: 'radiusPixels', label: 'Radius (px)', type: 'number', defaultValue: 30 },
-  { key: 'intensity', label: 'Intensity', type: 'number', defaultValue: 1 },
-  { key: 'threshold', label: 'Threshold (0-1)', type: 'number', defaultValue: 0.03 },
-  { key: 'weightField', label: 'Weight field', type: 'fieldPicker', defaultValue: '' },
-  {
-    key: 'colorRange',
-    label: 'Color preset',
-    type: 'select',
-    defaultValue: 'fire',
-    selectOptions: [
-      { label: 'Fire (blue→red)', value: 'fire' },
-      { label: 'Green→Yellow→Red', value: 'gyr' },
-    ],
-  },
-];
+import type { HeatmapLayerConfig, HeatmapLayerSettings } from '../../types';
+import { createBaseLayerConfig, section } from '../defaults';
+import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   fire: [
@@ -48,23 +24,42 @@ const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   ],
 };
 
-const renderer: LayerRenderer<HeatmapLayerOptions> = {
+const defaultSettings: HeatmapLayerSettings = {
+  radiusPixels: 30,
+  intensity: 1,
+  threshold: 0.03,
+  weightField: '',
+  colorRange: 'fire',
+};
+
+export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
   type: 'heatmap',
   label: 'Heatmap',
-  defaultOptions: {
-    radiusPixels: 30,
-    intensity: 1,
-    threshold: 0.03,
-    weightField: '',
-    colorRange: 'fire',
+  createDefaultConfig(index) {
+    return createBaseLayerConfig('heatmap', 'Heatmap', index, defaultSettings);
   },
-  optionsSchema: schema,
-
-  renderLayers({ config, features, fromTimeMs, toTimeMs, options }: LayerRenderContext<HeatmapLayerOptions>) {
+  editorSections: [
+    section('Heatmap', [
+      { key: 'radiusPixels', label: 'Radius (px)', type: 'number', defaultValue: 30 },
+      { key: 'intensity', label: 'Intensity', type: 'number', defaultValue: 1 },
+      { key: 'threshold', label: 'Threshold (0-1)', type: 'number', defaultValue: 0.03 },
+      { key: 'weightField', label: 'Weight field', type: 'fieldPicker', defaultValue: '' },
+      {
+        key: 'colorRange',
+        label: 'Color preset',
+        type: 'select',
+        defaultValue: 'fire',
+        selectOptions: [
+          { label: 'Fire (blue→red)', value: 'fire' },
+          { label: 'Green→Yellow→Red', value: 'gyr' },
+        ],
+      },
+    ]),
+  ],
+  renderLayers({ config, features, fromTimeMs, toTimeMs }: LayerRenderContext<HeatmapLayerConfig>) {
+    const options = config.settings;
     const { mode, timeField } = config.timeFilter;
     const pointFeatures = features.filter((f) => f.geometry?.type === 'Point');
-
-    // Heatmap doesn't support DataFilterExtension; subset by time window when mode=window
     const filtered =
       mode === 'window' && timeField
         ? pointFeatures.filter((f) => {
@@ -73,12 +68,9 @@ const renderer: LayerRenderer<HeatmapLayerOptions> = {
             return t >= fromTimeMs && t <= toTimeMs;
           })
         : pointFeatures;
-
-    const colorRange = (COLOR_RANGES[options.colorRange] || COLOR_RANGES.fire).map((c) => [
-      ...c,
-      255,
-    ]) as Array<[number, number, number, number]>;
-
+    const colorRange = (COLOR_RANGES[options.colorRange] || COLOR_RANGES.fire).map((c) => [...c, 255]) as Array<
+      [number, number, number, number]
+    >;
     return [
       new HeatmapLayer({
         id: `heatmap/${config.id}`,
@@ -90,13 +82,10 @@ const renderer: LayerRenderer<HeatmapLayerOptions> = {
         threshold: options.threshold,
         colorRange,
         getPosition: (f: Feature) => (f.geometry as Point).coordinates as [number, number],
-        getWeight: options.weightField
-          ? (f: Feature) => Number(f.properties?.[options.weightField] ?? 1)
-          : 1,
+        getWeight: options.weightField ? (f: Feature) => Number(f.properties?.[options.weightField] ?? 1) : 1,
       }),
     ];
   },
 };
 
-registerLayer(renderer);
-export default renderer;
+export default heatmapLayerDefinition;

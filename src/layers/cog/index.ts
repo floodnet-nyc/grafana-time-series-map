@@ -1,25 +1,13 @@
 import { texture as geotiffTexture, type GetTileDataOptions, type MinimalTileData } from '@developmentseed/deck.gl-geotiff';
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
-import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu-modules';
-import type { Texture } from '@luma.gl/core';
+import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
-
-import { registerLayer } from '../registry';
-import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import type { Texture } from '@luma.gl/core';
+import type { CogLayerConfig, CogLayerSettings, ColorScaleConfig } from '../../types';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
-import type { ColorScaleConfig } from '../../types';
-
-interface CogLayerOptions {
-  urlField: string;
-  timestampField: string;
-  colorMaxValue: number;
-  maxRequests: number;
-  maxFrameRate: number;
-}
-
-// import type { GeoTIFF, Overview } from "@developmentseed/geotiff";
-
+import { createBaseLayerConfig, section } from '../defaults';
+import type { LayerDefinition, LayerRenderContext } from '../types';
 
 const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
   type: 'gradient',
@@ -28,8 +16,14 @@ const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
   scaleMax: 1,
 };
 
-// The raw 16-bit pixel value is decoded, normalized by colorMaxValue with gamma correction,
-// then passed to the common interpolateColor(t) function generated from the layer's colorScale.
+const mainThreadPool = new DecoderPool();
+const renderTileCache = new Map<string, (data: CogTileData) => RenderTileResult>();
+
+type CogTileData = MinimalTileData & {
+  texture: Texture;
+  byteLength: number;
+};
+
 function buildFsFilterColor(): string {
   return `\
 float raw = color.r * 65535.0;
@@ -41,35 +35,6 @@ float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
 color = vec4(c.rgb, alpha);`;
 }
 
-// export const DEFAULT_VS_FILTER_COLOR = `\
-// float v = instanceValue;
-// float raw = color.r * 65535.0;
-// if (raw <= 0.0) { discard; }
-// t = pow(t, 0.72);
-// color = interpolateColor(color.r * 65535.0);`;
-
-const schema: LayerOptionField[] = [
-  { key: 'urlField', label: 'URL field', type: 'fieldPicker', defaultValue: 'url' },
-  { key: 'timestampField', label: 'Timestamp field', type: 'fieldPicker', defaultValue: 'time' },
-  // { key: 'colorMaxValue', label: 'Color max value', type: 'number', defaultValue: 200 },
-  { key: 'maxRequests', label: 'Max concurrent tile requests', type: 'number', defaultValue: 4 },
-  { key: 'maxFrameRate', label: 'Max frame rate (fps)', type: 'number', defaultValue: 0 },
-];
-
-type CogTileData = MinimalTileData & {
-  texture: Texture;
-  byteLength: number;
-};
-
-
-// No-worker pool: avoids defaultDecoderPool() which spawns a Web Worker that
-// fails in webpack AMD bundles (Grafana plugins). Falls back to main-thread decoding.
-const mainThreadPool = new DecoderPool();
-
-// Cache keyed by colorMaxValue + scheme identity so COGLayer.clearState() isn't triggered
-// by a new function reference on every render.
-const renderTileCache = new Map<string, (data: CogTileData) => RenderTileResult>();
-
 function cogCacheKey(colorMaxValue: number, cs: ColorScaleConfig): string {
   if (cs.type === 'threshold') {
     return `${colorMaxValue}:threshold:${JSON.stringify(cs.steps ?? [])}`;
@@ -77,10 +42,7 @@ function cogCacheKey(colorMaxValue: number, cs: ColorScaleConfig): string {
   return `${colorMaxValue}:${cs.schemeName ?? ''}:${cs.invert ?? false}:${cs.scaleMin ?? 0}:${cs.scaleMax ?? 1}`;
 }
 
-function getStableRenderTile(
-  colorMaxValue: number,
-  colorScale: ColorScaleConfig,
-): (data: CogTileData) => RenderTileResult {
+function getStableRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (data: CogTileData) => RenderTileResult {
   const key = cogCacheKey(colorMaxValue, colorScale);
   if (!renderTileCache.has(key)) {
     const colorDecl = buildInterpolateColorGlsl(colorScale);
@@ -99,45 +61,6 @@ function getStableRenderTile(
   return renderTileCache.get(key)!;
 }
 
-// const PRECIP_MAX_RAW_VALUE = 200;
-// const PrecipColorRamp = {
-//   name: "precip-color-ramp",
-//   inject: {
-//     "fs:DECKGL_FILTER_COLOR": `
-// float rawValue = color.r * 65535.0;
-// if (rawValue <= 0.0) {
-//   discard;
-// }
-
-// float t = clamp(rawValue / ${PRECIP_MAX_RAW_VALUE.toFixed(1)}, 0.0, 1.0);
-// t = pow(t, 0.72);
-
-// vec3 c0 = vec3(0.56, 0.77, 0.98);
-// vec3 c1 = vec3(0.10, 0.95, 0.86);
-// vec3 c2 = vec3(0.32, 0.98, 0.45);
-// vec3 c3 = vec3(0.96, 0.84, 0.20);
-// vec3 c4 = vec3(0.98, 0.38, 0.76);
-// vec3 c5 = vec3(0.98, 0.75, 0.93);
-
-// vec3 ramp;
-// if (t < 0.18) {
-//   ramp = mix(c0, c1, smoothstep(0.0, 0.18, t));
-// } else if (t < 0.42) {
-//   ramp = mix(c1, c2, smoothstep(0.18, 0.42, t));
-// } else if (t < 0.68) {
-//   ramp = mix(c2, c3, smoothstep(0.42, 0.68, t));
-// } else if (t < 0.88) {
-//   ramp = mix(c3, c4, smoothstep(0.68, 0.88, t));
-// } else {
-//   ramp = mix(c4, c5, smoothstep(0.88, 1.0, t));
-// }
-
-// float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
-// color = vec4(ramp, alpha);
-// `,
-//   },
-// } as const;
-
 function padRowsToAlignment(
   data: Uint8Array | Uint16Array,
   width: number,
@@ -146,53 +69,50 @@ function padRowsToAlignment(
 ): { data: Uint8Array | Uint16Array; bytesPerRow: number } {
   const rowBytes = width * bytesPerPixel;
   const bytesPerRow = Math.ceil(rowBytes / 4) * 4;
-  if (bytesPerRow === rowBytes) { return { data, bytesPerRow }; }
-
+  if (bytesPerRow === rowBytes) {
+    return { data, bytesPerRow };
+  }
   const src = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   const dstBytes = new Uint8Array(bytesPerRow * height);
   for (let row = 0; row < height; row += 1) {
     dstBytes.set(src.subarray(row * rowBytes, (row + 1) * rowBytes), row * bytesPerRow);
   }
-
   return {
     data: data instanceof Uint16Array ? new Uint16Array(dstBytes.buffer) : dstBytes,
     bytesPerRow,
   };
 }
 
-async function getTileData(
-  image: GeoTIFF | Overview,
-  { device, x, y, signal, pool }: GetTileDataOptions,
-) {
+async function getTileData(image: GeoTIFF | Overview, { device, x, y, signal, pool }: GetTileDataOptions) {
   const tile = await image.fetchTile(x, y, { boundless: false, pool, signal });
   const { array } = tile;
   const { width, height, mask } = array;
-
-  if (array.layout === "band-separate") {
-    throw new Error("Band-separate precipitation tiles are not supported.");
+  if (array.layout === 'band-separate') {
+    throw new Error('Band-separate precipitation tiles are not supported.');
   }
-
   const data = array.data as Uint8Array | Uint16Array;
   const format = geotiffTexture.inferTextureFormat(1, new Uint16Array([16]), [1]);
   const texture = device.createTexture({
-    format, width, height,
-    sampler: { minFilter: "linear", magFilter: "linear" },
+    format,
+    width,
+    height,
+    sampler: { minFilter: 'linear', magFilter: 'linear' },
   });
   const upload = padRowsToAlignment(data, width, height, 2);
   texture.writeData(upload.data, { bytesPerRow: upload.bytesPerRow });
   let maskTexture: Texture | undefined;
   let byteLength = data.byteLength;
-
   if (mask) {
     maskTexture = device.createTexture({
-      format: "r8unorm", width, height,
-      sampler: { minFilter: "nearest", magFilter: "nearest" },
+      format: 'r8unorm',
+      width,
+      height,
+      sampler: { minFilter: 'nearest', magFilter: 'nearest' },
     });
     const maskUpload = padRowsToAlignment(mask, width, height, 1);
     maskTexture.writeData(maskUpload.data, { bytesPerRow: maskUpload.bytesPerRow });
     byteLength += mask.byteLength;
   }
-
   return {
     texture,
     mask: maskTexture,
@@ -202,40 +122,43 @@ async function getTileData(
   };
 }
 
+const defaultSettings: CogLayerSettings = {
+  urlField: 'url',
+  timestampField: 'time',
+  colorMaxValue: 200,
+  maxRequests: 4,
+  maxFrameRate: 0,
+};
 
-const renderer: LayerRenderer<CogLayerOptions> = {
+export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
   type: 'cog',
   label: 'COG Raster',
-  defaultOptions: {
-    urlField: 'url',
-    timestampField: 'time',
-    colorMaxValue: 200,
-    maxRequests: 4,
-    maxFrameRate: 0,
+  createDefaultConfig(index) {
+    return createBaseLayerConfig('cog', 'COG Raster', index, defaultSettings, { type: 'none' });
   },
-  optionsSchema: schema,
-
-  renderLayers({ config, features, cursorTimeMs, options }: LayerRenderContext<CogLayerOptions>) {
-    const urlField = options.urlField;
-    const timestampField = options.timestampField;
-    const colorMaxValue = options.colorMaxValue;
+  editorSections: [
+    section('COG Raster', [
+      { key: 'urlField', label: 'URL field', type: 'fieldPicker', defaultValue: 'url' },
+      { key: 'timestampField', label: 'Timestamp field', type: 'fieldPicker', defaultValue: 'time' },
+      { key: 'maxRequests', label: 'Max concurrent tile requests', type: 'number', defaultValue: 4 },
+      { key: 'maxFrameRate', label: 'Max frame rate (fps)', type: 'number', defaultValue: 0 },
+    ]),
+  ],
+  renderLayers({ config, features, cursorTimeMs }: LayerRenderContext<CogLayerConfig>) {
+    const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
-    const maxRequests = options.maxRequests;
-    const maxFrameRate = options.maxFrameRate;
-
     const frames: TimeCOGFrame[] = [];
     for (const f of features) {
-      const url = f.properties?.[urlField];
-      const ts = f.properties?.[timestampField];
+      const url = f.properties?.[options.urlField];
+      const ts = f.properties?.[options.timestampField];
       if (url && ts != null) {
         frames.push({ time: Number(ts), url: String(url) });
       }
     }
-
-    if (frames.length === 0) {return [];}
-
-    const renderTile = getStableRenderTile(colorMaxValue, colorScale);
-
+    if (frames.length === 0) {
+      return [];
+    }
+    const renderTile = getStableRenderTile(options.colorMaxValue, colorScale);
     return [
       new TimeCOGLayer({
         id: `cog/${config.id}`,
@@ -245,8 +168,8 @@ const renderer: LayerRenderer<CogLayerOptions> = {
         renderTile,
         opacity: config.opacity,
         visible: config.visible,
-        maxRequests,
-        maxFrameRate,
+        maxRequests: options.maxRequests,
+        maxFrameRate: options.maxFrameRate,
         pool: mainThreadPool,
       }),
     ];
@@ -271,6 +194,4 @@ const formatUtcTimestamp = (timeMs: number) => {
 export const buildPrecipCogUrl = (timeMs: number) =>
   `https://devpgbackup.blob.core.windows.net/floodnetmiscdata/data/nyc/mrms/cogs/MRMS_MRMS_PrecipRate_00.00_${formatUtcTimestamp(timeMs)}.tif`;
 
-
-registerLayer(renderer);
-export default renderer;
+export default cogLayerDefinition;

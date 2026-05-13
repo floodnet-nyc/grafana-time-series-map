@@ -1,4 +1,3 @@
-import '../layers/_all'; // side-effect: registers all built-in layer types
 import React, { useCallback, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';

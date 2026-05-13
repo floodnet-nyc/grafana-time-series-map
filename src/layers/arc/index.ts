@@ -1,43 +1,39 @@
 import { ArcLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
+import type { ArcLayerConfig, ArcLayerSettings } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { registerLayer } from '../registry';
-import type { LayerRenderContext, LayerRenderer, LayerOptionField } from '../types';
+import { createBaseLayerConfig, section } from '../defaults';
+import type { LayerDefinition, LayerRenderContext } from '../types';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
-interface ArcLayerOptions {
-  widthMinPixels: number;
-  greatCircle: boolean;
-  srcLngField: string;
-  srcLatField: string;
-  tgtLngField: string;
-  tgtLatField: string;
-}
+const defaultSettings: ArcLayerSettings = {
+  widthMinPixels: 2,
+  greatCircle: false,
+  srcLngField: '',
+  srcLatField: '',
+  tgtLngField: '',
+  tgtLatField: '',
+};
 
-const schema: LayerOptionField[] = [
-  { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
-  { key: 'greatCircle', label: 'Great circle', type: 'boolean', defaultValue: false },
-  { key: 'srcLngField', label: 'Source longitude field', type: 'fieldPicker', defaultValue: '' },
-  { key: 'srcLatField', label: 'Source latitude field', type: 'fieldPicker', defaultValue: '' },
-  { key: 'tgtLngField', label: 'Target longitude field', type: 'fieldPicker', defaultValue: '' },
-  { key: 'tgtLatField', label: 'Target latitude field', type: 'fieldPicker', defaultValue: '' },
-];
-
-const renderer: LayerRenderer<ArcLayerOptions> = {
+export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
   type: 'arc',
   label: 'Arc (origin→destination)',
-  defaultOptions: {
-    widthMinPixels: 2,
-    greatCircle: false,
-    srcLngField: '',
-    srcLatField: '',
-    tgtLngField: '',
-    tgtLatField: '',
+  createDefaultConfig(index) {
+    return createBaseLayerConfig('arc', 'Arc', index, defaultSettings);
   },
-  optionsSchema: schema,
-
-  renderLayers(context: LayerRenderContext<ArcLayerOptions>) {
-    const { config, features, options } = context;
+  editorSections: [
+    section('Arc', [
+      { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
+      { key: 'greatCircle', label: 'Great circle', type: 'boolean', defaultValue: false },
+      { key: 'srcLngField', label: 'Source longitude field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'srcLatField', label: 'Source latitude field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'tgtLngField', label: 'Target longitude field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'tgtLatField', label: 'Target latitude field', type: 'fieldPicker', defaultValue: '' },
+    ]),
+  ],
+  renderLayers(context: LayerRenderContext<ArcLayerConfig>) {
+    const { config, features } = context;
+    const options = config.settings;
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
     const commonProps = createCommonLayerProps(context);
     const getSourcePosition = createSourcePositionAccessor(options);
@@ -59,5 +55,4 @@ const renderer: LayerRenderer<ArcLayerOptions> = {
   },
 };
 
-registerLayer(renderer);
-export default renderer;
+export default arcLayerDefinition;

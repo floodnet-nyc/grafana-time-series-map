@@ -1,53 +1,60 @@
+import type { LayerCollisionConfig } from '../../../types';
 import CollisionFilterExtension from '../../../utils/deckgl/collisionFilterFix';
-import { appendDeckExtension, registerLayerExtension } from '../registry';
-import { getFeatureProperties, numericOption } from '../utils';
+import { getFeatureProperties } from '../utils';
+import { appendDeckExtension, type LayerExtensionDefinition } from '../registry';
 
-registerLayerExtension({
+export function createDefaultCollisionConfig(): LayerCollisionConfig {
+  return {
+    enabled: false,
+    group: '',
+    priorityField: '',
+    priorityScale: 1,
+    priorityOffset: 0,
+    testScale: 1,
+  };
+}
+
+export const collisionExtensionDefinition: LayerExtensionDefinition = {
   id: 'collision',
-  defaultOptions: {
-    collisionEnabled: false,
-    collisionGroup: '',
-    collisionPriorityField: '',
-    collisionPriorityScale: 1,
-    collisionPriorityOffset: 0,
-    collisionTestScale: 1,
-  },
-  optionsSchema: [
-    { key: 'collisionEnabled', label: 'Enable collision filtering', type: 'boolean', defaultValue: false, section: 'Collision' },
-    { key: 'collisionGroup', label: 'Collision group', type: 'string', defaultValue: '', section: 'Collision' },
-    { key: 'collisionPriorityField', label: 'Priority field', type: 'fieldPicker', defaultValue: '', section: 'Collision' },
-    { key: 'collisionPriorityScale', label: 'Priority scale', type: 'number', defaultValue: 1, section: 'Collision' },
-    { key: 'collisionPriorityOffset', label: 'Priority offset', type: 'number', defaultValue: 0, section: 'Collision' },
-    { key: 'collisionTestScale', label: 'Collision test scale', type: 'number', defaultValue: 1, section: 'Collision' },
+  createDefaults: createDefaultCollisionConfig,
+  editorSections: [
+    {
+      title: 'Collision',
+      fields: [
+        { key: 'enabled', label: 'Enable collision filtering', type: 'boolean', defaultValue: false },
+        { key: 'group', label: 'Collision group', type: 'string', defaultValue: '' },
+        { key: 'priorityField', label: 'Priority field', type: 'fieldPicker', defaultValue: '' },
+        { key: 'priorityScale', label: 'Priority scale', type: 'number', defaultValue: 1 },
+        { key: 'priorityOffset', label: 'Priority offset', type: 'number', defaultValue: 0 },
+        { key: 'testScale', label: 'Collision test scale', type: 'number', defaultValue: 1 },
+      ],
+    },
   ],
   apply(layer, config) {
-    const options = config.options ?? {};
-    if (!Boolean(options.collisionEnabled)) {
+    const options = config.extensions?.collision;
+    if (!options?.enabled) {
       return layer;
     }
 
-    const priorityField = String(options.collisionPriorityField ?? '');
-    const priorityScale = numericOption(options, 'collisionPriorityScale', 1);
-    const priorityOffset = numericOption(options, 'collisionPriorityOffset', 0);
-    const testScale = numericOption(options, 'collisionTestScale', 1);
     const props = (layer as any).props ?? {};
 
     return layer.clone({
       collisionEnabled: true,
-      collisionGroup: String(options.collisionGroup || config.id),
+      collisionGroup: String(options.group || config.id),
       collisionTestProps: {
         ...(props.collisionTestProps ?? {}),
-        radiusScale: testScale,
-        sizeScale: testScale,
+        radiusScale: options.testScale,
+        sizeScale: options.testScale,
       },
-      getCollisionPriority: priorityField
-        ? (datum: any) => Number(getFeatureProperties(datum)[priorityField] ?? 0) * priorityScale + priorityOffset
-        : priorityOffset,
+      getCollisionPriority: options.priorityField
+        ? (datum: any) =>
+            Number(getFeatureProperties(datum)[options.priorityField] ?? 0) * options.priorityScale + options.priorityOffset
+        : options.priorityOffset,
       extensions: appendDeckExtension(layer, new CollisionFilterExtension()),
       updateTriggers: {
         ...(props.updateTriggers ?? {}),
-        getCollisionPriority: [priorityField, priorityScale, priorityOffset],
+        getCollisionPriority: [options.priorityField, options.priorityScale, options.priorityOffset],
       },
     } as any);
   },
-});
+};

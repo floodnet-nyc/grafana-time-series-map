@@ -1,5 +1,5 @@
 import type { Feature } from 'geojson';
-import type { LayerConfig } from '../types';
+import type { LayerConfig, ScatterplotLayerConfig } from '../types';
 import {
   createCommonLayerProps,
   createLineSelectionAccessors,
@@ -11,18 +11,26 @@ import {
 } from './utils';
 
 function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
-  return {
+  const base: ScatterplotLayerConfig = {
     id: 'layer-1',
     type: 'scatterplot',
     label: 'Layer',
     visible: true,
+    settings: {
+      radiusMinPixels: 4,
+      radiusMaxPixels: 20,
+      radiusField: '',
+      radiusScale: 1,
+      stroked: true,
+      showLabels: false,
+      labelField: '',
+    },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
     fieldMappings: [],
     opacity: 1,
-    options: {},
-    ...overrides,
   };
+  return { ...base, ...overrides } as LayerConfig;
 }
 
 function createPointFeature(properties: Record<string, unknown> = {}): Feature {
@@ -39,7 +47,6 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
   return {
     config: createConfig(),
-    options: {},
     panelOptions: {} as any,
     features: [createPointFeature()],
     cursorTimeMs: 0,
