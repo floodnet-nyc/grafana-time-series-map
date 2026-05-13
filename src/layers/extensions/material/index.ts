@@ -1,4 +1,6 @@
+import type { Layer } from '@deck.gl/core';
 import type { LayerMaterialConfig, LayerExtensionDefinition } from '../types';
+import { getLayerDefaultProps, getLayerProps } from '../utils';
 
 const DEFAULT_SPECULAR_COLOR: [number, number, number, number] = [51, 51, 51, 255];
 
@@ -11,9 +13,9 @@ function rgbColor(value: unknown): [number, number, number] {
   ];
 }
 
-function supportsMaterial(layer: unknown): boolean {
-  const props = (layer as any).props ?? {};
-  const defaultProps = (layer as any).constructor?.defaultProps ?? {};
+function supportsMaterial(layer: Layer): boolean {
+  const props = getLayerProps(layer);
+  const defaultProps = getLayerDefaultProps(layer);
   return 'material' in props || 'material' in defaultProps;
 }
 

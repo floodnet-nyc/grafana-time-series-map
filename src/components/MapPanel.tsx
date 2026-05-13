@@ -41,7 +41,9 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   const onFeatureClick = useCallback(
     (feature: Feature, _info: any) => {
-      const key = String(feature.properties?.deployment_id ?? '');
+      const keyField = options.selectionKeyField;
+      if (!keyField) { return; }
+      const key = String(feature.properties?.[keyField] ?? '');
       if (!key) { return; }
       // Toggle off if already selected
       if (key === selectedKey) {
@@ -52,7 +54,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         setSelectedFeature(feature);
       }
     },
-    [selectedKey, selectKey],
+    [options.selectionKeyField, selectedKey, selectKey],
   );
 
   const onToggleLayerVisibility = useCallback((layerId: string) => {

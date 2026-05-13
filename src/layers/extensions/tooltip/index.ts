@@ -5,9 +5,8 @@ import { buildFeatureScope, getFeatureFromDatum, getFeatureIndex } from '../../.
 import type { LayerTooltipConfig, LayerExtensionDefinition } from '../types';
 
 const DEFAULT_TOOLTIP_TEMPLATE = [
-  '<div class="">',
+  '<div>',
   '  <div class="tooltip-title">{{layer.label}}</div>',
-  '  <div><strong>ID:</strong> {{this.deployment_id}}</div>',
   '</div>',
 ].join('\n');
 

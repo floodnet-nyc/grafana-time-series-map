@@ -463,6 +463,13 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: true,
         category: ['Map controls', 'Cross-panel sync'],
       })
+      .addTextInput({
+        path: 'selectionKeyField',
+        name: 'Selection key field',
+        description: 'Feature property to use as the selection key when clicking the map. Required for click-based cross-panel selection.',
+        defaultValue: '',
+        category: ['Map controls', 'Cross-panel sync'],
+      })
       .addBooleanSwitch({
         path: 'interleaved',
         name: 'Interleaved rendering',

@@ -98,6 +98,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
     interleaved: true,
     syncPublish: true,
     syncSubscribe: true,
+    selectionKeyField: 'deployment_id',
     ...overrides,
   };
 }

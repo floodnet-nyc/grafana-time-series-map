@@ -1,5 +1,6 @@
 import { DEFAULT_DECK_PARAMETERS } from '../../../utils/deckgl/parameters';
 import type { LayerBlendingConfig, LayerExtensionDefinition } from '../types';
+import { getLayerProps } from '../utils';
 
 const blendOperations = [
   { label: 'Add', value: 'add' },
@@ -95,7 +96,7 @@ export const blendingExtensionDefinition: LayerExtensionDefinition = {
     if (!options?.enabled) {
       return layer;
     }
-    const props = (layer as any).props ?? {};
+    const props = getLayerProps(layer);
 
     return layer.clone({
       parameters: {
