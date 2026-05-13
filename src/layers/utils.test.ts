@@ -1,5 +1,5 @@
 import type { Feature } from 'geojson';
-import type { LayerConfig, ScatterplotLayerConfig } from '../types';
+import type { LayerConfig, ScatterplotLayerConfig } from './types';
 import {
   createCommonLayerProps,
   createLineSelectionAccessors,

@@ -1,4 +1,4 @@
-import type { LayerConfig } from '../../types';
+import type { LayerConfig } from '../../layers/types';
 
 export interface MapLegendProps {
   layers: LayerConfig[];
