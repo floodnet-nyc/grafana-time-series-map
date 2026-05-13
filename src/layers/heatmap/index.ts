@@ -1,6 +1,6 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HeatmapLayerConfig, HeatmapLayerSettings } from '../../types';
+import type { HeatmapLayerConfig, HeatmapLayerSettings } from '../types';
 import { createBaseLayerConfig, section } from '../defaults';
 import type { LayerDefinition, LayerRenderContext } from '../types';
 

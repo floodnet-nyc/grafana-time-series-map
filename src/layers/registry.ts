@@ -1,4 +1,4 @@
-import type { LayerConfig, LayerType } from '../types';
+import type { LayerConfig, LayerType } from './types';
 import { layerExtensionDefinitions } from './extensions/_all';
 import { layerDefinitions } from './_all';
 import { applyLayerExtensions } from './extensions/registry';

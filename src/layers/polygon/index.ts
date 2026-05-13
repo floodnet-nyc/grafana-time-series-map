@@ -1,7 +1,7 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
-import type { PolygonLayerConfig, PolygonLayerSettings } from '../../types';
+import type { PolygonLayerConfig, PolygonLayerSettings } from '../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
