@@ -4,7 +4,7 @@ import type { Geometry } from 'geojson';
 const HEX_RE = /^[0-9a-fA-F]+$/;
 
 export function parseGeometry(raw: string | null | undefined): Geometry | null {
-  if (!raw) return null;
+  if (!raw) {return null;}
   const s = raw.trim();
 
   // WKB / EWKB hex string (PostGIS default output)
