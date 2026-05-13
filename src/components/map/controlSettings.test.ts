@@ -1,10 +1,12 @@
 import type { MapPanelOptions } from '../../types';
 import {
-  getGoogleCameraControlPosition,
-  getGoogleFullscreenControlPosition,
   getMaplibreControlPosition,
   resolveMapControlSettings,
 } from './controlSettings';
+import {
+  getGoogleCameraControlPosition,
+  getGoogleFullscreenControlPosition
+} from './google/GoogleMap';
 
 function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOptions {
   return {

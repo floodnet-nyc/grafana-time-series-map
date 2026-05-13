@@ -11,7 +11,7 @@ import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from '../v
 import type { MapProviderProps } from '../providerTypes';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { getMaplibreStyleUrl } from './style';
-import { getMaplibreControlPosition, resolveMapControlSettings } from '../controlSettings';
+import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
@@ -69,7 +69,7 @@ export default function MaplibreMap({ width, height, options, layers, fitBounds,
     >
       {controlSettings.navigation.enabled && (
         <NavigationControl
-          position={getMaplibreControlPosition(controlSettings.navigation.position)}
+          position={controlSettings.navigation.position}
           showZoom={controlSettings.navigation.showZoom}
           showCompass={controlSettings.navigation.showCompass}
           visualizePitch={controlSettings.navigation.visualizePitch}
@@ -78,12 +78,12 @@ export default function MaplibreMap({ width, height, options, layers, fitBounds,
       )}
       {controlSettings.geolocate.enabled && interactive && (
         <GeolocateControl
-          position={getMaplibreControlPosition(controlSettings.geolocate.position)}
+          position={controlSettings.geolocate.position}
           trackUserLocation={controlSettings.geolocate.trackUserLocation}
           positionOptions={{ enableHighAccuracy: true }}
         />
       )}
-      {controlSettings.fullscreen.enabled && <FullscreenControl position={getMaplibreControlPosition(controlSettings.fullscreen.position)} />}
+      {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
       {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
       <MaplibreDeckOverlay layers={layers} interleaved={interleaved} options={options} />
     </Map>
