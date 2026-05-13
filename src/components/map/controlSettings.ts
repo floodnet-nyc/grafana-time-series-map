@@ -76,4 +76,7 @@ export function resolveMapControlSettings(options: MapPanelOptions): ResolvedMap
   return resolveSharedSettings(options.controls, options.controlSettings, options.googleMapOptions);
 }
 
+export function getMaplibreControlPosition(position: MapControlPosition): MapControlPosition {
+  return position;
+}
 

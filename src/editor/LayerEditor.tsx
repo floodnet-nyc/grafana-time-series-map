@@ -28,6 +28,7 @@ import { layerExtensionDefinitions } from '../layers/extensions';
 import { layerDefinitions } from '../layers/_all';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
+import { HtmlCodeEditor } from './HtmlCodeEditor';
 import {
   appendThresholdStep,
   createColorModePatch,
@@ -344,6 +345,18 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
               type="number"
               value={String(value ?? field.defaultValue ?? '')}
               onChange={(e) => onFieldChange(field.key, Number(e.currentTarget.value))}
+            />
+          </Field>
+        );
+      }
+      if (field.type === 'code') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <HtmlCodeEditor
+              value={String(value ?? field.defaultValue ?? '')}
+              onChange={(nextValue) => onFieldChange(field.key, nextValue)}
+              height={field.editorHeight}
+              language={field.language}
             />
           </Field>
         );

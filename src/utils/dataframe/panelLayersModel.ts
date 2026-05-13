@@ -2,11 +2,11 @@ import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { layerExtensionDefinitions } from '../../layers/extensions';
-import type { LayerExtensionDefinition } from 'layers/extensions/types';
 import { layerDefinitions } from '../../layers/_all';
 import type { LayerDefinition, LayerRenderContext, LayerConfig } from '../../layers/types';
 import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';
 import { compileExpression } from '../expressionEngine';
+import { buildFeatureScope } from '../featureScope';
 import { dataFramesToFeatures } from './toGeoJsonFeatures';
 import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../deckgl/closestTimeFiltering';
 import type { PanelFeaturesByLayerId } from '../../hooks/usePanelLayers';
@@ -252,7 +252,7 @@ function applyConfiguredLayerExtensions(layers: Layer[], config: LayerConfig) {
   return applyLayerExtensions(layers, config, layerExtensionDefinitions);
 }
 
-function applyLayerExtensions(layers: Layer[], config: LayerConfig, definitions: LayerExtensionDefinition[]): Layer[] {
+function applyLayerExtensions(layers: Layer[], config: LayerConfig, definitions: typeof layerExtensionDefinitions): Layer[] {
   return layers.map((layer) => definitions.reduce((current, extension) => extension.apply(current, config), layer));
 }
 
@@ -283,24 +283,4 @@ function buildDerivedValues(
 
     return derived;
   });
-}
-
-function buildFeatureScope(
-  config: LayerConfig,
-  feature: Feature,
-  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>,
-) {
-  const primary = { ...(feature.properties ?? {}) };
-  const sources: Record<string, Record<string, unknown>> = {};
-
-  for (const secondarySource of getLayerSecondarySources(config)) {
-    const localKey = String(feature.properties?.[secondarySource.join.localKeyField] ?? '');
-    const values = secondarySourceValues?.get(secondarySource.queryRefId)?.get(localKey) ?? {};
-    sources[secondarySource.queryRefId] = values;
-  }
-
-  return {
-    this: primary,
-    ...sources,
-  };
 }

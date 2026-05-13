@@ -1,8 +1,8 @@
 import type { Layer } from '@deck.gl/core';
-jest.mock('../layers/_all', () => ({
+jest.mock('../../layers/_all', () => ({
   layerDefinitions: [],
 }));
-jest.mock('../layers/extensions/_all', () => ({
+jest.mock('../../layers/extensions', () => ({
   layerExtensionDefinitions: [],
 }));
 import {

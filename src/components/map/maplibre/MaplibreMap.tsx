@@ -15,7 +15,7 @@ import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
-export default function MaplibreMap({ width, height, options, layers, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
+export default function MaplibreMap({ width, height, options, layers, getTooltip, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.maplibreStyle, options.maplibreStyleUrl);
   const controlSettings = resolveMapControlSettings(options);
 
@@ -85,7 +85,7 @@ export default function MaplibreMap({ width, height, options, layers, fitBounds,
       )}
       {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
       {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
-      <MaplibreDeckOverlay layers={layers} interleaved={interleaved} options={options} />
+      <MaplibreDeckOverlay layers={layers} getTooltip={getTooltip ?? undefined} interleaved={interleaved} options={options} />
     </Map>
   );
 }

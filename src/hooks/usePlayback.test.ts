@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import useAnimationFrame from './util/useAnimationFrame';
 import { usePlayback } from './usePlayback';
 
-jest.mock('./useAnimationFrame', () => ({
+jest.mock('./util/useAnimationFrame', () => ({
   __esModule: true,
   default: jest.fn(),
 }));

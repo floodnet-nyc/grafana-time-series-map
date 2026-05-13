@@ -229,13 +229,15 @@ export interface LayerRenderContext<TLayerConfig extends LayerConfig = LayerConf
 export interface LayerOptionField {
   key: string;
   label: string;
-  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker';
+  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker' | 'code';
   defaultValue?: unknown;
   section?: string;
   min?: number;
   max?: number;
   step?: number;
   selectOptions?: Array<{ label: string; value: string | number }>;
+  language?: string;
+  editorHeight?: number;
   showIf?: (settings: Record<string, unknown>) => boolean;
 }
 

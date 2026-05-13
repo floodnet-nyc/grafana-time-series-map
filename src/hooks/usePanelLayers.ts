@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import type { PanelData } from '@grafana/data';
-import type { Layer } from '@deck.gl/core';
+import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
+import type { DeckTooltipContent } from '../components/map/types';
+import { buildDeckTooltip } from '../layers/extensions/tooltip';
 import {
   buildSecondarySourcePackedByLayerId,
   buildSecondarySourceValuesByLayerId,
@@ -11,7 +13,12 @@ import {
   buildTimePackedByLayerId,
   renderPreparedLayers,
 } from '../utils/dataframe/panelLayersModel';
-import { type GeoFeature, dataFramesToFeatures } from 'utils/dataframe/toGeoJsonFeatures';
+import { type GeoFeature, dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
+
+export interface UsePanelLayersResult {
+  layers: Layer[];
+  getTooltip: ((info: PickingInfo) => DeckTooltipContent) | null;
+}
 
 export function usePanelLayers(
   options: MapPanelOptions,
@@ -22,7 +29,7 @@ export function usePanelLayers(
   toTimeMs: number,
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: any) => void,
-): Layer[] {
+): UsePanelLayersResult {
   const packedByLayerId = useMemo(() => {
     return buildTimePackedByLayerId(options.layers, featuresByLayerId);
   }, [featuresByLayerId, options.layers]);
@@ -43,7 +50,7 @@ export function usePanelLayers(
     return buildPreparedLayerStates(options.layers, featuresByLayerId, flagsByLayerId, secondarySourceValuesByLayerId);
   }, [featuresByLayerId, flagsByLayerId, options.layers, secondarySourceValuesByLayerId]);
 
-  return useMemo(() => {
+  const layers = useMemo(() => {
     return renderPreparedLayers({
       preparedLayerStates,
       options,
@@ -54,6 +61,16 @@ export function usePanelLayers(
       onFeatureClick,
     });
   }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
+
+  const getTooltip = useMemo(() => buildDeckTooltip(preparedLayerStates), [preparedLayerStates]);
+
+  return useMemo(
+    () => ({
+      layers,
+      getTooltip,
+    }),
+    [getTooltip, layers],
+  );
 }
 
 export type PanelFeaturesByLayerId = Map<string, GeoFeature[]>;
@@ -76,4 +93,3 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
     return featuresByLayerId;
   }, [data.series, options.layers]);
 }
-

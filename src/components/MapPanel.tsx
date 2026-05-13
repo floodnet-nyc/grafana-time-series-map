@@ -9,8 +9,7 @@ import { TimePlaybackControls } from './controls/TimePlaybackControls';
 import { SensorPopup } from './SensorPopup';
 import { MapLegend } from './MapLegend';
 import { usePlayback } from '../hooks/usePlayback';
-import { usePanelLayers } from '../hooks/usePanelLayers';
-import { usePanelFeatures } from 'hooks/usePanelLayers';
+import { usePanelFeatures, usePanelLayers } from '../hooks/usePanelLayers';
 import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 
@@ -94,7 +93,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const featuresByLayerId = usePanelFeatures(data, options);
   const fitBounds = useFitBounds(options, featuresByLayerId);
 
-  const layers = usePanelLayers(
+  const { layers, getTooltip } = usePanelLayers(
     options,
     featuresByLayerId,
     data,
@@ -121,6 +120,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         height={mapHeight}
         options={options}
         layers={layers}
+        getTooltip={getTooltip}
         fitBounds={fitBounds}
         onViewportChange={handleViewportChange}
         interleaved={options.interleaved ?? true}
