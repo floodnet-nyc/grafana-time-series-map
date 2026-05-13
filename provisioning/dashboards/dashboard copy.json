@@ -256,8 +256,8 @@
         "controlSettings": {
           "navigation": {
             "position": "top-right",
-            "showZoom": true,
-            "showCompass": true
+            "showZoom": false,
+            "showCompass": false
           },
           "geolocate": {
             "position": "top-right",
