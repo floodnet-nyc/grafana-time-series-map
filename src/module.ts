@@ -6,6 +6,7 @@ import { MapPanel } from './components/MapPanel';
 import { LightingEditor } from './editor/LightingEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
+import { PopupTemplateEditor } from './editor/PopupTemplateEditor';
 import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
 import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
@@ -479,11 +480,12 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: true,
         category: ['Map controls', 'Cross-panel sync'],
       })
-      .addTextInput({
-        path: 'selectionKeyField',
-        name: 'Selection key field',
-        description: 'Feature property to use as the selection key when clicking the map. Required for click-based cross-panel selection.',
-        defaultValue: '',
+      .addCustomEditor({
+        id: 'popupTemplate',
+        path: 'popupTemplate',
+        name: 'Popup template',
+        description: 'Liquid template shown in the click popup. Use {{ prop_name }} for values, {{ _key }} for the selected key, {% for p in properties %}...{% endfor %} to loop all fields.',
+        editor: PopupTemplateEditor,
         category: ['Map controls', 'Cross-panel sync'],
       })
       .addBooleanSwitch({

@@ -179,6 +179,7 @@ export interface BaseLayerConfig<TType extends LayerType, TSettings> {
   minZoom?: number;
   maxZoom?: number;
   pickable?: boolean;
+  selectionKeyField?: string;
   shader?: ShaderConfig;
   extensions?: LayerExtensionsConfig;
 }

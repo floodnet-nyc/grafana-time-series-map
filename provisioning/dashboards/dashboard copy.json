@@ -5,7 +5,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 2,
-  "id": 1,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -84,6 +84,11 @@
           "parser": "backend",
           "root_selector": "features",
           "columns": [
+            {
+              "selector": "properties.id",
+              "text": "id",
+              "type": "string"
+            },
             {
               "selector": "geometry.coordinates.0",
               "text": "lng",
@@ -310,6 +315,7 @@
               "mode": "none",
               "timeField": ""
             },
+            "selectionKeyField": "deployment_id",
             "fieldMappings": [
               {
                 "fieldName": "max_depth_inches",
@@ -386,6 +392,7 @@
             "id": "sensors",
             "type": "scatterplot",
             "label": "Sensor Locations",
+            "selectionKeyField": "id",
             "visible": true,
             "queryRefId": "B",
             "geometry": {
@@ -591,6 +598,7 @@
               "groupByField": "deployment_id",
               "maxLagMs": 600000
             },
+            "selectionKeyField": "deployment_id",
             "fieldMappings": [
               {
                 "fieldName": "depth_inches",
@@ -763,7 +771,7 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "maplibre",
-  "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6g",
+  "uid": "a228aeff-5a8a-42a5-901c-938d896fde7g",
   "version": 1,
   "weekStart": ""
 }

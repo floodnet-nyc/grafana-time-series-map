@@ -258,7 +258,7 @@ export interface MapPanelOptions {
   interleaved: boolean;
   syncPublish: boolean;
   syncSubscribe: boolean;
-  selectionKeyField?: string;
   showTooltip?: boolean;
   tooltipTemplate?: string;
+  popupTemplate?: string;
 }

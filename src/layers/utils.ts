@@ -21,6 +21,7 @@ export function createCommonLayerProps<TLayerConfig extends LayerConfig>({
   onFeatureClick,
 }: LayerRenderContext<TLayerConfig>) {
   return {
+    config: config,
     id: `${config.type}/${config.id}`,
     data: features,
     visible: config.visible,

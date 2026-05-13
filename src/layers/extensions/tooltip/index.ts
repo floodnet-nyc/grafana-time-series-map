@@ -1,9 +1,7 @@
-import { Liquid } from 'liquidjs';
 import type { PickingInfo } from '@deck.gl/core';
-import type { Feature } from 'geojson';
 import type { DeckTooltipContent } from '../../../components/map/types';
-
-const liquid = new Liquid({ strictVariables: false, strictFilters: false });
+import { liquid, getFeatureFromDatum, buildLiquidScope } from '../../../utils/liquid';
+import { mapCardTooltipStyle } from '../../../components/mapCard';
 
 export const DEFAULT_TOOLTIP_TEMPLATE = [
   '<table style="border-collapse:collapse;font-size:12px;line-height:1.5">',
@@ -16,29 +14,8 @@ export const DEFAULT_TOOLTIP_TEMPLATE = [
   '</table>',
 ].join('\n');
 
-function getFeatureFromDatum(datum: unknown): Feature | null {
-  if (!datum || typeof datum !== 'object') {
-    return null;
-  }
-  if ((datum as Feature).type === 'Feature') {
-    return datum as Feature;
-  }
-  const candidate = (datum as { feature?: unknown }).feature;
-  return candidate && typeof candidate === 'object' && (candidate as Feature).type === 'Feature'
-    ? (candidate as Feature)
-    : null;
-}
-
-function buildScope(properties: Record<string, unknown>) {
-  const entries = Object.entries(properties).filter(([k]) => !k.startsWith('__'));
-  return {
-    ...Object.fromEntries(entries),
-    properties: entries.map(([key, value]) => ({ key, value })),
-  };
-}
-
 export function buildDeckTooltip(template: string): (info: PickingInfo) => DeckTooltipContent {
-  let parsed: ReturnType<Liquid['parse']>;
+  let parsed: ReturnType<typeof liquid.parse>;
   try {
     parsed = liquid.parse(template);
   } catch (e) {
@@ -58,8 +35,8 @@ export function buildDeckTooltip(template: string): (info: PickingInfo) => DeckT
     }
 
     try {
-      const html = liquid.renderSync(parsed, buildScope(props)).trim();
-      return html ? { html } : null;
+      const html = liquid.renderSync(parsed, buildLiquidScope(props)).trim();
+      return html ? { html, style: mapCardTooltipStyle } : null;
     } catch {
       return null;
     }
