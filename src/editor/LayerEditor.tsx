@@ -18,11 +18,11 @@ import type {
   ColorScaleConfig,
   ElevationConfig,
   GeometrySource,
-  LayerConfig,
   LayerDerivedFieldConfig,
   LayerSecondarySourceConfig,
   TimeFilterMode,
 } from '../types';
+import type { LayerConfig } from '../layers/types';
 import { getAllLayerExtensions, getAllLayerTypes, getLayer } from '../layers/registry';
 import type { LayerOptionField } from '../layers/types';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';

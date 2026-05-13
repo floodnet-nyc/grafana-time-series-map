@@ -1,4 +1,4 @@
-import type { LayerConfig, ScatterplotLayerConfig } from '../../types';
+import type { LayerConfig, ScatterplotLayerConfig } from '../../layers/types';
 import { formatValue, getLegendEntries, hasLegendContent, sortThresholdSteps, swatchHex } from './helpers';
 
 function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {

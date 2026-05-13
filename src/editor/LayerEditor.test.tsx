@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import type { LayerConfig, ScatterplotLayerConfig } from '../types';
+import type { LayerConfig, ScatterplotLayerConfig } from '../layers/types';
 import { LayerEditor } from './LayerEditor';
 
 jest.mock('../layers/registry', () => ({
