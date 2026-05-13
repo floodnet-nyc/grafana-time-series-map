@@ -1,7 +1,7 @@
 import React from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
-import type { MapProviderProps } from '../providerTypes';
+import type { MapProviderProps } from '../types';
 import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
 import { GoogleGeolocateControl } from './GoogleGeolocateControl';

@@ -8,7 +8,7 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
 import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from '../viewState';
-import type { MapProviderProps } from '../providerTypes';
+import type { MapProviderProps } from '../types';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { getMaplibreStyleUrl } from './style';
 import { resolveMapControlSettings } from '../controlSettings';
