@@ -5,6 +5,7 @@ import type { DeckBlendFactor, DeckBlendOperation } from "types";
 import { MapPanel } from './components/MapPanel';
 import { LightingEditor } from './editor/LightingEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
+import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
 import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
 import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
@@ -257,6 +258,21 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Show legend',
         defaultValue: false,
         category: ['Legend'],
+      })
+      .addBooleanSwitch({
+        path: 'showTooltip',
+        name: 'Show hover tooltip',
+        defaultValue: true,
+        category: ['Tooltip'],
+      })
+      .addCustomEditor({
+        id: 'tooltipTemplate',
+        path: 'tooltipTemplate',
+        name: 'Tooltip template',
+        description: 'Liquid template. Use {{ prop_name }} for values, {% for p in properties %}...{% endfor %} to loop all fields.',
+        editor: TooltipTemplateEditor,
+        showIf: (cfg) => cfg.showTooltip !== false,
+        category: ['Tooltip'],
       })
       .addCustomEditor({
         id: 'layers',
