@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type EventBus, DataHoverEvent, DataHoverClearEvent } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
-import { useLatestRef } from './useLatestRef';
+import { useLatestRef } from './util/useLatestRef';
 
 const PUBLISH_INTERVAL_MS = 100;
 const ECHO_COOLDOWN_MS = 500;

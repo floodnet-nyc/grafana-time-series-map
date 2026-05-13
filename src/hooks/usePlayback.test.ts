@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import useAnimationFrame from './useAnimationFrame';
+import useAnimationFrame from './util/useAnimationFrame';
 import { usePlayback } from './usePlayback';
 
 jest.mock('./useAnimationFrame', () => ({

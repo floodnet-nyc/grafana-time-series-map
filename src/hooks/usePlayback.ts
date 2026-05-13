@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import useAnimationFrame from './useAnimationFrame';
-import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer } from './playbackModel';
+import useAnimationFrame from './util/useAnimationFrame';
+import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer } from '../utils/playback/playbackModel';
 
 export interface UsePlaybackResult {
   cursorTimeMs: number;
@@ -42,7 +42,7 @@ export function usePlayback({
   useAnimationFrame({
     enabled: playing,
     interval: 80,
-    onUpdate: (timestampMs) => {
+    onUpdate: (timestampMs: number) => {
       const raw = getRawCursorTimeMs(
         timestampMs,
         referenceStartTimeMs,

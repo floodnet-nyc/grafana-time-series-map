@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Geometry } from 'geojson';
-import type { PanelFeaturesByLayerId } from './usePanelFeatures';
+import type { PanelFeaturesByLayerId } from './usePanelLayers';
 import type { MapPanelOptions } from '../types';
 import type { FitBounds } from '../components/map/types';
 

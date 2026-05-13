@@ -12,10 +12,10 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from './panelLayersModel';
-import { buildPacked } from '../utils/deckgl/closestTimeFiltering';
-import type { MapPanelOptions } from '../types';
-import type { LayerConfig, ScatterplotLayerConfig } from '../layers/types';
-import type { GeoFeature } from '../utils/dataframe/toGeoJsonFeatures';
+import { buildPacked } from '../deckgl/closestTimeFiltering';
+import type { MapPanelOptions } from '../../types';
+import type { LayerConfig, ScatterplotLayerConfig } from '../../layers/types';
+import type { GeoFeature } from './toGeoJsonFeatures';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {

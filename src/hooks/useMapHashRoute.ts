@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import useDebouncedCallback from './useDebouncedCallback';
+import useDebouncedCallback from './util/useDebouncedCallback';
 import { parseMapHashViewFromHash, upsertMapHashView } from './mapHashRouteModel';
 
 const HASH_WRITE_DEBOUNCE_MS = 1000;

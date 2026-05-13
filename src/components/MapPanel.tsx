@@ -10,7 +10,7 @@ import { SensorPopup } from './SensorPopup';
 import { MapLegend } from './MapLegend';
 import { usePlayback } from '../hooks/usePlayback';
 import { usePanelLayers } from '../hooks/usePanelLayers';
-import { usePanelFeatures } from '../hooks/usePanelFeatures';
+import { usePanelFeatures } from 'hooks/usePanelLayers';
 import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 
