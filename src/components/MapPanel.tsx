@@ -56,7 +56,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         setSelectedFeature(feature);
       }
     },
-    [options.layers, selectedKey, selectKey],
+    [selectedKey, selectKey],
   );
 
   const onToggleLayerVisibility = useCallback((layerId: string) => {
