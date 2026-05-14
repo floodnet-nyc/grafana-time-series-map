@@ -122,3 +122,52 @@ export function dataFramesToFeatures(
   }
   return all;
 }
+
+export function geojsonToFeatures(geojson: unknown): GeoFeature[] {
+  if (!geojson) {
+    return [];
+  }
+
+  const obj = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+  if (!obj || typeof obj !== 'object') {
+    return [];
+  }
+
+  const fc = obj as Record<string, unknown>;
+
+  if (fc.type === 'FeatureCollection' && Array.isArray(fc.features)) {
+    return (fc.features as Array<Record<string, unknown>>).map((f, i) => ({
+      type: 'Feature',
+      geometry: f.geometry as Geometry | null | undefined ?? null,
+      properties: f.properties as Record<string, unknown> ?? {},
+      id: f.id,
+      __idx: i,
+    })) as GeoFeature[];
+  }
+
+  if (fc.type === 'Feature') {
+    return [{
+      type: 'Feature',
+      geometry: fc.geometry as Geometry | null | undefined ?? null,
+      properties: fc.properties as Record<string, unknown> ?? {},
+      id: fc.id,
+      __idx: 0,
+    }] as GeoFeature[];
+  }
+
+  if (
+    fc.type === 'GeometryCollection' ||
+    (typeof fc.type === 'string' && (
+      fc.type.startsWith('Multi') || fc.type === 'Point' || fc.type === 'LineString' || fc.type === 'Polygon'
+    ))
+  ) {
+    return [{
+      type: 'Feature',
+      geometry: fc as unknown as Geometry,
+      properties: {},
+      __idx: 0,
+    }] as GeoFeature[];
+  }
+
+  return [];
+}

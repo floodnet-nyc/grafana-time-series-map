@@ -38,6 +38,7 @@ jest.mock('../hooks/usePanelLayers', () => ({
     latestFeatureClick = args[7] as (feature: Feature, info: any) => void;
     return mockUsePanelLayers(...args);
   },
+  useGeoJsonUrlFeatures: () => new Map(),
 }));
 
 jest.mock('./map/DeckGLMap', () => ({
