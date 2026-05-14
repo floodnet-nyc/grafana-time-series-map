@@ -15,6 +15,7 @@ PRIVATE*
 provisioning/sample-data/cogs/*.tif
 provisioning/sample-data/flood_inundation.geojson
 provisioning/plugins
+provisioning/deckgl-examples
 
 # yarn
 .yarn/cache
