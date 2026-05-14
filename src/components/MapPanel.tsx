@@ -15,7 +15,7 @@ import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 
 const CONTROLS_HEIGHT = 48;
 
-export function MapPanel({ data, options, onOptionsChange, width, height, eventBus }: PanelProps<MapPanelOptions>) {
+export function MapPanel({ data, options, onOptionsChange, width, height, eventBus, replaceVariables }: PanelProps<MapPanelOptions>) {
   const fromTimeMs = data.timeRange.from.valueOf();
   const toTimeMs = data.timeRange.to.valueOf();
 
@@ -26,14 +26,16 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     loop: options.loopPlayback,
   });
 
-  const { selectedKey, selectKey } = useGrafanaEventBridge(
+  const { selectedKey, setSelectedKey: selectKey } = useGrafanaEventBridge({
     eventBus,
+    replaceVariables,
     playback,
     fromTimeMs,
     toTimeMs,
-    options.syncPublish ?? true,
-    options.syncSubscribe ?? true,
-  );
+    publish: options.syncPublish ?? true,
+    subscribe: options.syncSubscribe ?? true,
+    selectionVariableName: options.selectionVariableName,
+  });
 
   // Track the last clicked feature so the popup can show its properties.
   // External DataSelectEvent (from time series panel) sets selectedKey without a feature.

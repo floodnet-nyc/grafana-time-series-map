@@ -246,6 +246,7 @@
         "loopPlayback": true,
         "defaultPlaybackSpeed": 1800000,
         "showLegend": true,
+        "selectionVariableName": "selected_sensor",
         "syncSubscribe": false,
         "googleMapOptions": {
           "colorScheme": "DARK"
@@ -593,6 +594,7 @@
               "groupByField": "deployment_id",
               "maxLagMs": 600000
             },
+            "selectionKeyField": "deployment_id",
             "fieldMappings": [
               {
                 "fieldName": "depth_inches",
@@ -685,7 +687,7 @@
         "y": 16
       },
       "id": 2,
-      "title": "Sensor Depth \u2014 All Deployments",
+      "title": "Sensor Depth \u2014 Selected Deployment",
       "type": "timeseries",
       "targets": [
         {
@@ -703,6 +705,7 @@
           },
           "parser": "backend",
           "root_selector": "features",
+          "filterExpression": "'${selected_sensor}' == '' || deployment_id == '${selected_sensor}'",
           "columns": [
             {
               "selector": "properties.deployment_id",
@@ -758,6 +761,30 @@
     "floodnet",
     "map"
   ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "Selected sensor",
+        "name": "selected_sensor",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
   "time": {
     "from": "2025-10-30T17:00:00.000Z",
     "to": "2025-10-31T08:00:00.000Z"

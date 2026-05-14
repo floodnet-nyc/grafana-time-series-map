@@ -480,6 +480,13 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: true,
         category: ['Map controls', 'Cross-panel sync'],
       })
+      .addTextInput({
+        path: 'selectionVariableName',
+        name: 'Store selected key in variable',
+        description: 'Optional dashboard variable name to update from the current selected key. Use the bare variable name, not the var- prefix.',
+        defaultValue: '',
+        category: ['Map controls', 'Cross-panel sync'],
+      })
       .addCustomEditor({
         id: 'popupTemplate',
         path: 'popupTemplate',
