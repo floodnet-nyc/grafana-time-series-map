@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type EventBus, DataHoverEvent, DataHoverClearEvent, DataSelectEvent, BusEvent, BusEventType, InterpolateFunction } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
 import { useLatestRef } from './util/useLatestRef';
-import { locationService } from '@grafana/runtime';//RefreshEvent
+import { locationService, RefreshEvent } from '@grafana/runtime';//RefreshEvent
 import { useInterval } from './util/useInterval';
 // import useDebouncedCallback from './util/useDebouncedCallback';
 
@@ -67,15 +67,23 @@ export function useGrafanaEventBridge({
   const rangeRef = useLatestRef({ fromTimeMs, toTimeMs });
   const lastReceivedAtRef = useRef<number>(0);
 
-  const selectVarValue = selectionVariableName ? replaceVariables(`$${selectionVariableName}`) : null;
+  const [refreshTime, setRefreshTime] = useState<number>(0);
+  useEventBridgeSubscription(
+    eventBus, RefreshEvent,
+    () => setRefreshTime(Date.now()),
+  );
+
+  const selectVarValue = useMemo(() => selectionVariableName && (refreshTime||true) ? replaceVariables(`$${selectionVariableName}`) : null, [replaceVariables, selectionVariableName, refreshTime]);
   const [selectedKey_, setSelectedKey_] = useState<string | null>(null);
   const selectedKey = selectionVariableName ? selectVarValue : selectedKey_;
   
   const setSelectedKey = useCallback((key: string | null) => {
-    setSelectedKey_(key);
     if (selectionVariableName) {
       const selectionVariableParam = `var-${selectionVariableName?.trim().replace(/^var-/, '') ?? ''}`;
       locationService.partial({ [selectionVariableParam]: key ?? '' }, true);
+    }
+    else {
+      setSelectedKey_(key);
     }
   }, [selectionVariableName]);
 
@@ -120,12 +128,6 @@ export function useGrafanaEventBridge({
     eventBus, DataSelectEvent,
     (event) => setSelectedKey(getSelectedKeyFromEventPayload(event.payload)),
   );
-
-  // const [refreshTime, setRefreshTime] = useState<number>(0);
-  // useEventBridgeSubscription(
-  //   eventBus, RefreshEvent,
-  //   () => setRefreshTime(Date.now()),
-  // );
 
   return { selectedKey, setSelectedKey };
 }
