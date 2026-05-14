@@ -97,6 +97,42 @@ function interpolateMrmsPrecip(t: number): string {
   return lerpRgb(c0, c1, f);
 }
 
+function interpolateFromStops(stops: Array<[number, number, number]>, t: number): string {
+  const n = stops.length - 1;
+  const idx = Math.min(t * n, n - 1e-10);
+  const i = Math.floor(idx);
+  return lerpRgb(stops[i], stops[Math.min(i + 1, n)], idx - i);
+}
+
+function interpolateHeatmapFire(t: number): string {
+  return interpolateFromStops(
+    [
+      [0, 0, 255],
+      [0, 128, 255],
+      [0, 255, 255],
+      [0, 255, 128],
+      [255, 255, 0],
+      [255, 128, 0],
+      [255, 0, 0],
+    ],
+    t
+  );
+}
+
+function interpolateHeatmapGyr(t: number): string {
+  return interpolateFromStops(
+    [
+      [0, 200, 0],
+      [100, 220, 0],
+      [200, 240, 0],
+      [255, 200, 0],
+      [255, 100, 0],
+      [220, 0, 0],
+    ],
+    t
+  );
+}
+
 const INTERPOLATORS: Record<string, Interpolator> = {
   // Diverging
   BrBG: interpolateBrBG,
@@ -140,6 +176,8 @@ const INTERPOLATORS: Record<string, Interpolator> = {
   // Domain-specific
   FloodDepth: interpolateFloodDepth,
   MrmsPrecip: interpolateMrmsPrecip,
+  HeatmapFire: interpolateHeatmapFire,
+  HeatmapGyr: interpolateHeatmapGyr,
 };
 
 export interface SchemeEntry {
@@ -152,6 +190,8 @@ export const COLOR_SCHEMES: SchemeEntry[] = [
   // Domain-specific
   { name: 'FloodDepth', label: 'Flood Depth', group: 'domain' },
   { name: 'MrmsPrecip', label: 'MRMS Precipitation', group: 'domain' },
+  { name: 'HeatmapFire', label: 'Heatmap Fire', group: 'domain' },
+  { name: 'HeatmapGyr', label: 'Heatmap Green-Yellow-Red', group: 'domain' },
   // Diverging
   { name: 'Spectral', label: 'Spectral', group: 'diverging' },
   { name: 'RdYlGn', label: 'Red-Yellow-Green', group: 'diverging' },

@@ -211,11 +211,12 @@ export interface DeckRenderParametersOptions {
 }
 
 export type DeckLightType = 'ambient' | 'point' | 'directional' | 'camera' | 'sun';
+export type DeckLightColor = [number, number, number] | [number, number, number, number];
 
 export interface DeckLightConfig {
   id: string;
   type: DeckLightType;
-  color?: string;
+  color?: DeckLightColor;
   intensity?: number;
   longitude?: number;
   latitude?: number;

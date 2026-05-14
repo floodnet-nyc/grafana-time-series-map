@@ -37,7 +37,6 @@ export interface HeatmapLayerSettings {
   intensity: number;
   threshold: number;
   weightField: string;
-  colorRange: string;
 }
 
 export interface HexagonLayerSettings {
@@ -85,6 +84,9 @@ export interface GeoJsonLayerSettings {
   pointRadiusMinPixels: number;
   pointRadiusMaxPixels: number;
   lineWidthMinPixels: number;
+  lineWidthField: string;
+  lineWidthScale: number;
+  lineWidthUnits: 'pixels' | 'meters';
   filled: boolean;
   stroked: boolean;
   extruded: boolean;

@@ -138,13 +138,21 @@
               "id": "ambient-light",
               "type": "ambient",
               "intensity": 1,
-              "color": "255,255,255"
+              "color": [
+                255,
+                255,
+                255
+              ]
             },
             {
               "id": "point-light-1",
               "type": "point",
               "intensity": 0.8,
-              "color": "255,255,255",
+              "color": [
+                255,
+                255,
+                255
+              ],
               "longitude": -0.144528,
               "latitude": 49.739968,
               "altitude": 80000,
@@ -156,7 +164,11 @@
               "id": "point-light-2",
               "type": "point",
               "intensity": 0.8,
-              "color": "255,255,255",
+              "color": [
+                255,
+                255,
+                255
+              ],
               "longitude": -3.807751,
               "latitude": 54.104682,
               "altitude": 8000,

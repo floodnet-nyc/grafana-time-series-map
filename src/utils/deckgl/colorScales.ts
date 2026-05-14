@@ -45,6 +45,36 @@ export function buildColorAccessor(
   return () => defaultColor;
 }
 
+export function buildColorRange(
+  colorScale: ColorScaleConfig | undefined,
+  fallbackSchemeName: string,
+  n = 6,
+): RGBA[] {
+  const steps = Math.max(2, n);
+
+  if (!colorScale) {
+    return Array.from({ length: steps }, (_, index) => interpolateScheme(fallbackSchemeName, index / (steps - 1)));
+  }
+
+  if (colorScale.type === 'fixed') {
+    return Array.from({ length: steps }, () => colorScale.fixedColor ?? [128, 128, 128, 255]);
+  }
+
+  if (colorScale.type === 'threshold' && colorScale.steps?.length) {
+    const sorted = [...colorScale.steps].sort((a, b) => a.value - b.value);
+    const scaleMin = colorScale.scaleMin ?? sorted[0].value;
+    const scaleMax = colorScale.scaleMax ?? sorted[sorted.length - 1].value;
+    const range = scaleMax - scaleMin || 1;
+    return Array.from({ length: steps }, (_, index) => {
+      const t = index / (steps - 1);
+      return thresholdToColor(sorted, scaleMin + t * range);
+    });
+  }
+
+  const schemeName = colorScale.schemeName ?? fallbackSchemeName;
+  return Array.from({ length: steps }, (_, index) => interpolateScheme(schemeName, index / (steps - 1), colorScale.invert ?? false));
+}
+
 // ── Palette array builder (for uniform-based shaders) ────────────────────────
 
 const PALETTE_N = 32;

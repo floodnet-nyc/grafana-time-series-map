@@ -33,12 +33,11 @@ python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1
 ```
 
 - heatmap not using color settings
+- fix RGB lighting strings -> RGBA list
 - geojson elevation settings
 - Extend the plugin geojson layer to support lineColor from colorScale, not just fill.
 - normalization
 - clustering
-- fix RGB lighting strings -> RGBA list
-- hexagon upperPercentile
 
     bearing: initialViewState.bearing + 120,
     transitionDuration: 1000,

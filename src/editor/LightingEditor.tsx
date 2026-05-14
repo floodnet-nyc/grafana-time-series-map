@@ -13,7 +13,7 @@ import {
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
-import type { DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
+import type { DeckLightColor, DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
 import { DEFAULT_DECK_LIGHTING } from '../utils/deckgl/lighting';
 
 const lightTypes: Array<ComboboxOption<DeckLightType>> = [
@@ -30,12 +30,12 @@ function defaultLight(type: DeckLightType, index: number): DeckLightConfig {
   const id = `${type}-light-${Date.now()}-${index}`;
   switch (type) {
     case 'ambient':
-      return { id, type, color: '255,255,255', intensity: 1 };
+      return { id, type, color: [255, 255, 255], intensity: 1 };
     case 'point':
       return {
         id,
         type,
-        color: '255,255,255',
+        color: [255, 255, 255],
         intensity: 0.8,
         longitude: 0,
         latitude: 0,
@@ -45,13 +45,13 @@ function defaultLight(type: DeckLightType, index: number): DeckLightConfig {
         attenuationQuadratic: 0,
       };
     case 'directional':
-      return { id, type, color: '255,255,255', intensity: 1, directionX: 0, directionY: 0, directionZ: -1, shadow: false };
+      return { id, type, color: [255, 255, 255], intensity: 1, directionX: 0, directionY: 0, directionZ: -1, shadow: false };
     case 'camera':
-      return { id, type, color: '255,255,255', intensity: 1 };
+      return { id, type, color: [255, 255, 255], intensity: 1 };
     case 'sun':
-      return { id, type, color: '255,255,255', intensity: 1, timestamp: DEFAULT_SUN_TIMESTAMP, shadow: false };
+      return { id, type, color: [255, 255, 255], intensity: 1, timestamp: DEFAULT_SUN_TIMESTAMP, shadow: false };
     default:
-      return { id, type, color: '255,255,255', intensity: 1 };
+      return { id, type, color: [255, 255, 255], intensity: 1 };
   }
 }
 
@@ -60,21 +60,22 @@ function numberValue(value: unknown, fallback: number) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-function rgbStringToHex(value: string | undefined) {
-  const parts = (value ?? '255,255,255')
-    .split(',')
-    .map((part) => Number(part.trim()));
+function colorToHex(value: DeckLightColor | undefined) {
+  const parts = Array.isArray(value) ? value : [255, 255, 255];
   const [r = 255, g = 255, b = 255] = parts;
   const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
-function hexToRgbString(hex: string) {
+function hexToColor(hex: string, previous?: DeckLightColor): DeckLightColor {
   const c = hex.replace('#', '');
   const r = parseInt(c.slice(0, 2), 16) || 0;
   const g = parseInt(c.slice(2, 4), 16) || 0;
   const b = parseInt(c.slice(4, 6), 16) || 0;
-  return `${r},${g},${b}`;
+  if (Array.isArray(previous) && previous.length === 4) {
+    return [r, g, b, previous[3]];
+  }
+  return [r, g, b];
 }
 
 interface NumberFieldProps {
@@ -169,8 +170,8 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
               <Field label="Color">
                 <div className={styles.colorPickerRow}>
                   <ColorPicker
-                    color={rgbStringToHex(light.color)}
-                    onChange={(hex) => patchLight(index, { color: hexToRgbString(hex) })}
+                    color={colorToHex(light.color)}
+                    onChange={(hex) => patchLight(index, { color: hexToColor(hex, light.color) })}
                   />
                 </div>
               </Field>
