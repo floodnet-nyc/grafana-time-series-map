@@ -34,14 +34,11 @@ python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1
 
 - heatmap not using color settings
 - geojson elevation settings
+- Extend the plugin geojson layer to support lineColor from colorScale, not just fill.
 - normalization
 - clustering
-- tooltip
 - fix RGB lighting strings -> RGBA list
 - hexagon upperPercentile
-- transitions: { elevationScale: 3000 }
-- transitionInterpolator
-- flyTo
 
     bearing: initialViewState.bearing + 120,
     transitionDuration: 1000,
@@ -51,6 +48,13 @@ python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1
 Extend the plugin geojson layer to support lineColor from colorScale, not just fill.
 Add lineWidthField, lineWidthScale, and lineWidthUnits to the geojson layer settings.
 Switch the highway dashboard from type: "path" to type: "geojson".
+
+
+new features
+- transitions: { elevationScale: 3000 }
+- transitionInterpolator
+- flyTo
+
 
 TODO:
 

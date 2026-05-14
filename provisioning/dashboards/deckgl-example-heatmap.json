@@ -104,7 +104,7 @@
         "syncPublish": false,
         "syncSubscribe": false,
         "showTooltip": true,
-        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "tooltipTemplate": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}",
         "controlSettings": {
           "navigation": {
             "position": "top-right",

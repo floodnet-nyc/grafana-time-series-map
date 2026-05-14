@@ -169,7 +169,7 @@
         "syncPublish": false,
         "syncSubscribe": false,
         "showTooltip": true,
-        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}{{#if fatalitiesPer1kMile}}<div>Fatalities / 1k mile: {{fatalitiesPer1kMile}}</div>{{/if}}{{#if incidentsPer1kMile}}<div>Incidents / 1k mile: {{incidentsPer1kMile}}</div>{{/if}}",
+        "tooltipTemplate": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}{% if fatalitiesPer1kMile %}<div>Fatalities / 1k mile: {{ fatalitiesPer1kMile }}</div>{% endif %}{% if incidentsPer1kMile %}<div>Incidents / 1k mile: {{ incidentsPer1kMile }}</div>{% endif %}",
         "controlSettings": {
           "navigation": {
             "position": "top-right",
