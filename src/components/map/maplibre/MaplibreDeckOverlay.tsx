@@ -45,9 +45,9 @@ export function MaplibreDeckOverlay({ layers, interleaved, options, getTooltip }
     }
 
     overlay.setProps({ layers, effects, parameters, getTooltip });
-    if (interleaved) {
-      mapRef?.getMap()?.triggerRepaint();
-    }
+    // if (interleaved) {
+    //   mapRef?.getMap()?.triggerRepaint();
+    // }
   }, [effects, getTooltip, interleaved, layers, mapRef, parameters]);
 
   return null;

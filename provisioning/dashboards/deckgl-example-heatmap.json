@@ -87,12 +87,15 @@
             },
             "fieldMappings": [],
             "opacity": 0.95,
+            "colorScale": {
+              "type": "gradient",
+              "schemeName": "HeatmapFire"
+            },
             "settings": {
               "radiusPixels": 5,
               "intensity": 1,
               "threshold": 0.03,
-              "weightField": "weight",
-              "colorRange": "fire"
+              "weightField": "weight"
             }
           }
         ],

@@ -6,16 +6,16 @@ import {
   _CameraLight as CameraLight,
   _SunLight as SunLight,
 } from '@deck.gl/core';
-import type { DeckLightConfig, DeckLightingOptions } from '../../types';
+import type { DeckLightColor, DeckLightConfig, DeckLightingOptions } from '../../types';
 
 export const DEFAULT_DECK_LIGHTING: Required<DeckLightingOptions> = {
   enabled: false,
   lights: [
-    { id: 'ambient-light', type: 'ambient', color: '255,255,255', intensity: 1 },
+    { id: 'ambient-light', type: 'ambient', color: [255, 255, 255], intensity: 1 },
     {
       id: 'point-light-1',
       type: 'point',
-      color: '255,255,255',
+      color: [255, 255, 255],
       intensity: 0.8,
       longitude: -0.144528,
       latitude: 49.739968,
@@ -27,7 +27,7 @@ export const DEFAULT_DECK_LIGHTING: Required<DeckLightingOptions> = {
     {
       id: 'point-light-2',
       type: 'point',
-      color: '255,255,255',
+      color: [255, 255, 255],
       intensity: 0.8,
       longitude: -3.807751,
       latitude: 54.104682,
@@ -39,7 +39,17 @@ export const DEFAULT_DECK_LIGHTING: Required<DeckLightingOptions> = {
   ],
 };
 
-function parseRgb(value: string | undefined, fallback: [number, number, number]): [number, number, number] {
+function parseRgb(value: DeckLightColor | string | undefined, fallback: [number, number, number]): [number, number, number] {
+  if (Array.isArray(value)) {
+    if (value.length < 3) {
+      return fallback;
+    }
+    return [
+      Math.max(0, Math.min(255, Number(value[0]))),
+      Math.max(0, Math.min(255, Number(value[1]))),
+      Math.max(0, Math.min(255, Number(value[2]))),
+    ];
+  }
   if (!value) {
     return fallback;
   }

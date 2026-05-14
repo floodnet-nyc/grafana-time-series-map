@@ -38,7 +38,7 @@
         "layers": [
           {
             "id": "roads-1990",
-            "type": "path",
+            "type": "geojson",
             "label": "Fatal highway accidents (1990)",
             "visible": true,
             "dataSource": {
@@ -152,12 +152,15 @@
               ]
             },
             "settings": {
-              "widthMinPixels": 0.5,
-              "widthMaxPixels": 3.5,
-              "widthField": "incidentsPer1kMile",
-              "widthScale": 0.0125,
-              "capRounded": false,
-              "jointRounded": false
+              "pointRadiusMinPixels": 4,
+              "pointRadiusMaxPixels": 20,
+              "lineWidthMinPixels": 0.5,
+              "lineWidthField": "lineWidthMeters",
+              "lineWidthScale": 1,
+              "lineWidthUnits": "meters",
+              "filled": false,
+              "stroked": true,
+              "extruded": false
             }
           }
         ],
@@ -165,7 +168,7 @@
         "loopPlayback": false,
         "showTimeControls": false,
         "showLegend": false,
-        "interleaved": true,
+        "interleaved": false,
         "syncPublish": false,
         "syncSubscribe": false,
         "showTooltip": true,

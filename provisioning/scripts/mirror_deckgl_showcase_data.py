@@ -332,30 +332,19 @@ def _derive_phase1_assets() -> list[pathlib.Path]:
         length = float(props.get("length") or 0)
         incidents_per_1k_mile = (extra["incidents"] / length * 1000) if length else 0
         fatalities_per_1k_mile = (extra["fatalities"] / length * 1000) if length else 0
+        incidents_for_width = max(0.0, min(200.0, incidents_per_1k_mile))
+        line_width_meters = 10 + (incidents_for_width / 200.0) * (2000 - 10)
         base_properties = {
             **props,
             **extra,
             "incidentsPer1kMile": incidents_per_1k_mile,
             "fatalitiesPer1kMile": fatalities_per_1k_mile,
+            "lineWidthMeters": line_width_meters,
         }
-        geometry = feature["geometry"]
-        if geometry["type"] == "MultiLineString":
-            for segment_index, coordinates in enumerate(geometry["coordinates"]):
-                road_features.append(
-                    {
-                        "type": "Feature",
-                        "geometry": {"type": "LineString", "coordinates": coordinates},
-                        "properties": {
-                            **base_properties,
-                            "segmentIndex": segment_index,
-                        },
-                    }
-                )
-            continue
         road_features.append(
             {
                 "type": "Feature",
-                "geometry": geometry,
+                "geometry": feature["geometry"],
                 "properties": base_properties,
             }
         )
