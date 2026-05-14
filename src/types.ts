@@ -1,5 +1,9 @@
 import type { LayerConfig } from './layers/types';
 
+export type DataSource =
+  | { type: 'query' }
+  | { type: 'geojson-url'; url: string };
+
 export type GeometrySource =
   | { type: 'none' }
   | { type: 'wkb'; field: string }

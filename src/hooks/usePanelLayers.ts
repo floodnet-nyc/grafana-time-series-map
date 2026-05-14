@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PanelData } from '@grafana/data';
 import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Feature } from 'geojson';
@@ -13,7 +13,7 @@ import {
   buildTimePackedByLayerId,
   renderPreparedLayers,
 } from '../utils/dataframe/panelLayersModel';
-import { type GeoFeature, dataFramesToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
+import { type GeoFeature, dataFramesToFeatures, geojsonToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 
 export interface UsePanelLayersResult {
   layers: Layer[];
@@ -79,7 +79,8 @@ export function usePanelLayers(
 export type PanelFeaturesByLayerId = Map<string, GeoFeature[]>;
 
 export function usePanelFeatures(data: PanelData, options: MapPanelOptions): PanelFeaturesByLayerId {
-  return useMemo(() => {
+  
+  const featuresByLayerId = useMemo(() => {
     const featuresByLayerId = new Map<string, GeoFeature[]>();
 
     for (const layerConfig of options.layers) {
@@ -95,4 +96,80 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
 
     return featuresByLayerId;
   }, [data.series, options.layers]);
+
+  const geoJsonFeatures = useGeoJsonUrlFeatures(options);
+
+  const mergedFeatures = useMemo(() => {
+    const merged = new Map(featuresByLayerId);
+    for (const [id, features] of geoJsonFeatures) {
+      merged.set(id, features);
+    }
+    return merged;
+  }, [featuresByLayerId, geoJsonFeatures]);
+  return mergedFeatures;
+}
+
+export function useGeoJsonUrlFeatures(options: MapPanelOptions): PanelFeaturesByLayerId {
+  const [featuresByLayerId, setFeaturesByLayerId] = useState<PanelFeaturesByLayerId>(new Map());
+  const prevKeyRef = useRef<string>('');
+
+  const fetchKey = useMemo(() => {
+    return JSON.stringify(
+      options.layers
+        .filter((l) => l.dataSource?.type === 'geojson-url')
+        .map((l) => ({
+          id: l.id,
+          url: l.dataSource!.type === 'geojson-url' ? l.dataSource!.url : '',
+        }))
+    );
+  }, [options.layers]);
+
+  useEffect(() => {
+    const geoJsonLayers = options.layers.filter(
+      (l) => l.dataSource?.type === 'geojson-url' && l.dataSource.url
+    );
+
+    if (geoJsonLayers.length === 0) {
+      if (prevKeyRef.current !== '') {
+        setFeaturesByLayerId(new Map());
+        prevKeyRef.current = '';
+      }
+      return;
+    }
+
+    if (fetchKey === prevKeyRef.current) {
+      return;
+    }
+    prevKeyRef.current = fetchKey;
+
+    let cancelled = false;
+    const result = new Map<string, GeoFeature[]>();
+
+    Promise.all(
+      geoJsonLayers.map(async (layer) => {
+        const url = layer.dataSource!.type === 'geojson-url' ? layer.dataSource!.url : '';
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const geojson = await response.json();
+          result.set(layer.id, geojsonToFeatures(geojson));
+        } catch (err) {
+          console.warn(`[timeseriesmap] Failed to fetch GeoJSON for layer "${layer.label}":`, err);
+          result.set(layer.id, []);
+        }
+      })
+    ).then(() => {
+      if (!cancelled) {
+        setFeaturesByLayerId(result);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchKey, options.layers]);
+
+  return featuresByLayerId;
 }

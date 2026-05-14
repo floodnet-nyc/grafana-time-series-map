@@ -151,7 +151,7 @@ describe('LayerEditor interactions', () => {
   it('updates query refId through the combobox', () => {
     render(<Harness />);
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: 'B' } });
+    fireEvent.change(selects[2], { target: { value: 'B' } });
     expect(currentLayer().queryRefId).toBe('B');
   });
 

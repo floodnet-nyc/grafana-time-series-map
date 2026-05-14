@@ -16,6 +16,7 @@ import {
 import type { GrafanaTheme2 } from '@grafana/data';
 import type {
   ColorScaleConfig,
+  DataSource,
   ElevationConfig,
   GeometrySource,
   LayerDerivedFieldConfig,
@@ -46,6 +47,11 @@ const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'WKT string', value: 'wkt' },
   { label: 'GeoJSON string', value: 'geojson' },
   { label: 'None', value: 'none' },
+];
+
+const DATA_SOURCE_OPTIONS: Array<ComboboxOption<string>> = [
+  { label: 'Grafana query', value: 'query' },
+  { label: 'GeoJSON URL', value: 'geojson-url' },
 ];
 
 const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
@@ -194,6 +200,25 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
     (key: string, value: unknown) =>
       patch({ settings: { ...(layer.settings as any), [key]: value } } as Partial<LayerConfig>),
     [layer.settings, patch],
+  );
+
+  const patchDataSource = useCallback(
+    (type: DataSource['type']) => {
+      const dataSource: DataSource =
+        type === 'geojson-url' ? { type: 'geojson-url', url: '' } : { type: 'query' };
+      patch({ dataSource });
+    },
+    [patch],
+  );
+
+  const patchDataSourceUrl = useCallback(
+    (url: string) => {
+      const ds = layer.dataSource;
+      if (ds?.type === 'geojson-url') {
+        patch({ dataSource: { ...ds, url } });
+      }
+    },
+    [layer.dataSource, patch],
   );
 
   const patchExtensionValue = useCallback(
@@ -368,9 +393,23 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <Field label="Layer type">
           <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
         </Field>
-        <Field label="Query">
-          <Combobox options={refIdOptions} value={layer.queryRefId ?? ''} onChange={(v) => patch({ queryRefId: String(v?.value ?? '') || undefined })} />
+        <Field label="Data source">
+          <Combobox
+            options={DATA_SOURCE_OPTIONS}
+            value={layer.dataSource?.type ?? 'query'}
+            onChange={(v) => v?.value && patchDataSource(v.value as DataSource['type'])}
+          />
         </Field>
+        {layer.dataSource?.type === 'geojson-url' && (
+          <Field label="GeoJSON URL">
+            <Input value={layer.dataSource.url} onChange={(e) => patchDataSourceUrl(e.currentTarget.value)} placeholder="https://example.com/data.geojson" />
+          </Field>
+        )}
+        {layer.dataSource?.type !== 'geojson-url' && (
+          <Field label="Query">
+            <Combobox options={refIdOptions} value={layer.queryRefId ?? ''} onChange={(v) => patch({ queryRefId: String(v?.value ?? '') || undefined })} />
+          </Field>
+        )}
         <Field label="Visible">
           <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
         </Field>

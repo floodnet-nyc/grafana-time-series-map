@@ -2,6 +2,7 @@ import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type {
   ColorScaleConfig,
+  DataSource,
   ElevationConfig,
   FieldMapping,
   GeometrySource,
@@ -168,6 +169,7 @@ export interface BaseLayerConfig<TType extends LayerType, TSettings> {
   label: string;
   visible: boolean;
   queryRefId?: string;
+  dataSource?: DataSource;
   geometry: GeometrySource;
   elevation?: ElevationConfig;
   timeFilter: TimeFilterConfig;
