@@ -1,0 +1,209 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Collision Filter",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "carto-dark",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 24,
+        "initialLongitude": -100,
+        "initialZoom": 5,
+        "initialBearing": 0,
+        "initialPitch": 0,
+        "layers": [
+          {
+            "id": "roads-outline",
+            "type": "path",
+            "label": "Road outline",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/ne_10_roads.json"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 1,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [
+                0,
+                173,
+                230,
+                255
+              ]
+            },
+            "settings": {
+              "widthMinPixels": 3,
+              "widthMaxPixels": 18,
+              "widthField": "scalerank",
+              "widthScale": 3.5,
+              "capRounded": true,
+              "jointRounded": true
+            }
+          },
+          {
+            "id": "roads-fill",
+            "type": "path",
+            "label": "Road centerlines",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/ne_10_roads.json"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 1,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [
+                255,
+                255,
+                255,
+                255
+              ]
+            },
+            "settings": {
+              "widthMinPixels": 1,
+              "widthMaxPixels": 10,
+              "widthField": "scalerank",
+              "widthScale": 2.5,
+              "capRounded": true,
+              "jointRounded": true
+            }
+          },
+          {
+            "id": "road-labels",
+            "type": "text",
+            "label": "Road labels",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/road-labels.geojson"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 1,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [
+                0,
+                0,
+                0,
+                255
+              ]
+            },
+            "extensions": {
+              "collision": {
+                "enabled": true,
+                "group": "roads",
+                "priorityField": "scalerank",
+                "priorityScale": -1,
+                "priorityOffset": 0,
+                "testScale": 1.2
+              }
+            },
+            "settings": {
+              "textField": "name",
+              "fontSize": 12,
+              "sizeMinPixels": 10,
+              "sizeMaxPixels": 18,
+              "sizeField": "",
+              "fontFamily": "Monaco, Menlo, monospace",
+              "fontWeight": "500",
+              "anchor": "middle",
+              "baseline": "center",
+              "billboard": false,
+              "background": true,
+              "pixelOffsetX": 0,
+              "pixelOffsetY": 0
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Collision Filter",
+  "uid": "deckgl-showcase-collision-filter",
+  "version": 1,
+  "weekStart": ""
+}

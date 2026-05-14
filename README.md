@@ -2,6 +2,56 @@
 
 This template is a starting point for building a panel plugin for Grafana.
 
+## Deck.gl showcase coverage
+
+The repository now includes a first provisioned showcase tranche under `provisioning/dashboards/deckgl-example-*.json`.
+
+Phase 1 dashboards:
+
+- `scatterplot`
+- `line`
+- `heatmap`
+- `3d-heatmap`
+- `arc`
+- `geojson`
+- `highway`
+- `text`
+- `collision-filter`
+- `trips`
+- `icon`
+
+Sample data lives under `provisioning/sample-data/deckgl-showcase`.
+
+- Upstream source shape is preserved whenever the plugin can consume it directly.
+- GeoJSON URL is preferred for vector examples.
+- Small derived fixtures are generated only where Grafana query configuration or plugin semantics would otherwise become brittle.
+
+Refresh the mirrored phase-1 assets with:
+
+```bash
+python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1
+```
+
+- heatmap not using color settings
+- geojson elevation settings
+- normalization
+- clustering
+- tooltip
+- fix RGB lighting strings -> RGBA list
+- hexagon upperPercentile
+- transitions: { elevationScale: 3000 }
+- transitionInterpolator
+- flyTo
+
+    bearing: initialViewState.bearing + 120,
+    transitionDuration: 1000,
+    transitionInterpolator: new LinearInterpolator(['bearing']),
+    onTransitionEnd: rotateCamera
+
+Extend the plugin geojson layer to support lineColor from colorScale, not just fill.
+Add lineWidthField, lineWidthScale, and lineWidthUnits to the geojson layer settings.
+Switch the highway dashboard from type: "path" to type: "geojson".
+
 TODO:
 
  - Panel Settings:

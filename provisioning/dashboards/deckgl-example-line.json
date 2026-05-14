@@ -1,0 +1,375 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Line",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/line/airports.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "type",
+              "text": "type",
+              "type": "string"
+            },
+            {
+              "selector": "name",
+              "text": "name",
+              "type": "string"
+            },
+            {
+              "selector": "abbrev",
+              "text": "abbrev",
+              "type": "string"
+            },
+            {
+              "selector": "lng",
+              "text": "lng",
+              "type": "number"
+            },
+            {
+              "selector": "lat",
+              "text": "lat",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "B",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/line/heathrow-flights.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "name",
+              "text": "name",
+              "type": "string"
+            },
+            {
+              "selector": "country",
+              "text": "country",
+              "type": "string"
+            },
+            {
+              "selector": "srcLng",
+              "text": "srcLng",
+              "type": "number"
+            },
+            {
+              "selector": "srcLat",
+              "text": "srcLat",
+              "type": "number"
+            },
+            {
+              "selector": "srcAlt",
+              "text": "srcAlt",
+              "type": "number"
+            },
+            {
+              "selector": "tgtLng",
+              "text": "tgtLng",
+              "type": "number"
+            },
+            {
+              "selector": "tgtLat",
+              "text": "tgtLat",
+              "type": "number"
+            },
+            {
+              "selector": "tgtAlt",
+              "text": "tgtAlt",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "custom",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 47.65,
+        "initialLongitude": 7,
+        "initialZoom": 4.5,
+        "initialBearing": 0,
+        "initialPitch": 50,
+        "layers": [
+          {
+            "id": "airports",
+            "type": "scatterplot",
+            "label": "Airports",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": {
+              "type": "latlng",
+              "latField": "lat",
+              "lngField": "lng"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 0.9,
+            "pickable": true,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [
+                255,
+                140,
+                0,
+                255
+              ]
+            },
+            "settings": {
+              "radiusMinPixels": 2,
+              "radiusMaxPixels": 6,
+              "radiusField": "",
+              "radiusScale": 1,
+              "stroked": false,
+              "showLabels": false,
+              "labelField": ""
+            }
+          },
+          {
+            "id": "flights",
+            "type": "line",
+            "label": "Flights from Heathrow",
+            "visible": true,
+            "queryRefId": "B",
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 0.8,
+            "colorScale": {
+              "type": "threshold",
+              "field": "srcAlt",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": [
+                    255,
+                    0,
+                    0,
+                    255
+                  ]
+                },
+                {
+                  "value": 1000,
+                  "color": [
+                    204,
+                    13,
+                    51,
+                    230
+                  ]
+                },
+                {
+                  "value": 2000,
+                  "color": [
+                    153,
+                    26,
+                    102,
+                    204
+                  ]
+                },
+                {
+                  "value": 3000,
+                  "color": [
+                    102,
+                    38,
+                    153,
+                    179
+                  ]
+                },
+                {
+                  "value": 4000,
+                  "color": [
+                    51,
+                    51,
+                    204,
+                    153
+                  ]
+                },
+                {
+                  "value": 5000,
+                  "color": [
+                    0,
+                    64,
+                    128,
+                    128
+                  ]
+                },
+                {
+                  "value": 6000,
+                  "color": [
+                    0,
+                    77,
+                    153,
+                    102
+                  ]
+                },
+                {
+                  "value": 7000,
+                  "color": [
+                    0,
+                    90,
+                    179,
+                    77
+                  ]
+                },
+                {
+                  "value": 8000,
+                  "color": [
+                    0,
+                    102,
+                    204,
+                    51
+                  ]
+                },
+                {
+                  "value": 9000,
+                  "color": [
+                    0,
+                    115,
+                    230,
+                    26
+                  ]
+                },
+                {
+                  "value": 10000,
+                  "color": [
+                    0,
+                    128,
+                    255,
+                    0
+                  ]
+                },
+                {
+                  "value": 12000,
+                  "color": [
+                    0,
+                    128,
+                    255,
+                    0
+                  ]
+                }
+              ]
+            },
+            "settings": {
+              "srcLngField": "srcLng",
+              "srcLatField": "srcLat",
+              "tgtLngField": "tgtLng",
+              "tgtLatField": "tgtLat",
+              "widthMinPixels": 3,
+              "widthMaxPixels": 3,
+              "widthField": "",
+              "widthScale": 1
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "deckParameters": {
+          "blend": true,
+          "blendColorOperation": "add",
+          "blendColorSrcFactor": "src-alpha",
+          "blendColorDstFactor": "one",
+          "blendAlphaOperation": "add",
+          "blendAlphaSrcFactor": "one-minus-dst-alpha",
+          "blendAlphaDstFactor": "one"
+        },
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        },
+        "maplibreStyleUrl": "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Line",
+  "uid": "deckgl-showcase-line",
+  "version": 1,
+  "weekStart": ""
+}

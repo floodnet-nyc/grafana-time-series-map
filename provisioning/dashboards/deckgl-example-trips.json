@@ -1,0 +1,212 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Trips",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "carto-dark",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 40.72,
+        "initialLongitude": -74,
+        "initialZoom": 13,
+        "initialBearing": 0,
+        "initialPitch": 45,
+        "layers": [
+          {
+            "id": "buildings",
+            "type": "polygon",
+            "label": "Buildings",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/buildings.geojson"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 0.5,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [
+                74,
+                80,
+                87,
+                255
+              ]
+            },
+            "extensions": {
+              "material": {
+                "enabled": true,
+                "ambient": 0.1,
+                "diffuse": 0.6,
+                "shininess": 32,
+                "specularColor": [
+                  60,
+                  64,
+                  70,
+                  255
+                ]
+              }
+            },
+            "settings": {
+              "fillOpacity": 180,
+              "extruded": true,
+              "elevationField": "height",
+              "elevationScale": 1
+            }
+          },
+          {
+            "id": "cab-trips",
+            "type": "trips",
+            "label": "Cab trips",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/trips-v7.geojson"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [
+              {
+                "fieldName": "vendor",
+                "alias": "value"
+              }
+            ],
+            "opacity": 0.35,
+            "colorScale": {
+              "type": "threshold",
+              "field": "vendor",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": [
+                    253,
+                    128,
+                    93,
+                    255
+                  ]
+                },
+                {
+                  "value": 1,
+                  "color": [
+                    23,
+                    184,
+                    190,
+                    255
+                  ]
+                }
+              ]
+            },
+            "settings": {
+              "timestampsField": "timestamps",
+              "timestampUnit": "s",
+              "trailLengthMs": 180000,
+              "fadeTrail": true,
+              "widthMinPixels": 2,
+              "widthMaxPixels": 4,
+              "widthField": "",
+              "widthScale": 1,
+              "capRounded": true,
+              "jointRounded": true
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 50,
+        "loopPlayback": true,
+        "showTimeControls": true,
+        "showLegend": true,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        },
+        "deckLighting": {
+          "enabled": true,
+          "lights": [
+            {
+              "id": "ambient-1",
+              "type": "ambient",
+              "intensity": 1,
+              "color": "#ffffff"
+            },
+            {
+              "id": "point-1",
+              "type": "point",
+              "intensity": 2,
+              "color": "#ffffff",
+              "longitude": -74.05,
+              "latitude": 40.7,
+              "altitude": 8000
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "1970-01-01T00:19:51.000Z",
+    "to": "1970-01-01T00:31:09.000Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Trips",
+  "uid": "deckgl-showcase-trips",
+  "version": 1,
+  "weekStart": ""
+}
