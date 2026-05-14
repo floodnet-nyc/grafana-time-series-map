@@ -114,7 +114,7 @@ describe('useGrafanaEventBridge', () => {
     act(() => {
       result.current.setSelectedKey(null);
     });
-    expect(mockLocationServicePartial).toHaveBeenLastCalledWith({ 'var-selected_sensor': null }, true);
+    expect(mockLocationServicePartial).toHaveBeenLastCalledWith({ 'var-selected_sensor': '' }, true);
   });
 
   it('seeks playback when an in-range hover event is received', () => {

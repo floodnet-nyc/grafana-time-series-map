@@ -75,7 +75,7 @@ export function useGrafanaEventBridge({
     setSelectedKey_(key);
     if (selectionVariableName) {
       const selectionVariableParam = `var-${selectionVariableName?.trim().replace(/^var-/, '') ?? ''}`;
-      locationService.partial({ [selectionVariableParam]: key }, true);
+      locationService.partial({ [selectionVariableParam]: key ?? '' }, true);
     }
   }, [selectionVariableName]);
 
