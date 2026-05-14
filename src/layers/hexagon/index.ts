@@ -6,6 +6,7 @@ import { createBaseLayerConfig, section } from '../defaults';
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   teal: [[214, 245, 238], [153, 225, 210], [87, 197, 174], [24, 161, 135], [0, 124, 101], [0, 84, 70]],
   blueRed: [[49, 130, 189], [107, 174, 214], [158, 202, 225], [254, 178, 76], [240, 59, 32], [189, 0, 38]],
+  accidents: [[1, 152, 189], [73, 227, 206], [216, 254, 181], [254, 237, 177], [254, 173, 84], [209, 55, 78]],
   viridis: [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]],
 };
 
@@ -85,6 +86,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         selectOptions: [
           { label: 'Teal', value: 'teal' },
           { label: 'Blue to red', value: 'blueRed' },
+          { label: 'Accidents', value: 'accidents' },
           { label: 'Viridis-like', value: 'viridis' },
         ],
       },

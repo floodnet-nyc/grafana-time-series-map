@@ -16,6 +16,7 @@ provisioning/sample-data/cogs/*.tif
 provisioning/sample-data/flood_inundation.geojson
 provisioning/plugins
 provisioning/deckgl-examples
+provisioning/sample-data/deckgl-showcase
 
 # yarn
 .yarn/cache
@@ -53,3 +54,5 @@ ci/
 .idea
 
 .eslintcache
+__pycache__/
+*.pyc

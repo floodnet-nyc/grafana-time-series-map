@@ -1,0 +1,195 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "3D Heatmap",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/3d-heatmap/heatmap-data.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "lng",
+              "text": "lng",
+              "type": "number"
+            },
+            {
+              "selector": "lat",
+              "text": "lat",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "custom",
+        "maplibreStyleUrl": "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 52.232395,
+        "initialLongitude": -1.415727,
+        "initialZoom": 6.6,
+        "initialBearing": -27,
+        "initialPitch": 40.5,
+        "layers": [
+          {
+            "id": "hexagon-heat",
+            "type": "hexagon",
+            "label": "3D heatmap",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": {
+              "type": "latlng",
+              "latField": "lat",
+              "lngField": "lng"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 1,
+            "extensions": {
+              "material": {
+                "enabled": true,
+                "ambient": 0.64,
+                "diffuse": 0.6,
+                "shininess": 32,
+                "specularColor": [
+                  51,
+                  51,
+                  51,
+                  255
+                ]
+              }
+            },
+            "settings": {
+              "radius": 1000,
+              "coverage": 1,
+              "extruded": true,
+              "elevationScale": 300,
+              "elevationWeightField": "",
+              "elevationAggregation": "SUM",
+              "colorWeightField": "",
+              "colorAggregation": "SUM",
+              "colorRange": "accidents",
+              "lowerPercentile": 0,
+              "upperPercentile": 100
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "deckLighting": {
+          "enabled": true,
+          "lights": [
+            {
+              "id": "ambient-light",
+              "type": "ambient",
+              "intensity": 1,
+              "color": "255,255,255"
+            },
+            {
+              "id": "point-light-1",
+              "type": "point",
+              "intensity": 0.8,
+              "color": "255,255,255",
+              "longitude": -0.144528,
+              "latitude": 49.739968,
+              "altitude": 80000,
+              "attenuationConstant": 1,
+              "attenuationLinear": 0,
+              "attenuationQuadratic": 0
+            },
+            {
+              "id": "point-light-2",
+              "type": "point",
+              "intensity": 0.8,
+              "color": "255,255,255",
+              "longitude": -3.807751,
+              "latitude": 54.104682,
+              "altitude": 8000,
+              "attenuationConstant": 1,
+              "attenuationLinear": 0,
+              "attenuationQuadratic": 0
+            }
+          ]
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 3D Heatmap",
+  "uid": "deckgl-showcase-3d-heatmap",
+  "version": 1,
+  "weekStart": ""
+}

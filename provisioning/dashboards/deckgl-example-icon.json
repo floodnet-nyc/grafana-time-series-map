@@ -1,0 +1,176 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Icon",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/icon/meteorites.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "name",
+              "text": "name",
+              "type": "string"
+            },
+            {
+              "selector": "class",
+              "text": "class",
+              "type": "string"
+            },
+            {
+              "selector": "mass",
+              "text": "mass",
+              "type": "number"
+            },
+            {
+              "selector": "year",
+              "text": "year",
+              "type": "number"
+            },
+            {
+              "selector": "lng",
+              "text": "lng",
+              "type": "number"
+            },
+            {
+              "selector": "lat",
+              "text": "lat",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "carto-dark",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 36.7,
+        "initialLongitude": -35,
+        "initialZoom": 1.8,
+        "initialBearing": 0,
+        "initialPitch": 0,
+        "layers": [
+          {
+            "id": "meteorites",
+            "type": "icon",
+            "label": "Meteorites",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": {
+              "type": "latlng",
+              "latField": "lat",
+              "lngField": "lng"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [
+              {
+                "fieldName": "mass",
+                "alias": "value"
+              }
+            ],
+            "opacity": 0.9,
+            "colorScale": {
+              "type": "gradient",
+              "field": "mass",
+              "schemeName": "Turbo",
+              "scaleMin": 0,
+              "scaleMax": 60000
+            },
+            "settings": {
+              "fixedIcon": "marker",
+              "iconField": "",
+              "iconAtlasUrl": "",
+              "iconMappingUrl": "",
+              "sizeScale": 20,
+              "sizeMinPixels": 10,
+              "sizeMaxPixels": 48,
+              "sizeField": "mass",
+              "billboard": true,
+              "alphaCutoff": 0.05
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": true,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Icon",
+  "uid": "deckgl-showcase-icon",
+  "version": 1,
+  "weekStart": ""
+}

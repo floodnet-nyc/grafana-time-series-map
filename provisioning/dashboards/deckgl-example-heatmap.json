@@ -1,0 +1,144 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Heatmap",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/heatmap/uber-pickup-locations.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "lng",
+              "text": "lng",
+              "type": "number"
+            },
+            {
+              "selector": "lat",
+              "text": "lat",
+              "type": "number"
+            },
+            {
+              "selector": "weight",
+              "text": "weight",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "carto-dark",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 40.73,
+        "initialLongitude": -73.75,
+        "initialZoom": 9,
+        "initialBearing": 0,
+        "initialPitch": 0,
+        "layers": [
+          {
+            "id": "uber-heatmap",
+            "type": "heatmap",
+            "label": "Pickup density",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": {
+              "type": "latlng",
+              "latField": "lat",
+              "lngField": "lng"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 0.95,
+            "settings": {
+              "radiusPixels": 5,
+              "intensity": 1,
+              "threshold": 0.03,
+              "weightField": "weight",
+              "colorRange": "fire"
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Heatmap",
+  "uid": "deckgl-showcase-heatmap",
+  "version": 1,
+  "weekStart": ""
+}

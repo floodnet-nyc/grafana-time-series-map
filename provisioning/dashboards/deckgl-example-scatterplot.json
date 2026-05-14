@@ -1,0 +1,176 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Scatterplot",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/scatterplot/manhattan.rows.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "rows",
+          "columns": [
+            {
+              "selector": "lng",
+              "text": "lng",
+              "type": "number"
+            },
+            {
+              "selector": "lat",
+              "text": "lat",
+              "type": "number"
+            },
+            {
+              "selector": "exits",
+              "text": "exits",
+              "type": "number"
+            }
+          ],
+          "format": "table"
+        }
+      ],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "carto-light",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 40.7,
+        "initialLongitude": -74,
+        "initialZoom": 11,
+        "initialBearing": 0,
+        "initialPitch": 0,
+        "layers": [
+          {
+            "id": "scatterplot-riders",
+            "type": "scatterplot",
+            "label": "Manhattan exits",
+            "visible": true,
+            "queryRefId": "A",
+            "geometry": {
+              "type": "latlng",
+              "latField": "lat",
+              "lngField": "lng"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [
+              {
+                "fieldName": "exits",
+                "alias": "value"
+              }
+            ],
+            "opacity": 0.9,
+            "pickable": true,
+            "colorScale": {
+              "type": "threshold",
+              "field": "exits",
+              "steps": [
+                {
+                  "value": 1,
+                  "color": [
+                    0,
+                    128,
+                    255,
+                    255
+                  ]
+                },
+                {
+                  "value": 2,
+                  "color": [
+                    255,
+                    0,
+                    128,
+                    255
+                  ]
+                }
+              ]
+            },
+            "settings": {
+              "radiusMinPixels": 2,
+              "radiusMaxPixels": 2,
+              "radiusField": "",
+              "radiusScale": 1,
+              "stroked": false,
+              "showLabels": false,
+              "labelField": ""
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if value}}<div>Value: {{value}}</div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Scatterplot",
+  "uid": "deckgl-showcase-scatterplot",
+  "version": 1,
+  "weekStart": ""
+}

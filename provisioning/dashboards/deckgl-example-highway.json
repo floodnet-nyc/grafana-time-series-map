@@ -1,0 +1,209 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Highway",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [],
+      "options": {
+        "basemapProvider": "maplibre",
+        "maplibreStyle": "custom",
+        "maplibreStyleUrl": "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+        "maplibreProjection": "mercator",
+        "initialViewMode": "manual",
+        "initialLatitude": 38,
+        "initialLongitude": -100,
+        "initialZoom": 4,
+        "initialBearing": 0,
+        "initialPitch": 0,
+        "layers": [
+          {
+            "id": "roads-1990",
+            "type": "path",
+            "label": "Fatal highway accidents (1990)",
+            "visible": true,
+            "dataSource": {
+              "type": "geojson-url",
+              "url": "http://localhost:3000/public/sample-data/deckgl-showcase/highway/roads-1990.geojson"
+            },
+            "geometry": {
+              "type": "none"
+            },
+            "timeFilter": {
+              "mode": "none",
+              "timeField": ""
+            },
+            "fieldMappings": [],
+            "opacity": 0.9,
+            "pickable": true,
+            "colorScale": {
+              "type": "threshold",
+              "field": "fatalitiesPer1kMile",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": [
+                    26,
+                    152,
+                    80,
+                    255
+                  ]
+                },
+                {
+                  "value": 4,
+                  "color": [
+                    102,
+                    189,
+                    99,
+                    255
+                  ]
+                },
+                {
+                  "value": 8,
+                  "color": [
+                    166,
+                    217,
+                    106,
+                    255
+                  ]
+                },
+                {
+                  "value": 12,
+                  "color": [
+                    217,
+                    239,
+                    139,
+                    255
+                  ]
+                },
+                {
+                  "value": 20,
+                  "color": [
+                    255,
+                    255,
+                    191,
+                    255
+                  ]
+                },
+                {
+                  "value": 32,
+                  "color": [
+                    254,
+                    224,
+                    139,
+                    255
+                  ]
+                },
+                {
+                  "value": 52,
+                  "color": [
+                    253,
+                    174,
+                    97,
+                    255
+                  ]
+                },
+                {
+                  "value": 84,
+                  "color": [
+                    244,
+                    109,
+                    67,
+                    255
+                  ]
+                },
+                {
+                  "value": 136,
+                  "color": [
+                    215,
+                    48,
+                    39,
+                    255
+                  ]
+                },
+                {
+                  "value": 220,
+                  "color": [
+                    168,
+                    0,
+                    0,
+                    255
+                  ]
+                }
+              ]
+            },
+            "settings": {
+              "widthMinPixels": 0.5,
+              "widthMaxPixels": 3.5,
+              "widthField": "incidentsPer1kMile",
+              "widthScale": 0.0125,
+              "capRounded": false,
+              "jointRounded": false
+            }
+          }
+        ],
+        "defaultPlaybackSpeed": 1,
+        "loopPlayback": false,
+        "showTimeControls": false,
+        "showLegend": false,
+        "interleaved": true,
+        "syncPublish": false,
+        "syncSubscribe": false,
+        "showTooltip": true,
+        "tooltipTemplate": "{{#if name}}<div><b>{{name}}</b></div>{{/if}}{{#if fatalities}}<div>Fatalities: {{fatalities}}</div>{{/if}}{{#if incidents}}<div>Incidents: {{incidents}}</div>{{/if}}{{#if fatalitiesPer1kMile}}<div>Fatalities / 1k mile: {{fatalitiesPer1kMile}}</div>{{/if}}{{#if incidentsPer1kMile}}<div>Incidents / 1k mile: {{incidentsPer1kMile}}</div>{{/if}}",
+        "controlSettings": {
+          "navigation": {
+            "position": "top-right",
+            "showZoom": true,
+            "showCompass": true
+          },
+          "fullscreen": {
+            "position": "top-right"
+          }
+        },
+        "interactions": {
+          "syncViewToUrl": true
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": [
+    "deckgl",
+    "showcase",
+    "phase1"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase \u2014 Highway",
+  "uid": "deckgl-showcase-highway",
+  "version": 1,
+  "weekStart": ""
+}
