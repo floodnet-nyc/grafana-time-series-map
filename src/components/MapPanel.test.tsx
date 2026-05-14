@@ -10,11 +10,18 @@ const mockUseGrafanaEventBridge = jest.fn();
 const mockUsePanelFeatures = jest.fn();
 const mockUseFitBounds = jest.fn();
 const mockUsePanelLayers = jest.fn();
+const mockLocationServicePartial = jest.fn();
 
 let latestFeatureClick: ((feature: Feature, info: any) => void) | undefined;
 
 jest.mock('../hooks/usePlayback', () => ({
   usePlayback: (args: unknown) => mockUsePlayback(args),
+}));
+
+jest.mock('@grafana/runtime', () => ({
+  locationService: {
+    partial: (...args: unknown[]) => mockLocationServicePartial(...args),
+  },
 }));
 
 jest.mock('../hooks/useGrafanaEventBridge', () => ({
@@ -146,17 +153,17 @@ describe('MapPanel', () => {
   };
 
   let selectedKey: string | null;
-  let selectKey: jest.Mock;
+  let setSelectedKey: jest.Mock;
 
   beforeEach(() => {
     selectedKey = null;
-    selectKey = jest.fn((key: string | null) => {
+    setSelectedKey = jest.fn((key: string | null) => {
       selectedKey = key;
     });
     latestFeatureClick = undefined;
 
     mockUsePlayback.mockReturnValue(playback);
-    mockUseGrafanaEventBridge.mockImplementation(() => ({ selectedKey, selectKey }));
+    mockUseGrafanaEventBridge.mockImplementation(() => ({ selectedKey, setSelectedKey }));
     mockUsePanelFeatures.mockReturnValue(new Map());
     mockUseFitBounds.mockReturnValue(undefined);
     mockUsePanelLayers.mockReturnValue({ layers: [], getTooltip: null });
@@ -199,13 +206,13 @@ describe('MapPanel', () => {
     });
     view.rerender(<MapPanel {...props} />);
 
-    expect(selectKey).toHaveBeenLastCalledWith('sensor-1');
+    expect(setSelectedKey).toHaveBeenLastCalledWith('sensor-1');
     expect(screen.getByText('sensor-1')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'close-popup' }));
     view.rerender(<MapPanel {...props} />);
 
-    expect(selectKey).toHaveBeenLastCalledWith(null);
+    expect(setSelectedKey).toHaveBeenLastCalledWith(null);
     expect(screen.queryByText('sensor-1')).not.toBeInTheDocument();
   });
 
@@ -223,7 +230,7 @@ describe('MapPanel', () => {
 
     latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
 
-    expect(selectKey).toHaveBeenCalledWith(null);
+    expect(setSelectedKey).toHaveBeenCalledWith(null);
   });
 
   it('does not reuse stale popup feature details for an external selection change', () => {
@@ -247,5 +254,31 @@ describe('MapPanel', () => {
 
     expect(screen.getByText('sensor-2')).toBeInTheDocument();
     expect(screen.queryByText('sensor-1')).not.toBeInTheDocument();
+  });
+
+  it('stores selection changes in the configured dashboard variable', () => {
+    const props = createProps(createOptions({ selectionVariableName: 'selected_sensor' }));
+    const feature: Feature = {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [0, 0] },
+      properties: { deployment_id: 'sensor-1' },
+    };
+
+    const view = render(<MapPanel {...props} />);
+    expect(mockUseGrafanaEventBridge).toHaveBeenCalledWith(
+      expect.objectContaining({ selectionVariableName: 'selected_sensor' })
+    );
+
+    act(() => {
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+    });
+    view.rerender(<MapPanel {...props} />);
+
+    expect(setSelectedKey).toHaveBeenLastCalledWith('sensor-1');
+
+    fireEvent.click(screen.getByRole('button', { name: 'close-popup' }));
+    view.rerender(<MapPanel {...props} />);
+
+    expect(setSelectedKey).toHaveBeenLastCalledWith(null);
   });
 });

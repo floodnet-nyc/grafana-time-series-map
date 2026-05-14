@@ -3,6 +3,14 @@ import { DataHoverClearEvent, DataHoverEvent, DataSelectEvent, type EventBus } f
 import { useGrafanaEventBridge } from './useGrafanaEventBridge';
 import type { UsePlaybackResult } from './usePlayback';
 
+const mockLocationServicePartial = jest.fn();
+
+jest.mock('@grafana/runtime', () => ({
+  locationService: {
+    partial: (...args: unknown[]) => mockLocationServicePartial(...args),
+  },
+}));
+
 type Subscriber<T> = {
   eventType: new (...args: any[]) => T;
   handler: (event: T) => void;
@@ -48,6 +56,21 @@ function createPlayback(overrides: Partial<UsePlaybackResult> = {}): UsePlayback
   };
 }
 
+function renderBridge(eventBus: EventBus, playback: UsePlaybackResult, overrides: Partial<Parameters<typeof useGrafanaEventBridge>[0]> = {}) {
+  return renderHook(() =>
+    useGrafanaEventBridge({
+      eventBus,
+      replaceVariables: (value: string) => value,
+      playback,
+      fromTimeMs: 1000,
+      toTimeMs: 2000,
+      publish: true,
+      subscribe: true,
+      ...overrides,
+    })
+  );
+}
+
 describe('useGrafanaEventBridge', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -56,16 +79,15 @@ describe('useGrafanaEventBridge', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
+    jest.clearAllMocks();
   });
 
   it('supports local selection and clears on DataHoverClearEvent', () => {
     const { eventBus, subscribers } = createEventBus();
-    const { result } = renderHook(() =>
-      useGrafanaEventBridge(eventBus, createPlayback(), 1000, 2000, true, true)
-    );
+    const { result } = renderBridge(eventBus, createPlayback());
 
     act(() => {
-      result.current.selectKey('sensor-1');
+      result.current.setSelectedKey('sensor-1');
     });
     expect(result.current.selectedKey).toBe('sensor-1');
 
@@ -78,11 +100,28 @@ describe('useGrafanaEventBridge', () => {
     expect(result.current.selectedKey).toBeNull();
   });
 
+  it('writes the configured dashboard variable when local selection changes', () => {
+    const { eventBus } = createEventBus();
+    const { result } = renderBridge(eventBus, createPlayback(), {
+      selectionVariableName: 'selected_sensor',
+    });
+
+    act(() => {
+      result.current.setSelectedKey('sensor-1');
+    });
+    expect(mockLocationServicePartial).toHaveBeenLastCalledWith({ 'var-selected_sensor': 'sensor-1' }, true);
+
+    act(() => {
+      result.current.setSelectedKey(null);
+    });
+    expect(mockLocationServicePartial).toHaveBeenLastCalledWith({ 'var-selected_sensor': null }, true);
+  });
+
   it('seeks playback when an in-range hover event is received', () => {
     const { eventBus, subscribers } = createEventBus();
     const playback = createPlayback();
 
-    renderHook(() => useGrafanaEventBridge(eventBus, playback, 1000, 2000, true, true));
+    renderBridge(eventBus, playback);
 
     const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
     expect(hoverSubscriber).toBeDefined();
@@ -100,9 +139,7 @@ describe('useGrafanaEventBridge', () => {
 
   it('updates selectedKey from incoming hover payload data', () => {
     const { eventBus, subscribers } = createEventBus();
-    const { result } = renderHook(() =>
-      useGrafanaEventBridge(eventBus, createPlayback(), 1000, 2000, true, true)
-    );
+    const { result } = renderBridge(eventBus, createPlayback());
 
     const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
     expect(hoverSubscriber).toBeDefined();
@@ -116,9 +153,7 @@ describe('useGrafanaEventBridge', () => {
 
   it('updates selectedKey from incoming DataSelectEvent', () => {
     const { eventBus, subscribers } = createEventBus();
-    const { result } = renderHook(() =>
-      useGrafanaEventBridge(eventBus, createPlayback(), 1000, 2000, true, true)
-    );
+    const { result } = renderBridge(eventBus, createPlayback());
 
     const selectSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataSelectEvent);
     expect(selectSubscriber).toBeDefined();
@@ -135,7 +170,7 @@ describe('useGrafanaEventBridge', () => {
 
     const { eventBus, subscribers, published } = createEventBus();
     const playback = createPlayback({ playing: true, cursorTimeMs: 1666 });
-    renderHook(() => useGrafanaEventBridge(eventBus, playback, 1000, 2000, true, true));
+    renderBridge(eventBus, playback);
 
     act(() => {
       jest.advanceTimersByTime(100);
