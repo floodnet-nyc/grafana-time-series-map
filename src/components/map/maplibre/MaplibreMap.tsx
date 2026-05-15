@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import Map, {
-  FullscreenControl,
+  AttributionControl,
+  // FullscreenControl,
   GeolocateControl,
-  NavigationControl,
-  ScaleControl,
+  // NavigationControl,
+  // ScaleControl,
   type MapRef,
 } from 'react-map-gl/maplibre';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
@@ -66,8 +67,10 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
       cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
       rollEnabled={interactive ? interactions.rollEnabled ?? false : false}
       onMoveEnd={handleMoveEnd}
+      attributionControl={false}
     >
-      {controlSettings.navigation.enabled && (
+      <AttributionControl compact />
+      {/* {controlSettings.navigation.enabled && (
         <NavigationControl
           position={controlSettings.navigation.position}
           showZoom={controlSettings.navigation.showZoom}
@@ -75,7 +78,7 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
           visualizePitch={controlSettings.navigation.visualizePitch}
           visualizeRoll={controlSettings.navigation.visualizeRoll}
         />
-      )}
+      )} */}
       {controlSettings.geolocate.enabled && interactive && (
         <GeolocateControl
           position={controlSettings.geolocate.position}
@@ -83,8 +86,8 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
           positionOptions={{ enableHighAccuracy: true }}
         />
       )}
-      {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
-      {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
+      {/* {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
+      {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />} */}
       <MaplibreDeckOverlay layers={layers} getTooltip={getTooltip ?? undefined} interleaved={interleaved} options={options} />
     </Map>
   );

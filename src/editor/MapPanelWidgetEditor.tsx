@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Button, IconButton } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { WidgetConfig } from '../widgets/types';
 import { widgetDefinitions } from '../widgets/_all';
 import { WidgetEditor } from './WidgetEditor';
+import { SelectableListEditor } from './SelectableListEditor';
 
 interface Props extends StandardEditorProps<WidgetConfig[]> {}
 
@@ -13,7 +14,6 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const widgetList = useMemo(() => widgets ?? [], [widgets]);
-  const selectedWidget = selectedIndex !== null ? widgetList[selectedIndex] : undefined;
 
   const addWidget = useCallback(() => {
     const firstDef = widgetDefinitions[0];
@@ -68,41 +68,21 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
 
   return (
     <div className={styles.root}>
-      <div className={styles.list}>
-        {widgetList.map((widget, i) => (
-          <div
-            key={widget.id}
-            className={`${styles.listItem} ${selectedIndex === i ? styles.listItemActive : ''}`}
-            onClick={() => setSelectedIndex(selectedIndex === i ? null : i)}
-          >
-            <IconButton
-              name={widget.visible ? 'eye' : 'eye-slash'}
-              size="sm"
-              tooltip={widget.visible ? 'Hide widget' : 'Show widget'}
-              className={styles.visButton}
-              onClick={(e) => { e.stopPropagation(); toggleVisibility(i); }}
-            />
-            <span className={styles.widgetName}>{widget.label || widget.type}</span>
-            <div className={styles.listActions}>
-              <IconButton name="arrow-up" size="sm" tooltip="Move up" onClick={(e) => { e.stopPropagation(); moveWidget(i, -1); }} />
-              <IconButton name="arrow-down" size="sm" tooltip="Move down" onClick={(e) => { e.stopPropagation(); moveWidget(i, 1); }} />
-              <IconButton name="trash-alt" size="sm" tooltip="Remove" onClick={(e) => { e.stopPropagation(); removeWidget(i); }} />
-            </div>
-          </div>
-        ))}
-        <Button variant="secondary" size="sm" icon="plus" onClick={addWidget}>
-          Add widget
-        </Button>
-      </div>
-
-      {selectedWidget && (
-        <div className={styles.editor}>
-          <WidgetEditor
-            widget={selectedWidget}
-            onChange={(updated) => updateWidget(selectedIndex!, updated)}
-          />
-        </div>
-      )}
+      <SelectableListEditor
+        items={widgetList}
+        selectedIndex={selectedIndex}
+        onSelect={setSelectedIndex}
+        getItemKey={(widget) => widget.id}
+        getItemLabel={(widget) => widget.label || widget.type}
+        addButtonLabel="Add widget"
+        onAdd={addWidget}
+        onMove={moveWidget}
+        onRemove={removeWidget}
+        onToggleVisibility={toggleVisibility}
+        isVisible={(widget) => widget.visible}
+        getVisibilityTooltip={(widget) => (widget.visible ? 'Hide widget' : 'Show widget')}
+        renderEditor={(widget, index) => <WidgetEditor widget={widget} onChange={(updated) => updateWidget(index, updated)} />}
+      />
     </div>
   );
 }
@@ -110,24 +90,5 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
 function getStyles(theme: GrafanaTheme2) {
   return {
     root: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }),
-    list: css({ display: 'flex', flexDirection: 'column', gap: 2 }),
-    listItem: css({
-      display: 'flex',
-      alignItems: 'center',
-      padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-      borderRadius: theme.shape.radius.default,
-      cursor: 'pointer',
-      background: theme.colors.background.secondary,
-      '&:hover': { background: theme.colors.action.hover },
-    }),
-    listItemActive: css({ background: theme.colors.action.selected }),
-    visButton: css({ marginRight: theme.spacing(0.5), color: theme.colors.text.secondary }),
-    widgetName: css({ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }),
-    listActions: css({ display: 'flex', gap: 2, marginLeft: theme.spacing(0.5) }),
-    editor: css({
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
-      background: theme.colors.background.secondary,
-    }),
   };
 }

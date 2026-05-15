@@ -6,7 +6,7 @@ import { contextMenuWidgetDefinition, infoWidgetDefinition, popupWidgetDefinitio
 import { iconWidgetDefinition, selectorWidgetDefinition, timelineWidgetDefinition, toggleWidgetDefinition } from './control';
 import { loadingWidgetDefinition, screenshotWidgetDefinition, statsWidgetDefinition, themeWidgetDefinition } from './utility';
 import type { WidgetConfig, WidgetDefinition } from './types';
-import '@deck.gl/widgets/stylesheet.css';
+import './stylesheet.css';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const widgetDefinitions: Array<WidgetDefinition<any>> = [
