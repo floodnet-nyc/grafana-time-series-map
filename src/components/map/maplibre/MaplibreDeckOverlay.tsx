@@ -1,47 +1,27 @@
 import { useEffect, useRef } from 'react';
-import { MapboxOverlay } from '@deck.gl/mapbox';
-import type { Layer, PickingInfo } from '@deck.gl/core';
+import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox';
 import { useMap } from 'react-map-gl/maplibre';
 import type { MapPanelOptions } from '../../../types';
-import type { DeckTooltipContent } from '../types';
 import { buildDeckEffects } from '../../../utils/deckgl/lighting';
 import { buildDeckParameters } from '../../../utils/deckgl/parameters';
-// import { GimbalWidget, ResetViewWidget } from '@deck.gl/widgets';
-// import '@deck.gl/widgets/stylesheet.css';
+import { createWidgets } from '../../../widgets/_all';
+import {LightGlassTheme} from '@deck.gl/widgets';
 
-interface MaplibreDeckOverlayProps {
-  layers: Layer[];
-  interleaved: boolean;
-  options: MapPanelOptions;
-  getTooltip?: ((info: PickingInfo) => DeckTooltipContent) | null;
-}
+export type MaplibreDeckOverlayProps = MapboxOverlayProps & { options: MapPanelOptions; };
 
-export function MaplibreDeckOverlay({ layers, interleaved, options, getTooltip }: MaplibreDeckOverlayProps) {
+export function MaplibreDeckOverlay({ options, ...props }: MaplibreDeckOverlayProps) {
   const { current: mapRef } = useMap();
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const effects = buildDeckEffects(options.deck.lighting);
   const parameters = buildDeckParameters(options.deck.parameters);
+  const widgets = createWidgets(options.widgets ?? []);
+  props = { ...props, effects, parameters, widgets, style: LightGlassTheme };
 
   useEffect(() => {
     const map = mapRef?.getMap();
-    if (!map) {
-      return;
-    }
+    if (!map) { return; }
 
-    const overlay = new MapboxOverlay({ 
-      interleaved, layers, effects, parameters, getTooltip,
-      widgets: [
-        // new GimbalWidget({placement: 'top-left'}),
-        // new ResetViewWidget({
-        //   placement: 'top-left',
-        //   initialViewState: {
-        //     longitude: -20,
-        //     latitude: 15,
-        //     zoom: 0
-        //   }
-        // })
-      ]
-    });
+    const overlay = new MapboxOverlay(props);
     overlayRef.current = overlay;
     map.addControl(overlay as any);
 
@@ -55,15 +35,9 @@ export function MaplibreDeckOverlay({ layers, interleaved, options, getTooltip }
 
   useEffect(() => {
     const overlay = overlayRef.current;
-    if (!overlay) {
-      return;
-    }
-
-    overlay.setProps({ layers, effects, parameters, getTooltip });
-    // if (interleaved) {
-    //   mapRef?.getMap()?.triggerRepaint();
-    // }
-  }, [effects, getTooltip, interleaved, layers, mapRef, parameters]);
+    if (!overlay) { return; }
+    overlay.setProps(props);
+  }, [props]);
 
   return null;
 }

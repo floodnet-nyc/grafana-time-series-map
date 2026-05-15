@@ -1,9 +1,20 @@
 import { useEffect, useMemo } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay, type GoogleMapsOverlayProps } from '@deck.gl/google-maps';
+import { MapPanelOptions } from 'types';
+import { buildDeckEffects } from 'utils/deckgl/lighting';
+import { buildDeckParameters } from 'utils/deckgl/parameters';
+import { createWidgets } from 'widgets/_all';
+import {LightGlassTheme} from '@deck.gl/widgets';
 
-export function GoogleDeckOverlay(props: GoogleMapsOverlayProps) {
+export type GoogleDeckOverlayProps = GoogleMapsOverlayProps & { options: MapPanelOptions; };
+
+export function GoogleDeckOverlay({ options, ...props }: GoogleDeckOverlayProps) {
   const map = useMap();
+  const effects = buildDeckEffects(options.deck.lighting);
+  const parameters = buildDeckParameters(options.deck.parameters);
+  const widgets = createWidgets(options.widgets ?? []);
+  props = { ...props, effects, parameters, widgets, style: LightGlassTheme };
 
   const overlay = useMemo(() => {
     const resizeState: { dpr?: number } = {};

@@ -88,6 +88,7 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
         }}
       >
         <GoogleDeckOverlay
+          options={options}
           layers={layers}
           interleaved={interleaved}
           getTooltip={getTooltip ?? undefined}

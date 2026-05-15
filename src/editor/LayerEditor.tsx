@@ -9,6 +9,7 @@ import {
   Field,
   TextArea,
   CollapsableSection,
+  ColorPicker,
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
@@ -16,7 +17,6 @@ import type { DataSource } from '../types';
 import type { LayerConfig, LayerOptionField } from '../layers/types';
 import { layerExtensionDefinitions } from '../layers/extensions';
 import { layerDefinitions } from '../layers/_all';
-import { ColorPicker } from '@grafana/ui';
 import { FieldSelect } from './FieldSelect';
 import { GeometryEditor } from './GeometryEditor';
 import { TimeFilterEditor } from './TimeFilterEditor';
