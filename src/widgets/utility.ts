@@ -15,6 +15,7 @@ type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidg
 type StatsWidgetConfig = BaseWidgetConfig<'stats', Omit<StatsWidgetProps, 'id'>>;
 type ThemeWidgetConfig = BaseWidgetConfig<'theme', Omit<ThemeWidgetProps, 'id'>>;
 
+// Not sure if grafana provides this state
 export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   type: 'loading',
   label: 'Loading',
@@ -38,6 +39,7 @@ export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   createWidget: (config) => new LoadingWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: html2canvas
 export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig> = {
   type: 'screenshot',
   label: 'Screenshot',
@@ -105,6 +107,7 @@ export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
   createWidget: (config) => new StatsWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: pass in callbacks
 export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
   type: 'theme',
   label: 'Theme',

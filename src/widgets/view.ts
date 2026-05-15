@@ -10,6 +10,7 @@ import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './type
 type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
 type SplitterWidgetConfig = BaseWidgetConfig<'splitter', Omit<SplitterWidgetProps, 'id'>>;
 
+// works
 export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig> = {
   type: 'fullscreen',
   label: 'Fullscreen',
@@ -34,6 +35,7 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
   createWidget: (config) => new FullscreenWidget({ id: config.id, ...config.settings }),
 };
 
+// DISABLE
 export const splitterWidgetDefinition: WidgetDefinition<SplitterWidgetConfig> = {
   type: 'splitter',
   label: 'Splitter',

@@ -2,7 +2,7 @@ import type { Widget } from '@deck.gl/core';
 import { 
   gimbalWidgetDefinition, 
   resetViewWidgetDefinition, 
-  scrollbarWidgetDefinition, 
+  // scrollbarWidgetDefinition, 
   zoomWidgetDefinition,
 } from './navigation';
 import { 
@@ -12,7 +12,7 @@ import {
 } from './geospatial';
 import { 
   fullscreenWidgetDefinition, 
-  splitterWidgetDefinition 
+  // splitterWidgetDefinition 
 } from './view';
 import { 
   contextMenuWidgetDefinition, 
@@ -21,9 +21,9 @@ import {
 } from './information';
 import { 
   iconWidgetDefinition, 
-  selectorWidgetDefinition, 
+  // selectorWidgetDefinition, 
   timelineWidgetDefinition, 
-  toggleWidgetDefinition 
+  // toggleWidgetDefinition 
 } from './control';
 import { 
   loadingWidgetDefinition, 
@@ -39,22 +39,22 @@ export const widgetDefinitions = [
   zoomWidgetDefinition,
   resetViewWidgetDefinition,
   gimbalWidgetDefinition,
-  scrollbarWidgetDefinition,
+  // scrollbarWidgetDefinition,
   // Geospatial
   compassWidgetDefinition,
   geocoderWidgetDefinition,
   scaleWidgetDefinition,
   // View
   fullscreenWidgetDefinition,
-  splitterWidgetDefinition,
+  // splitterWidgetDefinition,
   // Information
   contextMenuWidgetDefinition,
   infoWidgetDefinition,
   popupWidgetDefinition,
   // Control
   iconWidgetDefinition,
-  toggleWidgetDefinition,
-  selectorWidgetDefinition,
+  // toggleWidgetDefinition,
+  // selectorWidgetDefinition,
   timelineWidgetDefinition,
   // Utility
   loadingWidgetDefinition,
