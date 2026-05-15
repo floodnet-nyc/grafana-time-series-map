@@ -111,7 +111,8 @@ export default function MaplibreMap({
 
   if (controller) {
     return (
-      <DeckGL {...deckProps as DeckGLProps} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
+      <div style={{ width, height }}>
+      <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
         <Map {...mapProps}>
           <MaplibreFitBounds
             disabled={Boolean(initialViewFromHash)}
@@ -123,6 +124,7 @@ export default function MaplibreMap({
           {controls}
         </Map>
       </DeckGL>
+      </div>
     );
   }
 

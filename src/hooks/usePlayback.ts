@@ -11,7 +11,7 @@ export interface UsePlaybackResult {
   pause(): void;
   scrubTo(ms: number): void;
   /** Move cursor to ms and pause — keeps scrubbing:false so external callers can keep driving. */
-  seekTo(ms: number): void;
+  seekTo(ms: number, pause?: boolean): void;
   setSpeed(speed: number): void;
 }
 

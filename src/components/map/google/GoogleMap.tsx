@@ -85,7 +85,8 @@ export default function GoogleMap({
   if (controller) {
     return (
       <APIProvider apiKey={options.basemap.google.apiKey ?? ''}>
-        <DeckGL {...deckProps as DeckGLProps} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
+        <div style={{ width, height }}>
+        <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
           <Map
             {...sharedMapProps}
             style={{ width, height }}
@@ -110,6 +111,7 @@ export default function GoogleMap({
             <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
           </Map>
         </DeckGL>
+        </div>
       </APIProvider>
     );
   }
