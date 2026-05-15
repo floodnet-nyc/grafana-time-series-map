@@ -1,6 +1,6 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
-import { useStyles2, Button, IconButton } from '@grafana/ui';
+import { useStyles2, Button, IconButton, Combobox } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 
 interface Props<T> {
@@ -10,13 +10,14 @@ interface Props<T> {
   getItemKey: (item: T, index: number) => string;
   getItemLabel: (item: T, index: number) => string;
   addButtonLabel: string;
-  onAdd: () => void;
+  onAdd: (type?: string) => void;
   renderEditor: (item: T, index: number) => React.ReactNode;
   onMove?: (index: number, direction: -1 | 1) => void;
   onRemove?: (index: number) => void;
   onToggleVisibility?: (index: number) => void;
   isVisible?: (item: T, index: number) => boolean;
   getVisibilityTooltip?: (item: T, index: number) => string;
+  addOptions?: Array<{ label: string; value: string; description?: string }>;
 }
 
 export function SelectableListEditor<T>({
@@ -33,6 +34,7 @@ export function SelectableListEditor<T>({
   onToggleVisibility,
   isVisible,
   getVisibilityTooltip,
+  addOptions,
 }: Props<T>) {
   const styles = useStyles2(getStyles);
   const selectedItem = selectedIndex !== null ? items[selectedIndex] : undefined;
@@ -101,9 +103,17 @@ export function SelectableListEditor<T>({
             </div>
           );
         })}
-        <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
-          {addButtonLabel}
-        </Button>
+        {addOptions ? (
+          <Combobox
+            options={addOptions}
+            onChange={(option) => option?.value && onAdd(option.value)}
+            placeholder={addButtonLabel}
+          />
+        ) : (
+          <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
+            {addButtonLabel}
+          </Button>
+        )}
       </div>
 
       {selectedItem !== undefined && selectedIndex !== null && <div className={styles.editor}>{renderEditor(selectedItem, selectedIndex)}</div>}
