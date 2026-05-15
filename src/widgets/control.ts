@@ -1,0 +1,107 @@
+import { IconWidget, ToggleWidget, SelectorWidget, _TimelineWidget as TimelineWidget } from '@deck.gl/widgets';
+import {
+  PLACEMENTS,
+  type IconWidgetConfig,
+  type ToggleWidgetConfig,
+  type SelectorWidgetConfig,
+  type TimelineWidgetConfig,
+  type WidgetDefinition,
+} from './types';
+
+export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
+  type: 'icon',
+  label: 'Icon',
+  createDefaultConfig: (i) => ({
+    id: `widget-icon-${i + 1}`,
+    type: 'icon',
+    label: `Icon ${i + 1}`,
+    visible: true,
+    settings: { placement: 'bottom-right', icon: '' },
+  }),
+  editorSections: [
+    {
+      title: 'Icon',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
+        { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: '' },
+        { key: 'color', label: 'Color', type: 'color', defaultValue: '' },
+      ],
+    },
+  ],
+  createWidget: (config) => new IconWidget({ id: config.id, ...config.settings }),
+};
+
+export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
+  type: 'toggle',
+  label: 'Toggle',
+  createDefaultConfig: (i) => ({
+    id: `widget-toggle-${i + 1}`,
+    type: 'toggle',
+    label: `Toggle ${i + 1}`,
+    visible: true,
+    settings: { placement: 'bottom-right', icon: '' },
+  }),
+  editorSections: [
+    {
+      title: 'Toggle',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
+        { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
+        { key: 'onIcon', label: 'Checked icon', type: 'string', defaultValue: '' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: '' },
+        { key: 'onLabel', label: 'Checked tooltip', type: 'string', defaultValue: '' },
+        { key: 'color', label: 'Color', type: 'color', defaultValue: '' },
+        { key: 'onColor', label: 'Checked color', type: 'color', defaultValue: '' },
+        { key: 'initialChecked', label: 'Initially checked', type: 'boolean', defaultValue: false },
+      ],
+    },
+  ],
+  createWidget: (config) => new ToggleWidget({ id: config.id, ...config.settings }),
+};
+
+export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = {
+  type: 'selector',
+  label: 'Selector',
+  createDefaultConfig: (i) => ({
+    id: `widget-selector-${i + 1}`,
+    type: 'selector',
+    label: `Selector ${i + 1}`,
+    visible: true,
+    settings: { placement: 'top-left', options: [] },
+  }),
+  editorSections: [
+    {
+      title: 'Selector',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
+      ],
+    },
+  ],
+  createWidget: (config) => new SelectorWidget({ id: config.id, ...config.settings }),
+};
+
+export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = {
+  type: 'timeline',
+  label: 'Timeline',
+  createDefaultConfig: (i) => ({
+    id: `widget-timeline-${i + 1}`,
+    type: 'timeline',
+    label: `Timeline ${i + 1}`,
+    visible: true,
+    settings: { placement: 'bottom-left', timeRange: [0, 100], step: 1, autoPlay: false, loop: false, playInterval: 1000 },
+  }),
+  editorSections: [
+    {
+      title: 'Timeline',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
+        { key: 'autoPlay', label: 'Auto play', type: 'boolean', defaultValue: false },
+        { key: 'loop', label: 'Loop', type: 'boolean', defaultValue: false },
+        { key: 'playInterval', label: 'Play interval (ms)', type: 'number', defaultValue: 1000 },
+        { key: 'step', label: 'Step', type: 'number', defaultValue: 1 },
+      ],
+    },
+  ],
+  createWidget: (config) => new TimelineWidget({ id: config.id, ...config.settings }),
+};

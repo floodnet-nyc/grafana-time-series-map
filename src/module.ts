@@ -5,6 +5,7 @@ import type { DeckBlendFactor, DeckBlendOperation } from "types";
 import { MapPanel } from './components/MapPanel';
 import { LightingEditor } from './editor/LightingEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
+import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
 import { PopupTemplateEditor } from './editor/PopupTemplateEditor';
 import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
@@ -283,6 +284,15 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         editor: MapPanelEditor,
         defaultValue: [],
         category: ['Layers'],
+      })
+      .addCustomEditor({
+        id: 'widgets',
+        path: 'widgets',
+        name: 'Widgets',
+        description: 'Add and configure deck.gl map widgets',
+        editor: MapPanelWidgetEditor,
+        defaultValue: [],
+        category: ['Widgets'],
       })
       .addBooleanSwitch({
         path: 'basemap.interactions.interactive',

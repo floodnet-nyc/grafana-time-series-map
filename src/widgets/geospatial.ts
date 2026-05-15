@@ -1,0 +1,83 @@
+import { CompassWidget, _ScaleWidget as ScaleWidget, _GeocoderWidget as GeocoderWidget } from '@deck.gl/widgets';
+import { PLACEMENTS, type CompassWidgetConfig, type ScaleWidgetConfig, type GeocoderWidgetConfig, type WidgetDefinition } from './types';
+
+export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
+  type: 'compass',
+  label: 'Compass',
+  createDefaultConfig: (i) => ({
+    id: `widget-compass-${i + 1}`,
+    type: 'compass',
+    label: `Compass ${i + 1}`,
+    visible: true,
+    settings: { placement: 'top-left' },
+  }),
+  editorSections: [
+    {
+      title: 'Compass',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
+        { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 200 },
+      ],
+    },
+  ],
+  createWidget: (config) => new CompassWidget({ id: config.id, ...config.settings }),
+};
+
+export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
+  type: 'scale',
+  label: 'Scale',
+  createDefaultConfig: (i) => ({
+    id: `widget-scale-${i + 1}`,
+    type: 'scale',
+    label: `Scale ${i + 1}`,
+    visible: true,
+    settings: { placement: 'bottom-left' },
+  }),
+  editorSections: [
+    {
+      title: 'Scale',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
+        { key: 'label', label: 'Label', type: 'string', defaultValue: '' },
+      ],
+    },
+  ],
+  createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
+};
+
+export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = {
+  type: 'geocoder',
+  label: 'Geocoder',
+  createDefaultConfig: (i) => ({
+    id: `widget-geocoder-${i + 1}`,
+    type: 'geocoder',
+    label: `Geocoder ${i + 1}`,
+    visible: true,
+    settings: { placement: 'top-left', geocoder: 'coordinates', transitionDuration: 1000 },
+  }),
+  editorSections: [
+    {
+      title: 'Geocoder',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Search location' },
+        {
+          key: 'geocoder',
+          label: 'Geocoder',
+          type: 'select',
+          defaultValue: 'coordinates',
+          selectOptions: [
+            { label: 'Coordinates', value: 'coordinates' },
+            { label: 'Mapbox', value: 'mapbox' },
+            { label: 'Google', value: 'google' },
+            { label: 'OpenCage', value: 'opencage' },
+          ],
+        },
+        { key: 'apiKey', label: 'API Key', type: 'string', defaultValue: '' },
+        { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 1000 },
+      ],
+    },
+  ],
+  createWidget: (config) => new GeocoderWidget({ id: config.id, ...config.settings }),
+};

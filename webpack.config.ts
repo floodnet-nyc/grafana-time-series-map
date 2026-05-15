@@ -12,16 +12,5 @@ export default async (env: unknown): Promise<Configuration> => {
       // 'window') so it works inside Web Workers.
       globalObject: 'self',
     },
-    module: {
-      rules: [
-        {
-          test: /\.css$/,
-          use: [
-            'style-loader',
-            'css-loader'
-          ]
-        }
-      ]
-    }
   };
 };

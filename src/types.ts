@@ -1,5 +1,6 @@
 import type { MapViewState } from '@deck.gl/core';
 import type { LayerConfig } from './layers/types';
+import type { WidgetConfig } from './widgets/types';
 
 export type DataSource =
   | { type: 'query' }
@@ -262,6 +263,7 @@ export interface MapPanelOptions {
     state: MapViewState;
   };
   layers: LayerConfig[];
+  widgets?: WidgetConfig[];
   time: {
     show: boolean;
     defaultSpeed: number;
