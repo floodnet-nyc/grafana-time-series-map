@@ -2,8 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
-import type { WidgetConfig } from '../widgets/_all';
-import { widgetDefinitions } from '../widgets/_all';
+import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
 import { WidgetEditor } from './WidgetEditor';
 import { SelectableListEditor } from './SelectableListEditor';
 
@@ -71,6 +70,11 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
     [widgetList, updateWidget],
   );
 
+  const widgetTypes = useMemo(
+    () => widgetDefinitions.map((d) => ({ label: d.label, value: d.type, description: d.description })),
+    []
+  );
+
   return (
     <div className={styles.root}>
       <SelectableListEditor
@@ -80,6 +84,7 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
         getItemKey={(widget) => widget.id}
         getItemLabel={(widget) => widgetDefinitions.find((definition) => definition.type === widget.type)?.label ?? (widget.label || 'Select widget type')}
         addButtonLabel="Add widget"
+        addOptions={widgetTypes}
         onAdd={addWidget}
         onMove={moveWidget}
         onRemove={removeWidget}
