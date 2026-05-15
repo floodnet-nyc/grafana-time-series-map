@@ -6,6 +6,8 @@ import type { MapPanelOptions } from '../../../types';
 import type { DeckTooltipContent } from '../types';
 import { buildDeckEffects } from '../../../utils/deckgl/lighting';
 import { buildDeckParameters } from '../../../utils/deckgl/parameters';
+// import { GimbalWidget, ResetViewWidget } from '@deck.gl/widgets';
+// import '@deck.gl/widgets/stylesheet.css';
 
 interface MaplibreDeckOverlayProps {
   layers: Layer[];
@@ -26,7 +28,20 @@ export function MaplibreDeckOverlay({ layers, interleaved, options, getTooltip }
       return;
     }
 
-    const overlay = new MapboxOverlay({ interleaved, layers, effects, parameters, getTooltip });
+    const overlay = new MapboxOverlay({ 
+      interleaved, layers, effects, parameters, getTooltip,
+      widgets: [
+        // new GimbalWidget({placement: 'top-left'}),
+        // new ResetViewWidget({
+        //   placement: 'top-left',
+        //   initialViewState: {
+        //     longitude: -20,
+        //     latitude: 15,
+        //     zoom: 0
+        //   }
+        // })
+      ]
+    });
     overlayRef.current = overlay;
     map.addControl(overlay as any);
 
