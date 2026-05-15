@@ -6,7 +6,7 @@ import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
 import { GoogleGeolocateControl } from './GoogleGeolocateControl';
 import { GoogleHashRoute } from './GoogleHashRoute';
-import { getControlPosition, getGoogleColorScheme } from './controlMappings';
+import { getGoogleColorScheme } from './controlMappings';
 import { getInitialViewport } from '../viewState';
 import { resolveMapControlSettings } from '../controlSettings';
 import type { GoogleControlPosition, MapControlPosition } from 'types';
@@ -35,7 +35,7 @@ export function getGoogleFullscreenControlPosition(position: MapControlPosition)
 }
 
 
-export default function GoogleMap({ width, height, options, layers, getTooltip, fitBounds, fitRequestId, interleaved = true, onViewportChange }: MapProviderProps) {
+export default function GoogleMap({ width, height, options, deckProps, fitBounds, fitRequestId, onViewportChange }: MapProviderProps) {
   const interactions = options.basemap.interactions ?? {};
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
@@ -49,54 +49,52 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
     onViewportChange?.(initialViewport);
   }, [initialViewport, onViewportChange]);
 
+  const mapProps = {
+    defaultCenter: {
+      lat: initialViewport.latitude,
+      lng: initialViewport.longitude,
+    },
+    defaultZoom: initialViewport.zoom,
+    defaultHeading: initialViewport.bearing,
+    defaultTilt: initialViewport.pitch,
+    style: { width, height },
+    mapId: googleMapOptions.mapId || undefined,
+    colorScheme,
+    gestureHandling: !interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto',
+    keyboardShortcuts: interactive,
+    clickableIcons: interactive,
+    cameraControl: controlSettings.navigation.enabled,
+    // cameraControlOptions: { position: getGoogleCameraControlPosition(controlSettings.navigation.position) },
+    fullscreenControl: controlSettings.fullscreen.enabled,
+    // fullscreenControlOptions: { position: getGoogleFullscreenControlPosition(controlSettings.fullscreen.position) },
+    scaleControl: controlSettings.scale.enabled,
+    mapTypeControl: controlSettings.google.mapTypeControl,
+    // mapTypeControlOptions: {
+    //   position: toGooglePosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
+    //   style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
+    // },
+    rotateControl: controlSettings.navigation.showCompass,
+    // rotateControlOptions: { position: getGoogleCameraControlPosition(controlSettings.navigation.position) },
+    streetViewControl: controlSettings.google.streetViewControl,
+    // streetViewControlOptions: { position: getGoogleFullscreenControlPosition(controlSettings.google.streetViewControlPosition) },
+    tiltInteractionEnabled: interactions.rollEnabled,
+     onCameraChanged: (event: any) => {
+      const viewport = {
+        latitude: event.detail.center.lat,
+        longitude: event.detail.center.lng,
+        zoom: event.detail.zoom,
+        bearing: event.detail.heading,
+        pitch: event.detail.tilt,
+      };
+      onViewportChange?.(viewport);
+      writeHashView(viewport);
+    }
+  }
+
   return (
     <APIProvider apiKey={options.basemap.google.apiKey ?? ''}>
-      <Map
-        defaultCenter={{
-          lat: initialViewport.latitude,
-          lng: initialViewport.longitude,
-        }}
-        defaultZoom={initialViewport.zoom}
-        defaultHeading={initialViewport.bearing}
-        defaultTilt={initialViewport.pitch}
-        style={{ width, height }}
-        mapId={options.basemap.google.mapId || undefined}
-        colorScheme={colorScheme}
-        gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
-        keyboardShortcuts={interactive}
-        clickableIcons={interactive}
-        // cameraControl={controlSettings.navigation.enabled}
-        // cameraControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
-        // fullscreenControl={controlSettings.fullscreen.enabled}
-        // fullscreenControlOptions={{ position: getControlPosition(getGoogleFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT') }}
-        // scaleControl={controlSettings.scale.enabled}
-        // mapTypeControl={controlSettings.google.mapTypeControl}
-        // mapTypeControlOptions={{
-        //   position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
-        //   style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-        // }}
-        streetViewControl={controlSettings.google.streetViewControl}
-        streetViewControlOptions={{ position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM') }}
-        // rotateControl={controlSettings.navigation.showCompass}
-        // rotateControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
-        onCameraChanged={(event) => {
-          const viewport = {
-            latitude: event.detail.center.lat,
-            longitude: event.detail.center.lng,
-            zoom: event.detail.zoom,
-            bearing: event.detail.heading,
-            pitch: event.detail.tilt,
-          };
-          onViewportChange?.(viewport);
-          writeHashView(viewport);
-        }}
-      >
-        <GoogleDeckOverlay
-          options={options}
-          layers={layers}
-          interleaved={interleaved}
-          getTooltip={getTooltip ?? undefined}
-        />
+      <Map {...mapProps}>
+        <GoogleDeckOverlay {...deckProps} options={options} />
         <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} fitRequestId={fitRequestId} options={options} />
         <GoogleHashRoute enabled={hashRoutingEnabled} />
         <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
