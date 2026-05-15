@@ -263,6 +263,9 @@
                         }
                     }
                 },
+                "deck": {
+                    "interleaved": false
+                },
                 "initialView": {
                     "state": {
                         "latitude": 40.694,

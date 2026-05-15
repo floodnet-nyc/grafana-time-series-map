@@ -121,9 +121,12 @@ export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = 
     new TimelineWidget({
       id: config.id,
       ...config.settings,
+      timeRange: callbacks?.playback?.timeRange,
       time: callbacks?.playback?.cursorTimeMs,
       playing: callbacks?.playback?.playing,
+      playInterval: callbacks?.playback?.playInterval,
       onPlayingChange: callbacks?.playback?.onPlayingChange,
       onTimeChange: callbacks?.playback?.onSeekTo,
+      formatLabel: callbacks?.playback?.formatLabel,
     }),
 };

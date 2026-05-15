@@ -88,10 +88,12 @@ export function usePlayback({
     dispatch({ type: 'scrub', timeMs: ms });
   }, []);
 
-  const seekTo = useCallback((ms: number) => {
+  const seekTo = useCallback((ms: number, pause = true) => {
     cursorTimeMsRef.current = ms;
     setCursorTimeMs(ms);
-    dispatch({ type: 'pause', timeMs: ms });
+    if (pause) {
+      dispatch({ type: 'pause', timeMs: ms });
+    }
   }, []);
 
   const setSpeed = useCallback((speed: number) => {

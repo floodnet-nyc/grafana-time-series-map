@@ -123,11 +123,14 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const widgetCallbacks = useMemo(() => ({
     playback: {
       cursorTimeMs: playback.cursorTimeMs,
+      timeRange: [fromTimeMs, toTimeMs],
       playing: playback.playing,
+      playInterval: playback.playbackSpeed,
       onPlayingChange: (v: boolean) => v ? playback.play() : playback.pause(),
-      onSeekTo: playback.seekTo,
+      onSeekTo: (t: number) => playback.seekTo(t, false),
+      formatLabel: (timeMs: number) => new Date(timeMs).toLocaleString(),
     },
-  }), [playback]);
+  }), [playback, fromTimeMs, toTimeMs]);
 
   return (
     <div

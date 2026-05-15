@@ -44,6 +44,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
     }),
 };
 
+// TODO: theme not working
 export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   type: 'scale',
   label: 'Scale',
