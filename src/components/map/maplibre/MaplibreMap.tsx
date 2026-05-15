@@ -74,11 +74,10 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
       projection={options.basemap.maplibre.projection ?? 'mercator'}
       interactive={interactive}
       cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
-      rollEnabled={interactive ? interactions.rollEnabled ?? false : false}
+      rollEnabled={interactive ? interactions.rollEnabled ?? true : false}
       onMoveEnd={handleMoveEnd}
-      attributionControl={false}
+      attributionControl={{ compact: true }}
     >
-      <AttributionControl compact />
       {/* {controlSettings.navigation.enabled && (
         <NavigationControl
           position={controlSettings.navigation.position}
