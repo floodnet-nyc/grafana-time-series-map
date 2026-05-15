@@ -22,7 +22,7 @@ import {
 import { 
   iconWidgetDefinition, 
   // selectorWidgetDefinition, 
-  timelineWidgetDefinition, 
+  // timelineWidgetDefinition, 
   // toggleWidgetDefinition 
 } from './control';
 import { 
@@ -55,7 +55,7 @@ export const widgetDefinitions = [
   iconWidgetDefinition,
   // toggleWidgetDefinition,
   // selectorWidgetDefinition,
-  timelineWidgetDefinition,
+  // timelineWidgetDefinition,
   // Utility
   // loadingWidgetDefinition,
   screenshotWidgetDefinition,

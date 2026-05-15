@@ -77,9 +77,10 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
     new ResetViewWidget({
       id: config.id,
       ...config.settings,
+      initialViewState: callbacks?.resetViewState,
       onReset: callbacks?.onViewStateChange
         ? ({ viewState }: { viewState: object }) =>
-            callbacks.onViewStateChange!(callbacks.resetViewState ?? viewState)
+            callbacks.onViewStateChange!(callbacks.resetViewState!)
         : undefined,
     }),
 };
