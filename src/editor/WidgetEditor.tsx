@@ -27,7 +27,10 @@ interface Props {
 
 export function WidgetEditor({ widget, onChange }: Props) {
   const styles = useStyles2(getStyles);
-  const widgetTypes = useMemo(() => widgetDefinitions.map((d) => ({ label: d.label, value: d.type })), []);
+  const widgetTypes = useMemo(
+    () => widgetDefinitions.map((d) => ({ label: d.label, value: d.type, description: d.description })),
+    []
+  );
   const currentDefinition = useMemo(() => widgetDefinitions.find((d) => d.type === widget.type), [widget.type]);
   const settingsRecord = widget.settings as unknown as Record<string, unknown>;
 
@@ -111,13 +114,10 @@ export function WidgetEditor({ widget, onChange }: Props) {
   return (
     <div className={styles.root}>
       <CollapsableSection label="General" isOpen>
-        <Field label="Widget name">
-          <Input value={widget.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
-        </Field>
         <Field label="Widget type">
           <Combobox
             options={widgetTypes}
-            value={widget.type}
+            value={widget.type || null}
             onChange={(v) => v?.value && handleTypeChange(String(v.value))}
           />
         </Field>

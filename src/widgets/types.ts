@@ -30,6 +30,7 @@ export const PLACEMENTS = (['top-left', 'top-right', 'bottom-left', 'bottom-righ
 );
 
 export type WidgetType =
+  | ''
   | 'zoom'
   | 'reset-view'
   | 'gimbal'
@@ -101,8 +102,10 @@ export type LoadingWidgetConfig = BaseWidgetConfig<'loading', LoadingWidgetSetti
 export type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', ScreenshotWidgetSettings>;
 export type StatsWidgetConfig = BaseWidgetConfig<'stats', StatsWidgetSettings>;
 export type ThemeWidgetConfig = BaseWidgetConfig<'theme', ThemeWidgetSettings>;
+export type BlankWidgetConfig = BaseWidgetConfig<'', Record<string, never>>;
 
 export type WidgetConfig =
+  | BlankWidgetConfig
   | ZoomWidgetConfig
   | ResetViewWidgetConfig
   | GimbalWidgetConfig
@@ -127,6 +130,7 @@ export type WidgetConfig =
 export interface WidgetDefinition<TConfig extends WidgetConfig = WidgetConfig> {
   type: WidgetType;
   label: string;
+  description: string;
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
   createWidget: (config: TConfig) => Widget<WidgetProps, any>;

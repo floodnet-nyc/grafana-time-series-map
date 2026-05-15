@@ -11,6 +11,7 @@ import {
 export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   type: 'loading',
   label: 'Loading',
+  description: 'Show a loading indicator while the map is busy.',
   createDefaultConfig: (i) => ({
     id: `widget-loading-${i + 1}`,
     type: 'loading',
@@ -33,6 +34,7 @@ export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
 export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig> = {
   type: 'screenshot',
   label: 'Screenshot',
+  description: 'Add a button to capture the current map as an image.',
   createDefaultConfig: (i) => ({
     id: `widget-screenshot-${i + 1}`,
     type: 'screenshot',
@@ -63,6 +65,7 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
 export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
   type: 'stats',
   label: 'Stats',
+  description: 'Display rendering and device performance statistics.',
   createDefaultConfig: (i) => ({
     id: `widget-stats-${i + 1}`,
     type: 'stats',
@@ -98,6 +101,7 @@ export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
 export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
   type: 'theme',
   label: 'Theme',
+  description: 'Add a control to switch between light and dark themes.',
   createDefaultConfig: (i) => ({
     id: `widget-theme-${i + 1}`,
     type: 'theme',

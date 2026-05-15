@@ -4,6 +4,7 @@ import { PLACEMENTS, type CompassWidgetConfig, type ScaleWidgetConfig, type Geoc
 export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   type: 'compass',
   label: 'Compass',
+  description: 'Add a compass control that can reset map bearing.',
   createDefaultConfig: (i) => ({
     id: `widget-compass-${i + 1}`,
     type: 'compass',
@@ -27,6 +28,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
 export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   type: 'scale',
   label: 'Scale',
+  description: 'Show a map scale indicator for distance reference.',
   createDefaultConfig: (i) => ({
     id: `widget-scale-${i + 1}`,
     type: 'scale',
@@ -49,6 +51,7 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
 export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = {
   type: 'geocoder',
   label: 'Geocoder',
+  description: 'Add a search box to find and jump to locations.',
   createDefaultConfig: (i) => ({
     id: `widget-geocoder-${i + 1}`,
     type: 'geocoder',
