@@ -1,14 +1,14 @@
-import { 
-  IconWidget, 
-  ToggleWidget, 
-  SelectorWidget, 
+import {
+  IconWidget,
+  ToggleWidget,
+  SelectorWidget,
   _TimelineWidget as TimelineWidget,
   type IconWidgetProps,
   type ToggleWidgetProps,
   type SelectorWidgetProps,
   type TimelineWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 
 type IconWidgetConfig = BaseWidgetConfig<'icon', Omit<IconWidgetProps, 'id'>>;
 type ToggleWidgetConfig = BaseWidgetConfig<'toggle', Omit<ToggleWidgetProps, 'id'>>;
@@ -94,7 +94,6 @@ export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = 
   createWidget: (config) => new SelectorWidget({ id: config.id, ...config.settings }),
 };
 
-// TODO: pass in callbacks
 export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = {
   type: 'timeline',
   label: 'Timeline',
@@ -118,5 +117,13 @@ export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = 
       ],
     },
   ],
-  createWidget: (config) => new TimelineWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new TimelineWidget({
+      id: config.id,
+      ...config.settings,
+      time: callbacks?.playback?.cursorTimeMs,
+      playing: callbacks?.playback?.playing,
+      onPlayingChange: callbacks?.playback?.onPlayingChange,
+      onTimeChange: callbacks?.playback?.onSeekTo,
+    }),
 };

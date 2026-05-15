@@ -1,14 +1,14 @@
-import { 
-  ZoomWidget, 
-  ResetViewWidget, 
-  GimbalWidget, 
+import {
+  ZoomWidget,
+  ResetViewWidget,
+  GimbalWidget,
   ScrollbarWidget,
   type ZoomWidgetProps,
   type ResetViewWidgetProps,
   type GimbalWidgetProps,
   type ScrollbarWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 
 type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
 type ResetViewWidgetConfig = BaseWidgetConfig<'reset-view', Omit<ResetViewWidgetProps, 'id'>>;
@@ -20,7 +20,6 @@ const ORIENTATIONS = [
   { label: 'Horizontal', value: 'horizontal' },
 ];
 
-// TODO: pass in callbacks
 export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   type: 'zoom',
   label: 'Zoom',
@@ -44,10 +43,16 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
       ],
     },
   ],
-  createWidget: (config) => new ZoomWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new ZoomWidget({
+      id: config.id,
+      ...config.settings,
+      onZoom: callbacks?.onViewStateChange
+        ? ({ zoom }: { zoom: number }) => callbacks.onViewStateChange!({ zoom })
+        : undefined,
+    }),
 };
 
-// TODO: pass in callbacks
 export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> = {
   type: 'reset-view',
   label: 'Reset View',
@@ -68,10 +73,17 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
       ],
     },
   ],
-  createWidget: (config) => new ResetViewWidget({ id: config.id, ...config.settings, onReset: console.log }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new ResetViewWidget({
+      id: config.id,
+      ...config.settings,
+      onReset: callbacks?.onViewStateChange
+        ? ({ viewState }: { viewState: object }) =>
+            callbacks.onViewStateChange!(callbacks.resetViewState ?? viewState)
+        : undefined,
+    }),
 };
 
-// TODO: pass in callbacks
 export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
   type: 'gimbal',
   label: 'Gimbal',
@@ -94,7 +106,15 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
       ],
     },
   ],
-  createWidget: (config) => new GimbalWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new GimbalWidget({
+      id: config.id,
+      ...config.settings,
+      onReset: callbacks?.onViewStateChange
+        ? ({ rotationOrbit, rotationX }: { rotationOrbit: number; rotationX: number }) =>
+            callbacks.onViewStateChange!({ rotationOrbit, rotationX })
+        : undefined,
+    }),
 };
 
 // DISABLE

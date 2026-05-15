@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import type { MapProviderProps } from '../types';
+import { useDeckGLProps } from '../DeckGLMap';
 import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
 import { GoogleGeolocateControl } from './GoogleGeolocateControl';
@@ -14,12 +15,20 @@ import {
 import { resolveMapControlSettings } from '../controlSettings';
 
 
-export default function GoogleMap({ width, height, options, deckProps, initialViewState, initialViewFromHash, fitBounds, fitRequestId, onViewportChange }: MapProviderProps) {
+export default function GoogleMap({
+  width, height, options,
+  layers, getTooltip, widgetCallbacks,
+  initialViewState, initialViewFromHash,
+  fitBounds, fitRequestId,
+  onViewportChange,
+}: MapProviderProps) {
   const interactions = options.basemap.interactions ?? {};
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
   const interactive = interactions.interactive ?? true;
   const colorScheme = getGoogleColorScheme(googleMapOptions.colorScheme);
+
+  const deckProps = useDeckGLProps({ options, layers, getTooltip, widgetCallbacks });
 
   const latitude = initialViewState?.latitude ?? 0;
   const longitude = initialViewState?.longitude ?? 0;

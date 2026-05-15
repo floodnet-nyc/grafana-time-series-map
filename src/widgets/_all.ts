@@ -1,6 +1,6 @@
 import type { Widget } from '@deck.gl/core';
 import { 
-  gimbalWidgetDefinition, 
+  // gimbalWidgetDefinition, 
   resetViewWidgetDefinition, 
   // scrollbarWidgetDefinition, 
   zoomWidgetDefinition,
@@ -26,19 +26,19 @@ import {
   // toggleWidgetDefinition 
 } from './control';
 import { 
-  loadingWidgetDefinition, 
+  // loadingWidgetDefinition, 
   screenshotWidgetDefinition, 
   statsWidgetDefinition, 
   themeWidgetDefinition 
 } from './utility';
-import type { BlankWidgetConfig } from './types';
+import type { BlankWidgetConfig, WidgetCallbacks } from './types';
 import './stylesheet.css';
 
 export const widgetDefinitions = [
   // Navigation
   zoomWidgetDefinition,
   resetViewWidgetDefinition,
-  gimbalWidgetDefinition,
+  // gimbalWidgetDefinition,
   // scrollbarWidgetDefinition,
   // Geospatial
   compassWidgetDefinition,
@@ -57,7 +57,7 @@ export const widgetDefinitions = [
   // selectorWidgetDefinition,
   timelineWidgetDefinition,
   // Utility
-  loadingWidgetDefinition,
+  // loadingWidgetDefinition,
   screenshotWidgetDefinition,
   statsWidgetDefinition,
   themeWidgetDefinition,
@@ -66,12 +66,14 @@ export const widgetDefinitions = [
 export type WidgetType = (typeof widgetDefinitions)[number]['type'] | '';
 export type WidgetConfig = ReturnType<(typeof widgetDefinitions)[number]['createDefaultConfig']> | BlankWidgetConfig;
 
-export function createWidgets(configs: WidgetConfig[]): Widget[] {
+export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbacks): Widget[] {
   return configs.flatMap((config) => {
     if (!config.visible) {
       return [];
     }
     const def = widgetDefinitions.find((d) => d.type === config.type);
-    return def ? [def.createWidget(config as never)] : [];
+    return def ? [def.createWidget(config as never, callbacks)] : [];
   });
 }
+
+export type { WidgetCallbacks };

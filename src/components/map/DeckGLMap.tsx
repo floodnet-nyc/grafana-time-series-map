@@ -1,11 +1,14 @@
 import React, { Suspense, lazy } from 'react';
-import type { MapProviderProps } from './types';
-const LazyGoogleMap = lazy(() => import('./google/GoogleMap'));
-const LazyMaplibreMap = lazy(() => import('./maplibre/MaplibreMap'));
+import type { DeckProps } from '@deck.gl/core';
+import type { MapProviderProps, WidgetCallbacks } from './types';
+import type { MapPanelOptions } from '../../types';
 import { buildDeckEffects } from 'utils/deckgl/lighting';
 import { buildDeckParameters } from 'utils/deckgl/parameters';
 import { createWidgets } from 'widgets/_all';
-import {LightGlassTheme} from '@deck.gl/widgets';
+import { LightGlassTheme } from '@deck.gl/widgets';
+
+const LazyGoogleMap = lazy(() => import('./google/GoogleMap'));
+const LazyMaplibreMap = lazy(() => import('./maplibre/MaplibreMap'));
 
 function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' | 'height'>) {
   return (
@@ -19,14 +22,20 @@ function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' |
   );
 }
 
-export function useDeckGLProps({ options, layers, getTooltip }: {
-  options: MapProviderProps['options'];
-  layers: MapProviderProps['deckProps']['layers'];
-  getTooltip?: MapProviderProps['deckProps']['getTooltip'];
-}) {
+export function useDeckGLProps({
+  options,
+  layers,
+  getTooltip,
+  widgetCallbacks,
+}: {
+  options: MapPanelOptions;
+  layers: DeckProps['layers'];
+  getTooltip?: DeckProps['getTooltip'];
+  widgetCallbacks?: WidgetCallbacks;
+}): DeckProps & { interleaved?: boolean } {
   const effects = buildDeckEffects(options.deck.lighting);
   const parameters = buildDeckParameters(options.deck.parameters);
-  const widgets = createWidgets(options.widgets ?? []);
+  const widgets = createWidgets(options.widgets ?? [], widgetCallbacks);
   return {
     effects,
     parameters,
@@ -35,7 +44,7 @@ export function useDeckGLProps({ options, layers, getTooltip }: {
     layers,
     getTooltip,
     interleaved: options.deck.interleaved,
-  } as MapProviderProps['deckProps'];
+  };
 }
 
 export function DeckGLMap(providerProps: MapProviderProps) {

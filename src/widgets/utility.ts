@@ -1,14 +1,14 @@
-import { 
-  LoadingWidget, 
-  ScreenshotWidget, 
-  _StatsWidget as StatsWidget, 
+import {
+  LoadingWidget,
+  ScreenshotWidget,
+  _StatsWidget as StatsWidget,
   ThemeWidget,
   type LoadingWidgetProps,
   type ScreenshotWidgetProps,
   type StatsWidgetProps,
   type ThemeWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
@@ -107,7 +107,6 @@ export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
   createWidget: (config) => new StatsWidget({ id: config.id, ...config.settings }),
 };
 
-// TODO: pass in callbacks
 export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
   type: 'theme',
   label: 'Theme',
@@ -140,5 +139,11 @@ export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
       ],
     },
   ],
-  createWidget: (config) => new ThemeWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new ThemeWidget({
+      id: config.id,
+      ...config.settings,
+      themeMode: callbacks?.themeMode,
+      onThemeModeChange: callbacks?.onThemeModeChange,
+    }),
 };

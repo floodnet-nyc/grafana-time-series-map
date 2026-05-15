@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Map, {
   // AttributionControl,
   FullscreenControl,
@@ -9,6 +9,7 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
 import type { MapProviderProps } from '../types';
+import { useDeckGLProps } from '../DeckGLMap';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
 import { getMaplibreStyleUrl } from './style';
@@ -16,7 +17,13 @@ import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
-export default function MaplibreMap({ width, height, options, deckProps, initialViewState, initialViewFromHash, fitBounds, fitRequestId, onViewportChange }: MapProviderProps) {
+export default function MaplibreMap({
+  width, height, options,
+  layers, getTooltip, widgetCallbacks,
+  initialViewState, initialViewFromHash,
+  fitBounds, fitRequestId,
+  onViewportChange,
+}: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl);
   const controlSettings = resolveMapControlSettings(options);
 
@@ -37,6 +44,24 @@ export default function MaplibreMap({ width, height, options, deckProps, initial
   const handleFitViewState = useCallback((next: object) => {
     setViewState((prev: any) => ({ ...prev, ...next }));
   }, []);
+
+  // Viewport callback for widgets — merges with panel-level widgetCallbacks.
+  const handleWidgetViewStateChange = useCallback((next: object) => {
+    setViewState((prev: any) => ({ ...prev, ...next }));
+  }, []);
+
+  // ThemeWidget local state — provider owns this since it's a map UI concern.
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | undefined>(undefined);
+
+  const mergedCallbacks = useMemo(() => ({
+    ...widgetCallbacks,
+    onViewStateChange: handleWidgetViewStateChange,
+    resetViewState: initialViewState,
+    themeMode,
+    onThemeModeChange: setThemeMode,
+  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
+
+  const deckProps = useDeckGLProps({ options, layers, getTooltip, widgetCallbacks: mergedCallbacks });
 
   // ── Overlay (non-controller) mode ────────────────────────────────────────────
   const mapRef = useRef<MapRef>(null);
