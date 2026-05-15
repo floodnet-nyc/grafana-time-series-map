@@ -22,7 +22,7 @@ import {
 import { 
   iconWidgetDefinition, 
   // selectorWidgetDefinition, 
-  // timelineWidgetDefinition, 
+  timelineWidgetDefinition, 
   // toggleWidgetDefinition 
 } from './control';
 import { 
@@ -33,6 +33,7 @@ import {
 } from './utility';
 import type { BlankWidgetConfig, WidgetCallbacks } from './types';
 import './stylesheet.css';
+import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
 
 export const widgetDefinitions = [
   // Navigation
@@ -55,7 +56,7 @@ export const widgetDefinitions = [
   iconWidgetDefinition,
   // toggleWidgetDefinition,
   // selectorWidgetDefinition,
-  // timelineWidgetDefinition,
+  timelineWidgetDefinition,
   // Utility
   // loadingWidgetDefinition,
   screenshotWidgetDefinition,
@@ -72,7 +73,10 @@ export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbac
       return [];
     }
     const def = widgetDefinitions.find((d) => d.type === config.type);
-    return def ? [def.createWidget(config as never, callbacks)] : [];
+    if (!def) return [];
+    const w = def.createWidget(config as never, callbacks);
+    w.setProps({ style: callbacks?.themeMode === 'dark' ? DarkGlassTheme : LightGlassTheme });
+    return w ? [w] : [];
   });
 }
 
