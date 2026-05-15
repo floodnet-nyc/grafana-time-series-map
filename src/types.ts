@@ -124,6 +124,7 @@ export type MaplibreStyle =
   | 'custom';
 export type MaplibreProjection = 'mercator' | 'globe';
 export type InitialViewMode = 'manual' | 'fitData';
+export type InitialViewFitDataSource = 'allLayers' | 'layer';
 export type GoogleMapColorScheme = 'LIGHT' | 'DARK' | 'FOLLOW_SYSTEM';
 export type GoogleMapTypeControlStyle = 'DEFAULT' | 'DROPDOWN_MENU' | 'HORIZONTAL_BAR';
 export type GoogleControlPosition =
@@ -241,6 +242,19 @@ export interface DeckLightingOptions {
   lights?: DeckLightConfig[];
 }
 
+export interface InitialViewFitDataOptions {
+  source?: InitialViewFitDataSource;
+  layerId?: string;
+  padding?: number;
+  maxZoom?: number;
+}
+
+export interface InitialViewOptions {
+  mode: InitialViewMode;
+  state: MapViewState;
+  fitData?: InitialViewFitDataOptions;
+}
+
 export interface MapPanelOptions {
   basemap: {
     provider: BasemapProvider;
@@ -259,10 +273,7 @@ export interface MapPanelOptions {
     lighting: DeckLightingOptions;
     interleaved: boolean;
   };
-  initialView: {
-    mode: InitialViewMode;
-    state: MapViewState;
-  };
+  initialView: InitialViewOptions;
   layers: LayerConfig[];
   widgets?: WidgetConfig[];
   time: {

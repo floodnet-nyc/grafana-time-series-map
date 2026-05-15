@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { APIProvider, Map } from '@vis.gl/react-google-maps';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
 import type { MapProviderProps } from '../types';
@@ -35,7 +35,7 @@ export function getGoogleFullscreenControlPosition(position: MapControlPosition)
 }
 
 
-export default function GoogleMap({ width, height, options, layers, getTooltip, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
+export default function GoogleMap({ width, height, options, layers, getTooltip, fitBounds, fitRequestId, interleaved = true, onViewportChange }: MapProviderProps) {
   const interactions = options.basemap.interactions ?? {};
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
@@ -44,6 +44,10 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
   const [initialHashView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
   const colorScheme = getGoogleColorScheme(googleMapOptions.colorScheme);
   const initialViewport = getInitialViewport(options, initialHashView);
+
+  useEffect(() => {
+    onViewportChange?.(initialViewport);
+  }, [initialViewport, onViewportChange]);
 
   return (
     <APIProvider apiKey={options.basemap.google.apiKey ?? ''}>
@@ -93,7 +97,7 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
           interleaved={interleaved}
           getTooltip={getTooltip ?? undefined}
         />
-        <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} />
+        <GoogleFitBounds disabled={Boolean(initialHashView)} initialHashView={initialHashView} fitBounds={fitBounds} fitRequestId={fitRequestId} options={options} />
         <GoogleHashRoute enabled={hashRoutingEnabled} />
         <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
       </Map>

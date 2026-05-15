@@ -12,12 +12,14 @@ import {
   buildTimeFilterFlagsByLayerId,
   buildTimePackedByLayerId,
   renderPreparedLayers,
+  type PreparedLayerState,
 } from '../utils/dataframe/panelLayersModel';
 import { type GeoFeature, dataFramesToFeatures, geojsonToFeatures } from '../utils/dataframe/toGeoJsonFeatures';
 
 export interface UsePanelLayersResult {
   layers: Layer[];
   getTooltip: ((info: PickingInfo) => DeckTooltipContent) | null;
+  preparedLayerStates: PreparedLayerState[];
 }
 
 export function usePanelLayers(
@@ -71,8 +73,9 @@ export function usePanelLayers(
     () => ({
       layers,
       getTooltip,
+      preparedLayerStates,
     }),
-    [getTooltip, layers],
+    [getTooltip, layers, preparedLayerStates],
   );
 }
 

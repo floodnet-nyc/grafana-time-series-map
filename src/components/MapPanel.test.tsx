@@ -4,6 +4,7 @@ import type { EventBus, PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { MapPanel } from './MapPanel';
+import { requestFitToDataCapture } from '../editor/currentViewportStore';
 
 const mockUsePlayback = jest.fn();
 const mockUseGrafanaEventBridge = jest.fn();
@@ -13,6 +14,7 @@ const mockUsePanelLayers = jest.fn();
 const mockLocationServicePartial = jest.fn();
 
 let latestFeatureClick: ((feature: Feature, info: any) => void) | undefined;
+let latestMapProps: any;
 
 jest.mock('../hooks/usePlayback', () => ({
   usePlayback: (args: unknown) => mockUsePlayback(args),
@@ -42,7 +44,10 @@ jest.mock('../hooks/usePanelLayers', () => ({
 }));
 
 jest.mock('./map/DeckGLMap', () => ({
-  DeckGLMap: () => <div data-testid="deckgl-map" />,
+  DeckGLMap: (props: any) => {
+    latestMapProps = props;
+    return <div data-testid="deckgl-map" />;
+  },
 }));
 
 jest.mock('./MapLegend', () => ({
@@ -73,7 +78,7 @@ function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = 
   return {
     basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {} },
     deck: { parameters: {}, lighting: {}, interleaved: true },
-    initialView: { mode: 'manual', state: { latitude: 40.7, longitude: -73.9, zoom: 11 } },
+    initialView: { mode: 'manual', state: { latitude: 40.7, longitude: -73.9, zoom: 11 }, fitData: { source: 'allLayers', padding: 48, maxZoom: 22 } },
     layers: [
       {
         id: 'layer-1',
@@ -154,12 +159,13 @@ describe('MapPanel', () => {
       selectedKey = key;
     });
     latestFeatureClick = undefined;
+    latestMapProps = undefined;
 
     mockUsePlayback.mockReturnValue(playback);
     mockUseGrafanaEventBridge.mockImplementation(() => ({ selectedKey, setSelectedKey }));
     mockUsePanelFeatures.mockReturnValue(new Map());
     mockUseFitBounds.mockReturnValue(undefined);
-    mockUsePanelLayers.mockReturnValue({ layers: [], getTooltip: null });
+    mockUsePanelLayers.mockReturnValue({ layers: [], getTooltip: null, preparedLayerStates: [] });
   });
 
   afterEach(() => {
@@ -180,6 +186,47 @@ describe('MapPanel', () => {
           visible: false,
         },
       ],
+    });
+  });
+
+  it('captures the fitted viewport into initialView.state when fit-to-data is requested', () => {
+    const options = {
+      ...createOptions(),
+      initialView: { ...createOptions().initialView, mode: 'fitData' as const },
+    };
+    const props = createProps(options);
+    mockUseFitBounds.mockReturnValue([[-75, 39], [-73, 41]]);
+
+    render(<MapPanel {...props} />);
+
+    act(() => {
+      requestFitToDataCapture();
+    });
+
+    expect(latestMapProps.fitRequestId).toBeGreaterThan(0);
+
+    act(() => {
+      latestMapProps.onViewportChange({
+        latitude: 40.1234567,
+        longitude: -74.1234567,
+        zoom: 12.345,
+        bearing: 22.26,
+        pitch: 33.34,
+      });
+    });
+
+    expect(props.onOptionsChange).toHaveBeenCalledWith({
+      ...options,
+      initialView: {
+        ...options.initialView,
+        state: {
+          latitude: 40.123457,
+          longitude: -74.123457,
+          zoom: 12.35,
+          bearing: 22.3,
+          pitch: 33.3,
+        },
+      },
     });
   });
 
