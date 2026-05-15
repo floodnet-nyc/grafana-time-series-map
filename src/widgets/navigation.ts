@@ -20,6 +20,7 @@ const ORIENTATIONS = [
   { label: 'Horizontal', value: 'horizontal' },
 ];
 
+// TODO: pass in callbacks
 export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   type: 'zoom',
   label: 'Zoom',
@@ -46,6 +47,7 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   createWidget: (config) => new ZoomWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: pass in callbacks
 export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> = {
   type: 'reset-view',
   label: 'Reset View',
@@ -69,6 +71,7 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
   createWidget: (config) => new ResetViewWidget({ id: config.id, ...config.settings, onReset: console.log }),
 };
 
+// TODO: pass in callbacks
 export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
   type: 'gimbal',
   label: 'Gimbal',
@@ -94,6 +97,7 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
   createWidget: (config) => new GimbalWidget({ id: config.id, ...config.settings }),
 };
 
+// DISABLE
 export const scrollbarWidgetDefinition: WidgetDefinition<ScrollbarWidgetConfig> = {
   type: 'scrollbar',
   label: 'Scrollbar',

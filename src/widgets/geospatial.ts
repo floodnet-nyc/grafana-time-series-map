@@ -12,6 +12,7 @@ type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 
 type ScaleWidgetConfig = BaseWidgetConfig<'scale', Omit<ScaleWidgetProps, 'id'>>;
 type GeocoderWidgetConfig = BaseWidgetConfig<'geocoder', Omit<GeocoderWidgetProps, 'id'>>;
 
+// TODO: pass in callbacks
 export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   type: 'compass',
   label: 'Compass',
@@ -36,6 +37,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   createWidget: (config) => new CompassWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: pass in callbacks
 export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   type: 'scale',
   label: 'Scale',
@@ -59,6 +61,7 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: pass in callbacks
 export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = {
   type: 'geocoder',
   label: 'Geocoder',

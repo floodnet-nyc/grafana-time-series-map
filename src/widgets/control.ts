@@ -15,6 +15,7 @@ type ToggleWidgetConfig = BaseWidgetConfig<'toggle', Omit<ToggleWidgetProps, 'id
 type SelectorWidgetConfig = BaseWidgetConfig<'selector', Omit<SelectorWidgetProps, 'id'>>;
 type TimelineWidgetConfig = BaseWidgetConfig<'timeline', Omit<TimelineWidgetProps, 'id'>>;
 
+// USE: Welcome popup? - add template
 export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   type: 'icon',
   label: 'Icon',
@@ -40,6 +41,7 @@ export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   createWidget: (config) => new IconWidget({ id: config.id, ...config.settings }),
 };
 
+// DISABLE
 export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
   type: 'toggle',
   label: 'Toggle',
@@ -69,6 +71,7 @@ export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
   createWidget: (config) => new ToggleWidget({ id: config.id, ...config.settings }),
 };
 
+// DISABLE
 export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = {
   type: 'selector',
   label: 'Selector',
@@ -91,6 +94,7 @@ export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = 
   createWidget: (config) => new SelectorWidget({ id: config.id, ...config.settings }),
 };
 
+// TODO: pass in callbacks
 export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = {
   type: 'timeline',
   label: 'Timeline',
