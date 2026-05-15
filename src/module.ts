@@ -198,6 +198,22 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addBooleanSwitch({
+        path: 'basemap.interactions.syncViewToUrl',
+        name: 'Hash routing',
+        description: 'Saves map view in url - sharing, bookmarking - #v=zoom/lat/lon/bearing/pitch.',
+        defaultValue: false,
+        category: ['Map bounds'],
+      })
+      .addCustomEditor({
+        id: 'layers',
+        path: 'layers',
+        name: 'Layers',
+        description: 'Add and configure deck.gl layers',
+        editor: MapPanelEditor,
+        defaultValue: [],
+        category: ['Layers'],
+      })
+      .addBooleanSwitch({
         path: 'time.show',
         name: 'Show time playback controls',
         defaultValue: true,
@@ -239,14 +255,41 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.tooltip?.show !== false,
         category: ['Tooltip'],
       })
+      .addBooleanSwitch({
+        path: 'sync.publish',
+        name: 'Publish playback time to other panels',
+        description: 'Broadcast time cursor and hover selection to other panels. Displays a cursor at the current time on other time series panels.',
+        defaultValue: true,
+        category: ['Tooltip', 'Cross-panel sync'],
+      })
+      .addBooleanSwitch({
+        path: 'sync.subscribe',
+        name: 'Subscribe to time hover events from other panels',
+        description: 'Receive time cursor and hover selection from other panels',
+        defaultValue: true,
+        category: ['Tooltip', 'Cross-panel sync'],
+      })
+      .addBooleanSwitch({
+        path: 'popup.show',
+        name: 'Show click popup',
+        defaultValue: true,
+        category: ['Popup'],
+      })
       .addCustomEditor({
-        id: 'layers',
-        path: 'layers',
-        name: 'Layers',
-        description: 'Add and configure deck.gl layers',
-        editor: MapPanelEditor,
-        defaultValue: [],
-        category: ['Layers'],
+        id: 'popupTemplate',
+        path: 'popup.template',
+        name: 'Popup template',
+        description: 'Liquid template shown in the click popup. Use {{ prop_name }} for values, {{ _key }} for the selected key, {% for p in properties %}...{% endfor %} to loop all fields.',
+        editor: PopupTemplateEditor,
+        showIf: (cfg) => cfg.popup?.show !== false,
+        category: ['Popup'],
+      })
+      .addTextInput({
+        path: 'sync.selectionVariableName',
+        name: 'Selection variable',
+        description: 'Optional dashboard variable name to update from the current selected key. Use the bare variable name, not the var- prefix.',
+        defaultValue: '',
+        category: ['Popup'],
       })
       .addCustomEditor({
         id: 'widgets',
@@ -270,13 +313,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
         defaultValue: false,
         showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
-        category: ['Map controls', 'Interactions'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.interactions.syncViewToUrl',
-        name: 'Hash routing',
-        description: 'Stores the current view as URL hash parameter v=zoom/lat/lon. MapLibre uses its native hash support; Google Maps uses a matching custom implementation.',
-        defaultValue: false,
         category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
@@ -362,7 +398,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       // })
       .addBooleanSwitch({
         path: 'basemap.controlSettings.geolocate.trackUserLocation',
-        name: 'Track user location',
+        name: 'Find user location',
         description: 'MapLibre only. Keep watching the user position after geolocation is enabled.',
         defaultValue: false,
         showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true && cfg.basemap?.provider !== 'google',
@@ -440,35 +476,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map controls', 'Google Maps placement'],
       })
       .addBooleanSwitch({
-        path: 'sync.publish',
-        name: 'Publish playback time to other panels',
-        description: 'Broadcast time cursor and hover selection to other panels. Displays a cursor at the current time on other time series panels.',
-        defaultValue: true,
-        category: ['Map controls', 'Cross-panel sync'],
-      })
-      .addBooleanSwitch({
-        path: 'sync.subscribe',
-        name: 'Subscribe to time hover events from other panels',
-        description: 'Receive time cursor and hover selection from other panels',
-        defaultValue: true,
-        category: ['Map controls', 'Cross-panel sync'],
-      })
-      .addTextInput({
-        path: 'sync.selectionVariableName',
-        name: 'Store selected key in variable',
-        description: 'Optional dashboard variable name to update from the current selected key. Use the bare variable name, not the var- prefix.',
-        defaultValue: '',
-        category: ['Map controls', 'Cross-panel sync'],
-      })
-      .addCustomEditor({
-        id: 'popupTemplate',
-        path: 'popup.template',
-        name: 'Popup template',
-        description: 'Liquid template shown in the click popup. Use {{ prop_name }} for values, {{ _key }} for the selected key, {% for p in properties %}...{% endfor %} to loop all fields.',
-        editor: PopupTemplateEditor,
-        category: ['Map controls', 'Cross-panel sync'],
-      })
-      .addBooleanSwitch({
         path: 'deck.interleaved',
         name: 'Interleaved rendering',
         description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
@@ -488,6 +495,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
         settings: { options: deckBlendOperations },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.blendColorSrcFactor',
@@ -495,6 +503,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.blendColorDstFactor',
@@ -502,6 +511,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.blendAlphaOperation',
@@ -509,6 +519,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
         settings: { options: deckBlendOperations },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.blendAlphaSrcFactor',
@@ -516,6 +527,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.blendAlphaDstFactor',
@@ -523,6 +535,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addBooleanSwitch({
         path: 'deck.parameters.polygonOffsetFill',

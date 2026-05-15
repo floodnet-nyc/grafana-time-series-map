@@ -113,7 +113,6 @@ export function WidgetEditor({ widget, onChange }: Props) {
 
   return (
     <div className={styles.root}>
-      <CollapsableSection label="General" isOpen>
         <Field label="Widget type">
           <Combobox
             options={widgetTypes}
@@ -121,13 +120,14 @@ export function WidgetEditor({ widget, onChange }: Props) {
             onChange={(v) => v?.value && handleTypeChange(String(v.value))}
           />
         </Field>
-        <Field label="Visible">
+      {/* <CollapsableSection label="General" isOpen> */}
+        {/* <Field label="Visible">
           <Switch value={widget.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
-        </Field>
-      </CollapsableSection>
+        </Field> */}
+      {/* </CollapsableSection> */}
 
       {currentDefinition?.editorSections.map((section) => (
-        <CollapsableSection key={section.title} label={section.title} isOpen>
+        <CollapsableSection key={section.title} label={''} isOpen>
           {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
         </CollapsableSection>
       ))}
