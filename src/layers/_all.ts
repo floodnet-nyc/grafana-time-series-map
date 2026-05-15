@@ -27,3 +27,6 @@ export const layerDefinitions = [
   textLayerDefinition,
   lineLayerDefinition,
 ];
+
+// export type LayerDefinition = typeof layerDefinitions[number];
+// export type LayerConfig = LayerDefinition['createDefaultConfig'] extends (index: number) => infer Config ? Config : never;
