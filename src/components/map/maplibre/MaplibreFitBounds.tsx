@@ -23,7 +23,7 @@ export function MaplibreFitBounds({ disabled, fitBounds, fitRequestId, options, 
   const fitBoundsOptions = getFitBoundsOptions(options);
 
   useEffect(() => {
-    console.log('MaplibreFitBounds effect', { disabled, fitBounds, fitRequestId, options });
+    // console.log('MaplibreFitBounds effect', { disabled, fitBounds, fitRequestId, options });
     if (disabled) { return; }
     const key = getFitBoundsKey(fitBounds);
     const forcedFit = Boolean(fitRequestId && fitRequestId !== prevFitRequestRef.current);
