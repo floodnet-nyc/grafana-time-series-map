@@ -484,7 +484,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addBooleanSwitch({
         path: 'deck.parameters.blend',
-        name: 'Blend',
+        name: 'Blend overrides',
         description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
         defaultValue: DEFAULT_DECK_PARAMETERS.blend,
         category: ['Rendering'],
@@ -542,12 +542,14 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Polygon offset fill',
         defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
         category: ['Rendering', 'Depth'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addBooleanSwitch({
         path: 'deck.parameters.depthWriteEnabled',
         name: 'Depth write enabled',
         defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
         category: ['Rendering', 'Depth'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addSelect({
         path: 'deck.parameters.depthCompare',
@@ -555,6 +557,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
         settings: { options: deckDepthCompareOptions },
         category: ['Rendering', 'Depth'],
+        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
       })
       .addCustomEditor({
         id: 'deckLighting',
