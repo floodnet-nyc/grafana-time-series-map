@@ -3,7 +3,7 @@ import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
-import { DeckGLMap } from './map/DeckGLMap';
+import { DeckGLMap, useDeckGLProps } from './map/DeckGLMap';
 import type { ViewportSnapshot } from './map/types';
 import { TimePlaybackControls } from './controls/TimePlaybackControls';
 import { SensorPopup, DEFAULT_POPUP_TEMPLATE } from './SensorPopup';
@@ -163,6 +163,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   );
   const fitBounds = useFitBounds(options, preparedLayerStates);
 
+  // TODO: this is hacky. 
   useEffect(() => {
     return subscribeFitToDataRequests(() => {
       if (options.initialView.mode !== 'fitData' || !fitBounds) {
@@ -174,6 +175,8 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     });
   }, [fitBounds, options.initialView.mode]);
 
+
+  const deckProps = useDeckGLProps({ options, layers, getTooltip });
   return (
     <div
       className={css({
@@ -189,13 +192,11 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         width={width}
         height={mapHeight}
         options={options}
-        layers={layers}
-        getTooltip={getTooltip}
         // initialViewState={initialViewState}
         fitBounds={fitBounds}
         fitRequestId={fitRequestId}
         onViewportChange={handleViewportChange}
-        interleaved={options.deck.interleaved}
+        deckProps={deckProps}
       />
       {options.legend.show && (
         <MapLegend layers={options.layers} onToggleVisibility={onToggleLayerVisibility} panelWidth={width} />

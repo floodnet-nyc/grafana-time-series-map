@@ -19,49 +19,36 @@ function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' |
   );
 }
 
-export function DeckGLMap({ width, height, options, layers, getTooltip, fitBounds, fitRequestId, onViewportChange, interleaved }: {
-  width: number;
-  height: number;
+export function useDeckGLProps({ options, layers, getTooltip }: {
   options: MapProviderProps['options'];
   layers: MapProviderProps['deckProps']['layers'];
   getTooltip?: MapProviderProps['deckProps']['getTooltip'];
-  fitBounds?: MapProviderProps['fitBounds'];
-  fitRequestId?: MapProviderProps['fitRequestId'];
-  onViewportChange?: MapProviderProps['onViewportChange'];
-  interleaved?: boolean;
 }) {
   const effects = buildDeckEffects(options.deck.lighting);
   const parameters = buildDeckParameters(options.deck.parameters);
   const widgets = createWidgets(options.widgets ?? []);
-  const providerProps: MapProviderProps = {
-    width,
-    height,
-    options,
-    fitBounds,
-    fitRequestId,
-    onViewportChange,
+  return {
+    effects,
+    parameters,
+    widgets,
+    style: LightGlassTheme,
+    layers,
+    getTooltip,
+    interleaved: options.deck.interleaved,
+  } as MapProviderProps['deckProps'];
+}
 
-    deckProps: {
-      effects,
-      parameters,
-      widgets,
-      style: LightGlassTheme,
-      layers,
-      getTooltip,
-      interleaved,
-    },
-  };
-
-  if (options.basemap.provider === 'google') {
+export function DeckGLMap(providerProps: MapProviderProps) {
+  if (providerProps.options.basemap.provider === 'google') {
     return (
-      <Suspense fallback={<MapProviderFallback width={width} height={height} />}>
+      <Suspense fallback={<MapProviderFallback width={providerProps.width} height={providerProps.height} />}>
         <LazyGoogleMap {...providerProps} />
       </Suspense>
     );
   }
 
   return (
-    <Suspense fallback={<MapProviderFallback width={width} height={height} />}>
+    <Suspense fallback={<MapProviderFallback width={providerProps.width} height={providerProps.height} />}>
       <LazyMaplibreMap {...providerProps} />
     </Suspense>
   );
