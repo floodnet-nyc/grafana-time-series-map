@@ -4,7 +4,6 @@ import type { EventBus, PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { MapPanel } from './MapPanel';
-import { requestFitToDataCapture } from '../editor/currentViewportStore';
 
 const mockUsePlayback = jest.fn();
 const mockUseGrafanaEventBridge = jest.fn();
@@ -190,45 +189,22 @@ describe('MapPanel', () => {
     });
   });
 
-  it('captures the fitted viewport into initialView.state when fit-to-data is requested', () => {
+  it('passes fitRequestId from options down to the map', () => {
     const options = {
       ...createOptions(),
-      initialView: { ...createOptions().initialView, mode: 'fitData' as const },
+      initialView: { ...createOptions().initialView, mode: 'fitData' as const, fitRequestId: 3 },
     };
-    const props = createProps(options);
-    mockUseFitBounds.mockReturnValue([[-75, 39], [-73, 41]]);
+    render(<MapPanel {...createProps(options)} />);
+    expect(latestMapProps.fitRequestId).toBe(3);
+  });
 
+  it('does not call onOptionsChange when the viewport changes', () => {
+    const props = createProps();
     render(<MapPanel {...props} />);
-
     act(() => {
-      requestFitToDataCapture();
+      latestMapProps.onViewportChange({ latitude: 40, longitude: -74, zoom: 12, bearing: 0, pitch: 0 });
     });
-
-    expect(latestMapProps.fitRequestId).toBeGreaterThan(0);
-
-    act(() => {
-      latestMapProps.onViewportChange({
-        latitude: 40.1234567,
-        longitude: -74.1234567,
-        zoom: 12.345,
-        bearing: 22.26,
-        pitch: 33.34,
-      });
-    });
-
-    expect(props.onOptionsChange).toHaveBeenCalledWith({
-      ...options,
-      initialView: {
-        ...options.initialView,
-        state: {
-          latitude: 40.123457,
-          longitude: -74.123457,
-          zoom: 12.35,
-          bearing: 22.3,
-          pitch: 33.3,
-        },
-      },
-    });
+    expect(props.onOptionsChange).not.toHaveBeenCalled();
   });
 
   it('shows a popup when a feature is clicked and clears it on close', () => {
