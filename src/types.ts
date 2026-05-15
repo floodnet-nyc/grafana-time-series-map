@@ -253,6 +253,7 @@ export interface InitialViewOptions {
   mode: InitialViewMode;
   state: MapViewState;
   fitData?: InitialViewFitDataOptions;
+  fitRequestId?: number;
 }
 
 export interface MapPanelOptions {

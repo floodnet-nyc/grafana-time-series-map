@@ -3,7 +3,7 @@ import { css } from '@emotion/css';
 import { Button, Combobox, Input, RadioButtonGroup, useStyles2, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { InitialViewFitDataSource, InitialViewMode, MapPanelOptions } from '../types';
-import { getCurrentViewportSnapshot, requestFitToDataCapture, subscribeCurrentViewportSnapshot } from './currentViewportStore';
+import { getCurrentViewportSnapshot, subscribeCurrentViewportSnapshot } from './currentViewportStore';
 
 const VIEW_MODE_OPTIONS: Array<ComboboxOption<InitialViewMode>> = [
   { label: 'Coordinates', value: 'manual', description: 'Start at the configured latitude, longitude, and zoom.' },
@@ -106,7 +106,7 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
 
   const applyCurrentViewport = () => {
     if (!isManual) {
-      requestFitToDataCapture();
+      onChange({ ...initialView, fitRequestId: (initialView.fitRequestId ?? 0) + 1 });
       return;
     }
 
