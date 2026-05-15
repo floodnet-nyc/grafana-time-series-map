@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import Map, {
-  AttributionControl,
-  // FullscreenControl,
+  // AttributionControl,
+  FullscreenControl,
   GeolocateControl,
-  // NavigationControl,
-  // ScaleControl,
+  NavigationControl,
+  ScaleControl,
   type MapRef,
 } from 'react-map-gl/maplibre';
+import { DeckGL, DeckGLProps } from '@deck.gl/react';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
 import { getFitBoundsKey, getFitBoundsOptions, getInitialViewport } from '../viewState';
 import type { MapProviderProps } from '../types';
@@ -16,13 +17,15 @@ import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
-export default function MaplibreMap({ width, height, options, layers, getTooltip, fitBounds, fitRequestId, onViewportChange, interleaved = true }: MapProviderProps) {
+export default function MaplibreMap({ width, height, options, deckProps, fitBounds, fitRequestId, onViewportChange }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl);
   const controlSettings = resolveMapControlSettings(options);
   const fitBoundsOptions = getFitBoundsOptions(options);
+  const controller = true; // We need to enable the controller to allow DeckGL to control the map viewport. Interactions are still controlled by the map's interactive prop.
 
   const mapRef = useRef<MapRef>(null);
-  const prevFitRequestRef = useRef<number>(0);
+  const prevFitRequestRef = useRef<number>(0); // TODO: this is hacky. Use declarative model
+  // TODO: hash routing should be handled at a higher level (MapPanel)
   const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
   const [hashInitialView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
 
@@ -48,10 +51,8 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
   }, [fitBounds, fitBoundsOptions, fitRequestId, hashInitialView]);
 
   const handleMoveEnd = useCallback((e: any) => {
-    const { latitude, longitude, zoom, bearing, pitch } = e.viewState;
-    const viewport = { latitude, longitude, zoom, bearing, pitch };
-    onViewportChange?.(viewport);
-    writeHashView(viewport);
+    onViewportChange?.(e.viewState);
+    writeHashView(e.viewState);
   }, [onViewportChange, writeHashView]);
 
   const initialViewport = getInitialViewport(options, hashInitialView);
@@ -63,40 +64,53 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
   useEffect(() => {
     onViewportChange?.(initialViewport);
   }, [initialViewport, onViewportChange]);
+  
+  
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
+  const mapProps = {
+    initialViewState,
+    style: { width, height },
+    mapStyle: styleUrl,
+    projection: options.basemap.maplibre.projection ?? 'mercator',
+    interactive,
+    cooperativeGestures: interactive ? interactions.cooperativeGestures ?? false : false,
+    rollEnabled: interactive ? interactions.rollEnabled ?? true : false,
+    onMoveEnd: handleMoveEnd,
+    attributionControl: { compact: true } as any,
+  };
+
+
   return (
-    <Map
-      ref={mapRef}
-      initialViewState={initialViewState}
-      style={{ width, height }}
-      mapStyle={styleUrl}
-      projection={options.basemap.maplibre.projection ?? 'mercator'}
-      interactive={interactive}
-      cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
-      rollEnabled={interactive ? interactions.rollEnabled ?? true : false}
-      onMoveEnd={handleMoveEnd}
-      attributionControl={{ compact: true }}
-    >
-      {/* {controlSettings.navigation.enabled && (
-        <NavigationControl
-          position={controlSettings.navigation.position}
-          showZoom={controlSettings.navigation.showZoom}
-          showCompass={controlSettings.navigation.showCompass}
-          visualizePitch={controlSettings.navigation.visualizePitch}
-          visualizeRoll={controlSettings.navigation.visualizeRoll}
-        />
-      )} */}
-      {controlSettings.geolocate.enabled && interactive && (
-        <GeolocateControl
-          position={controlSettings.geolocate.position}
-          trackUserLocation={controlSettings.geolocate.trackUserLocation}
-          positionOptions={{ enableHighAccuracy: true }}
-        />
-      )}
-      {/* {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
-      {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />} */}
-      <MaplibreDeckOverlay layers={layers} getTooltip={getTooltip ?? undefined} interleaved={interleaved} options={options} />
-    </Map>
+    controller ? (
+      <DeckGL {...deckProps as DeckGLProps} controller initialViewState={initialViewport} onViewStateChange={handleMoveEnd}>
+        <Map {...mapProps}>
+        </Map>
+      </DeckGL>
+    ) : (
+      <Map ref={mapRef} {...mapProps}>
+        <MaplibreDeckOverlay {...deckProps} options={options} />
+        {controlSettings.navigation.enabled && (
+          <NavigationControl
+            position={controlSettings.navigation.position}
+            showZoom={controlSettings.navigation.showZoom}
+            showCompass={controlSettings.navigation.showCompass}
+            visualizePitch={controlSettings.navigation.visualizePitch}
+            visualizeRoll={controlSettings.navigation.visualizeRoll}
+          />
+        )}
+        {controlSettings.geolocate.enabled && interactive && (
+          <GeolocateControl
+            position={controlSettings.geolocate.position}
+            trackUserLocation={controlSettings.geolocate.trackUserLocation}
+            positionOptions={{ enableHighAccuracy: true }}
+          />
+        )}
+        {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
+        {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
+      </Map>
+    )
+
+    
   );
 }

@@ -1,7 +1,7 @@
 import type { DeckRenderParametersOptions } from '../../types';
 
 export const DEFAULT_DECK_PARAMETERS: Required<DeckRenderParametersOptions> = {
-  blend: true,
+  blend: false,
   blendColorOperation: 'add',
   blendColorSrcFactor: 'src-alpha',
   blendColorDstFactor: 'one-minus-src-alpha',

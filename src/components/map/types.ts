@@ -1,4 +1,4 @@
-import type { Layer, PickingInfo } from '@deck.gl/core';
+import type { DeckProps } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
 
 export interface ViewportSnapshot {
@@ -21,14 +21,15 @@ export type DeckTooltipContent =
     }
   | null;
 
+
+
 export interface MapProviderProps {
   width: number;
   height: number;
   options: MapPanelOptions;
-  layers: Layer[];
-  getTooltip?: ((info: PickingInfo) => DeckTooltipContent) | null;
+
+  deckProps: DeckProps & { interleaved?: boolean };
   fitBounds?: FitBounds;
   fitRequestId?: number;
-  interleaved?: boolean;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
 }

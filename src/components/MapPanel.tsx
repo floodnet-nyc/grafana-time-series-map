@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
@@ -13,8 +13,24 @@ import { usePanelFeatures, usePanelLayers } from '../hooks/usePanelLayers';
 import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { getFitToDataRequestId, setCurrentViewportSnapshot, subscribeFitToDataRequests } from '../editor/currentViewportStore';
+import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
 
 const CONTROLS_HEIGHT = 48;
+
+
+export const useMapViewState = (options: MapPanelOptions) => {
+  const initialViewMode = options.initialView.mode;
+  const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
+
+  const hashInitialView = useMemo(() => hashRoutingEnabled ? parseMapHashView() ?? undefined : undefined, [hashRoutingEnabled]);
+  const manualInitialView = initialViewMode === 'manual' ? options.initialView.state : undefined;
+  const initialViewState = hashInitialView ?? manualInitialView;
+
+  const writeHashView = useWriteMapHashView(hashRoutingEnabled);
+
+  return { initialViewState, writeHashView };
+}
+
 
 export function MapPanel({ data, options, onOptionsChange, width, height, eventBus, replaceVariables }: PanelProps<MapPanelOptions>) {
   const fromTimeMs = data.timeRange.from.valueOf();
@@ -42,6 +58,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   // External DataSelectEvent (from time series panel) sets selectedKey without a feature.
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
+  // TODO
   const popupFeature =
     selectedFeature && selectedKey
       ? options.layers.some((layer) => {
@@ -54,9 +71,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   const onFeatureClick = useCallback(
     (feature: Feature, info: any) => {
-      // const layerConfig = options.layers.find((l) => l.id === info?.layer?.id);
-      const layerConfig = info.layer.props.config;
-      const keyField = layerConfig?.selectionKeyField;
+      const keyField = info.layer.props.config?.selectionKeyField;
       if (!keyField) { return; }
       const key = String(feature.properties?.[keyField] ?? '');
       if (!key) { return; }
@@ -72,6 +87,11 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     [selectedKey, selectKey],
   );
 
+  const handlePopupClose = useCallback(() => {
+    selectKey(null);
+    setSelectedFeature(null);
+  }, [selectKey]);
+
   const onToggleLayerVisibility = useCallback((layerId: string) => {
     const idx = options.layers.findIndex((l) => l.id === layerId);
     if (idx === -1) { return; }
@@ -80,12 +100,9 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     onOptionsChange({ ...options, layers });
   }, [options, onOptionsChange]);
 
-  const handlePopupClose = useCallback(() => {
-    selectKey(null);
-    setSelectedFeature(null);
-  }, [selectKey]);
-
   // ── Viewport tracking ───────────────────────────────────────────────────────
+  // const { initialViewState, writeHashView } = useMapViewState(options);
+
   const currentViewportRef = useRef<ViewportSnapshot | null>(null);
   const pendingFitCaptureRef = useRef<number | null>(null);
   const [fitRequestId, setFitRequestId] = useState(0);
@@ -93,6 +110,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const handleViewportChange = useCallback((viewport: ViewportSnapshot) => {
     currentViewportRef.current = viewport;
     setCurrentViewportSnapshot(viewport);
+    // writeHashView(viewport);
     if (pendingFitCaptureRef.current !== null) {
       pendingFitCaptureRef.current = null;
       onOptionsChange({
@@ -173,6 +191,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         options={options}
         layers={layers}
         getTooltip={getTooltip}
+        // initialViewState={initialViewState}
         fitBounds={fitBounds}
         fitRequestId={fitRequestId}
         onViewportChange={handleViewportChange}
@@ -197,39 +216,6 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
           playback={playback}
         />
       )}
-      {/* "Set as initial view" button — saves the current viewport to options */}
-      {/* {viewportMoved && (
-        <button
-          onClick={handleSaveView}
-          title="Save current map position as the initial view"
-          style={{
-            position: 'absolute',
-            bottom: options.time.show ? CONTROLS_HEIGHT + 10 : 10,
-            right: 10,
-            zIndex: 200,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '5px 10px',
-            background: 'rgba(14, 16, 26, 0.88)',
-            border: '1px solid rgba(255,255,255,0.18)',
-            borderRadius: 6,
-            color: '#ccc',
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: 'pointer',
-            backdropFilter: 'blur(4px)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-            lineHeight: 1,
-          }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          Set as initial view
-        </button>
-      )} */}
     </div>
   );
 }

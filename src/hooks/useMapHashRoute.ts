@@ -23,6 +23,16 @@ export function useInitialMapHashView(enabled: boolean): MapHashView | undefined
   return useMemo(() => enabled ? parseMapHashView() ?? undefined : undefined, [enabled]);
 }
 
+export function useWriteMapHashView(enabled: boolean): (view: MapHashView) => void {
+  const writeHashView = useDebouncedCallback((view: MapHashView) => {
+    if (enabled && typeof window !== 'undefined') {
+      const hashToWrite = upsertMapHashView(window.location.hash, view);
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hashToWrite}`);
+    }
+  }, HASH_WRITE_DEBOUNCE_MS);
+  return writeHashView;
+}
+
 export function useMapHashRoute(enabled: boolean, onHashView?: (view: MapHashView) => void) {
   const initialView = useInitialMapHashView(enabled);
   const writeHashView = useDebouncedCallback((view: MapHashView) => {
