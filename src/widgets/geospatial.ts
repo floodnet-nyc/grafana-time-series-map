@@ -1,5 +1,16 @@
-import { CompassWidget, _ScaleWidget as ScaleWidget, _GeocoderWidget as GeocoderWidget } from '@deck.gl/widgets';
-import { PLACEMENTS, type CompassWidgetConfig, type ScaleWidgetConfig, type GeocoderWidgetConfig, type WidgetDefinition } from './types';
+import { 
+  CompassWidget, 
+  _ScaleWidget as ScaleWidget, 
+  _GeocoderWidget as GeocoderWidget,
+  type CompassWidgetProps,
+  type ScaleWidgetProps,
+  type GeocoderWidgetProps,
+} from '@deck.gl/widgets';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+
+type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 'id'>>;
+type ScaleWidgetConfig = BaseWidgetConfig<'scale', Omit<ScaleWidgetProps, 'id'>>;
+type GeocoderWidgetConfig = BaseWidgetConfig<'geocoder', Omit<GeocoderWidgetProps, 'id'>>;
 
 export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   type: 'compass',

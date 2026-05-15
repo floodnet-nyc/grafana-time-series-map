@@ -1,6 +1,14 @@
-import { FullscreenWidget, _SplitterWidget as SplitterWidget } from '@deck.gl/widgets';
+import { 
+  FullscreenWidget, 
+  _SplitterWidget as SplitterWidget,
+  type FullscreenWidgetProps,
+  type SplitterWidgetProps,
+} from '@deck.gl/widgets';
 import { MapView } from '@deck.gl/core';
-import { PLACEMENTS, type FullscreenWidgetConfig, type SplitterWidgetConfig, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+
+type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
+type SplitterWidgetConfig = BaseWidgetConfig<'splitter', Omit<SplitterWidgetProps, 'id'>>;
 
 export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig> = {
   type: 'fullscreen',

@@ -3,8 +3,7 @@ import { css } from '@emotion/css';
 import { useStyles2, Input, Switch, Combobox, Field, CollapsableSection, ColorPicker } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField } from '../layers/types';
-import type { WidgetConfig } from '../widgets/types';
-import { widgetDefinitions } from '../widgets/_all';
+import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
   const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');

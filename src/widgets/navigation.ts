@@ -1,12 +1,19 @@
-import { ZoomWidget, ResetViewWidget, GimbalWidget, ScrollbarWidget } from '@deck.gl/widgets';
-import {
-  PLACEMENTS,
-  type ZoomWidgetConfig,
-  type ResetViewWidgetConfig,
-  type GimbalWidgetConfig,
-  type ScrollbarWidgetConfig,
-  type WidgetDefinition,
-} from './types';
+import { 
+  ZoomWidget, 
+  ResetViewWidget, 
+  GimbalWidget, 
+  ScrollbarWidget,
+  type ZoomWidgetProps,
+  type ResetViewWidgetProps,
+  type GimbalWidgetProps,
+  type ScrollbarWidgetProps,
+} from '@deck.gl/widgets';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+
+type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
+type ResetViewWidgetConfig = BaseWidgetConfig<'reset-view', Omit<ResetViewWidgetProps, 'id'>>;
+type GimbalWidgetConfig = BaseWidgetConfig<'gimbal', Omit<GimbalWidgetProps, 'id'>>;
+type ScrollbarWidgetConfig = BaseWidgetConfig<'scrollbar', Omit<ScrollbarWidgetProps, 'id'>>;
 
 const ORIENTATIONS = [
   { label: 'Vertical', value: 'vertical' },
