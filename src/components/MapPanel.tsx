@@ -22,8 +22,8 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const playback = usePlayback({
     fromTimeMs,
     toTimeMs,
-    defaultPlaybackSpeed: options.defaultPlaybackSpeed,
-    loop: options.loopPlayback,
+    defaultPlaybackSpeed: options.time.defaultSpeed,
+    loop: options.time.loop,
   });
 
   const { selectedKey, setSelectedKey: selectKey } = useGrafanaEventBridge({
@@ -32,9 +32,9 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     playback,
     fromTimeMs,
     toTimeMs,
-    publish: options.syncPublish ?? true,
-    subscribe: options.syncSubscribe ?? true,
-    selectionVariableName: options.selectionVariableName,
+    publish: options.sync.publish,
+    subscribe: options.sync.subscribe,
+    selectionVariableName: options.sync.selectionVariableName,
   });
 
   // Track the last clicked feature so the popup can show its properties.
@@ -96,19 +96,21 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   //   if (!vp) return;
   //   onOptionsChange({
   //     ...options,
-  //     initialViewMode: 'manual',
-  //     initialViewState: {
-  //       latitude: Math.round(vp.latitude * 1e6) / 1e6,
-  //       longitude: Math.round(vp.longitude * 1e6) / 1e6,
-  //       zoom: Math.round(vp.zoom * 100) / 100,
-  //       bearing: Math.round(vp.bearing * 10) / 10,
-  //       pitch: Math.round(vp.pitch * 10) / 10,
+  //     initialView: {
+  //       mode: 'manual',
+  //       state: {
+  //         latitude: Math.round(vp.latitude * 1e6) / 1e6,
+  //         longitude: Math.round(vp.longitude * 1e6) / 1e6,
+  //         zoom: Math.round(vp.zoom * 100) / 100,
+  //         bearing: Math.round(vp.bearing * 10) / 10,
+  //         pitch: Math.round(vp.pitch * 10) / 10,
+  //       },
   //     },
   //   });
   //   setViewportMoved(false);
   // }, [options, onOptionsChange]);
 
-  const mapHeight = options.showTimeControls ? Math.max(0, height - CONTROLS_HEIGHT) : height;
+  const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
   const fitBounds = useFitBounds(options, featuresByLayerId);
 
@@ -142,20 +144,20 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         getTooltip={getTooltip}
         fitBounds={fitBounds}
         onViewportChange={handleViewportChange}
-        interleaved={options.interleaved ?? true}
+        interleaved={options.deck.interleaved}
       />
-      {options.showLegend && (
+      {options.legend.show && (
         <MapLegend layers={options.layers} onToggleVisibility={onToggleLayerVisibility} panelWidth={width} />
       )}
       {selectedKey && (
         <SensorPopup
           selectedKey={selectedKey}
           feature={popupFeature}
-          template={options.popupTemplate ?? DEFAULT_POPUP_TEMPLATE}
+          template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
           onClose={handlePopupClose}
         />
       )}
-      {options.showTimeControls && (
+      {options.time.show && (
         <TimePlaybackControls
           width={width}
           fromTimeMs={fromTimeMs}
@@ -170,7 +172,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
           title="Save current map position as the initial view"
           style={{
             position: 'absolute',
-            bottom: options.showTimeControls ? CONTROLS_HEIGHT + 10 : 10,
+            bottom: options.time.show ? CONTROLS_HEIGHT + 10 : 10,
             right: 10,
             zIndex: 200,
             display: 'flex',

@@ -1,21 +1,17 @@
 import type { MapPanelOptions } from '../../types';
 import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport, getManualViewport } from './viewState';
 
-function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOptions {
+function createOptions(overrides: { initialView?: Partial<MapPanelOptions['initialView']> } = {}): MapPanelOptions {
   return {
-    basemapProvider: 'maplibre',
-    maplibreStyle: 'carto-dark',
-    initialViewMode: 'manual',
-    initialViewState: { latitude: 40.7, longitude: -73.9, zoom: 11, bearing: 15, pitch: 30 },
+    basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {} },
+    deck: { parameters: {}, lighting: {}, interleaved: true },
+    initialView: { mode: 'manual', state: { latitude: 40.7, longitude: -73.9, zoom: 11, bearing: 15, pitch: 30 }, ...overrides.initialView },
     layers: [],
-    defaultPlaybackSpeed: 1,
-    loopPlayback: false,
-    showTimeControls: false,
-    showLegend: true,
-    interleaved: true,
-    syncPublish: true,
-    syncSubscribe: true,
-    ...overrides,
+    time: { show: false, defaultSpeed: 1, loop: false },
+    legend: { show: true },
+    tooltip: { show: true },
+    popup: { show: true },
+    sync: { publish: true, subscribe: true },
   };
 }
 
@@ -37,7 +33,7 @@ describe('map view state helpers', () => {
   });
 
   it('prefers hash view when present', () => {
-    const options = createOptions({ initialViewState: { latitude: 1, longitude: 2, zoom: 3 } });
+    const options = createOptions({ initialView: { state: { latitude: 1, longitude: 2, zoom: 3 } } });
 
     expect(
       getInitialViewport(options, {

@@ -29,7 +29,7 @@ function collectCoords(geom: Geometry | null | undefined): Array<[number, number
 
 export function useFitBounds(options: MapPanelOptions, featuresByLayerId: PanelFeaturesByLayerId): FitBounds | undefined {
   return useMemo(() => {
-    if (options.initialViewMode !== 'fitData') {
+    if (options.initialView.mode !== 'fitData') {
       return undefined;
     }
 
@@ -66,5 +66,5 @@ export function useFitBounds(options: MapPanelOptions, featuresByLayerId: PanelF
       [minLng, minLat],
       [maxLng, maxLat],
     ];
-  }, [featuresByLayerId, options.initialViewMode, options.layers]);
+  }, [featuresByLayerId, options.initialView.mode, options.layers]);
 }

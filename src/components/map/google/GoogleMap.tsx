@@ -36,8 +36,8 @@ export function getGoogleFullscreenControlPosition(position: MapControlPosition)
 
 
 export default function GoogleMap({ width, height, options, layers, getTooltip, fitBounds, interleaved = true, onViewportChange }: MapProviderProps) {
-  const interactions = options.interactions ?? {};
-  const googleMapOptions = options.googleMapOptions ?? {};
+  const interactions = options.basemap.interactions ?? {};
+  const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
   const interactive = interactions.interactive ?? true;
   const hashRoutingEnabled = interactions.syncViewToUrl ?? false;
@@ -46,7 +46,7 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
   const initialViewport = getInitialViewport(options, initialHashView);
 
   return (
-    <APIProvider apiKey={options.googleMapsApiKey ?? ''}>
+    <APIProvider apiKey={options.basemap.google.apiKey ?? ''}>
       <Map
         defaultCenter={{
           lat: initialViewport.latitude,
@@ -56,7 +56,7 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
         defaultHeading={initialViewport.bearing}
         defaultTilt={initialViewport.pitch}
         style={{ width, height }}
-        mapId={options.googleMapsMapId || undefined}
+        mapId={options.basemap.google.mapId || undefined}
         colorScheme={colorScheme}
         gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
         keyboardShortcuts={interactive}

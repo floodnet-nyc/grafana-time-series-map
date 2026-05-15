@@ -100,7 +100,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
   .setPanelOptions((builder) => {
     builder
       .addRadio({
-        path: 'basemapProvider',
+        path: 'basemap.provider',
         name: 'Basemap provider',
         defaultValue: 'maplibre',
         category: ['Basemap'],
@@ -112,7 +112,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         },
       })
       .addSelect({
-        path: 'maplibreStyle',
+        path: 'basemap.maplibre.mapStyle',
         name: 'Map style',
         defaultValue: 'carto-dark',
         settings: {
@@ -129,18 +129,18 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Custom URL', value: 'custom' },
           ],
         },
-        showIf: (cfg) => cfg.basemapProvider !== 'google',
+        showIf: (cfg) => cfg.basemap?.provider !== 'google',
         category: ['Basemap', 'MapLibre'],
       })
       .addTextInput({
-        path: 'maplibreStyleUrl',
+        path: 'basemap.maplibre.mapStyleUrl',
         name: 'Map style URL',
         defaultValue: '',
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.maplibreStyle === 'custom',
+        showIf: (cfg) => cfg.basemap?.provider !== 'google' && cfg.basemap?.maplibre?.mapStyle === 'custom',
         category: ['Basemap', 'MapLibre'],
       })
       .addSelect({
-        path: 'maplibreProjection',
+        path: 'basemap.maplibre.projection',
         name: 'Map projection',
         description: 'Google globe/3D behavior is configured through the Google Maps Map ID style console.',
         defaultValue: 'mercator',
@@ -150,26 +150,26 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Globe', value: 'globe' },
           ],
         },
-        showIf: (cfg) => cfg.basemapProvider !== 'google',
+        showIf: (cfg) => cfg.basemap?.provider !== 'google',
         category: ['Basemap', 'MapLibre'],
       })
       .addTextInput({
-        path: 'googleMapsApiKey',
+        path: 'basemap.google.apiKey',
         name: 'Google Maps API key',
         defaultValue: '',
-        showIf: (cfg) => cfg.basemapProvider === 'google',
+        showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Basemap', 'Google Maps'],
       })
       .addTextInput({
-        path: 'googleMapsMapId',
+        path: 'basemap.google.mapId',
         name: 'Google Maps Map ID',
         defaultValue: '',
         description: 'Cloud-based map styling ID (required for vector maps and 3D)',
-        showIf: (cfg) => cfg.basemapProvider === 'google',
+        showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Basemap', 'Google Maps'],
       })
       .addSelect({
-        path: 'googleMapOptions.colorScheme',
+        path: 'basemap.google.colorScheme',
         name: 'Color Mode',
         defaultValue: 'LIGHT',
         settings: {
@@ -179,11 +179,11 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Auto', value: 'FOLLOW_SYSTEM' },
           ],
         },
-        showIf: (cfg) => cfg.basemapProvider === 'google',
+        showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Basemap', 'Google Maps'],
       })
       .addSelect({
-        path: 'initialViewMode',
+        path: 'initialView.mode',
         name: 'Initial view',
         defaultValue: 'manual',
         description: 'Manual: use the coordinates below. Fit to data: zoom to fit all layer features on load.',
@@ -196,29 +196,29 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialViewState.latitude',
+        path: 'initialView.state.latitude',
         name: 'Latitude',
         defaultValue: 40.7128,
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialViewState.longitude',
+        path: 'initialView.state.longitude',
         name: 'Longitude',
         defaultValue: -74.006,
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialViewState.zoom',
+        path: 'initialView.state.zoom',
         name: 'Zoom',
         defaultValue: 11,
         settings: { min: 0, max: 22 },
-        showIf: (cfg) => cfg.initialViewMode !== 'fitData',
+        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialViewState.bearing',
+        path: 'initialView.state.bearing',
         name: 'Bearing (°)',
         defaultValue: 0,
         description: 'Rotation in degrees clockwise from north (0–360)',
@@ -226,7 +226,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialViewState.pitch',
+        path: 'initialView.state.pitch',
         name: 'Pitch (°)',
         defaultValue: 0,
         description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',
@@ -234,45 +234,45 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addBooleanSwitch({
-        path: 'showTimeControls',
+        path: 'time.show',
         name: 'Show time playback controls',
         defaultValue: true,
         category: ['Time playback'],
       })
       .addBooleanSwitch({
-        path: 'loopPlayback',
+        path: 'time.loop',
         name: 'Loop playback',
         defaultValue: true,
-        showIf: (cfg) => cfg.showTimeControls !== false,
+        showIf: (cfg) => cfg.time?.show !== false,
         category: ['Time playback'],
       })
       .addNumberInput({
-        path: 'defaultPlaybackSpeed',
+        path: 'time.defaultSpeed',
         name: 'Default playback speed (data-ms per real-second)',
         defaultValue: 1_800_000,
         description: 'e.g. 1800000 = 30 minutes per second',
-        showIf: (cfg) => cfg.showTimeControls !== false,
+        showIf: (cfg) => cfg.time?.show !== false,
         category: ['Time playback'],
       })
       .addBooleanSwitch({
-        path: 'showLegend',
+        path: 'legend.show',
         name: 'Show legend',
         defaultValue: false,
         category: ['Legend'],
       })
       .addBooleanSwitch({
-        path: 'showTooltip',
+        path: 'tooltip.show',
         name: 'Show hover tooltip',
         defaultValue: true,
         category: ['Tooltip'],
       })
       .addCustomEditor({
         id: 'tooltipTemplate',
-        path: 'tooltipTemplate',
+        path: 'tooltip.template',
         name: 'Tooltip template',
         description: 'Liquid template. Use {{ prop_name }} for values, {% for p in properties %}...{% endfor %} to loop all fields.',
         editor: TooltipTemplateEditor,
-        showIf: (cfg) => cfg.showTooltip !== false,
+        showIf: (cfg) => cfg.tooltip?.show !== false,
         category: ['Tooltip'],
       })
       .addCustomEditor({
@@ -285,44 +285,44 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Layers'],
       })
       .addBooleanSwitch({
-        path: 'interactions.interactive',
+        path: 'basemap.interactions.interactive',
         name: 'Interactive map',
         description: 'Enable user map gestures such as drag, zoom, rotate, and keyboard navigation.',
         defaultValue: true,
         category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
-        path: 'interactions.cooperativeGestures',
+        path: 'basemap.interactions.cooperativeGestures',
         name: 'Cooperative gestures',
         description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
         defaultValue: false,
-        showIf: (cfg) => cfg.interactions?.interactive !== false,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
         category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
-        path: 'interactions.syncViewToUrl',
+        path: 'basemap.interactions.syncViewToUrl',
         name: 'Hash routing',
         description: 'Stores the current view as URL hash parameter v=zoom/lat/lon. MapLibre uses its native hash support; Google Maps uses a matching custom implementation.',
         defaultValue: false,
         category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
-        path: 'interactions.rollEnabled',
+        path: 'basemap.interactions.rollEnabled',
         name: 'Enable 3D',
         description: 'MapLibre only. Allows camera roll with Ctrl + drag.',
         defaultValue: true,
-        showIf: (cfg) => cfg.basemapProvider !== 'google' && cfg.interactions?.interactive !== false,
+        showIf: (cfg) => cfg.basemap?.provider !== 'google' && cfg.basemap?.interactions?.interactive !== false,
         category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
-        path: 'controls.navigationControl',
+        path: 'basemap.controls.navigationControl',
         name: 'Navigation control',
         description: 'MapLibre zoom/compass control or Google camera control.',
         defaultValue: true,
         category: ['Map controls'],
       })
       .addSelect({
-        path: 'controlSettings.navigation.position',
+        path: 'basemap.controlSettings.navigation.position',
         name: 'Navigation control position',
         defaultValue: 'top-right',
         settings: {
@@ -333,47 +333,47 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Bottom right', value: 'bottom-right' },
           ],
         },
-        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controlSettings.navigation.showZoom',
+        path: 'basemap.controlSettings.navigation.showZoom',
         name: 'Show zoom buttons',
         defaultValue: true,
-        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controlSettings.navigation.showCompass',
+        path: 'basemap.controlSettings.navigation.showCompass',
         name: 'Show compass button',
         defaultValue: true,
-        showIf: (cfg) => cfg.controls?.navigationControl !== false,
+        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controlSettings.navigation.visualizePitch',
+        path: 'basemap.controlSettings.navigation.visualizePitch',
         name: 'Visualize pitch',
         defaultValue: false,
-        showIf: (cfg) => cfg.controls?.navigationControl !== false && cfg.basemapProvider !== 'google',
+        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controlSettings.navigation.visualizeRoll',
+        path: 'basemap.controlSettings.navigation.visualizeRoll',
         name: 'Visualize roll',
         defaultValue: false,
-        showIf: (cfg) => cfg.controls?.navigationControl !== false && cfg.basemapProvider !== 'google',
+        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controls.geolocateControl',
+        path: 'basemap.controls.geolocateControl',
         name: 'Geolocate control',
         description: 'Find the user location using the browser geolocation API.',
         defaultValue: false,
-        showIf: (cfg) => cfg.interactions?.interactive !== false,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
         category: ['Map controls'],
       })
       .addSelect({
-        path: 'controlSettings.geolocate.position',
+        path: 'basemap.controlSettings.geolocate.position',
         name: 'Geolocate control position',
         defaultValue: 'top-right',
         settings: {
@@ -384,25 +384,25 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Bottom right', value: 'bottom-right' },
           ],
         },
-        showIf: (cfg) => cfg.interactions?.interactive !== false && cfg.controls?.geolocateControl === true,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controlSettings.geolocate.trackUserLocation',
+        path: 'basemap.controlSettings.geolocate.trackUserLocation',
         name: 'Track user location',
         description: 'MapLibre only. Keep watching the user position after geolocation is enabled.',
         defaultValue: false,
-        showIf: (cfg) => cfg.interactions?.interactive !== false && cfg.controls?.geolocateControl === true && cfg.basemapProvider !== 'google',
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true && cfg.basemap?.provider !== 'google',
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controls.fullscreenControl',
+        path: 'basemap.controls.fullscreenControl',
         name: 'Fullscreen control',
         defaultValue: false,
         category: ['Map controls'],
       })
       .addSelect({
-        path: 'controlSettings.fullscreen.position',
+        path: 'basemap.controlSettings.fullscreen.position',
         name: 'Fullscreen control position',
         defaultValue: 'top-right',
         settings: {
@@ -413,39 +413,39 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Bottom right', value: 'bottom-right' },
           ],
         },
-        showIf: (cfg) => cfg.controls?.fullscreenControl === true,
+        showIf: (cfg) => cfg.basemap?.controls?.fullscreenControl === true,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'controls.scaleControl',
+        path: 'basemap.controls.scaleControl',
         name: 'Scale control',
         defaultValue: false,
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'googleMapOptions.mapTypeControl',
+        path: 'basemap.google.mapTypeControl',
         name: 'Map type control',
         defaultValue: false,
-        showIf: (cfg) => cfg.basemapProvider === 'google',
+        showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Map controls', 'Google Maps controls'],
       })
       .addBooleanSwitch({
-        path: 'googleMapOptions.streetViewControl',
+        path: 'basemap.google.streetViewControl',
         name: 'Street View control',
         defaultValue: false,
-        showIf: (cfg) => cfg.basemapProvider === 'google',
+        showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Map controls', 'Google Maps controls'],
       })
       .addSelect({
-        path: 'googleMapOptions.mapTypeControlPosition',
+        path: 'basemap.google.mapTypeControlPosition',
         name: 'Map type control position',
         defaultValue: 'TOP_LEFT',
         settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
+        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
         category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
-        path: 'googleMapOptions.mapTypeControlStyle',
+        path: 'basemap.google.mapTypeControlStyle',
         name: 'Map type control style',
         defaultValue: 'DEFAULT',
         settings: {
@@ -455,33 +455,33 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Horizontal bar', value: 'HORIZONTAL_BAR' },
           ],
         },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.mapTypeControl === true,
+        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
         category: ['Map controls', 'Google Maps placement'],
       })
       .addSelect({
-        path: 'googleMapOptions.streetViewControlPosition',
+        path: 'basemap.google.streetViewControlPosition',
         name: 'Street View control position',
         defaultValue: 'RIGHT_BOTTOM',
         settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemapProvider === 'google' && cfg.googleMapOptions?.streetViewControl === true,
+        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.streetViewControl === true,
         category: ['Map controls', 'Google Maps placement'],
       })
       .addBooleanSwitch({
-        path: 'syncPublish',
+        path: 'sync.publish',
         name: 'Publish playback time to other panels',
         description: 'Broadcast time cursor and hover selection to other panels. Displays a cursor at the current time on other time series panels.',
         defaultValue: true,
         category: ['Map controls', 'Cross-panel sync'],
       })
       .addBooleanSwitch({
-        path: 'syncSubscribe',
+        path: 'sync.subscribe',
         name: 'Subscribe to time hover events from other panels',
         description: 'Receive time cursor and hover selection from other panels',
         defaultValue: true,
         category: ['Map controls', 'Cross-panel sync'],
       })
       .addTextInput({
-        path: 'selectionVariableName',
+        path: 'sync.selectionVariableName',
         name: 'Store selected key in variable',
         description: 'Optional dashboard variable name to update from the current selected key. Use the bare variable name, not the var- prefix.',
         defaultValue: '',
@@ -489,82 +489,82 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addCustomEditor({
         id: 'popupTemplate',
-        path: 'popupTemplate',
+        path: 'popup.template',
         name: 'Popup template',
         description: 'Liquid template shown in the click popup. Use {{ prop_name }} for values, {{ _key }} for the selected key, {% for p in properties %}...{% endfor %} to loop all fields.',
         editor: PopupTemplateEditor,
         category: ['Map controls', 'Cross-panel sync'],
       })
       .addBooleanSwitch({
-        path: 'interleaved',
+        path: 'deck.interleaved',
         name: 'Interleaved rendering',
         description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
         defaultValue: true,
         category: ['Rendering'],
       })
       .addBooleanSwitch({
-        path: 'deckParameters.blend',
+        path: 'deck.parameters.blend',
         name: 'Blend',
         description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
         defaultValue: DEFAULT_DECK_PARAMETERS.blend,
         category: ['Rendering'],
       })
       .addSelect({
-        path: 'deckParameters.blendColorOperation',
+        path: 'deck.parameters.blendColorOperation',
         name: 'Color blend operation',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
         settings: { options: deckBlendOperations },
         category: ['Rendering', 'Blending'],
       })
       .addSelect({
-        path: 'deckParameters.blendColorSrcFactor',
+        path: 'deck.parameters.blendColorSrcFactor',
         name: 'Color source factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
       })
       .addSelect({
-        path: 'deckParameters.blendColorDstFactor',
+        path: 'deck.parameters.blendColorDstFactor',
         name: 'Color destination factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
       })
       .addSelect({
-        path: 'deckParameters.blendAlphaOperation',
+        path: 'deck.parameters.blendAlphaOperation',
         name: 'Alpha blend operation',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
         settings: { options: deckBlendOperations },
         category: ['Rendering', 'Blending'],
       })
       .addSelect({
-        path: 'deckParameters.blendAlphaSrcFactor',
+        path: 'deck.parameters.blendAlphaSrcFactor',
         name: 'Alpha source factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
       })
       .addSelect({
-        path: 'deckParameters.blendAlphaDstFactor',
+        path: 'deck.parameters.blendAlphaDstFactor',
         name: 'Alpha destination factor',
         defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
         settings: { options: deckBlendFactors },
         category: ['Rendering', 'Blending'],
       })
       .addBooleanSwitch({
-        path: 'deckParameters.polygonOffsetFill',
+        path: 'deck.parameters.polygonOffsetFill',
         name: 'Polygon offset fill',
         defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
         category: ['Rendering', 'Depth'],
       })
       .addBooleanSwitch({
-        path: 'deckParameters.depthWriteEnabled',
+        path: 'deck.parameters.depthWriteEnabled',
         name: 'Depth write enabled',
         defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
         category: ['Rendering', 'Depth'],
       })
       .addSelect({
-        path: 'deckParameters.depthCompare',
+        path: 'deck.parameters.depthCompare',
         name: 'Depth compare',
         defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
         settings: { options: deckDepthCompareOptions },
@@ -572,7 +572,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addCustomEditor({
         id: 'deckLighting',
-        path: 'deckLighting',
+        path: 'deck.lighting',
         name: 'Lighting',
         description: 'Configure deck.gl LightingEffect light sources.',
         editor: LightingEditor,

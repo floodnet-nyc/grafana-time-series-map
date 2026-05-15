@@ -8,21 +8,17 @@ import {
   getGoogleFullscreenControlPosition
 } from './google/GoogleMap';
 
-function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOptions {
+function createOptions(overrides: { basemap?: Partial<MapPanelOptions['basemap']> } = {}): MapPanelOptions {
   return {
-    basemapProvider: 'maplibre',
-    maplibreStyle: 'carto-dark',
-    initialViewMode: 'manual',
-    initialViewState: { latitude: 0, longitude: 0, zoom: 1 },
+    basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {}, ...overrides.basemap },
+    deck: { parameters: {}, lighting: {}, interleaved: true },
+    initialView: { mode: 'manual', state: { latitude: 0, longitude: 0, zoom: 1 } },
     layers: [],
-    defaultPlaybackSpeed: 1,
-    loopPlayback: false,
-    showTimeControls: false,
-    showLegend: true,
-    interleaved: true,
-    syncPublish: true,
-    syncSubscribe: true,
-    ...overrides,
+    time: { show: false, defaultSpeed: 1, loop: false },
+    legend: { show: true },
+    tooltip: { show: true },
+    popup: { show: true },
+    sync: { publish: true, subscribe: true },
   };
 }
 
@@ -30,11 +26,13 @@ describe('controlSettings', () => {
   it('resolves shared defaults from the common control surface', () => {
     const resolved = resolveMapControlSettings(
       createOptions({
-        controls: {
-          navigationControl: true,
-          geolocateControl: true,
-          fullscreenControl: true,
-          scaleControl: true,
+        basemap: {
+          controls: {
+            navigationControl: true,
+            geolocateControl: true,
+            fullscreenControl: true,
+            scaleControl: true,
+          },
         },
       })
     );
@@ -69,27 +67,29 @@ describe('controlSettings', () => {
   it('prefers new shared control settings over provider-specific fallbacks', () => {
     const resolved = resolveMapControlSettings(
       createOptions({
-        controlSettings: {
-          navigation: {
-            position: 'bottom-left',
-            showZoom: false,
-            showCompass: false,
-            visualizePitch: true,
-            visualizeRoll: true,
+        basemap: {
+          controlSettings: {
+            navigation: {
+              position: 'bottom-left',
+              showZoom: false,
+              showCompass: false,
+              visualizePitch: true,
+              visualizeRoll: true,
+            },
+            geolocate: {
+              position: 'bottom-right',
+              trackUserLocation: true,
+            },
+            fullscreen: {
+              position: 'top-left',
+            },
           },
-          geolocate: {
-            position: 'bottom-right',
-            trackUserLocation: true,
+          controls: {
+            navigationControl: true,
+            geolocateControl: true,
+            fullscreenControl: true,
+            scaleControl: false,
           },
-          fullscreen: {
-            position: 'top-left',
-          },
-        },
-        controls: {
-          navigationControl: true,
-          geolocateControl: true,
-          fullscreenControl: true,
-          scaleControl: false,
         },
       })
     );

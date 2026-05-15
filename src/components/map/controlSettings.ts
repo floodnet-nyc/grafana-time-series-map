@@ -37,9 +37,9 @@ export interface ResolvedMapControlSettings {
 }
 
 function resolveSharedSettings(
-  controls: MapPanelOptions['controls'],
+  controls: MapPanelOptions['basemap']['controls'],
   controlSettings: SharedMapControlSettings | undefined,
-  googleMapOptions: GoogleMapOptions | undefined,
+  googleMapOptions: GoogleMapOptions,
 ): ResolvedMapControlSettings {
   return {
     navigation: {
@@ -63,17 +63,18 @@ function resolveSharedSettings(
       enabled: controls?.scaleControl ?? false,
     },
     google: {
-      mapTypeControl: googleMapOptions?.mapTypeControl ?? false,
-      streetViewControl: googleMapOptions?.streetViewControl ?? false,
-      mapTypeControlPosition: googleMapOptions?.mapTypeControlPosition ?? 'TOP_LEFT',
-      mapTypeControlStyle: googleMapOptions?.mapTypeControlStyle ?? 'DEFAULT',
-      streetViewControlPosition: googleMapOptions?.streetViewControlPosition ?? 'RIGHT_BOTTOM',
+      mapTypeControl: googleMapOptions.mapTypeControl ?? false,
+      streetViewControl: googleMapOptions.streetViewControl ?? false,
+      mapTypeControlPosition: googleMapOptions.mapTypeControlPosition ?? 'TOP_LEFT',
+      mapTypeControlStyle: googleMapOptions.mapTypeControlStyle ?? 'DEFAULT',
+      streetViewControlPosition: googleMapOptions.streetViewControlPosition ?? 'RIGHT_BOTTOM',
     },
   };
 }
 
 export function resolveMapControlSettings(options: MapPanelOptions): ResolvedMapControlSettings {
-  return resolveSharedSettings(options.controls, options.controlSettings, options.googleMapOptions);
+  const { controls, controlSettings, google } = options.basemap;
+  return resolveSharedSettings(controls, controlSettings, google);
 }
 
 export function getMaplibreControlPosition(position: MapControlPosition): MapControlPosition {
