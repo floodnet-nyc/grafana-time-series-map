@@ -77,6 +77,7 @@
     "@deck.gl/google-maps": "^9.3.2",
     "@deck.gl/layers": "^9.3.2",
     "@deck.gl/mapbox": "^9.3.2",
+    "@deck.gl/widgets": "^9.3.2",
     "@developmentseed/deck.gl-geotiff": "^0.6.1",
     "@developmentseed/deck.gl-raster": "^0.6.1",
     "@developmentseed/geotiff": "^0.6.1",
