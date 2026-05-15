@@ -23,9 +23,12 @@ export interface WidgetCallbacks {
   resetViewState?: object;
   playback?: {
     cursorTimeMs: number;
+    timeRange: [number, number];
     playing: boolean;
+    playInterval: number;
     onPlayingChange: (playing: boolean) => void;
     onSeekTo: (ms: number) => void;
+    formatLabel: (value: number) => string;
   };
   themeMode?: 'light' | 'dark';
   onThemeModeChange?: (mode: 'light' | 'dark') => void;
