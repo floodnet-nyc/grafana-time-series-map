@@ -28,6 +28,7 @@ export interface MapProviderProps {
   layers: Layer[];
   getTooltip?: ((info: PickingInfo) => DeckTooltipContent) | null;
   fitBounds?: FitBounds;
+  fitRequestId?: number;
   interleaved?: boolean;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
 }

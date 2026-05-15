@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
@@ -12,6 +12,7 @@ import { usePlayback } from '../hooks/usePlayback';
 import { usePanelFeatures, usePanelLayers } from '../hooks/usePanelLayers';
 import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
+import { getFitToDataRequestId, setCurrentViewportSnapshot, subscribeFitToDataRequests } from '../editor/currentViewportStore';
 
 const CONTROLS_HEIGHT = 48;
 
@@ -86,10 +87,29 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   // ── Viewport tracking ───────────────────────────────────────────────────────
   const currentViewportRef = useRef<ViewportSnapshot | null>(null);
+  const pendingFitCaptureRef = useRef<number | null>(null);
+  const [fitRequestId, setFitRequestId] = useState(0);
 
   const handleViewportChange = useCallback((viewport: ViewportSnapshot) => {
     currentViewportRef.current = viewport;
-  }, []);
+    setCurrentViewportSnapshot(viewport);
+    if (pendingFitCaptureRef.current !== null) {
+      pendingFitCaptureRef.current = null;
+      onOptionsChange({
+        ...options,
+        initialView: {
+          ...options.initialView,
+          state: {
+            latitude: Math.round(viewport.latitude * 1e6) / 1e6,
+            longitude: Math.round(viewport.longitude * 1e6) / 1e6,
+            zoom: Math.round(viewport.zoom * 100) / 100,
+            bearing: Math.round((viewport.bearing ?? 0) * 10) / 10,
+            pitch: Math.round((viewport.pitch ?? 0) * 10) / 10,
+          },
+        },
+      });
+    }
+  }, [onOptionsChange, options]);
 
   // const handleSaveView = useCallback(() => {
   //   const vp = currentViewportRef.current;
@@ -112,9 +132,8 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
-  const fitBounds = useFitBounds(options, featuresByLayerId);
 
-  const { layers, getTooltip } = usePanelLayers(
+  const { layers, getTooltip, preparedLayerStates } = usePanelLayers(
     options,
     featuresByLayerId,
     data,
@@ -124,6 +143,18 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     selectedKey,
     onFeatureClick,
   );
+  const fitBounds = useFitBounds(options, preparedLayerStates);
+
+  useEffect(() => {
+    return subscribeFitToDataRequests(() => {
+      if (options.initialView.mode !== 'fitData' || !fitBounds) {
+        return;
+      }
+      const requestId = getFitToDataRequestId();
+      pendingFitCaptureRef.current = requestId;
+      setFitRequestId(requestId);
+    });
+  }, [fitBounds, options.initialView.mode]);
 
   return (
     <div
@@ -143,6 +174,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         layers={layers}
         getTooltip={getTooltip}
         fitBounds={fitBounds}
+        fitRequestId={fitRequestId}
         onViewportChange={handleViewportChange}
         interleaved={options.deck.interleaved}
       />

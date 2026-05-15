@@ -4,6 +4,7 @@ import type { DeckDepthCompare, MapPanelOptions } from './types';
 import type { DeckBlendFactor, DeckBlendOperation } from "types";
 import { MapPanel } from './components/MapPanel';
 import { LightingEditor } from './editor/LightingEditor';
+import { InitialViewEditor } from './editor/InitialViewEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
 import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
@@ -183,55 +184,17 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Basemap', 'Google Maps'],
       })
-      .addSelect({
-        path: 'initialView.mode',
-        name: 'Initial view',
-        defaultValue: 'manual',
-        description: 'Manual: use the coordinates below. Fit to data: zoom to fit all layer features on load.',
-        settings: {
-          options: [
-            { label: 'Manual', value: 'manual' },
-            { label: 'Fit to data', value: 'fitData' },
-          ],
+      .addCustomEditor({
+        id: 'initialView',
+        path: 'initialView',
+        name: 'Map view',
+        description: 'Configure the starting view or capture it from the current map.',
+        editor: InitialViewEditor,
+        defaultValue: {
+          mode: 'manual',
+          state: { latitude: 40.7128, longitude: -74.006, zoom: 11, bearing: 0, pitch: 0 },
+          fitData: { source: 'allLayers', padding: 48, maxZoom: 22 },
         },
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialView.state.latitude',
-        name: 'Latitude',
-        defaultValue: 40.7128,
-        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialView.state.longitude',
-        name: 'Longitude',
-        defaultValue: -74.006,
-        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialView.state.zoom',
-        name: 'Zoom',
-        defaultValue: 11,
-        settings: { min: 0, max: 22 },
-        showIf: (cfg) => cfg.initialView?.mode !== 'fitData',
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialView.state.bearing',
-        name: 'Bearing (°)',
-        defaultValue: 0,
-        description: 'Rotation in degrees clockwise from north (0–360)',
-        settings: { min: -180, max: 360 },
-        category: ['Map bounds'],
-      })
-      .addNumberInput({
-        path: 'initialView.state.pitch',
-        name: 'Pitch (°)',
-        defaultValue: 0,
-        description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',
-        settings: { min: 0, max: 85 },
         category: ['Map bounds'],
       })
       .addBooleanSwitch({

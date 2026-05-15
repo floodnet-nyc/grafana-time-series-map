@@ -8,7 +8,7 @@ import Map, {
   type MapRef,
 } from 'react-map-gl/maplibre';
 import { useMapHashRoute } from '../../../hooks/useMapHashRoute';
-import { FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getInitialViewport } from '../viewState';
+import { getFitBoundsKey, getFitBoundsOptions, getInitialViewport } from '../viewState';
 import type { MapProviderProps } from '../types';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { getMaplibreStyleUrl } from './style';
@@ -16,11 +16,13 @@ import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 
-export default function MaplibreMap({ width, height, options, layers, getTooltip, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
+export default function MaplibreMap({ width, height, options, layers, getTooltip, fitBounds, fitRequestId, onViewportChange, interleaved = true }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl);
   const controlSettings = resolveMapControlSettings(options);
+  const fitBoundsOptions = getFitBoundsOptions(options);
 
   const mapRef = useRef<MapRef>(null);
+  const prevFitRequestRef = useRef<number>(0);
   const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
   const [hashInitialView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
 
@@ -31,15 +33,19 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
       return;
     }
     const key = getFitBoundsKey(fitBounds);
-    if (!fitBounds || key === prevFitBoundsRef.current) {
+    const forcedFit = Boolean(fitRequestId && fitRequestId !== prevFitRequestRef.current);
+    if (!fitBounds || (key === prevFitBoundsRef.current && !forcedFit)) {
       return;
     }
     prevFitBoundsRef.current = key;
+    if (fitRequestId) {
+      prevFitRequestRef.current = fitRequestId;
+    }
     const map = mapRef.current?.getMap();
     if (map) {
-      map.fitBounds(fitBounds as any, { padding: FIT_BOUNDS_PADDING_PX, duration: 800 });
+      map.fitBounds(fitBounds as any, { ...fitBoundsOptions, duration: 800 });
     }
-  }, [fitBounds, hashInitialView]);
+  }, [fitBounds, fitBoundsOptions, fitRequestId, hashInitialView]);
 
   const handleMoveEnd = useCallback((e: any) => {
     const { latitude, longitude, zoom, bearing, pitch } = e.viewState;
@@ -52,8 +58,11 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
   const initialViewState = hashInitialView
     ? initialViewport
     : fitBounds
-    ? { bounds: fitBounds as any, fitBoundsOptions: { padding: FIT_BOUNDS_PADDING_PX } }
+    ? { bounds: fitBounds as any, fitBoundsOptions }
     : initialViewport;
+  useEffect(() => {
+    onViewportChange?.(initialViewport);
+  }, [initialViewport, onViewportChange]);
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
   return (

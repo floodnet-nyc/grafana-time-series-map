@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import type { Geometry } from 'geojson';
-import type { PanelFeaturesByLayerId } from './usePanelLayers';
 import type { MapPanelOptions } from '../types';
 import type { FitBounds } from '../components/map/types';
+import type { PreparedLayerState } from '../utils/dataframe/panelLayersModel';
 
 function collectCoords(geom: Geometry | null | undefined): Array<[number, number]> {
   if (!geom) {
@@ -27,24 +27,32 @@ function collectCoords(geom: Geometry | null | undefined): Array<[number, number
   }
 }
 
-export function useFitBounds(options: MapPanelOptions, featuresByLayerId: PanelFeaturesByLayerId): FitBounds | undefined {
+export function useFitBounds(options: MapPanelOptions, preparedLayerStates: PreparedLayerState[]): FitBounds | undefined {
   return useMemo(() => {
     if (options.initialView.mode !== 'fitData') {
       return undefined;
     }
+
+    const fitSource = options.initialView.fitData?.source ?? 'lastValue';
+    const selectedLayerId = options.initialView.fitData?.layerId;
 
     let minLng = Infinity;
     let maxLng = -Infinity;
     let minLat = Infinity;
     let maxLat = -Infinity;
 
-    for (const layerConfig of options.layers) {
+    for (const preparedLayerState of preparedLayerStates) {
+      const { config: layerConfig, features } = preparedLayerState;
+
       if (!layerConfig.visible || layerConfig.geometry.type === 'none') {
         continue;
       }
 
-      const features = featuresByLayerId.get(layerConfig.id) ?? [];
-      for (const feature of features) {
+      if (fitSource === 'layer' && layerConfig.id !== selectedLayerId) {
+        continue;
+      }
+
+      for (const [, feature] of features.entries()) {
         for (const [lng, lat] of collectCoords(feature.geometry)) {
           if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
             continue;
@@ -66,5 +74,5 @@ export function useFitBounds(options: MapPanelOptions, featuresByLayerId: PanelF
       [minLng, minLat],
       [maxLng, maxLat],
     ];
-  }, [featuresByLayerId, options.initialView.mode, options.layers]);
+  }, [options.initialView.fitData?.layerId, options.initialView.fitData?.source, options.initialView.mode, preparedLayerStates]);
 }
