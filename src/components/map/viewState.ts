@@ -9,7 +9,7 @@ export function getFitBoundsKey(fitBounds?: FitBounds): string | null {
 }
 
 export function getManualViewport(options: MapPanelOptions): ViewportSnapshot {
-  const { latitude, longitude, zoom, bearing, pitch } = options.initialViewState;
+  const { latitude, longitude, zoom, bearing, pitch } = options.initialView.state;
   return { latitude, longitude, zoom, bearing: bearing ?? 0, pitch: pitch ?? 0 };
 }
 

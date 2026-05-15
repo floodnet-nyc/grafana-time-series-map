@@ -16,11 +16,11 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 
 export default function MaplibreMap({ width, height, options, layers, getTooltip, fitBounds, onViewportChange, interleaved = true }: MapProviderProps) {
-  const styleUrl = getMaplibreStyleUrl(options.maplibreStyle, options.maplibreStyleUrl);
+  const styleUrl = getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl);
   const controlSettings = resolveMapControlSettings(options);
 
   const mapRef = useRef<MapRef>(null);
-  const hashRoutingEnabled = options.interactions?.syncViewToUrl ?? false;
+  const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
   const [hashInitialView, writeHashView] = useMapHashRoute(hashRoutingEnabled);
 
   // When fitBounds changes (data loaded or mode changed), refit the map.
@@ -53,7 +53,7 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
     : fitBounds
     ? { bounds: fitBounds as any, fitBoundsOptions: { padding: FIT_BOUNDS_PADDING_PX } }
     : initialViewport;
-  const interactions = options.interactions ?? {};
+  const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
   return (
     <Map
@@ -61,7 +61,7 @@ export default function MaplibreMap({ width, height, options, layers, getTooltip
       initialViewState={initialViewState}
       style={{ width, height }}
       mapStyle={styleUrl}
-      projection={options.maplibreProjection ?? 'mercator'}
+      projection={options.basemap.maplibre.projection ?? 'mercator'}
       interactive={interactive}
       cooperativeGestures={interactive ? interactions.cooperativeGestures ?? false : false}
       rollEnabled={interactive ? interactions.rollEnabled ?? false : false}

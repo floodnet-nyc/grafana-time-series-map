@@ -69,12 +69,11 @@ jest.mock('./controls/TimePlaybackControls', () => ({
   TimePlaybackControls: () => <div data-testid="time-playback-controls" />,
 }));
 
-function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOptions {
+function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = {}): MapPanelOptions {
   return {
-    basemapProvider: 'maplibre',
-    maplibreStyle: 'carto-dark',
-    initialViewMode: 'manual',
-    initialViewState: { latitude: 40.7, longitude: -73.9, zoom: 11 },
+    basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {} },
+    deck: { parameters: {}, lighting: {}, interleaved: true },
+    initialView: { mode: 'manual', state: { latitude: 40.7, longitude: -73.9, zoom: 11 } },
     layers: [
       {
         id: 'layer-1',
@@ -97,14 +96,11 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
         selectionKeyField: 'deployment_id',
       },
     ],
-    defaultPlaybackSpeed: 1,
-    loopPlayback: false,
-    showTimeControls: false,
-    showLegend: true,
-    interleaved: true,
-    syncPublish: true,
-    syncSubscribe: true,
-    ...overrides,
+    time: { show: false, defaultSpeed: 1, loop: false },
+    legend: { show: true },
+    tooltip: { show: true },
+    popup: { show: true },
+    sync: { publish: true, subscribe: true, ...overrides.sync },
   };
 }
 
@@ -254,7 +250,7 @@ describe('MapPanel', () => {
   });
 
   it('stores selection changes in the configured dashboard variable', () => {
-    const props = createProps(createOptions({ selectionVariableName: 'selected_sensor' }));
+    const props = createProps(createOptions({ sync: { selectionVariableName: 'selected_sensor' } }));
     const feature: Feature = {
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [0, 0] },

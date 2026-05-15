@@ -27,7 +27,7 @@ export function DeckGLMap({ width, height, options, layers, getTooltip, fitBound
     interleaved,
   };
 
-  if (options.basemapProvider === 'google') {
+  if (options.basemap.provider === 'google') {
     return (
       <Suspense fallback={<MapProviderFallback width={width} height={height} />}>
         <LazyGoogleMap {...providerProps} />

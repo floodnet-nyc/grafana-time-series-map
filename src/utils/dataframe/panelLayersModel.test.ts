@@ -52,18 +52,15 @@ function createFeature(properties: Record<string, unknown>, id?: string, index =
 
 function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOptions {
   return {
-    basemapProvider: 'maplibre',
-    maplibreStyle: 'carto-dark',
-    initialViewMode: 'manual',
-    initialViewState: { latitude: 0, longitude: 0, zoom: 1 },
+    basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {} },
+    deck: { parameters: {}, lighting: {}, interleaved: true },
+    initialView: { mode: 'manual', state: { latitude: 0, longitude: 0, zoom: 1 } },
     layers: [],
-    defaultPlaybackSpeed: 1,
-    loopPlayback: false,
-    showTimeControls: false,
-    showLegend: true,
-    interleaved: true,
-    syncPublish: true,
-    syncSubscribe: true,
+    time: { show: false, defaultSpeed: 1, loop: false },
+    legend: { show: true },
+    tooltip: { show: true },
+    popup: { show: true },
+    sync: { publish: true, subscribe: true },
     ...overrides,
   };
 }

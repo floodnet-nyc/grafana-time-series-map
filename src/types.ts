@@ -190,6 +190,8 @@ export interface SharedMapControlSettings {
 }
 
 export interface GoogleMapOptions {
+  apiKey?: string;
+  mapId?: string;
   colorScheme?: GoogleMapColorScheme;
   mapTypeControl?: boolean;
   streetViewControl?: boolean;
@@ -238,30 +240,47 @@ export interface DeckLightingOptions {
 }
 
 export interface MapPanelOptions {
-  basemapProvider: BasemapProvider;
-  maplibreStyle: MaplibreStyle;
-  maplibreStyleUrl?: string;
-  maplibreProjection?: MaplibreProjection;
-  googleMapsApiKey?: string;
-  googleMapsMapId?: string;
-  interactions?: MapInteractionOptions;
-  controls?: MapControlOptions;
-  controlSettings?: SharedMapControlSettings;
-  googleMapOptions?: GoogleMapOptions;
-  deckParameters?: DeckRenderParametersOptions;
-  deckLighting?: DeckLightingOptions;
-  initialViewMode: InitialViewMode;
-  initialViewState: MapViewState;
+  basemap: {
+    provider: BasemapProvider;
+    maplibre: {
+      mapStyle: MaplibreStyle;
+      mapStyleUrl?: string;
+      projection?: MaplibreProjection;
+    };
+    google: GoogleMapOptions;
+    interactions?: MapInteractionOptions;
+    controls?: MapControlOptions;
+    controlSettings?: SharedMapControlSettings;
+  };
+  deck: {
+    parameters: DeckRenderParametersOptions;
+    lighting: DeckLightingOptions;
+    interleaved: boolean;
+  };
+  initialView: {
+    mode: InitialViewMode;
+    state: MapViewState;
+  };
   layers: LayerConfig[];
-  defaultPlaybackSpeed: number;
-  loopPlayback: boolean;
-  showTimeControls: boolean;
-  showLegend: boolean;
-  interleaved: boolean;
-  syncPublish: boolean;
-  syncSubscribe: boolean;
-  selectionVariableName?: string;
-  showTooltip?: boolean;
-  tooltipTemplate?: string;
-  popupTemplate?: string;
+  time: {
+    show: boolean;
+    defaultSpeed: number;
+    loop: boolean;
+  };
+  legend: {
+    show: boolean;
+  };
+  tooltip: {
+    show: boolean;
+    template?: string;
+  };
+  popup: {
+    show: boolean;
+    template?: string;
+  };
+  sync: {
+    publish: boolean;
+    subscribe: boolean;
+    selectionVariableName?: string;
+  };
 }

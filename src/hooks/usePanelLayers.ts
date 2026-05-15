@@ -63,8 +63,8 @@ export function usePanelLayers(
   }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 
   const getTooltip = useMemo(
-    () => (options.showTooltip !== false ? buildDeckTooltip(options.tooltipTemplate ?? DEFAULT_TOOLTIP_TEMPLATE) : null),
-    [options.showTooltip, options.tooltipTemplate],
+    () => (options.tooltip.show !== false ? buildDeckTooltip(options.tooltip.template ?? DEFAULT_TOOLTIP_TEMPLATE) : null),
+    [options.tooltip.show, options.tooltip.template],
   );
 
   return useMemo(

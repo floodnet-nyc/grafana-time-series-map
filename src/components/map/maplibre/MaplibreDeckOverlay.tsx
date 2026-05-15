@@ -19,8 +19,8 @@ interface MaplibreDeckOverlayProps {
 export function MaplibreDeckOverlay({ layers, interleaved, options, getTooltip }: MaplibreDeckOverlayProps) {
   const { current: mapRef } = useMap();
   const overlayRef = useRef<MapboxOverlay | null>(null);
-  const effects = buildDeckEffects(options.deckLighting);
-  const parameters = buildDeckParameters(options.deckParameters);
+  const effects = buildDeckEffects(options.deck.lighting);
+  const parameters = buildDeckParameters(options.deck.parameters);
 
   useEffect(() => {
     const map = mapRef?.getMap();
