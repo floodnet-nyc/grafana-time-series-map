@@ -1,6 +1,15 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HeatmapLayerConfig, HeatmapLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface HeatmapLayerSettings {
+  radiusPixels: number;
+  intensity: number;
+  threshold: number;
+  weightField: string;
+}
+
+export type HeatmapLayerConfig = BaseLayerConfig<'heatmap', HeatmapLayerSettings>;
 import { createBaseLayerConfig, section } from '../defaults';
 import { buildColorRange } from '../../utils/deckgl/colorScales';
 

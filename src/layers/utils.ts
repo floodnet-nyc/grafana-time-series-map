@@ -1,7 +1,7 @@
 import type { LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import type { LayerRenderContext, LayerConfig } from './types';
+import type { BaseLayerConfig, LayerRenderContext } from './types';
 
 type LayerFeature = Feature & { __idx: number };
 
@@ -14,7 +14,7 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
 }
 
 
-export function createCommonLayerProps<TLayerConfig extends LayerConfig>({
+export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, any>>({
   config,
   features,
   timeFilterFlags,

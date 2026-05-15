@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
-import type { LayerConfig } from '../layers/types';
+import type { LayerConfig } from '../layers/_all';
 import { layerDefinitions } from '../layers/_all';
 import { LayerEditor } from './LayerEditor';
 import { SelectableListEditor } from './SelectableListEditor';

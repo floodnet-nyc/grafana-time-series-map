@@ -14,7 +14,8 @@ import {
 } from './panelLayersModel';
 import { buildPacked } from '../deckgl/closestTimeFiltering';
 import type { MapPanelOptions } from '../../types';
-import type { LayerConfig, ScatterplotLayerConfig } from '../../layers/types';
+import type { LayerConfig } from '../../layers/_all';
+import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
 import type { GeoFeature } from './toGeoJsonFeatures';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {

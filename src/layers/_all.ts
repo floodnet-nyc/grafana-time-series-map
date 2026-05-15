@@ -28,5 +28,5 @@ export const layerDefinitions = [
   lineLayerDefinition,
 ];
 
-// export type LayerDefinition = typeof layerDefinitions[number];
-// export type LayerConfig = LayerDefinition['createDefaultConfig'] extends (index: number) => infer Config ? Config : never;
+export type LayerType = (typeof layerDefinitions)[number]['type'];
+export type LayerConfig = ReturnType<(typeof layerDefinitions)[number]['createDefaultConfig']>;

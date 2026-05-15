@@ -1,7 +1,14 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { ColorScaleConfig } from '../../types';
-import type { FloodInundationLayerConfig, FloodInundationLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface FloodInundationLayerSettings {
+  depthDiffField: string;
+  fillOpacity: number;
+}
+
+export type FloodInundationLayerConfig = BaseLayerConfig<'flood-inundation', FloodInundationLayerSettings>;
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';

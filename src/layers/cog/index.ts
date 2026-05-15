@@ -5,7 +5,17 @@ import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geoti
 import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
 import type { Texture } from '@luma.gl/core';
 import type { ColorScaleConfig } from '../../types';
-import type { CogLayerConfig, CogLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface CogLayerSettings {
+  urlField: string;
+  timestampField: string;
+  colorMaxValue: number;
+  maxRequests: number;
+  maxFrameRate: number;
+}
+
+export type CogLayerConfig = BaseLayerConfig<'cog', CogLayerSettings>;
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 

@@ -1,7 +1,19 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import type { ScatterplotLayerConfig, ScatterplotLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface ScatterplotLayerSettings {
+  radiusMinPixels: number;
+  radiusMaxPixels: number;
+  radiusField: string;
+  radiusScale: number;
+  stroked: boolean;
+  showLabels: boolean;
+  labelField: string;
+}
+
+export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';

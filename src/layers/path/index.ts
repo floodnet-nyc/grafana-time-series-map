@@ -1,6 +1,17 @@
 import { PathLayer } from '@deck.gl/layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
-import type { PathLayerConfig, PathLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface PathLayerSettings {
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
+export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, getNumericProperty } from '../utils';

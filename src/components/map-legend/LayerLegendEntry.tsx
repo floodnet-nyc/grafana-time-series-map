@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { LayerConfig } from '../../layers/types';
+import type { LayerConfig } from '../../layers/_all';
 import { EyeIcon, InfoIcon } from './icons';
 import { GradientLegend } from './GradientLegend';
 import { ThresholdLegend } from './ThresholdLegend';

@@ -1,6 +1,22 @@
 import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
-import type { HexagonLayerConfig, HexagonLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface HexagonLayerSettings {
+  radius: number;
+  coverage: number;
+  extruded: boolean;
+  elevationScale: number;
+  elevationWeightField: string;
+  elevationAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorWeightField: string;
+  colorAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
+  colorRange: string;
+  lowerPercentile: number;
+  upperPercentile: number;
+}
+
+export type HexagonLayerConfig = BaseLayerConfig<'hexagon', HexagonLayerSettings>;
 import { createBaseLayerConfig, section } from '../defaults';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {

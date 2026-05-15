@@ -1,4 +1,5 @@
-import type { LayerConfig, LayerOptionField } from '../layers/types';
+import type { LayerOptionField } from '../layers/types';
+import type { LayerConfig } from '../layers/_all';
 import type { ColorScaleConfig, ColorStep, ShaderConfig } from '../types';
 
 export const ADVANCED_COLOR_SECTIONS = new Set(['Blending', 'Material']);

@@ -1,6 +1,6 @@
 import type { Layer } from '@deck.gl/core';
 import type { DeckBlendFactor, DeckBlendOperation } from '../../types';
-import type { LayerConfig, LayerEditorSection } from '../types';
+import type { BaseLayerConfig, LayerEditorSection } from '../types';
 
 export interface LayerBlendingConfig {
   enabled: boolean;
@@ -40,5 +40,5 @@ export interface LayerExtensionDefinition {
   id: keyof NonNullable<LayerExtensionsConfig>;
   createDefaults: () => NonNullable<LayerExtensionsConfig>[keyof NonNullable<LayerExtensionsConfig>];
   editorSections: LayerEditorSection[];
-  apply: (layer: Layer, config: LayerConfig) => Layer;
+  apply: (layer: Layer, config: BaseLayerConfig<string, any>) => Layer;
 }

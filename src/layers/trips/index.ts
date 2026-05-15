@@ -1,6 +1,21 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
-import type { TripsLayerConfig, TripsLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface TripsLayerSettings {
+  timestampsField: string;
+  timestampUnit: 'ms' | 's';
+  trailLengthMs: number;
+  fadeTrail: boolean;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+  capRounded: boolean;
+  jointRounded: boolean;
+}
+
+export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 

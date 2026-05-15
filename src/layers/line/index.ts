@@ -1,6 +1,19 @@
 import { LineLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { LineLayerConfig, LineLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface LineLayerSettings {
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+  widthMinPixels: number;
+  widthMaxPixels: number;
+  widthField: string;
+  widthScale: number;
+}
+
+export type LineLayerConfig = BaseLayerConfig<'line', LineLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';

@@ -1,9 +1,9 @@
 import type { GeometrySource } from '../types';
-import type { BaseLayerConfig, LayerType, LayerEditorSection, LayerOptionField } from './types';
+import type { BaseLayerConfig, LayerEditorSection, LayerOptionField } from './types';
 import { createDefaultLayerExtensions } from './extensions';
 
 
-export function createBaseLayerConfig<TType extends LayerType, TSettings>(
+export function createBaseLayerConfig<TType extends string, TSettings>(
   type: TType,
   label: string,
   index: number,

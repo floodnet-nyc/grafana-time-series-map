@@ -13,156 +13,7 @@ import type {
 } from '../types';
 import type { LayerExtensionsConfig } from './extensions/types';
 
-export interface ScatterplotLayerSettings {
-  radiusMinPixels: number;
-  radiusMaxPixels: number;
-  radiusField: string;
-  radiusScale: number;
-  stroked: boolean;
-  showLabels: boolean;
-  labelField: string;
-}
-
-export interface ArcLayerSettings {
-  widthMinPixels: number;
-  greatCircle: boolean;
-  srcLngField: string;
-  srcLatField: string;
-  tgtLngField: string;
-  tgtLatField: string;
-}
-
-export interface HeatmapLayerSettings {
-  radiusPixels: number;
-  intensity: number;
-  threshold: number;
-  weightField: string;
-}
-
-export interface HexagonLayerSettings {
-  radius: number;
-  coverage: number;
-  extruded: boolean;
-  elevationScale: number;
-  elevationWeightField: string;
-  elevationAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
-  colorWeightField: string;
-  colorAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
-  colorRange: string;
-  lowerPercentile: number;
-  upperPercentile: number;
-}
-
-export interface PathLayerSettings {
-  widthMinPixels: number;
-  widthMaxPixels: number;
-  widthField: string;
-  widthScale: number;
-  capRounded: boolean;
-  jointRounded: boolean;
-}
-
-export interface LineLayerSettings {
-  srcLngField: string;
-  srcLatField: string;
-  tgtLngField: string;
-  tgtLatField: string;
-  widthMinPixels: number;
-  widthMaxPixels: number;
-  widthField: string;
-  widthScale: number;
-}
-
-export interface PolygonLayerSettings {
-  fillOpacity: number;
-  extruded: boolean;
-  elevationField: string;
-  elevationScale: number;
-}
-
-export interface GeoJsonLayerSettings {
-  pointRadiusMinPixels: number;
-  pointRadiusMaxPixels: number;
-  lineWidthMinPixels: number;
-  lineWidthField: string;
-  lineWidthScale: number;
-  lineWidthUnits: 'pixels' | 'meters';
-  filled: boolean;
-  stroked: boolean;
-  extruded: boolean;
-}
-
-export interface IconLayerSettings {
-  fixedIcon: string;
-  iconField: string;
-  iconAtlasUrl: string;
-  iconMappingUrl: string;
-  sizeScale: number;
-  sizeMinPixels: number;
-  sizeMaxPixels: number;
-  sizeField: string;
-  billboard: boolean;
-  alphaCutoff: number;
-}
-
-export interface TextLayerSettings {
-  textField: string;
-  fontSize: number;
-  sizeMinPixels: number;
-  sizeMaxPixels: number;
-  sizeField: string;
-  fontFamily: string;
-  fontWeight: string;
-  anchor: 'start' | 'middle' | 'end';
-  baseline: 'top' | 'center' | 'bottom';
-  billboard: boolean;
-  background: boolean;
-  pixelOffsetX: number;
-  pixelOffsetY: number;
-}
-
-export interface TripsLayerSettings {
-  timestampsField: string;
-  timestampUnit: 'ms' | 's';
-  trailLengthMs: number;
-  fadeTrail: boolean;
-  widthMinPixels: number;
-  widthMaxPixels: number;
-  widthField: string;
-  widthScale: number;
-  capRounded: boolean;
-  jointRounded: boolean;
-}
-
-export interface CogLayerSettings {
-  urlField: string;
-  timestampField: string;
-  colorMaxValue: number;
-  maxRequests: number;
-  maxFrameRate: number;
-}
-
-export interface FloodInundationLayerSettings {
-  depthDiffField: string;
-  fillOpacity: number;
-}
-
-export type LayerType =
-  | 'scatterplot'
-  | 'arc'
-  | 'heatmap'
-  | 'hexagon'
-  | 'path'
-  | 'line'
-  | 'polygon'
-  | 'geojson'
-  | 'icon'
-  | 'text'
-  | 'trips'
-  | 'cog'
-  | 'flood-inundation';
-
-export interface BaseLayerConfig<TType extends LayerType, TSettings> {
+export interface BaseLayerConfig<TType extends string, TSettings> {
   id: string;
   type: TType;
   settings: TSettings;
@@ -188,36 +39,7 @@ export interface BaseLayerConfig<TType extends LayerType, TSettings> {
   extensions?: LayerExtensionsConfig;
 }
 
-export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
-export type ArcLayerConfig = BaseLayerConfig<'arc', ArcLayerSettings>;
-export type HeatmapLayerConfig = BaseLayerConfig<'heatmap', HeatmapLayerSettings>;
-export type HexagonLayerConfig = BaseLayerConfig<'hexagon', HexagonLayerSettings>;
-export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
-export type LineLayerConfig = BaseLayerConfig<'line', LineLayerSettings>;
-export type PolygonLayerConfig = BaseLayerConfig<'polygon', PolygonLayerSettings>;
-export type GeoJsonLayerConfig = BaseLayerConfig<'geojson', GeoJsonLayerSettings>;
-export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
-export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
-export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
-export type CogLayerConfig = BaseLayerConfig<'cog', CogLayerSettings>;
-export type FloodInundationLayerConfig = BaseLayerConfig<'flood-inundation', FloodInundationLayerSettings>;
-
-export type LayerConfig =
-  | ScatterplotLayerConfig
-  | ArcLayerConfig
-  | HeatmapLayerConfig
-  | HexagonLayerConfig
-  | PathLayerConfig
-  | LineLayerConfig
-  | PolygonLayerConfig
-  | GeoJsonLayerConfig
-  | IconLayerConfig
-  | TextLayerConfig
-  | TripsLayerConfig
-  | CogLayerConfig
-  | FloodInundationLayerConfig;
-
-export interface LayerRenderContext<TLayerConfig extends LayerConfig = LayerConfig> {
+export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
   config: TLayerConfig;
   panelOptions: unknown;
   features: Feature[];
@@ -249,8 +71,8 @@ export interface LayerEditorSection {
   fields: LayerOptionField[];
 }
 
-export interface LayerDefinition<TLayerConfig extends LayerConfig = LayerConfig> {
-  type: LayerType;
+export interface LayerDefinition<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
+  type: string;
   label: string;
   createDefaultConfig: (index: number) => TLayerConfig;
   editorSections: LayerEditorSection[];
