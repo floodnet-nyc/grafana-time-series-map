@@ -28,6 +28,8 @@ export interface MapProviderProps {
   height: number;
   options: MapPanelOptions;
 
+  initialViewState?: ViewportSnapshot;
+  initialViewFromHash?: boolean;
   deckProps: DeckProps & { interleaved?: boolean };
   fitBounds?: FitBounds;
   fitRequestId?: number;

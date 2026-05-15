@@ -39,16 +39,16 @@ export function useDeckGLProps({ options, layers, getTooltip }: {
 }
 
 export function DeckGLMap(providerProps: MapProviderProps) {
+  const fallback = <MapProviderFallback width={providerProps.width} height={providerProps.height} />;
   if (providerProps.options.basemap.provider === 'google') {
     return (
-      <Suspense fallback={<MapProviderFallback width={providerProps.width} height={providerProps.height} />}>
+      <Suspense fallback={fallback}>
         <LazyGoogleMap {...providerProps} />
       </Suspense>
     );
   }
-
   return (
-    <Suspense fallback={<MapProviderFallback width={providerProps.width} height={providerProps.height} />}>
+    <Suspense fallback={fallback}>
       <LazyMaplibreMap {...providerProps} />
     </Suspense>
   );
