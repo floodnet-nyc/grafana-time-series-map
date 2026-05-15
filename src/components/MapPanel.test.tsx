@@ -74,11 +74,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
     basemapProvider: 'maplibre',
     maplibreStyle: 'carto-dark',
     initialViewMode: 'manual',
-    initialLatitude: 40.7,
-    initialLongitude: -73.9,
-    initialZoom: 11,
-    initialBearing: 0,
-    initialPitch: 0,
+    initialViewState: { latitude: 40.7, longitude: -73.9, zoom: 11 },
     layers: [
       {
         id: 'layer-1',

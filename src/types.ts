@@ -1,3 +1,4 @@
+import type { MapViewState } from '@deck.gl/core';
 import type { LayerConfig } from './layers/types';
 
 export type DataSource =
@@ -250,11 +251,7 @@ export interface MapPanelOptions {
   deckParameters?: DeckRenderParametersOptions;
   deckLighting?: DeckLightingOptions;
   initialViewMode: InitialViewMode;
-  initialLatitude: number;
-  initialLongitude: number;
-  initialZoom: number;
-  initialBearing: number;
-  initialPitch: number;
+  initialViewState: MapViewState;
   layers: LayerConfig[];
   defaultPlaybackSpeed: number;
   loopPlayback: boolean;

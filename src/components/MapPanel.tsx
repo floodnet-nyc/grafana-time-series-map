@@ -97,11 +97,13 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   //   onOptionsChange({
   //     ...options,
   //     initialViewMode: 'manual',
-  //     initialLatitude: Math.round(vp.latitude * 1e6) / 1e6,
-  //     initialLongitude: Math.round(vp.longitude * 1e6) / 1e6,
-  //     initialZoom: Math.round(vp.zoom * 100) / 100,
-  //     initialBearing: Math.round(vp.bearing * 10) / 10,
-  //     initialPitch: Math.round(vp.pitch * 10) / 10,
+  //     initialViewState: {
+  //       latitude: Math.round(vp.latitude * 1e6) / 1e6,
+  //       longitude: Math.round(vp.longitude * 1e6) / 1e6,
+  //       zoom: Math.round(vp.zoom * 100) / 100,
+  //       bearing: Math.round(vp.bearing * 10) / 10,
+  //       pitch: Math.round(vp.pitch * 10) / 10,
+  //     },
   //   });
   //   setViewportMoved(false);
   // }, [options, onOptionsChange]);

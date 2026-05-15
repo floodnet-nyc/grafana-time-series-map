@@ -196,21 +196,21 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialLatitude',
+        path: 'initialViewState.latitude',
         name: 'Latitude',
         defaultValue: 40.7128,
         showIf: (cfg) => cfg.initialViewMode !== 'fitData',
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialLongitude',
+        path: 'initialViewState.longitude',
         name: 'Longitude',
         defaultValue: -74.006,
         showIf: (cfg) => cfg.initialViewMode !== 'fitData',
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialZoom',
+        path: 'initialViewState.zoom',
         name: 'Zoom',
         defaultValue: 11,
         settings: { min: 0, max: 22 },
@@ -218,7 +218,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialBearing',
+        path: 'initialViewState.bearing',
         name: 'Bearing (°)',
         defaultValue: 0,
         description: 'Rotation in degrees clockwise from north (0–360)',
@@ -226,7 +226,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map bounds'],
       })
       .addNumberInput({
-        path: 'initialPitch',
+        path: 'initialViewState.pitch',
         name: 'Pitch (°)',
         defaultValue: 0,
         description: 'Tilt in degrees from vertical. 0 = top-down, 60 = oblique.',

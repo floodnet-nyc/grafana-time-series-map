@@ -6,11 +6,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
     basemapProvider: 'maplibre',
     maplibreStyle: 'carto-dark',
     initialViewMode: 'manual',
-    initialLatitude: 40.7,
-    initialLongitude: -73.9,
-    initialZoom: 11,
-    initialBearing: 15,
-    initialPitch: 30,
+    initialViewState: { latitude: 40.7, longitude: -73.9, zoom: 11, bearing: 15, pitch: 30 },
     layers: [],
     defaultPlaybackSpeed: 1,
     loopPlayback: false,
@@ -41,7 +37,7 @@ describe('map view state helpers', () => {
   });
 
   it('prefers hash view when present', () => {
-    const options = createOptions({ initialLatitude: 1, initialLongitude: 2, initialZoom: 3 });
+    const options = createOptions({ initialViewState: { latitude: 1, longitude: 2, zoom: 3 } });
 
     expect(
       getInitialViewport(options, {
