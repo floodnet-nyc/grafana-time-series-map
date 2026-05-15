@@ -20,7 +20,7 @@ import {
   popupWidgetDefinition 
 } from './information';
 import { 
-  iconWidgetDefinition, 
+  // iconWidgetDefinition, 
   // selectorWidgetDefinition, 
   timelineWidgetDefinition, 
   // toggleWidgetDefinition 
@@ -53,7 +53,7 @@ export const widgetDefinitions = [
   infoWidgetDefinition,
   popupWidgetDefinition,
   // Control
-  iconWidgetDefinition,
+  // iconWidgetDefinition,
   // toggleWidgetDefinition,
   // selectorWidgetDefinition,
   timelineWidgetDefinition,

@@ -123,7 +123,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const widgetCallbacks = useMemo(() => ({
     playback: {
       cursorTimeMs: playback.cursorTimeMs,
-      timeRange: [fromTimeMs, toTimeMs],
+      timeRange: [fromTimeMs, toTimeMs] as [number, number],
       playing: playback.playing,
       playInterval: playback.playbackSpeed,
       onPlayingChange: (v: boolean) => v ? playback.play() : playback.pause(),
@@ -132,6 +132,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     },
   }), [playback, fromTimeMs, toTimeMs]);
 
+  console.log(width, height, mapHeight, 'rendering MapPanel with these dimensions');
   return (
     <div
       className={css({
