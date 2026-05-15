@@ -7,14 +7,14 @@ import type {
 } from '../../types';
 
 export interface ResolvedMapControlSettings {
-  navigation: {
-    enabled: boolean;
-    position: MapControlPosition;
-    showZoom: boolean;
-    showCompass: boolean;
-    visualizePitch: boolean;
-    visualizeRoll: boolean;
-  };
+  // navigation: {
+  //   enabled: boolean;
+  //   position: MapControlPosition;
+  //   showZoom: boolean;
+  //   showCompass: boolean;
+  //   visualizePitch: boolean;
+  //   visualizeRoll: boolean;
+  // };
   geolocate: {
     enabled: boolean;
     position: MapControlPosition;
@@ -42,14 +42,14 @@ function resolveSharedSettings(
   googleMapOptions: GoogleMapOptions,
 ): ResolvedMapControlSettings {
   return {
-    navigation: {
-      enabled: controls?.navigationControl ?? true,
-      position: controlSettings?.navigation?.position ?? 'top-right',
-      showZoom: controlSettings?.navigation?.showZoom ?? true,
-      showCompass: controlSettings?.navigation?.showCompass ?? true,
-      visualizePitch: controlSettings?.navigation?.visualizePitch ?? false,
-      visualizeRoll: controlSettings?.navigation?.visualizeRoll ?? false,
-    },
+    // navigation: {
+    //   enabled: controls?.navigationControl ?? false,
+    //   position: controlSettings?.navigation?.position ?? 'top-right',
+    //   showZoom: controlSettings?.navigation?.showZoom ?? true,
+    //   showCompass: controlSettings?.navigation?.showCompass ?? true,
+    //   visualizePitch: controlSettings?.navigation?.visualizePitch ?? false,
+    //   visualizeRoll: controlSettings?.navigation?.visualizeRoll ?? false,
+    // },
     geolocate: {
       enabled: controls?.geolocateControl ?? false,
       position: controlSettings?.geolocate?.position ?? 'top-right',

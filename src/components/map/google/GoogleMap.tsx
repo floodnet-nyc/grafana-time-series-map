@@ -6,7 +6,7 @@ import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
 import { GoogleGeolocateControl } from './GoogleGeolocateControl';
 import { GoogleHashRoute } from './GoogleHashRoute';
-import { getControlPosition, getGoogleColorScheme, mapTypeControlStyleValues } from './controlMappings';
+import { getControlPosition, getGoogleColorScheme } from './controlMappings';
 import { getInitialViewport } from '../viewState';
 import { resolveMapControlSettings } from '../controlSettings';
 import type { GoogleControlPosition, MapControlPosition } from 'types';
@@ -61,20 +61,20 @@ export default function GoogleMap({ width, height, options, layers, getTooltip, 
         gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
         keyboardShortcuts={interactive}
         clickableIcons={interactive}
-        cameraControl={controlSettings.navigation.enabled}
-        cameraControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
-        fullscreenControl={controlSettings.fullscreen.enabled}
-        fullscreenControlOptions={{ position: getControlPosition(getGoogleFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT') }}
-        scaleControl={controlSettings.scale.enabled}
-        mapTypeControl={controlSettings.google.mapTypeControl}
-        mapTypeControlOptions={{
-          position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
-          style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-        }}
+        // cameraControl={controlSettings.navigation.enabled}
+        // cameraControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
+        // fullscreenControl={controlSettings.fullscreen.enabled}
+        // fullscreenControlOptions={{ position: getControlPosition(getGoogleFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT') }}
+        // scaleControl={controlSettings.scale.enabled}
+        // mapTypeControl={controlSettings.google.mapTypeControl}
+        // mapTypeControlOptions={{
+        //   position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
+        //   style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
+        // }}
         streetViewControl={controlSettings.google.streetViewControl}
         streetViewControlOptions={{ position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM') }}
-        rotateControl={controlSettings.navigation.showCompass}
-        rotateControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
+        // rotateControl={controlSettings.navigation.showCompass}
+        // rotateControlOptions={{ position: getControlPosition(getGoogleCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
         onCameraChanged={(event) => {
           const viewport = {
             latitude: event.detail.center.lat,

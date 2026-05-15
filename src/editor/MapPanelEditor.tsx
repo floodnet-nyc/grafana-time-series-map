@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Button, IconButton } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import type { LayerConfig } from '../layers/types';
 import { layerDefinitions } from '../layers/_all';
 import { LayerEditor } from './LayerEditor';
+import { SelectableListEditor } from './SelectableListEditor';
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
   const renderer = layerDefinitions.find((definition) => definition.type === type);
@@ -117,64 +118,29 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
 
   return (
     <div className={styles.root}>
-      {/* Layer list */}
-      <div className={styles.list}>
-        {layerList.map((layer, i) => (
-          <div
-            key={layer.id}
-            className={`${styles.listItem} ${selectedIndex === i ? styles.listItemActive : ''}`}
-            onClick={() => setSelectedIndex(selectedIndex === i ? null : i)}
-          >
-            <IconButton
-              name={layer.visible ? 'eye' : 'eye-slash'}
-              size="sm"
-              tooltip={layer.visible ? 'Hide layer' : 'Show layer'}
-              className={styles.visButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleLayerVisibility(i);
-              }}
-            />
-            <span className={styles.layerName}>{layer.label || layer.type}</span>
-            <div className={styles.listActions}>
-              <IconButton
-                name="arrow-up"
-                size="sm"
-                tooltip="Move up"
-                onClick={(e) => { e.stopPropagation(); moveLayer(i, -1); }}
-              />
-              <IconButton
-                name="arrow-down"
-                size="sm"
-                tooltip="Move down"
-                onClick={(e) => { e.stopPropagation(); moveLayer(i, 1); }}
-              />
-              <IconButton
-                name="trash-alt"
-                size="sm"
-                tooltip="Remove"
-                onClick={(e) => { e.stopPropagation(); removeLayer(i); }}
-              />
-            </div>
-          </div>
-        ))}
-        <Button variant="secondary" size="sm" icon="plus" onClick={addLayer}>
-          Add layer
-        </Button>
-      </div>
-
-      {/* Selected layer editor */}
-      {selectedLayer && (
-        <div className={styles.editor}>
+      <SelectableListEditor
+        items={layerList}
+        selectedIndex={selectedIndex}
+        onSelect={setSelectedIndex}
+        getItemKey={(layer) => layer.id}
+        getItemLabel={(layer) => layer.label || layer.type}
+        addButtonLabel="Add layer"
+        onAdd={addLayer}
+        onMove={moveLayer}
+        onRemove={removeLayer}
+        onToggleVisibility={toggleLayerVisibility}
+        isVisible={(layer) => layer.visible}
+        getVisibilityTooltip={(layer) => (layer.visible ? 'Hide layer' : 'Show layer')}
+        renderEditor={(layer, index) => (
           <LayerEditor
-            layer={selectedLayer}
-            onChange={(updated) => updateLayer(selectedIndex!, updated)}
-            availableFields={availableFields}
+            layer={layer}
+            onChange={(updated) => updateLayer(index, updated)}
+            availableFields={selectedIndex === index ? availableFields : []}
             availableRefIds={fieldIndex.refIds}
             queryFieldsByRefId={queryFieldsByRefId}
           />
-        </div>
-      )}
+        )}
+      />
     </div>
   );
 }
@@ -182,26 +148,5 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
 function getStyles(theme: GrafanaTheme2) {
   return {
     root: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }),
-    list: css({ display: 'flex', flexDirection: 'column', gap: 2 }),
-    listItem: css({
-      display: 'flex',
-      alignItems: 'center',
-      padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-      borderRadius: theme.shape.radius.default,
-      cursor: 'pointer',
-      background: theme.colors.background.secondary,
-      '&:hover': { background: theme.colors.action.hover },
-    }),
-    listItemActive: css({
-      background: theme.colors.action.selected,
-    }),
-    visButton: css({ marginRight: theme.spacing(0.5), color: theme.colors.text.secondary }),
-    layerName: css({ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }),
-    listActions: css({ display: 'flex', gap: 2, marginLeft: theme.spacing(0.5) }),
-    editor: css({
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
-      background: theme.colors.background.secondary,
-    }),
   };
 }

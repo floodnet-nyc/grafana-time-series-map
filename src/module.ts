@@ -324,79 +324,79 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.provider !== 'google' && cfg.basemap?.interactions?.interactive !== false,
         category: ['Map controls', 'Interactions'],
       })
-      .addBooleanSwitch({
-        path: 'basemap.controls.navigationControl',
-        name: 'Navigation control',
-        description: 'MapLibre zoom/compass control or Google camera control.',
-        defaultValue: true,
-        category: ['Map controls'],
-      })
-      .addSelect({
-        path: 'basemap.controlSettings.navigation.position',
-        name: 'Navigation control position',
-        defaultValue: 'top-right',
-        settings: {
-          options: [
-            { label: 'Top left', value: 'top-left' },
-            { label: 'Top right', value: 'top-right' },
-            { label: 'Bottom left', value: 'bottom-left' },
-            { label: 'Bottom right', value: 'bottom-right' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controlSettings.navigation.showZoom',
-        name: 'Show zoom buttons',
-        defaultValue: true,
-        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controlSettings.navigation.showCompass',
-        name: 'Show compass button',
-        defaultValue: true,
-        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controlSettings.navigation.visualizePitch',
-        name: 'Visualize pitch',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controlSettings.navigation.visualizeRoll',
-        name: 'Visualize roll',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controls.geolocateControl',
-        name: 'Geolocate control',
-        description: 'Find the user location using the browser geolocation API.',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
-        category: ['Map controls'],
-      })
-      .addSelect({
-        path: 'basemap.controlSettings.geolocate.position',
-        name: 'Geolocate control position',
-        defaultValue: 'top-right',
-        settings: {
-          options: [
-            { label: 'Top left', value: 'top-left' },
-            { label: 'Top right', value: 'top-right' },
-            { label: 'Bottom left', value: 'bottom-left' },
-            { label: 'Bottom right', value: 'bottom-right' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true,
-        category: ['Map controls'],
-      })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controls.navigationControl',
+      //   name: 'Navigation control',
+      //   description: 'MapLibre zoom/compass control or Google camera control.',
+      //   defaultValue: true,
+      //   category: ['Map controls'],
+      // })
+      // .addSelect({
+      //   path: 'basemap.controlSettings.navigation.position',
+      //   name: 'Navigation control position',
+      //   defaultValue: 'top-right',
+      //   settings: {
+      //     options: [
+      //       { label: 'Top left', value: 'top-left' },
+      //       { label: 'Top right', value: 'top-right' },
+      //       { label: 'Bottom left', value: 'bottom-left' },
+      //       { label: 'Bottom right', value: 'bottom-right' },
+      //     ],
+      //   },
+      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controlSettings.navigation.showZoom',
+      //   name: 'Show zoom buttons',
+      //   defaultValue: true,
+      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controlSettings.navigation.showCompass',
+      //   name: 'Show compass button',
+      //   defaultValue: true,
+      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controlSettings.navigation.visualizePitch',
+      //   name: 'Visualize pitch',
+      //   defaultValue: false,
+      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controlSettings.navigation.visualizeRoll',
+      //   name: 'Visualize roll',
+      //   defaultValue: false,
+      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controls.geolocateControl',
+      //   name: 'Geolocate control',
+      //   description: 'Find the user location using the browser geolocation API.',
+      //   defaultValue: false,
+      //   showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
+      //   category: ['Map controls'],
+      // })
+      // .addSelect({
+      //   path: 'basemap.controlSettings.geolocate.position',
+      //   name: 'Geolocate control position',
+      //   defaultValue: 'top-right',
+      //   settings: {
+      //     options: [
+      //       { label: 'Top left', value: 'top-left' },
+      //       { label: 'Top right', value: 'top-right' },
+      //       { label: 'Bottom left', value: 'bottom-left' },
+      //       { label: 'Bottom right', value: 'bottom-right' },
+      //     ],
+      //   },
+      //   showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true,
+      //   category: ['Map controls'],
+      // })
       .addBooleanSwitch({
         path: 'basemap.controlSettings.geolocate.trackUserLocation',
         name: 'Track user location',
@@ -405,40 +405,40 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true && cfg.basemap?.provider !== 'google',
         category: ['Map controls'],
       })
-      .addBooleanSwitch({
-        path: 'basemap.controls.fullscreenControl',
-        name: 'Fullscreen control',
-        defaultValue: false,
-        category: ['Map controls'],
-      })
-      .addSelect({
-        path: 'basemap.controlSettings.fullscreen.position',
-        name: 'Fullscreen control position',
-        defaultValue: 'top-right',
-        settings: {
-          options: [
-            { label: 'Top left', value: 'top-left' },
-            { label: 'Top right', value: 'top-right' },
-            { label: 'Bottom left', value: 'bottom-left' },
-            { label: 'Bottom right', value: 'bottom-right' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemap?.controls?.fullscreenControl === true,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controls.scaleControl',
-        name: 'Scale control',
-        defaultValue: false,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.google.mapTypeControl',
-        name: 'Map type control',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.provider === 'google',
-        category: ['Map controls', 'Google Maps controls'],
-      })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controls.fullscreenControl',
+      //   name: 'Fullscreen control',
+      //   defaultValue: false,
+      //   category: ['Map controls'],
+      // })
+      // .addSelect({
+      //   path: 'basemap.controlSettings.fullscreen.position',
+      //   name: 'Fullscreen control position',
+      //   defaultValue: 'top-right',
+      //   settings: {
+      //     options: [
+      //       { label: 'Top left', value: 'top-left' },
+      //       { label: 'Top right', value: 'top-right' },
+      //       { label: 'Bottom left', value: 'bottom-left' },
+      //       { label: 'Bottom right', value: 'bottom-right' },
+      //     ],
+      //   },
+      //   showIf: (cfg) => cfg.basemap?.controls?.fullscreenControl === true,
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.controls.scaleControl',
+      //   name: 'Scale control',
+      //   defaultValue: false,
+      //   category: ['Map controls'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'basemap.google.mapTypeControl',
+      //   name: 'Map type control',
+      //   defaultValue: false,
+      //   showIf: (cfg) => cfg.basemap?.provider === 'google',
+      //   category: ['Map controls', 'Google Maps controls'],
+      // })
       .addBooleanSwitch({
         path: 'basemap.google.streetViewControl',
         name: 'Street View control',
@@ -446,28 +446,28 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.provider === 'google',
         category: ['Map controls', 'Google Maps controls'],
       })
-      .addSelect({
-        path: 'basemap.google.mapTypeControlPosition',
-        name: 'Map type control position',
-        defaultValue: 'TOP_LEFT',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
-        category: ['Map controls', 'Google Maps placement'],
-      })
-      .addSelect({
-        path: 'basemap.google.mapTypeControlStyle',
-        name: 'Map type control style',
-        defaultValue: 'DEFAULT',
-        settings: {
-          options: [
-            { label: 'Default', value: 'DEFAULT' },
-            { label: 'Dropdown menu', value: 'DROPDOWN_MENU' },
-            { label: 'Horizontal bar', value: 'HORIZONTAL_BAR' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
-        category: ['Map controls', 'Google Maps placement'],
-      })
+      // .addSelect({
+      //   path: 'basemap.google.mapTypeControlPosition',
+      //   name: 'Map type control position',
+      //   defaultValue: 'TOP_LEFT',
+      //   settings: { options: googleControlPositions },
+      //   showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
+      //   category: ['Map controls', 'Google Maps placement'],
+      // })
+      // .addSelect({
+      //   path: 'basemap.google.mapTypeControlStyle',
+      //   name: 'Map type control style',
+      //   defaultValue: 'DEFAULT',
+      //   settings: {
+      //     options: [
+      //       { label: 'Default', value: 'DEFAULT' },
+      //       { label: 'Dropdown menu', value: 'DROPDOWN_MENU' },
+      //       { label: 'Horizontal bar', value: 'HORIZONTAL_BAR' },
+      //     ],
+      //   },
+      //   showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
+      //   category: ['Map controls', 'Google Maps placement'],
+      // })
       .addSelect({
         path: 'basemap.google.streetViewControlPosition',
         name: 'Street View control position',

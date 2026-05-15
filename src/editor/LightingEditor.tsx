@@ -1,11 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { css } from '@emotion/css';
 import {
-  Button,
   ColorPicker,
   Combobox,
   Field,
-  IconButton,
   Input,
   Slider,
   Switch,
@@ -15,6 +13,7 @@ import {
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { DeckLightColor, DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
 import { DEFAULT_DECK_LIGHTING } from '../utils/deckgl/lighting';
+import { SelectableListEditor } from './SelectableListEditor';
 
 const lightTypes: Array<ComboboxOption<DeckLightType>> = [
   { label: 'Ambient', value: 'ambient' },
@@ -125,6 +124,7 @@ function NumberField({ label, value, fallback, onChange }: NumberFieldProps) {
 
 export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLightingOptions>) {
   const styles = useStyles2(getStyles);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const lighting = value ?? DEFAULT_DECK_LIGHTING;
   const lights = lighting.lights ?? DEFAULT_DECK_LIGHTING.lights;
 
@@ -139,10 +139,32 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
 
   const addLight = useCallback(() => {
     patch({ lights: [...lights, defaultLight('point', lights.length)] });
+    setSelectedIndex(lights.length);
   }, [lights, patch]);
 
   const removeLight = useCallback((index: number) => {
     patch({ lights: lights.filter((_, i) => i !== index) });
+    setSelectedIndex((current) => {
+      if (current === null) {
+        return current;
+      }
+      if (current === index) {
+        return null;
+      }
+      return current > index ? current - 1 : current;
+    });
+  }, [lights, patch]);
+
+  const moveLight = useCallback((index: number, direction: -1 | 1) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= lights.length) {
+      return;
+    }
+
+    const next = [...lights];
+    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+    patch({ lights: next });
+    setSelectedIndex(nextIndex);
   }, [lights, patch]);
 
   return (
@@ -151,19 +173,25 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
         <Switch value={lighting.enabled ?? false} onChange={(event) => patch({ enabled: event.currentTarget.checked })} />
       </Field>
       {lighting.enabled && (
-        <>
-          {lights.map((light, index) => (
-            <div key={`${light.id}-${index}`} className={styles.light}>
-              <div className={styles.header}>
-                <Field label="Type" className={styles.typeField}>
-                  <Combobox
-                    options={lightTypes}
-                    value={light.type}
-                    onChange={(selected) => patchLight(index, { ...defaultLight(selected.value, index), id: light.id })}
-                  />
-                </Field>
-                <IconButton name="trash-alt" tooltip="Remove light" onClick={() => removeLight(index)} />
-              </div>
+        <SelectableListEditor
+          items={lights}
+          selectedIndex={selectedIndex}
+          onSelect={setSelectedIndex}
+          getItemKey={(light, index) => `${light.id}-${index}`}
+          getItemLabel={(light, index) => light.id || `${light.type} light ${index + 1}`}
+          addButtonLabel="Add light"
+          onAdd={addLight}
+          onMove={moveLight}
+          onRemove={removeLight}
+          renderEditor={(light, index) => (
+            <div className={styles.light}>
+              <Field label="Type" className={styles.typeField}>
+                <Combobox
+                  options={lightTypes}
+                  value={light.type}
+                  onChange={(selected) => selected?.value && patchLight(index, { ...defaultLight(selected.value, index), id: light.id })}
+                />
+              </Field>
               <Field label="ID">
                 <Input value={light.id} onChange={(event) => patchLight(index, { id: event.currentTarget.value })} />
               </Field>
@@ -205,11 +233,8 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
                 </>
               )}
             </div>
-          ))}
-          <Button variant="secondary" size="sm" icon="plus" onClick={addLight}>
-            Add light
-          </Button>
-        </>
+          )}
+        />
       )}
     </div>
   );
@@ -218,12 +243,7 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
 function getStyles(theme: GrafanaTheme2) {
   return {
     container: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }),
-    light: css({
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
-      padding: theme.spacing(1),
-    }),
-    header: css({ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: theme.spacing(1) }),
+    light: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), padding: theme.spacing(1) }),
     typeField: css({ flex: 1 }),
     colorPickerRow: css({
       display: 'flex',

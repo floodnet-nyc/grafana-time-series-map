@@ -12,5 +12,18 @@ export default async (env: unknown): Promise<Configuration> => {
       // 'window') so it works inside Web Workers.
       globalObject: 'self',
     },
+    module: {
+      ...config.module,
+      rules: [
+        ...((config.module?.rules as any[]) ?? []),
+        // @deck.gl/widgets declares sideEffects:false which causes webpack to
+        // tree-shake the stylesheet.css import. Override it for this package.
+        {
+          test: /\.css$/,
+          include: /node_modules\/@deck\.gl\/widgets/,
+          sideEffects: true,
+        },
+      ],
+    },
   };
 };

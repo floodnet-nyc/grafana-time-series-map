@@ -4,6 +4,7 @@ const DEFAULT_STYLE: Exclude<MaplibreStyle, 'custom'> = 'carto-dark';
 
 const STYLE_URLS: Record<Exclude<MaplibreStyle, 'custom'>, string> = {
   'carto-dark': 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  'carto-dark-nolabels': 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
   'carto-light': 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
   'carto-voyager': 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
   osm: 'https://demotiles.maplibre.org/style.json',

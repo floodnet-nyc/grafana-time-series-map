@@ -112,6 +112,7 @@ export type DeckDepthCompare =
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle =
   | 'carto-dark'
+  | 'carto-dark-nolabels'
   | 'carto-light'
   | 'carto-voyager'
   | 'osm'
