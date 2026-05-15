@@ -1,6 +1,6 @@
 import type { MapViewState } from '@deck.gl/core';
 import type { LayerConfig } from './layers/types';
-import type { WidgetConfig } from './widgets/types';
+import type { WidgetConfig } from './widgets/_all';
 
 export type DataSource =
   | { type: 'query' }

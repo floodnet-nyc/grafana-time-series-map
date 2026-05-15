@@ -1,15 +1,40 @@
 import type { Widget } from '@deck.gl/core';
-import { gimbalWidgetDefinition, resetViewWidgetDefinition, scrollbarWidgetDefinition, zoomWidgetDefinition } from './navigation';
-import { compassWidgetDefinition, geocoderWidgetDefinition, scaleWidgetDefinition } from './geospatial';
-import { fullscreenWidgetDefinition, splitterWidgetDefinition } from './view';
-import { contextMenuWidgetDefinition, infoWidgetDefinition, popupWidgetDefinition } from './information';
-import { iconWidgetDefinition, selectorWidgetDefinition, timelineWidgetDefinition, toggleWidgetDefinition } from './control';
-import { loadingWidgetDefinition, screenshotWidgetDefinition, statsWidgetDefinition, themeWidgetDefinition } from './utility';
-import type { WidgetConfig, WidgetDefinition } from './types';
+import { 
+  gimbalWidgetDefinition, 
+  resetViewWidgetDefinition, 
+  scrollbarWidgetDefinition, 
+  zoomWidgetDefinition,
+} from './navigation';
+import { 
+  compassWidgetDefinition, 
+  geocoderWidgetDefinition, 
+  scaleWidgetDefinition 
+} from './geospatial';
+import { 
+  fullscreenWidgetDefinition, 
+  splitterWidgetDefinition 
+} from './view';
+import { 
+  contextMenuWidgetDefinition, 
+  infoWidgetDefinition, 
+  popupWidgetDefinition 
+} from './information';
+import { 
+  iconWidgetDefinition, 
+  selectorWidgetDefinition, 
+  timelineWidgetDefinition, 
+  toggleWidgetDefinition 
+} from './control';
+import { 
+  loadingWidgetDefinition, 
+  screenshotWidgetDefinition, 
+  statsWidgetDefinition, 
+  themeWidgetDefinition 
+} from './utility';
+import type { BlankWidgetConfig } from './types';
 import './stylesheet.css';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const widgetDefinitions: Array<WidgetDefinition<any>> = [
+export const widgetDefinitions = [
   // Navigation
   zoomWidgetDefinition,
   resetViewWidgetDefinition,
@@ -36,8 +61,10 @@ export const widgetDefinitions: Array<WidgetDefinition<any>> = [
   screenshotWidgetDefinition,
   statsWidgetDefinition,
   themeWidgetDefinition,
-];
+] as const;
 
+export type WidgetType = (typeof widgetDefinitions)[number]['type'] | '';
+export type WidgetConfig = ReturnType<(typeof widgetDefinitions)[number]['createDefaultConfig']> | BlankWidgetConfig;
 
 export function createWidgets(configs: WidgetConfig[]): Widget[] {
   return configs.flatMap((config) => {

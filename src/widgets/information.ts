@@ -1,5 +1,16 @@
-import { ContextMenuWidget, InfoWidget, PopupWidget } from '@deck.gl/widgets';
-import type { ContextMenuWidgetConfig, InfoWidgetConfig, PopupWidgetConfig, WidgetDefinition } from './types';
+import { 
+  ContextMenuWidget, 
+  InfoWidget, 
+  PopupWidget,
+  type ContextMenuWidgetProps,
+  type InfoWidgetProps,
+  type PopupWidgetProps,
+} from '@deck.gl/widgets';
+import type { BaseWidgetConfig, WidgetDefinition } from './types';
+
+type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
+type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;
+type PopupWidgetConfig = BaseWidgetConfig<'popup', Omit<PopupWidgetProps, 'id'>>;
 
 export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConfig> = {
   type: 'context-menu',

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
-import type { WidgetConfig } from '../widgets/types';
+import type { WidgetConfig } from '../widgets/_all';
 import { widgetDefinitions } from '../widgets/_all';
 import { WidgetEditor } from './WidgetEditor';
 import { SelectableListEditor } from './SelectableListEditor';

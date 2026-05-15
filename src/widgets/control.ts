@@ -1,12 +1,19 @@
-import { IconWidget, ToggleWidget, SelectorWidget, _TimelineWidget as TimelineWidget } from '@deck.gl/widgets';
-import {
-  PLACEMENTS,
-  type IconWidgetConfig,
-  type ToggleWidgetConfig,
-  type SelectorWidgetConfig,
-  type TimelineWidgetConfig,
-  type WidgetDefinition,
-} from './types';
+import { 
+  IconWidget, 
+  ToggleWidget, 
+  SelectorWidget, 
+  _TimelineWidget as TimelineWidget,
+  type IconWidgetProps,
+  type ToggleWidgetProps,
+  type SelectorWidgetProps,
+  type TimelineWidgetProps,
+} from '@deck.gl/widgets';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+
+type IconWidgetConfig = BaseWidgetConfig<'icon', Omit<IconWidgetProps, 'id'>>;
+type ToggleWidgetConfig = BaseWidgetConfig<'toggle', Omit<ToggleWidgetProps, 'id'>>;
+type SelectorWidgetConfig = BaseWidgetConfig<'selector', Omit<SelectorWidgetProps, 'id'>>;
+type TimelineWidgetConfig = BaseWidgetConfig<'timeline', Omit<TimelineWidgetProps, 'id'>>;
 
 export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   type: 'icon',

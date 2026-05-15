@@ -32,7 +32,7 @@ export function MaplibreFitBounds({ disabled, fitBounds, fitRequestId, options, 
     if (fitRequestId) { prevFitRequestRef.current = fitRequestId; }
 
     const map = mapRef?.getMap();
-    console.log('Fitting bounds', { key, forcedFit, fitBounds, options });
+    // console.log('Fitting bounds', { key, forcedFit, fitBounds, options });
     if (!map) { return; }
 
     if (onViewState) {

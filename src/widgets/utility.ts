@@ -1,12 +1,19 @@
-import { LoadingWidget, ScreenshotWidget, _StatsWidget as StatsWidget, ThemeWidget } from '@deck.gl/widgets';
-import {
-  PLACEMENTS,
-  type LoadingWidgetConfig,
-  type ScreenshotWidgetConfig,
-  type StatsWidgetConfig,
-  type ThemeWidgetConfig,
-  type WidgetDefinition,
-} from './types';
+import { 
+  LoadingWidget, 
+  ScreenshotWidget, 
+  _StatsWidget as StatsWidget, 
+  ThemeWidget,
+  type LoadingWidgetProps,
+  type ScreenshotWidgetProps,
+  type StatsWidgetProps,
+  type ThemeWidgetProps,
+} from '@deck.gl/widgets';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+
+type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
+type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
+type StatsWidgetConfig = BaseWidgetConfig<'stats', Omit<StatsWidgetProps, 'id'>>;
+type ThemeWidgetConfig = BaseWidgetConfig<'theme', Omit<ThemeWidgetProps, 'id'>>;
 
 export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   type: 'loading',
