@@ -1,176 +1,194 @@
 {
-  "annotations": {
-    "list": []
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": null,
-  "links": [],
-  "liveNow": false,
-  "panels": [
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "infinity-ds"
-      },
-      "gridPos": {
-        "h": 16,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
-      "title": "Text",
-      "type": "floodnet-timeseriesmap-panel",
-      "targets": [
+    "annotations": {
+        "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
         {
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "infinity-ds"
-          },
-          "refId": "A",
-          "type": "json",
-          "source": "url",
-          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/text/cities-1000.rows.json",
-          "url_options": {
-            "method": "GET",
-            "data": ""
-          },
-          "parser": "backend",
-          "root_selector": "rows",
-          "columns": [
-            {
-              "selector": "name",
-              "text": "name",
-              "type": "string"
+            "datasource": {
+                "type": "yesoreyeram-infinity-datasource",
+                "uid": "infinity-ds"
             },
-            {
-              "selector": "population",
-              "text": "population",
-              "type": "number"
+            "gridPos": {
+                "h": 16,
+                "w": 24,
+                "x": 0,
+                "y": 0
             },
-            {
-              "selector": "lng",
-              "text": "lng",
-              "type": "number"
-            },
-            {
-              "selector": "lat",
-              "text": "lat",
-              "type": "number"
+            "id": 1,
+            "title": "Text",
+            "type": "floodnet-timeseriesmap-panel",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "A",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/text/cities-1000.rows.json",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "rows",
+                    "columns": [
+                        {
+                            "selector": "name",
+                            "text": "name",
+                            "type": "string"
+                        },
+                        {
+                            "selector": "population",
+                            "text": "population",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "lng",
+                            "text": "lng",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "lat",
+                            "text": "lat",
+                            "type": "number"
+                        }
+                    ],
+                    "format": "table"
+                }
+            ],
+            "options": {
+                "basemap": {
+                    "provider": "maplibre",
+                    "maplibre": {
+                        "mapStyle": "carto-dark",
+                        "projection": "mercator"
+                    },
+                    "interactions": {
+                        "syncViewToUrl": true
+                    },
+                    "controlSettings": {
+                        "navigation": {
+                            "position": "top-right",
+                            "showZoom": true,
+                            "showCompass": true
+                        },
+                        "fullscreen": {
+                            "position": "top-right"
+                        }
+                    }
+                },
+                "deck": {
+                    "interleaved": true
+                },
+                "initialView": {
+                    "mode": "manual",
+                    "state": {
+                        "latitude": 39.1,
+                        "longitude": -94.57,
+                        "zoom": 3.8,
+                        "bearing": 0,
+                        "pitch": 0
+                    }
+                },
+                "layers": [
+                    {
+                        "id": "city-labels",
+                        "type": "text",
+                        "label": "Cities",
+                        "visible": true,
+                        "queryRefId": "A",
+                        "geometry": {
+                            "type": "latlng",
+                            "latField": "lat",
+                            "lngField": "lng"
+                        },
+                        "timeFilter": {
+                            "mode": "none",
+                            "timeField": ""
+                        },
+                        "fieldMappings": [],
+                        "opacity": 1,
+                        "colorScale": {
+                            "type": "fixed",
+                            "fixedColor": [
+                                255,
+                                255,
+                                255,
+                                240
+                            ]
+                        },
+                        "extensions": {
+                            "collision": {
+                                "enabled": true,
+                                "group": "cities",
+                                "priorityField": "population",
+                                "priorityScale": 1,
+                                "priorityOffset": 0,
+                                "testScale": 1.5
+                            }
+                        },
+                        "settings": {
+                            "textField": "name",
+                            "fontSize": 14,
+                            "sizeMinPixels": 8,
+                            "sizeMaxPixels": 28,
+                            "sizeField": "",
+                            "fontFamily": "Monaco, Menlo, monospace",
+                            "fontWeight": "500",
+                            "anchor": "middle",
+                            "baseline": "center",
+                            "billboard": true,
+                            "background": false,
+                            "pixelOffsetX": 0,
+                            "pixelOffsetY": 0
+                        }
+                    }
+                ],
+                "time": {
+                    "show": false,
+                    "loop": false,
+                    "defaultSpeed": 1
+                },
+                "legend": {
+                    "show": false
+                },
+                "tooltip": {
+                    "show": true,
+                    "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}"
+                },
+                "sync": {
+                    "publish": false,
+                    "subscribe": false
+                }
             }
-          ],
-          "format": "table"
         }
-      ],
-      "options": {
-        "basemapProvider": "maplibre",
-        "maplibreStyle": "carto-dark",
-        "maplibreProjection": "mercator",
-        "initialViewMode": "manual",
-        "initialLatitude": 39.1,
-        "initialLongitude": -94.57,
-        "initialZoom": 3.8,
-        "initialBearing": 0,
-        "initialPitch": 0,
-        "layers": [
-          {
-            "id": "city-labels",
-            "type": "text",
-            "label": "Cities",
-            "visible": true,
-            "queryRefId": "A",
-            "geometry": {
-              "type": "latlng",
-              "latField": "lat",
-              "lngField": "lng"
-            },
-            "timeFilter": {
-              "mode": "none",
-              "timeField": ""
-            },
-            "fieldMappings": [],
-            "opacity": 1,
-            "colorScale": {
-              "type": "fixed",
-              "fixedColor": [
-                255,
-                255,
-                255,
-                240
-              ]
-            },
-            "extensions": {
-              "collision": {
-                "enabled": true,
-                "group": "cities",
-                "priorityField": "population",
-                "priorityScale": 1,
-                "priorityOffset": 0,
-                "testScale": 1.5
-              }
-            },
-            "settings": {
-              "textField": "name",
-              "fontSize": 14,
-              "sizeMinPixels": 8,
-              "sizeMaxPixels": 28,
-              "sizeField": "",
-              "fontFamily": "Monaco, Menlo, monospace",
-              "fontWeight": "500",
-              "anchor": "middle",
-              "baseline": "center",
-              "billboard": true,
-              "background": false,
-              "pixelOffsetX": 0,
-              "pixelOffsetY": 0
-            }
-          }
-        ],
-        "defaultPlaybackSpeed": 1,
-        "loopPlayback": false,
-        "showTimeControls": false,
-        "showLegend": false,
-        "interleaved": true,
-        "syncPublish": false,
-        "syncSubscribe": false,
-        "showTooltip": true,
-        "tooltipTemplate": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}",
-        "controlSettings": {
-          "navigation": {
-            "position": "top-right",
-            "showZoom": true,
-            "showCompass": true
-          },
-          "fullscreen": {
-            "position": "top-right"
-          }
-        },
-        "interactions": {
-          "syncViewToUrl": true
-        }
-      }
-    }
-  ],
-  "refresh": false,
-  "schemaVersion": 41,
-  "tags": [
-    "deckgl",
-    "showcase",
-    "phase1"
-  ],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "",
-  "title": "Deck.gl Showcase \u2014 Text",
-  "uid": "deckgl-showcase-text",
-  "version": 1,
-  "weekStart": ""
+    ],
+    "refresh": false,
+    "schemaVersion": 41,
+    "tags": [
+        "deckgl",
+        "showcase",
+        "phase1"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Deck.gl Showcase \u2014 Text",
+    "uid": "deckgl-showcase-text",
+    "version": 1,
+    "weekStart": ""
 }
