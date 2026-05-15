@@ -18,17 +18,14 @@ import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
 const CONTROLS_HEIGHT = 48;
 
 
-export const useMapViewState = (options: MapPanelOptions) => {
-  const initialViewMode = options.initialView.mode;
+function useMapViewState(options: MapPanelOptions) {
   const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
-
   const hashInitialView = useMemo(() => hashRoutingEnabled ? parseMapHashView() ?? undefined : undefined, [hashRoutingEnabled]);
-  const manualInitialView = initialViewMode === 'manual' ? options.initialView.state : undefined;
-  const initialViewState = hashInitialView ?? manualInitialView;
-
+  const { latitude, longitude, zoom, bearing, pitch } = options.initialView.state;
+  const manualViewState: ViewportSnapshot = { latitude, longitude, zoom, bearing: bearing ?? 0, pitch: pitch ?? 0 };
+  const initialViewState: ViewportSnapshot = hashInitialView ?? manualViewState;
   const writeHashView = useWriteMapHashView(hashRoutingEnabled);
-
-  return { initialViewState, writeHashView };
+  return { initialViewState, initialViewFromHash: Boolean(hashInitialView), writeHashView };
 }
 
 
@@ -101,7 +98,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   }, [options, onOptionsChange]);
 
   // ── Viewport tracking ───────────────────────────────────────────────────────
-  // const { initialViewState, writeHashView } = useMapViewState(options);
+  const { initialViewState, initialViewFromHash, writeHashView } = useMapViewState(options);
 
   const currentViewportRef = useRef<ViewportSnapshot | null>(null);
   const pendingFitCaptureRef = useRef<number | null>(null);
@@ -110,7 +107,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const handleViewportChange = useCallback((viewport: ViewportSnapshot) => {
     currentViewportRef.current = viewport;
     setCurrentViewportSnapshot(viewport);
-    // writeHashView(viewport);
+    writeHashView(viewport);
     if (pendingFitCaptureRef.current !== null) {
       pendingFitCaptureRef.current = null;
       onOptionsChange({
@@ -127,26 +124,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         },
       });
     }
-  }, [onOptionsChange, options]);
-
-  // const handleSaveView = useCallback(() => {
-  //   const vp = currentViewportRef.current;
-  //   if (!vp) return;
-  //   onOptionsChange({
-  //     ...options,
-  //     initialView: {
-  //       mode: 'manual',
-  //       state: {
-  //         latitude: Math.round(vp.latitude * 1e6) / 1e6,
-  //         longitude: Math.round(vp.longitude * 1e6) / 1e6,
-  //         zoom: Math.round(vp.zoom * 100) / 100,
-  //         bearing: Math.round(vp.bearing * 10) / 10,
-  //         pitch: Math.round(vp.pitch * 10) / 10,
-  //       },
-  //     },
-  //   });
-  //   setViewportMoved(false);
-  // }, [options, onOptionsChange]);
+  }, [onOptionsChange, options, writeHashView]);
 
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
@@ -192,7 +170,8 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         width={width}
         height={mapHeight}
         options={options}
-        // initialViewState={initialViewState}
+        initialViewState={initialViewState}
+        initialViewFromHash={initialViewFromHash}
         fitBounds={fitBounds}
         fitRequestId={fitRequestId}
         onViewportChange={handleViewportChange}

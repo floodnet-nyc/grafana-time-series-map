@@ -101,7 +101,7 @@ export function SelectableListEditor<T>({
             </div>
           );
         })}
-        <Button variant="secondary" size="sm" icon="plus" onClick={onAdd}>
+        <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
           {addButtonLabel}
         </Button>
       </div>

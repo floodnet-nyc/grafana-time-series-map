@@ -15,12 +15,12 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
 
   const widgetList = useMemo(() => widgets ?? [], [widgets]);
 
-  const addWidget = useCallback(() => {
+  const addWidget = useCallback((type='') => {
     const next = [
       ...widgetList,
       {
         id: `widget-${widgetList.length + 1}`,
-        type: '',
+        type,
         label: '',
         visible: true,
         settings: {},

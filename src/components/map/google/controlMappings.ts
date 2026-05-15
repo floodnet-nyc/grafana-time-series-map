@@ -1,5 +1,5 @@
 import { ColorScheme, ControlPosition } from '@vis.gl/react-google-maps';
-import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle } from '../../../types';
+import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapControlPosition } from '../../../types';
 
 const googleControlPositionValues: Record<GoogleControlPosition, google.maps.ControlPosition> = {
   BLOCK_START_INLINE_START: ControlPosition.BLOCK_START_INLINE_START,
@@ -42,6 +42,24 @@ export const mapTypeControlStyleValues: Record<GoogleMapTypeControlStyle, google
 
 export function getControlPosition(position: GoogleControlPosition | undefined, fallback: GoogleControlPosition) {
   return googleControlPositionValues[position ?? fallback];
+}
+
+function mapControlToGooglePosition(position: MapControlPosition, fallback: GoogleControlPosition): GoogleControlPosition {
+  switch (position) {
+    case 'top-left':     return 'TOP_LEFT';
+    case 'bottom-left':  return 'BOTTOM_LEFT';
+    case 'bottom-right': return 'BOTTOM_RIGHT';
+    case 'top-right':
+    default:             return fallback;
+  }
+}
+
+export function getCameraControlPosition(position: MapControlPosition): GoogleControlPosition {
+  return mapControlToGooglePosition(position, 'INLINE_START_BLOCK_END');
+}
+
+export function getFullscreenControlPosition(position: MapControlPosition): GoogleControlPosition {
+  return mapControlToGooglePosition(position, 'TOP_RIGHT');
 }
 
 export function getGoogleColorScheme(colorScheme: GoogleMapColorScheme | undefined) {
