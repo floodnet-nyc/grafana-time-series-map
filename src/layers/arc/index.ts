@@ -1,6 +1,17 @@
 import { ArcLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { ArcLayerConfig, ArcLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface ArcLayerSettings {
+  widthMinPixels: number;
+  greatCircle: boolean;
+  srcLngField: string;
+  srcLatField: string;
+  tgtLngField: string;
+  tgtLatField: string;
+}
+
+export type ArcLayerConfig = BaseLayerConfig<'arc', ArcLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';

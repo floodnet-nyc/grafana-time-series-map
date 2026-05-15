@@ -1,6 +1,21 @@
 import { IconLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { IconLayerConfig, IconLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface IconLayerSettings {
+  fixedIcon: string;
+  iconField: string;
+  iconAtlasUrl: string;
+  iconMappingUrl: string;
+  sizeScale: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  billboard: boolean;
+  alphaCutoff: number;
+}
+
+export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';

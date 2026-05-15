@@ -1,6 +1,24 @@
 import { TextLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
-import type { TextLayerConfig, TextLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface TextLayerSettings {
+  textField: string;
+  fontSize: number;
+  sizeMinPixels: number;
+  sizeMaxPixels: number;
+  sizeField: string;
+  fontFamily: string;
+  fontWeight: string;
+  anchor: 'start' | 'middle' | 'end';
+  baseline: 'top' | 'center' | 'bottom';
+  billboard: boolean;
+  background: boolean;
+  pixelOffsetX: number;
+  pixelOffsetY: number;
+}
+
+export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';

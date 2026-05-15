@@ -1,4 +1,5 @@
-import type { LayerConfig, ScatterplotLayerConfig } from '../layers/types';
+import type { LayerConfig } from '../layers/_all';
+import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 import {
   appendThresholdStep,
   createColorModePatch,

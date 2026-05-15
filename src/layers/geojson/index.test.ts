@@ -9,7 +9,8 @@ jest.mock('@deck.gl/layers', () => ({
 }));
 
 import { geoJsonLayerDefinition } from './index';
-import type { GeoJsonLayerConfig, LayerRenderContext } from '../types';
+import type { LayerRenderContext } from '../types';
+import type { GeoJsonLayerConfig } from './index';
 
 function createFeature(properties: Record<string, unknown> = {}): Feature {
   return {

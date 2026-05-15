@@ -1,5 +1,5 @@
 import type { Feature } from 'geojson';
-import type { LayerConfig } from '../layers/types';
+import type { LayerConfig } from '../layers/_all';
 
 export function buildFeatureScope(
   config: LayerConfig,

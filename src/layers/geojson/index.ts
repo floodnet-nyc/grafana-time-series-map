@@ -1,5 +1,19 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
-import type { GeoJsonLayerConfig, GeoJsonLayerSettings, LayerDefinition, LayerRenderContext } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+
+export interface GeoJsonLayerSettings {
+  pointRadiusMinPixels: number;
+  pointRadiusMaxPixels: number;
+  lineWidthMinPixels: number;
+  lineWidthField: string;
+  lineWidthScale: number;
+  lineWidthUnits: 'pixels' | 'meters';
+  filled: boolean;
+  stroked: boolean;
+  extruded: boolean;
+}
+
+export type GeoJsonLayerConfig = BaseLayerConfig<'geojson', GeoJsonLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
 import { createCommonLayerProps, getNumericProperty } from '../utils';
