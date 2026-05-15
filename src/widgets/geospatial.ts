@@ -1,18 +1,17 @@
-import { 
-  CompassWidget, 
-  _ScaleWidget as ScaleWidget, 
+import {
+  CompassWidget,
+  _ScaleWidget as ScaleWidget,
   _GeocoderWidget as GeocoderWidget,
   type CompassWidgetProps,
   type ScaleWidgetProps,
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 
 type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 'id'>>;
 type ScaleWidgetConfig = BaseWidgetConfig<'scale', Omit<ScaleWidgetProps, 'id'>>;
 type GeocoderWidgetConfig = BaseWidgetConfig<'geocoder', Omit<GeocoderWidgetProps, 'id'>>;
 
-// TODO: pass in callbacks
 export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   type: 'compass',
   label: 'Compass',
@@ -34,10 +33,17 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
       ],
     },
   ],
-  createWidget: (config) => new CompassWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new CompassWidget({
+      id: config.id,
+      ...config.settings,
+      onReset: callbacks?.onViewStateChange
+        ? ({ bearing, pitch }: { bearing: number; pitch: number }) =>
+            callbacks.onViewStateChange!({ bearing, pitch })
+        : undefined,
+    }),
 };
 
-// TODO: pass in callbacks
 export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   type: 'scale',
   label: 'Scale',
@@ -61,7 +67,6 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
 };
 
-// TODO: pass in callbacks
 export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = {
   type: 'geocoder',
   label: 'Geocoder',
@@ -96,5 +101,13 @@ export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = 
       ],
     },
   ],
-  createWidget: (config) => new GeocoderWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new GeocoderWidget({
+      id: config.id,
+      ...config.settings,
+      onGeocode: callbacks?.onViewStateChange
+        ? ({ coordinates }: { coordinates: { longitude: number; latitude: number; zoom?: number } }) =>
+            callbacks.onViewStateChange!(coordinates)
+        : undefined,
+    }),
 };

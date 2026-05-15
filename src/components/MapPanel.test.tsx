@@ -47,7 +47,6 @@ jest.mock('./map/DeckGLMap', () => ({
     latestMapProps = props;
     return <div data-testid="deckgl-map" />;
   },
-  useDeckGLProps: () => ({}),
 }));
 
 jest.mock('./MapLegend', () => ({

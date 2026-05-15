@@ -1,5 +1,8 @@
 import type { DeckProps } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
+import type { WidgetCallbacks } from '../../widgets/types';
+
+export type { WidgetCallbacks };
 
 export interface ViewportSnapshot {
   latitude: number;
@@ -21,16 +24,17 @@ export type DeckTooltipContent =
     }
   | null;
 
-
-
 export interface MapProviderProps {
   width: number;
   height: number;
   options: MapPanelOptions;
 
+  layers: DeckProps['layers'];
+  getTooltip?: DeckProps['getTooltip'];
+  widgetCallbacks?: WidgetCallbacks;
+
   initialViewState?: ViewportSnapshot;
   initialViewFromHash?: boolean;
-  deckProps: DeckProps & { interleaved?: boolean };
   fitBounds?: FitBounds;
   fitRequestId?: number;
   onViewportChange?: (viewport: ViewportSnapshot) => void;
