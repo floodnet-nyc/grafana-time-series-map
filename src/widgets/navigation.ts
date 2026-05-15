@@ -59,7 +59,7 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
       ],
     },
   ],
-  createWidget: (config) => new ResetViewWidget({ id: config.id, ...config.settings }),
+  createWidget: (config) => new ResetViewWidget({ id: config.id, ...config.settings, onReset: console.log }),
 };
 
 export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
