@@ -11,6 +11,7 @@ import {
 export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   type: 'icon',
   label: 'Icon',
+  description: 'Add a clickable icon button to the map UI.',
   createDefaultConfig: (i) => ({
     id: `widget-icon-${i + 1}`,
     type: 'icon',
@@ -35,6 +36,7 @@ export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
 export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
   type: 'toggle',
   label: 'Toggle',
+  description: 'Add a toggle button with checked and unchecked states.',
   createDefaultConfig: (i) => ({
     id: `widget-toggle-${i + 1}`,
     type: 'toggle',
@@ -63,6 +65,7 @@ export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
 export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = {
   type: 'selector',
   label: 'Selector',
+  description: 'Add a selector control for choosing from multiple options.',
   createDefaultConfig: (i) => ({
     id: `widget-selector-${i + 1}`,
     type: 'selector',
@@ -84,6 +87,7 @@ export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = 
 export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = {
   type: 'timeline',
   label: 'Timeline',
+  description: 'Add a timeline scrubber with optional playback controls.',
   createDefaultConfig: (i) => ({
     id: `widget-timeline-${i + 1}`,
     type: 'timeline',

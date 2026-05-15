@@ -16,6 +16,7 @@ const ORIENTATIONS = [
 export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   type: 'zoom',
   label: 'Zoom',
+  description: 'Add zoom in and zoom out controls.',
   createDefaultConfig: (i) => ({
     id: `widget-zoom-${i + 1}`,
     type: 'zoom',
@@ -41,6 +42,7 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
 export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> = {
   type: 'reset-view',
   label: 'Reset View',
+  description: 'Add a button to return the map to its default view.',
   createDefaultConfig: (i) => ({
     id: `widget-reset-view-${i + 1}`,
     type: 'reset-view',
@@ -63,6 +65,7 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
 export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
   type: 'gimbal',
   label: 'Gimbal',
+  description: 'Add a control to reset map bearing and orientation.',
   createDefaultConfig: (i) => ({
     id: `widget-gimbal-${i + 1}`,
     type: 'gimbal',
@@ -87,6 +90,7 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
 export const scrollbarWidgetDefinition: WidgetDefinition<ScrollbarWidgetConfig> = {
   type: 'scrollbar',
   label: 'Scrollbar',
+  description: 'Add a draggable scrollbar for ranged navigation.',
   createDefaultConfig: (i) => ({
     id: `widget-scrollbar-${i + 1}`,
     type: 'scrollbar',

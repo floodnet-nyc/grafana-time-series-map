@@ -16,11 +16,16 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
   const widgetList = useMemo(() => widgets ?? [], [widgets]);
 
   const addWidget = useCallback(() => {
-    const firstDef = widgetDefinitions[0];
-    if (!firstDef) {
-      return;
-    }
-    const next = [...widgetList, firstDef.createDefaultConfig(widgetList.length)];
+    const next = [
+      ...widgetList,
+      {
+        id: `widget-${widgetList.length + 1}`,
+        type: '',
+        label: '',
+        visible: true,
+        settings: {},
+      } as WidgetConfig,
+    ];
     onChange(next);
     setSelectedIndex(next.length - 1);
   }, [widgetList, onChange]);
@@ -73,7 +78,7 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
         selectedIndex={selectedIndex}
         onSelect={setSelectedIndex}
         getItemKey={(widget) => widget.id}
-        getItemLabel={(widget) => widget.label || widget.type}
+        getItemLabel={(widget) => widgetDefinitions.find((definition) => definition.type === widget.type)?.label ?? (widget.label || 'Select widget type')}
         addButtonLabel="Add widget"
         onAdd={addWidget}
         onMove={moveWidget}

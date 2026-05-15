@@ -4,6 +4,7 @@ import type { ContextMenuWidgetConfig, InfoWidgetConfig, PopupWidgetConfig, Widg
 export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConfig> = {
   type: 'context-menu',
   label: 'Context Menu',
+  description: 'Add a right-click context menu for map interactions.',
   createDefaultConfig: (i) => ({
     id: `widget-context-menu-${i + 1}`,
     type: 'context-menu',
@@ -18,6 +19,7 @@ export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConf
 export const infoWidgetDefinition: WidgetDefinition<InfoWidgetConfig> = {
   type: 'info',
   label: 'Info',
+  description: 'Display contextual feature information on hover or click.',
   createDefaultConfig: (i) => ({
     id: `widget-info-${i + 1}`,
     type: 'info',
@@ -45,6 +47,7 @@ export const infoWidgetDefinition: WidgetDefinition<InfoWidgetConfig> = {
 export const popupWidgetDefinition: WidgetDefinition<PopupWidgetConfig> = {
   type: 'popup',
   label: 'Popup',
+  description: 'Show popup content anchored to a map position.',
   createDefaultConfig: (i) => ({
     id: `widget-popup-${i + 1}`,
     type: 'popup',

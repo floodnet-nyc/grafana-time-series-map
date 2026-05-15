@@ -5,6 +5,7 @@ import { PLACEMENTS, type FullscreenWidgetConfig, type SplitterWidgetConfig, typ
 export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig> = {
   type: 'fullscreen',
   label: 'Fullscreen',
+  description: 'Add a control to toggle the map into fullscreen mode.',
   createDefaultConfig: (i) => ({
     id: `widget-fullscreen-${i + 1}`,
     type: 'fullscreen',
@@ -28,6 +29,7 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
 export const splitterWidgetDefinition: WidgetDefinition<SplitterWidgetConfig> = {
   type: 'splitter',
   label: 'Splitter',
+  description: 'Split the map view into two synchronized panes.',
   createDefaultConfig: (i) => ({
     id: `widget-splitter-${i + 1}`,
     type: 'splitter',
