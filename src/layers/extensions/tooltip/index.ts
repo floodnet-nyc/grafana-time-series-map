@@ -2,6 +2,7 @@ import type { PickingInfo } from '@deck.gl/core';
 import type { DeckTooltipContent } from '../../../components/map/types';
 import { liquid, getFeatureFromDatum, buildLiquidScope } from '../../../utils/liquid';
 import { mapCardTooltipStyle } from '../../../components/mapCard';
+import '../../../widgets/stylesheet.css';
 
 // ── Liquid filters for tooltip templates ──────────────────────────────────────
 
@@ -10,7 +11,7 @@ liquid.registerFilter('pretty', (value: unknown) => {
 
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) return String(value);
-    return Number.isInteger(value) ? String(value) : Number(value.toFixed(2)).toString();
+    return Number.isInteger(value) ? String(value) : Number(value.toFixed(4)).toString();
   }
 
   if (value instanceof Date) {
@@ -42,11 +43,11 @@ liquid.registerFilter('pretty', (value: unknown) => {
 });
 
 export const DEFAULT_TOOLTIP_TEMPLATE = `\
-<table style="border-collapse:collapse;font-size:12px;line-height:1.5">
+<table class="fn-datatable">
   {%- for p in properties -%}
   <tr>
-    <td style="padding:1px 8px 1px 0;opacity:.7;white-space:nowrap">{{ p.key }}</td>
-    <td style="padding:1px 0">{{ p.value | pretty }}</td>
+    <td>{{ p.key }}</td>
+    <td>{{ p.value | pretty }}</td>
   </tr>
   {%- endfor -%}
 </table>
