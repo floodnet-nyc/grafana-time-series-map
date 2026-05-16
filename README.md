@@ -35,9 +35,9 @@ python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1
 - min zoom, max zoom
 - xyz tile layer
 - picker radius
-- switch to controlled mode
 
-
+Icon - preset icons
+theme
 
 - heatmap not using color settings
 - geojson elevation settings

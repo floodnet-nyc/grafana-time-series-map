@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { APIProvider, Map, limitTiltRange, useMap } from '@vis.gl/react-google-maps';
-import type { MapProviderProps, ViewportSnapshot } from '../types';
+import type { MapProviderProps, ViewportSnapshot, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
@@ -15,7 +15,7 @@ import {
 import { resolveMapControlSettings } from '../controlSettings';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
 
-function applyGoogleViewState(map: google.maps.Map, next: Record<string, unknown>) {
+function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange) {
   const cameraOptions: google.maps.CameraOptions = {};
 
   const currentCenter = map.getCenter();
@@ -47,13 +47,22 @@ function applyGoogleViewState(map: google.maps.Map, next: Record<string, unknown
   map.moveCamera(cameraOptions);
 }
 
-export default function GoogleMap({
+export default function GoogleMap(props: MapProviderProps) {
+  return (
+    <APIProvider apiKey={props.options.basemap.google.apiKey ?? ''}>
+      <GoogleMapInner {...props} />
+    </APIProvider>
+  );
+}
+
+function GoogleMapInner({
   width, height, options,
   layers, getTooltip, widgetCallbacks,
   initialViewState, initialViewFromHash,
   fitBounds, fitRequestId,
   onViewportChange,
 }: MapProviderProps) {
+  const map = useMap();
   const interactions = options.basemap.interactions ?? {};
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
@@ -64,7 +73,7 @@ export default function GoogleMap({
   const controller = options.deck.interleaved !== true;
 
   // ── Controlled viewState for DeckGL controller mode ─────────────────────────
-  const [viewState, setViewState] = useState(initialViewState ?? { latitude: 0, longitude: 0, zoom: 2, bearing: 0, pitch: 0 });
+  const [viewState, setViewState] = useState<ViewportSnapshot>(initialViewState ?? { latitude: 0, longitude: 0, zoom: 2, bearing: 0, pitch: 0 });
 
   const handleViewStateChange = useCallback((e: any) => {
     const vs = limitTiltRange(e);
@@ -72,11 +81,33 @@ export default function GoogleMap({
     onViewportChange?.(vs);
   }, [onViewportChange]);
 
-  const handleWidgetViewStateChange = useCallback((next: object) => {
-    setViewState((prev: any) => ({ ...prev, ...next }));
-  }, []);
+  const handleWidgetViewStateChange = useCallback((next: WidgetViewStateChange) => {
+    if (controller) {
+      setViewState((prev) => ({ ...prev, ...next }));
+      return;
+    }
+    if (!map) {
+      return;
+    }
+    applyGoogleViewState(map, next);
+  }, [controller, map]);
 
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | undefined>(undefined);
+
+  const mergedCallbacks = useMemo(() => ({
+    ...widgetCallbacks,
+    onViewStateChange: handleWidgetViewStateChange,
+    resetViewState: initialViewState,
+    themeMode,
+    onThemeModeChange: setThemeMode,
+  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
+
+  const deckProps = useDeckGLProps({
+    options,
+    layers,
+    getTooltip,
+    widgetCallbacks: mergedCallbacks,
+  });
 
   const latitude = initialViewState?.latitude ?? 0;
   const longitude = initialViewState?.longitude ?? 0;
@@ -99,121 +130,10 @@ export default function GoogleMap({
     defaultTilt: pitch,
   };
 
-  return (
-    <APIProvider apiKey={options.basemap.google.apiKey ?? ''}>
-      <GoogleMapContent
-        width={width}
-        height={height}
-        options={options}
-        layers={layers}
-        getTooltip={getTooltip}
-        widgetCallbacks={widgetCallbacks}
-        initialViewState={initialViewState}
-        initialViewFromHash={initialViewFromHash}
-        fitBounds={fitBounds}
-        fitRequestId={fitRequestId}
-        onViewportChange={onViewportChange}
-        controller={controller}
-        viewState={viewState}
-        onDeckViewStateChange={handleViewStateChange}
-        onWidgetViewStateChange={handleWidgetViewStateChange}
-        interactive={interactive}
-        interactions={interactions}
-        controlSettings={controlSettings}
-        sharedMapProps={sharedMapProps}
-        themeMode={themeMode}
-        onThemeModeChange={setThemeMode}
-      />
-    </APIProvider>
-  );
-}
-
-function GoogleMapContent({
-  width,
-  height,
-  options,
-  layers,
-  getTooltip,
-  widgetCallbacks,
-  initialViewState,
-  initialViewFromHash,
-  fitBounds,
-  fitRequestId,
-  onViewportChange,
-  controller,
-  viewState,
-  onDeckViewStateChange,
-  onWidgetViewStateChange,
-  interactive,
-  interactions,
-  controlSettings,
-  sharedMapProps,
-  themeMode,
-  onThemeModeChange,
-}: {
-  width: number;
-  height: number;
-  options: MapProviderProps['options'];
-  layers: MapProviderProps['layers'];
-  getTooltip: MapProviderProps['getTooltip'];
-  widgetCallbacks: MapProviderProps['widgetCallbacks'];
-  initialViewState: MapProviderProps['initialViewState'];
-  initialViewFromHash: MapProviderProps['initialViewFromHash'];
-  fitBounds: MapProviderProps['fitBounds'];
-  fitRequestId: MapProviderProps['fitRequestId'];
-  onViewportChange: MapProviderProps['onViewportChange'];
-  controller: boolean;
-  viewState: ViewportSnapshot;
-  onDeckViewStateChange: (e: any) => void;
-  onWidgetViewStateChange: (next: object) => void;
-  interactive: boolean;
-  interactions: NonNullable<MapProviderProps['options']['basemap']['interactions']>;
-  controlSettings: ReturnType<typeof resolveMapControlSettings>;
-  sharedMapProps: {
-    mapId?: string;
-    colorScheme: ReturnType<typeof getGoogleColorScheme>;
-    defaultCenter: { lat: number; lng: number };
-    defaultZoom: number;
-    defaultHeading: number;
-    defaultTilt: number;
-  };
-  themeMode: 'light' | 'dark' | undefined;
-  onThemeModeChange: React.Dispatch<React.SetStateAction<'light' | 'dark' | undefined>>;
-}) {
-  const map = useMap();
-
-  const handleWidgetViewStateChange = useCallback((next: object) => {
-    if (controller) {
-      onWidgetViewStateChange(next);
-      return;
-    }
-
-    if (!map) {
-      return;
-    }
-
-    applyGoogleViewState(map, next as Record<string, unknown>);
-  }, [controller, map, onWidgetViewStateChange]);
-
-  const mergedCallbacks = useMemo(() => ({
-    ...widgetCallbacks,
-    onViewStateChange: handleWidgetViewStateChange,
-    resetViewState: initialViewState,
-    themeMode,
-    onThemeModeChange,
-  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode, onThemeModeChange]);
-
-  const deckProps = useDeckGLProps({
-    options,
-    layers,
-    getTooltip,
-    widgetCallbacks: mergedCallbacks,
-  });
-
   if (controller) {
     return (
       <div style={{ width, height }}>
-      <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={onDeckViewStateChange}>
+      <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
         <Map
           {...sharedMapProps}
           style={{ width, height }}

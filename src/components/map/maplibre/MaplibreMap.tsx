@@ -8,7 +8,7 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { MapProviderProps } from '../types';
+import type { MapProviderProps, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
@@ -16,7 +16,7 @@ import { getMaplibreStyleUrl } from './style';
 import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-function applyMaplibreViewState(map: MapLibreMap, next: Record<string, unknown>) {
+function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
   const camera: Parameters<MapLibreMap['easeTo']>[0] = {
     duration: typeof next.transitionDuration === 'number' ? next.transitionDuration : 300,
   };
@@ -68,9 +68,9 @@ export default function MaplibreMap({
   // Viewport callback for widgets — merges with panel-level widgetCallbacks.
   const mapRef = useRef<MapRef>(null);
 
-  const handleWidgetViewStateChange = useCallback((next: object) => {
+  const handleWidgetViewStateChange = useCallback((next: WidgetViewStateChange) => {
     if (controller) {
-      setViewState((prev: any) => ({ ...prev, ...next }));
+      setViewState((prev) => ({ ...prev, ...next }));
       return;
     }
 
@@ -79,7 +79,7 @@ export default function MaplibreMap({
       return;
     }
 
-    applyMaplibreViewState(map, next as Record<string, unknown>);
+    applyMaplibreViewState(map, next);
   }, [controller]);
 
   // ThemeWidget local state — provider owns this since it's a map UI concern.

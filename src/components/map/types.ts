@@ -1,8 +1,8 @@
 import type { DeckProps } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
-import type { WidgetCallbacks } from '../../widgets/types';
+import type { WidgetCallbacks, WidgetViewStateChange } from '../../widgets/types';
 
-export type { WidgetCallbacks };
+export type { WidgetCallbacks, WidgetViewStateChange };
 
 export interface ViewportSnapshot {
   latitude: number;
