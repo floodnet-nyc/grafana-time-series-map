@@ -164,7 +164,6 @@ export interface MapInteractionOptions {
 
 export interface MapControlOptions {
   navigationControl?: boolean;
-  geolocateControl?: boolean;
   fullscreenControl?: boolean;
   scaleControl?: boolean;
 }
@@ -177,18 +176,12 @@ export interface SharedNavigationControlOptions {
   visualizeRoll?: boolean;
 }
 
-export interface SharedGeolocateControlOptions {
-  position?: MapControlPosition;
-  trackUserLocation?: boolean;
-}
-
 export interface SharedFullscreenControlOptions {
   position?: MapControlPosition;
 }
 
 export interface SharedMapControlSettings {
   navigation?: SharedNavigationControlOptions;
-  geolocate?: SharedGeolocateControlOptions;
   fullscreen?: SharedFullscreenControlOptions;
 }
 

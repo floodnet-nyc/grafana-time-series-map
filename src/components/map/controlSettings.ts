@@ -15,11 +15,6 @@ export interface ResolvedMapControlSettings {
     visualizePitch: boolean;
     visualizeRoll: boolean;
   };
-  geolocate: {
-    enabled: boolean;
-    position: MapControlPosition;
-    trackUserLocation: boolean;
-  };
   fullscreen: {
     enabled: boolean;
     position: MapControlPosition;
@@ -50,11 +45,6 @@ function resolveSharedSettings(
       visualizePitch: controlSettings?.navigation?.visualizePitch ?? false,
       visualizeRoll: controlSettings?.navigation?.visualizeRoll ?? false,
     },
-    geolocate: {
-      enabled: controls?.geolocateControl ?? false,
-      position: controlSettings?.geolocate?.position ?? 'top-right',
-      trackUserLocation: controlSettings?.geolocate?.trackUserLocation ?? false,
-    },
     fullscreen: {
       enabled: controls?.fullscreenControl ?? false,
       position: controlSettings?.fullscreen?.position ?? 'top-right',
@@ -80,4 +70,3 @@ export function resolveMapControlSettings(options: MapPanelOptions): ResolvedMap
 export function getMaplibreControlPosition(position: MapControlPosition): MapControlPosition {
   return position;
 }
-

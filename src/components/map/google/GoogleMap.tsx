@@ -4,7 +4,6 @@ import type { MapProviderProps, ViewportSnapshot } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { GoogleDeckOverlay } from './GoogleDeckOverlay';
 import { GoogleFitBounds } from './GoogleFitBounds';
-import { GoogleGeolocateControl } from './GoogleGeolocateControl';
 // import { GoogleMapViewportSync } from './GoogleMapViewportSync';
 import {
   getGoogleColorScheme,
@@ -235,7 +234,6 @@ function GoogleMapContent({
             options={options}
             onViewState={handleWidgetViewStateChange}
           />
-          <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
         </Map>
       </DeckGL>
       </div>
@@ -276,7 +274,6 @@ function GoogleMapContent({
     >
       <GoogleDeckOverlay {...deckProps} options={options} />
       <GoogleFitBounds disabled={Boolean(initialViewFromHash)} fitBounds={fitBounds} fitRequestId={fitRequestId} options={options} />
-      <GoogleGeolocateControl enabled={controlSettings.geolocate.enabled && interactive} />
     </Map>
   );
 }
