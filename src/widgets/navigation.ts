@@ -8,6 +8,7 @@ import {
   type GimbalWidgetProps,
   type ScrollbarWidgetProps,
 } from '@deck.gl/widgets';
+import { getCameraControlPosition, getControlPosition } from '../components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 
 type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
@@ -59,6 +60,25 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
             })
         : undefined,
     }),
+  nativeControls: {
+    google: (config) => ({
+      cameraControl: true,
+      cameraControlOptions: {
+        position: getControlPosition(
+          getCameraControlPosition(config.settings.placement ?? 'top-left'),
+          'INLINE_START_BLOCK_END'
+        ),
+      },
+    }),
+    maplibre: (config) => (
+      <NavigationControl
+        key="widget-zoom-native"
+        position={config.settings.placement ?? 'top-left'}
+        showZoom={true}
+        showCompass={false}
+      />
+    ),
+  },
 };
 
 export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> = {

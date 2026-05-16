@@ -13,6 +13,7 @@ import { useDeckGLProps } from '../DeckGLMap';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
 import { getMaplibreStyleUrl } from './style';
+import { resolveMaplibreNativeControls } from '../../../widgets/_all';
 import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -115,9 +116,28 @@ export default function MaplibreMap({
     attributionControl: { compact: true } as any,
   };
 
+  const nativeMaplibreControls = useMemo(
+    () => resolveMaplibreNativeControls(options.widgets ?? []),
+    [options.widgets]
+  );
+
+  const hasNativeNav = useMemo(
+    () => (options.widgets ?? []).some((w) => w.visible && w.native && (w.type === 'zoom' || w.type === 'compass')),
+    [options.widgets]
+  );
+  const hasNativeFullscreen = useMemo(
+    () => (options.widgets ?? []).some((w) => w.visible && w.native && w.type === 'fullscreen'),
+    [options.widgets]
+  );
+  const hasNativeScale = useMemo(
+    () => (options.widgets ?? []).some((w) => w.visible && w.native && w.type === 'scale'),
+    [options.widgets]
+  );
+
   const controls = (
     <>
-      {controlSettings.navigation.enabled && (
+      {nativeMaplibreControls}
+      {!hasNativeNav && controlSettings.navigation.enabled && (
         <NavigationControl
           position={controlSettings.navigation.position}
           showZoom={controlSettings.navigation.showZoom}
@@ -126,8 +146,12 @@ export default function MaplibreMap({
           visualizeRoll={controlSettings.navigation.visualizeRoll}
         />
       )}
-      {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
-      {controlSettings.scale.enabled && <ScaleControl position="bottom-left" />}
+      {!hasNativeFullscreen && controlSettings.fullscreen.enabled && (
+        <FullscreenControl position={controlSettings.fullscreen.position} />
+      )}
+      {!hasNativeScale && controlSettings.scale.enabled && (
+        <ScaleControl position="bottom-left" />
+      )}
     </>
   );
 

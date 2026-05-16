@@ -12,6 +12,8 @@ export interface BaseWidgetConfig<TType extends string, TSettings> {
   type: TType;
   label: string;
   visible: boolean;
+  /** Render as a native map control instead of a DeckGL overlay (requires widget definition nativeControls). */
+  native?: boolean;
   settings: TSettings;
 }
 
@@ -56,4 +58,11 @@ export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> 
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
   createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget<WidgetProps, any>;
+  /** Provider-specific native control configuration used when config.native is true. */
+  nativeControls?: {
+    /** Returns props to spread onto the Google Maps <Map> component. */
+    google?: (config: TConfig) => Record<string, unknown>;
+    /** Returns a descriptor rendered as native JSX by the MapLibre map provider. */
+    maplibre?: (config: TConfig) => { type: 'NavigationControl' | 'FullscreenControl' | 'ScaleControl'; props: Record<string, unknown> } | null;
+  };
 }

@@ -5,6 +5,8 @@ import {
   type SplitterWidgetProps,
 } from '@deck.gl/widgets';
 import { MapView } from '@deck.gl/core';
+import { FullscreenControl } from 'react-map-gl/maplibre';
+import { getControlPosition, getFullscreenControlPosition } from '../components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
 
 type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
@@ -33,6 +35,23 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
     },
   ],
   createWidget: (config) => new FullscreenWidget({ id: config.id, ...config.settings }),
+  nativeControls: {
+    google: (config) => ({
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: getControlPosition(
+          getFullscreenControlPosition(config.settings.placement ?? 'top-right'),
+          'TOP_RIGHT'
+        ),
+      },
+    }),
+    maplibre: (config) => (
+      <FullscreenControl
+        key="widget-fullscreen-native"
+        position={config.settings.placement ?? 'top-right'}
+      />
+    ),
+  },
 };
 
 // DISABLE
