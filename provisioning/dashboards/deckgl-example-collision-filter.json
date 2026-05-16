@@ -158,16 +158,20 @@
                                 255
                             ]
                         },
-                        "extensions": {
-                            "collision": {
-                                "enabled": true,
-                                "group": "roads",
-                                "priorityField": "scalerank",
-                                "priorityScale": -1,
-                                "priorityOffset": 0,
-                                "testScale": 1.2
+                        "extensions": [
+                            {
+                                "id": "collision-1",
+                                "type": "collision",
+                                "config": {
+                                    "enabled": true,
+                                    "group": "roads",
+                                    "priorityField": "scalerank",
+                                    "priorityScale": -1,
+                                    "priorityOffset": 0,
+                                    "testScale": 1.2
+                                }
                             }
-                        },
+                        ],
                         "settings": {
                             "textField": "name",
                             "fontSize": 12,

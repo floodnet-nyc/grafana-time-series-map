@@ -125,16 +125,20 @@
                                 240
                             ]
                         },
-                        "extensions": {
-                            "collision": {
-                                "enabled": true,
-                                "group": "cities",
-                                "priorityField": "population",
-                                "priorityScale": 1,
-                                "priorityOffset": 0,
-                                "testScale": 1.5
+                        "extensions": [
+                            {
+                                "id": "collision-1",
+                                "type": "collision",
+                                "config": {
+                                    "enabled": true,
+                                    "group": "cities",
+                                    "priorityField": "population",
+                                    "priorityScale": 1,
+                                    "priorityOffset": 0,
+                                    "testScale": 1.5
+                                }
                             }
-                        },
+                        ],
                         "settings": {
                             "textField": "name",
                             "fontSize": 14,
