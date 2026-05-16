@@ -13,6 +13,7 @@ import {
   mapTypeControlStyleValues,
 } from './controlMappings';
 import { resolveMapControlSettings } from '../controlSettings';
+import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
 
 function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange) {
@@ -109,6 +110,36 @@ function GoogleMapInner({
     widgetCallbacks: mergedCallbacks,
   });
 
+  const googleNativeProps = useMemo(
+    () => resolveGoogleNativeProps(options.widgets ?? []),
+    [options.widgets]
+  );
+
+  const googleControlProps = useMemo(() => ({
+    cameraControl: googleNativeProps.cameraControl ?? controlSettings.navigation.enabled,
+    cameraControlOptions: (googleNativeProps.cameraControlOptions ?? {
+      position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
+    }) as { position: number },
+    fullscreenControl: googleNativeProps.fullscreenControl ?? controlSettings.fullscreen.enabled,
+    fullscreenControlOptions: (googleNativeProps.fullscreenControlOptions ?? {
+      position: getControlPosition(getFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT'),
+    }) as { position: number },
+    scaleControl: googleNativeProps.scaleControl ?? controlSettings.scale.enabled,
+    rotateControl: googleNativeProps.rotateControl ?? controlSettings.navigation.showCompass,
+    rotateControlOptions: (googleNativeProps.rotateControlOptions ?? {
+      position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
+    }) as { position: number },
+    mapTypeControl: controlSettings.google.mapTypeControl,
+    mapTypeControlOptions: {
+      position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
+      style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
+    } as { position: number; style: google.maps.MapTypeControlStyle },
+    streetViewControl: controlSettings.google.streetViewControl,
+    streetViewControlOptions: {
+      position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM'),
+    } as { position: number },
+  }), [googleNativeProps, controlSettings]);
+
   const latitude = initialViewState?.latitude ?? 0;
   const longitude = initialViewState?.longitude ?? 0;
   const zoom = initialViewState?.zoom ?? 2;
@@ -167,20 +198,7 @@ function GoogleMapInner({
       gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
       keyboardShortcuts={interactive}
       clickableIcons={interactive}
-      cameraControl={controlSettings.navigation.enabled}
-      cameraControlOptions={{ position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
-      fullscreenControl={controlSettings.fullscreen.enabled}
-      fullscreenControlOptions={{ position: getControlPosition(getFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT') }}
-      scaleControl={controlSettings.scale.enabled}
-      mapTypeControl={controlSettings.google.mapTypeControl}
-      mapTypeControlOptions={{
-        position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
-        style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-      }}
-      rotateControl={controlSettings.navigation.showCompass}
-      rotateControlOptions={{ position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END') }}
-      streetViewControl={controlSettings.google.streetViewControl}
-      streetViewControlOptions={{ position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM') }}
+      {...googleControlProps}
       tiltInteractionEnabled={interactions.rollEnabled}
       onCameraChanged={(event: any) => {
         onViewportChange?.({

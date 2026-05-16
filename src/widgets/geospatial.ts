@@ -6,6 +6,8 @@ import {
   type ScaleWidgetProps,
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
+import { NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
+import { getCameraControlPosition, getControlPosition } from '../components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
 import { GeolocateWidget, type GeolocateWidgetProps } from './geolocate-widget';
 
@@ -48,6 +50,26 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
             })
         : undefined,
     }),
+  nativeControls: {
+    google: (config) => ({
+      rotateControl: true,
+      rotateControlOptions: {
+        position: getControlPosition(
+          getCameraControlPosition(config.settings.placement ?? 'top-left'),
+          'INLINE_START_BLOCK_END'
+        ),
+      },
+    }),
+    maplibre: (config) => (
+      <NavigationControl
+        key="widget-compass-native"
+        position={config.settings.placement ?? 'top-left'}
+        showZoom={false}
+        showCompass={true}
+        visualizePitch={true}
+      />
+    ),
+  },
 };
 
 // TODO: theme not working
@@ -72,6 +94,10 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
     },
   ],
   createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
+  nativeControls: {
+    google: () => ({ scaleControl: true }),
+    maplibre: () => <ScaleControl key="widget-scale-native" position="bottom-left" />,
+  },
 };
 
 export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> = {

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Widget } from '@deck.gl/core';
 import { 
   // gimbalWidgetDefinition, 
@@ -71,7 +72,7 @@ export type WidgetConfig = ReturnType<(typeof widgetDefinitions)[number]['create
 
 export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbacks): Widget[] {
   return configs.flatMap((config) => {
-    if (!config.visible) {
+    if (!config.visible || config.native) {
       return [];
     }
     const def = widgetDefinitions.find((d) => d.type === config.type);
@@ -80,6 +81,31 @@ export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbac
     w.setProps({ style: callbacks?.themeMode === 'dark' ? DarkGlassTheme : LightGlassTheme });
     return w ? [w] : [];
   });
+}
+
+export function resolveGoogleNativeProps(configs: WidgetConfig[]): Record<string, unknown> {
+  const props: Record<string, unknown> = {};
+  for (const config of configs) {
+    if (!config.visible || !config.native) continue;
+    const def = widgetDefinitions.find((d) => d.type === config.type);
+    if (def?.nativeControls?.google) {
+      Object.assign(props, def.nativeControls.google(config as never));
+    }
+  }
+  return props;
+}
+
+export function resolveMaplibreNativeControls(configs: WidgetConfig[]): { type: string; props: Record<string, unknown> }[] {
+  const controls: { type: string; props: Record<string, unknown> }[] = [];
+  for (const config of configs) {
+    if (!config.visible || !config.native) continue;
+    const def = widgetDefinitions.find((d) => d.type === config.type);
+    if (def?.nativeControls?.maplibre) {
+      const desc = def.nativeControls.maplibre(config as never);
+      if (desc) controls.push(desc);
+    }
+  }
+  return controls;
 }
 
 export type { WidgetCallbacks };
