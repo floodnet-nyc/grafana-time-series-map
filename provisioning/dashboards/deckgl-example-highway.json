@@ -197,8 +197,7 @@
                     "show": false
                 },
                 "tooltip": {
-                    "show": true,
-                    "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}{% if fatalitiesPer1kMile %}<div>Fatalities / 1k mile: {{ fatalitiesPer1kMile }}</div>{% endif %}{% if incidentsPer1kMile %}<div>Incidents / 1k mile: {{ incidentsPer1kMile }}</div>{% endif %}"
+                    "show": true
                 },
                 "sync": {
                     "publish": false,

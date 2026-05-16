@@ -3,17 +3,17 @@ import type { Feature } from 'geojson';
 import { buildLiquidScope, renderLiquidTemplate } from '../utils/liquid';
 import { mapCardStyle } from './mapCard';
 
-export const DEFAULT_POPUP_TEMPLATE = [
-  '<div style="font-weight:700;font-size:14px;margin-bottom:10px">{{ _key }}</div>',
-  '<table style="border-collapse:collapse;font-size:12px;line-height:1.5">',
-  '  {%- for p in properties -%}',
-  '  <tr>',
-  '    <td style="padding:2px 10px 2px 0;opacity:.7;white-space:nowrap">{{ p.key }}</td>',
-  '    <td style="padding:2px 0">{{ p.value }}</td>',
-  '  </tr>',
-  '  {%- endfor -%}',
-  '</table>',
-].join('\n');
+
+export const DEFAULT_POPUP_TEMPLATE = `\
+<table class="fn-datatable">
+  {%- for p in properties -%}
+  <tr>
+    <td>{{ p.key }}</td>
+    <td>{{ p.value | pretty }}</td>
+  </tr>
+  {%- endfor -%}
+</table>
+`;
 
 interface SensorPopupProps {
   selectedKey: string;
