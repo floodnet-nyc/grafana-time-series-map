@@ -53,7 +53,12 @@ export class GeolocateWidget extends Widget<GeolocateWidgetProps> {
             onClick: () => this.handleLocate(),
             title: this.props.label,
           },
-          h('span', { style: iconTextStyle }, '◎'),
+          h(
+            'span',
+            { style: targetStyle },
+            h('span', { style: outerRingStyle }),
+            h('span', { style: innerDotStyle }),
+          ),
         ),
       ),
       rootElement
@@ -82,12 +87,31 @@ export class GeolocateWidget extends Widget<GeolocateWidgetProps> {
   }
 }
 
-const iconTextStyle = {
+const targetStyle = {
   alignItems: 'center',
   color: 'currentColor',
   display: 'inline-flex',
-  fontSize: '18px',
-  height: '100%',
+  height: '16px',
   justifyContent: 'center',
-  width: '100%',
+  position: 'relative',
+  width: '16px',
+};
+
+const outerRingStyle = {
+  border: '2px solid currentColor',
+  borderRadius: '999px',
+  boxSizing: 'border-box',
+  height: '14px',
+  width: '14px',
+};
+
+const innerDotStyle = {
+  background: 'currentColor',
+  borderRadius: '999px',
+  height: '4px',
+  left: '50%',
+  position: 'absolute',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '4px',
 };
