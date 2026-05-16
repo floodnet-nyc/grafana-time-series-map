@@ -7,8 +7,10 @@ import {
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
+import { GeolocateWidget, type GeolocateWidgetProps } from './geolocate-widget';
 
 type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 'id'>>;
+type GeolocateWidgetConfig = BaseWidgetConfig<'geolocate', Omit<GeolocateWidgetProps, 'id' | 'onGeolocate' | 'onError'>>;
 type ScaleWidgetConfig = BaseWidgetConfig<'scale', Omit<ScaleWidgetProps, 'id'>>;
 type GeocoderWidgetConfig = BaseWidgetConfig<'geocoder', Omit<GeocoderWidgetProps, 'id'>>;
 
@@ -70,6 +72,51 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
     },
   ],
   createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
+};
+
+export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> = {
+  type: 'geolocate',
+  label: 'Geolocate',
+  description: 'Locate the current user and move the map camera to that position.',
+  createDefaultConfig: (i) => ({
+    id: `widget-geolocate-${i + 1}`,
+    type: 'geolocate',
+    label: `Geolocate ${i + 1}`,
+    visible: true,
+    settings: {
+      placement: 'top-right',
+      label: 'Find my location',
+      zoom: 14,
+      transitionDuration: 800,
+      enableHighAccuracy: true,
+    },
+  }),
+  editorSections: [
+    {
+      title: 'Geolocate',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Find my location' },
+        { key: 'zoom', label: 'Target zoom', type: 'number', defaultValue: 14 },
+        { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 800 },
+        { key: 'enableHighAccuracy', label: 'High accuracy', type: 'boolean', defaultValue: true },
+      ],
+    },
+  ],
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new GeolocateWidget({
+      id: config.id,
+      ...config.settings,
+      onGeolocate: callbacks?.onViewStateChange
+        ? ({ latitude, longitude, zoom }: { latitude: number; longitude: number; zoom: number }) =>
+            callbacks.onViewStateChange!({
+              latitude,
+              longitude,
+              zoom,
+              transitionDuration: config.settings.transitionDuration,
+            })
+        : undefined,
+    }),
 };
 
 export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = {
