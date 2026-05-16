@@ -9,6 +9,7 @@ import { MapPanelEditor } from './editor/MapPanelEditor';
 import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
 import { PopupTemplateEditor } from './editor/PopupTemplateEditor';
+import { VariableSelectEditor } from './editor/VariableSelectEditor';
 import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
 import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
@@ -101,6 +102,15 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
   // })
   .setPanelOptions((builder) => {
     builder
+      .addCustomEditor({
+        id: 'layers',
+        path: 'layers',
+        name: 'Layers',
+        description: 'Add and configure deck.gl layers',
+        editor: MapPanelEditor,
+        defaultValue: [],
+        category: ['Layers'],
+      })
       .addRadio({
         path: 'basemap.provider',
         name: 'Basemap provider',
@@ -227,15 +237,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
         category: ['Map bounds', 'Interactions'],
       })
-      .addCustomEditor({
-        id: 'layers',
-        path: 'layers',
-        name: 'Layers',
-        description: 'Add and configure deck.gl layers',
-        editor: MapPanelEditor,
-        defaultValue: [],
-        category: ['Layers'],
-      })
       .addBooleanSwitch({
         path: 'time.show',
         name: 'Show time playback controls',
@@ -307,10 +308,12 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.popup?.show !== false,
         category: ['Popup'],
       })
-      .addTextInput({
+      .addCustomEditor({
+        id: 'sync.selectionVariableName',
         path: 'sync.selectionVariableName',
         name: 'Selection variable',
-        description: 'Optional dashboard variable name to update from the current selected key. Use the bare variable name, not the var- prefix.',
+        description: 'Dashboard variable updated with the selected feature key on click.',
+        editor: VariableSelectEditor,
         defaultValue: '',
         category: ['Popup'],
       })
