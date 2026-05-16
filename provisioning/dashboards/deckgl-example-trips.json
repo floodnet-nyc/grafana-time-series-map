@@ -114,20 +114,24 @@
                                 255
                             ]
                         },
-                        "extensions": {
-                            "material": {
-                                "enabled": true,
-                                "ambient": 0.1,
-                                "diffuse": 0.6,
-                                "shininess": 32,
-                                "specularColor": [
-                                    60,
-                                    64,
-                                    70,
-                                    255
-                                ]
+                        "extensions": [
+                            {
+                                "id": "material-1",
+                                "type": "material",
+                                "config": {
+                                    "enabled": true,
+                                    "ambient": 0.1,
+                                    "diffuse": 0.6,
+                                    "shininess": 32,
+                                    "specularColor": [
+                                        60,
+                                        64,
+                                        70,
+                                        255
+                                    ]
+                                }
                             }
-                        },
+                        ],
                         "settings": {
                             "fillOpacity": 180,
                             "extruded": true,

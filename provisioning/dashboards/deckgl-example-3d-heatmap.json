@@ -154,20 +154,24 @@
                         },
                         "fieldMappings": [],
                         "opacity": 1,
-                        "extensions": {
-                            "material": {
-                                "enabled": true,
-                                "ambient": 0.64,
-                                "diffuse": 0.6,
-                                "shininess": 32,
-                                "specularColor": [
-                                    51,
-                                    51,
-                                    51,
-                                    255
-                                ]
+                        "extensions": [
+                            {
+                                "id": "material-1",
+                                "type": "material",
+                                "config": {
+                                    "enabled": true,
+                                    "ambient": 0.64,
+                                    "diffuse": 0.6,
+                                    "shininess": 32,
+                                    "specularColor": [
+                                        51,
+                                        51,
+                                        51,
+                                        255
+                                    ]
+                                }
                             }
-                        },
+                        ],
                         "settings": {
                             "radius": 1000,
                             "coverage": 1,
