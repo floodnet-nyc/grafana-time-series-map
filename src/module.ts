@@ -204,6 +204,29 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: false,
         category: ['Map bounds'],
       })
+      .addBooleanSwitch({
+        path: 'basemap.interactions.interactive',
+        name: 'Interactive map',
+        description: 'Enable user map gestures such as drag, zoom, rotate, and keyboard navigation.',
+        defaultValue: true,
+        category: ['Map bounds', 'Interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'basemap.interactions.cooperativeGestures',
+        name: 'Cooperative gestures',
+        description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
+        defaultValue: false,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
+        category: ['Map bounds', 'Interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'basemap.interactions.rollEnabled',
+        name: 'Enable 3D',
+        description: 'Allows camera roll with Ctrl + drag.',
+        defaultValue: true,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
+        category: ['Map bounds', 'Interactions'],
+      })
       .addCustomEditor({
         id: 'layers',
         path: 'layers',
@@ -299,29 +322,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         editor: MapPanelWidgetEditor,
         defaultValue: [],
         category: ['Widgets'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.interactions.interactive',
-        name: 'Interactive map',
-        description: 'Enable user map gestures such as drag, zoom, rotate, and keyboard navigation.',
-        defaultValue: true,
-        category: ['Map controls', 'Interactions'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.interactions.cooperativeGestures',
-        name: 'Cooperative gestures',
-        description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
-        category: ['Map controls', 'Interactions'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.interactions.rollEnabled',
-        name: 'Enable 3D',
-        description: 'Allows camera roll with Ctrl + drag.',
-        defaultValue: true,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
-        category: ['Map controls', 'Interactions'],
       })
       .addBooleanSwitch({
         path: 'basemap.controls.navigationControl',
