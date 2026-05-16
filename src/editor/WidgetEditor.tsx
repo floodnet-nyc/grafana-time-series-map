@@ -125,10 +125,15 @@ export function WidgetEditor({ widget, onChange }: Props) {
         </Field> */}
       {/* </CollapsableSection> */}
 
+      
+
       {currentDefinition?.editorSections.map((section, index) => (
-        <CollapsableSection key={section.title ?? index} label={section.title ?? ''} isOpen>
-          {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
-        </CollapsableSection>
+        <React.Fragment key={section.title ?? index}>
+          <h6>{section.title}</h6>
+        {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
+        </React.Fragment>
+        // <CollapsableSection key={section.title ?? index} label={section.title ?? ''} isOpen>
+        // </CollapsableSection>
       ))}
     </div>
   );
