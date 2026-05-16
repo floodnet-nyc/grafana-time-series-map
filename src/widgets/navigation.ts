@@ -48,7 +48,15 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
       id: config.id,
       ...config.settings,
       onZoom: callbacks?.onViewStateChange
-        ? ({ zoom }: { zoom: number }) => callbacks.onViewStateChange!({ zoom })
+        ? ({ viewId, delta, zoom, zoomX, zoomY }: { viewId: string; delta: number; zoom: number; zoomX?: number; zoomY?: number }) =>
+            callbacks.onViewStateChange!({
+              viewId,
+              delta,
+              zoom,
+              zoomX,
+              zoomY,
+              transitionDuration: config.settings.transitionDuration,
+            })
         : undefined,
     }),
 };
@@ -113,7 +121,11 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
       ...config.settings,
       onReset: callbacks?.onViewStateChange
         ? ({ rotationOrbit, rotationX }: { rotationOrbit: number; rotationX: number }) =>
-            callbacks.onViewStateChange!({ rotationOrbit, rotationX })
+            callbacks.onViewStateChange!({
+              rotationOrbit,
+              rotationX,
+              transitionDuration: config.settings.transitionDuration,
+            })
         : undefined,
     }),
 };

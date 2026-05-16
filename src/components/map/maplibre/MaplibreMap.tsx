@@ -8,6 +8,7 @@ import Map, {
   type MapRef,
 } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
+import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { MapProviderProps } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
@@ -16,6 +17,26 @@ import { getMaplibreStyleUrl } from './style';
 import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+function applyMaplibreViewState(map: MapLibreMap, next: Record<string, unknown>) {
+  const camera: Parameters<MapLibreMap['easeTo']>[0] = {
+    duration: typeof next.transitionDuration === 'number' ? next.transitionDuration : 300,
+  };
+
+  if (typeof next.longitude === 'number' && typeof next.latitude === 'number') {
+    camera.center = [next.longitude, next.latitude];
+  }
+  if (typeof next.zoom === 'number') {
+    camera.zoom = next.zoom;
+  }
+  if (typeof next.bearing === 'number') {
+    camera.bearing = next.bearing;
+  }
+  if (typeof next.pitch === 'number') {
+    camera.pitch = next.pitch;
+  }
+
+  map.easeTo(camera);
+}
 
 export default function MaplibreMap({
   width, height, options,
@@ -46,9 +67,21 @@ export default function MaplibreMap({
   }, []);
 
   // Viewport callback for widgets — merges with panel-level widgetCallbacks.
+  const mapRef = useRef<MapRef>(null);
+
   const handleWidgetViewStateChange = useCallback((next: object) => {
-    setViewState((prev: any) => ({ ...prev, ...next }));
-  }, []);
+    if (controller) {
+      setViewState((prev: any) => ({ ...prev, ...next }));
+      return;
+    }
+
+    const map = mapRef.current?.getMap();
+    if (!map) {
+      return;
+    }
+
+    applyMaplibreViewState(map, next as Record<string, unknown>);
+  }, [controller]);
 
   // ThemeWidget local state — provider owns this since it's a map UI concern.
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | undefined>(undefined);
@@ -62,9 +95,6 @@ export default function MaplibreMap({
   }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
 
   const deckProps = useDeckGLProps({ options, layers, getTooltip, widgetCallbacks: mergedCallbacks });
-
-  // ── Overlay (non-controller) mode ────────────────────────────────────────────
-  const mapRef = useRef<MapRef>(null);
 
   const handleMoveEnd = useCallback((e: any) => {
     onViewportChange?.(e.viewState);
