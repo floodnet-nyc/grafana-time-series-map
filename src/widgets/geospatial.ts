@@ -39,7 +39,11 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
       ...config.settings,
       onReset: callbacks?.onViewStateChange
         ? ({ bearing, pitch }: { bearing: number; pitch: number }) =>
-            callbacks.onViewStateChange!({ bearing, pitch })
+            callbacks.onViewStateChange!({
+              bearing,
+              pitch,
+              transitionDuration: config.settings.transitionDuration,
+            })
         : undefined,
     }),
 };
@@ -108,7 +112,10 @@ export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = 
       ...config.settings,
       onGeocode: callbacks?.onViewStateChange
         ? ({ coordinates }: { coordinates: { longitude: number; latitude: number; zoom?: number } }) =>
-            callbacks.onViewStateChange!(coordinates)
+            callbacks.onViewStateChange!({
+              ...coordinates,
+              transitionDuration: config.settings.transitionDuration,
+            })
         : undefined,
     }),
 };
