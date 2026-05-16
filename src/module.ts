@@ -460,7 +460,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       })
       .addBooleanSwitch({
         path: 'deck.parameters.blend',
-        name: 'Custom Blending',
+        name: 'Blending',
         description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
         defaultValue: DEFAULT_DECK_PARAMETERS.blend,
         category: ['Rendering'],
