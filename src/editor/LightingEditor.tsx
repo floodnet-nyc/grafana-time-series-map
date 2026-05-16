@@ -169,9 +169,7 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
 
   return (
     <div className={styles.container}>
-      <Field label="Enable lighting effect">
-        <Switch value={lighting.enabled ?? false} onChange={(event) => patch({ enabled: event.currentTarget.checked })} />
-      </Field>
+      <Switch value={lighting.enabled ?? false} onChange={(event) => patch({ enabled: event.currentTarget.checked })} />
       {lighting.enabled && (
         <SelectableListEditor
           items={lights}
