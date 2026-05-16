@@ -29,8 +29,9 @@ export function createDefaultMaterialConfig(): LayerMaterialConfig {
   };
 }
 
-export const materialExtensionDefinition: LayerExtensionDefinition = {
+export const materialExtensionDefinition: LayerExtensionDefinition<LayerMaterialConfig> = {
   id: 'material',
+  label: 'Material',
   createDefaults: createDefaultMaterialConfig,
   editorSections: [
     {
@@ -45,17 +46,16 @@ export const materialExtensionDefinition: LayerExtensionDefinition = {
     },
   ],
   apply(layer, config) {
-    const options = config.extensions?.material;
-    if (!options?.enabled || !supportsMaterial(layer)) {
+    if (!config.enabled || !supportsMaterial(layer)) {
       return layer;
     }
 
     return layer.clone({
       material: {
-        ambient: options.ambient,
-        diffuse: options.diffuse,
-        shininess: options.shininess,
-        specularColor: rgbColor(options.specularColor),
+        ambient: config.ambient,
+        diffuse: config.diffuse,
+        shininess: config.shininess,
+        specularColor: rgbColor(config.specularColor),
       },
     } as any);
   },

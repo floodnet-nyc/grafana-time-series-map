@@ -11,7 +11,9 @@ import type {
   ShaderConfig,
   TimeFilterConfig,
 } from '../types';
-import type { LayerExtensionsConfig } from './extensions/types';
+import type { LayerExtensionInstance } from './extensions/types';
+
+export type { LayerExtensionInstance };
 
 export interface BaseLayerConfig<TType extends string, TSettings> {
   id: string;
@@ -36,7 +38,7 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   pickable?: boolean;
   selectionKeyField?: string;
   shader?: ShaderConfig;
-  extensions?: LayerExtensionsConfig;
+  extensions?: LayerExtensionInstance[];
 }
 
 export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {

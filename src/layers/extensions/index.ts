@@ -1,4 +1,4 @@
-import type { LayerExtensionsConfig } from './types';
+import type { LayerExtensionInstance } from './types';
 import { blendingExtensionDefinition } from './blending';
 import { collisionExtensionDefinition } from './collision';
 import { materialExtensionDefinition } from './material';
@@ -9,10 +9,13 @@ export const layerExtensionDefinitions = [
   materialExtensionDefinition,
 ];
 
-export function createDefaultLayerExtensions(): LayerExtensionsConfig {
-  return layerExtensionDefinitions.reduce((acc, { id, createDefaults }) => {
-    acc[id] = createDefaults();
-    return acc;
-  }, {} as Record<string, unknown>) as LayerExtensionsConfig;
+const definitionsById = new Map(layerExtensionDefinitions.map((d) => [d.id, d]));
+
+export function getExtensionDefinition(id: string) {
+  return definitionsById.get(id);
+}
+
+export function createDefaultLayerExtensions(): LayerExtensionInstance[] {
+  return [];
 }
 

@@ -112,18 +112,22 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     timeFilter: { mode: 'none', timeField: '' },
     fieldMappings: [],
     opacity: 1,
-    extensions: {
-      blending: {
-        enabled: true,
-        blend: true,
-        colorOperation: 'add',
-        colorSrcFactor: 'src-alpha',
-        colorDstFactor: 'one-minus-src-alpha',
-        alphaOperation: 'add',
-        alphaSrcFactor: 'one',
-        alphaDstFactor: 'one-minus-src-alpha',
+    extensions: [
+      {
+        id: 'blending-1',
+        type: 'blending',
+        config: {
+          enabled: true,
+          blend: true,
+          colorOperation: 'add',
+          colorSrcFactor: 'src-alpha',
+          colorDstFactor: 'one-minus-src-alpha',
+          alphaOperation: 'add',
+          alphaSrcFactor: 'one',
+          alphaDstFactor: 'one-minus-src-alpha',
+        },
       },
-    },
+    ],
   };
   return { ...base, ...overrides } as LayerConfig;
 }
@@ -162,7 +166,7 @@ describe('LayerEditor interactions', () => {
     fireEvent.change(selects[0], { target: { value: 'path' } });
     expect(currentLayer().type).toBe('path');
     expect((currentLayer() as any).settings.widthMinPixels).toBe(2);
-    expect(currentLayer().extensions?.blending?.enabled).toBe(true);
+    expect(currentLayer().extensions?.[0]?.config?.enabled).toBe(true);
   });
 
   it('creates threshold and gradient color payloads when changing color modes', () => {
