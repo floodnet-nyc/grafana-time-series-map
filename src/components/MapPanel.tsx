@@ -14,6 +14,7 @@ import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
+import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
 
@@ -132,7 +133,6 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     },
   }), [playback, fromTimeMs, toTimeMs]);
 
-  console.log(width, height, mapHeight, 'rendering MapPanel with these dimensions');
   return (
     <div
       className={css({
