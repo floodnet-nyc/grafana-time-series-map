@@ -1,0 +1,6 @@
+/* .deck-widget-ctrl .deck-widget,  */
+.maplibregl-ctrl .deck-widget,
+.mapboxgl-ctrl .deck-widget
+{
+    margin: 0;
+}
