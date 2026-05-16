@@ -1,9 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Map, {
-  // AttributionControl,
-  FullscreenControl,
-  NavigationControl,
-  ScaleControl,
   type MapRef,
 } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
@@ -14,7 +10,6 @@ import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
 import { getMaplibreStyleUrl } from './style';
 import { resolveMaplibreNativeControls } from '../../../widgets/_all';
-import { resolveMapControlSettings } from '../controlSettings';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
@@ -46,7 +41,6 @@ export default function MaplibreMap({
   onViewportChange,
 }: MapProviderProps) {
   const styleUrl = getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl);
-  const controlSettings = resolveMapControlSettings(options);
 
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
@@ -121,40 +115,6 @@ export default function MaplibreMap({
     [options.widgets]
   );
 
-  const hasNativeNav = useMemo(
-    () => (options.widgets ?? []).some((w) => w.visible && w.native && (w.type === 'zoom' || w.type === 'compass')),
-    [options.widgets]
-  );
-  const hasNativeFullscreen = useMemo(
-    () => (options.widgets ?? []).some((w) => w.visible && w.native && w.type === 'fullscreen'),
-    [options.widgets]
-  );
-  const hasNativeScale = useMemo(
-    () => (options.widgets ?? []).some((w) => w.visible && w.native && w.type === 'scale'),
-    [options.widgets]
-  );
-
-  const controls = (
-    <>
-      {nativeMaplibreControls}
-      {!hasNativeNav && controlSettings.navigation.enabled && (
-        <NavigationControl
-          position={controlSettings.navigation.position}
-          showZoom={controlSettings.navigation.showZoom}
-          showCompass={controlSettings.navigation.showCompass}
-          visualizePitch={controlSettings.navigation.visualizePitch}
-          visualizeRoll={controlSettings.navigation.visualizeRoll}
-        />
-      )}
-      {!hasNativeFullscreen && controlSettings.fullscreen.enabled && (
-        <FullscreenControl position={controlSettings.fullscreen.position} />
-      )}
-      {!hasNativeScale && controlSettings.scale.enabled && (
-        <ScaleControl position="bottom-left" />
-      )}
-    </>
-  );
-
   if (controller) {
     return (
       <div style={{ width, height }}>
@@ -167,7 +127,7 @@ export default function MaplibreMap({
             options={options}
             onViewState={handleFitViewState}
           />
-          {controls}
+          {nativeMaplibreControls}
         </Map>
       </DeckGL>
       </div>
@@ -183,7 +143,7 @@ export default function MaplibreMap({
         fitRequestId={fitRequestId}
         options={options}
       />
-      {controls}
+      {nativeMaplibreControls}
     </Map>
   );
 }
