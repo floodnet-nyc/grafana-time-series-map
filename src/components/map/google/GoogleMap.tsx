@@ -116,28 +116,28 @@ function GoogleMapInner({
   );
 
   const googleControlProps = useMemo(() => ({
-    cameraControl: googleNativeProps.cameraControl ?? controlSettings.navigation.enabled,
-    cameraControlOptions: (googleNativeProps.cameraControlOptions ?? {
+    cameraControl: (googleNativeProps.cameraControl as boolean | undefined) ?? controlSettings.navigation.enabled,
+    cameraControlOptions: (googleNativeProps.cameraControlOptions as { position: number } | undefined) ?? {
       position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
-    }) as { position: number },
-    fullscreenControl: googleNativeProps.fullscreenControl ?? controlSettings.fullscreen.enabled,
-    fullscreenControlOptions: (googleNativeProps.fullscreenControlOptions ?? {
+    },
+    fullscreenControl: (googleNativeProps.fullscreenControl as boolean | undefined) ?? controlSettings.fullscreen.enabled,
+    fullscreenControlOptions: (googleNativeProps.fullscreenControlOptions as { position: number } | undefined) ?? {
       position: getControlPosition(getFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT'),
-    }) as { position: number },
-    scaleControl: googleNativeProps.scaleControl ?? controlSettings.scale.enabled,
-    rotateControl: googleNativeProps.rotateControl ?? controlSettings.navigation.showCompass,
-    rotateControlOptions: (googleNativeProps.rotateControlOptions ?? {
+    },
+    scaleControl: (googleNativeProps.scaleControl as boolean | undefined) ?? controlSettings.scale.enabled,
+    rotateControl: (googleNativeProps.rotateControl as boolean | undefined) ?? controlSettings.navigation.showCompass,
+    rotateControlOptions: (googleNativeProps.rotateControlOptions as { position: number } | undefined) ?? {
       position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
-    }) as { position: number },
+    },
     mapTypeControl: controlSettings.google.mapTypeControl,
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
       style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-    } as { position: number; style: google.maps.MapTypeControlStyle },
+    },
     streetViewControl: controlSettings.google.streetViewControl,
     streetViewControlOptions: {
       position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM'),
-    } as { position: number },
+    },
   }), [googleNativeProps, controlSettings]);
 
   const latitude = initialViewState?.latitude ?? 0;

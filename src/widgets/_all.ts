@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Widget } from '@deck.gl/core';
 import { 
   // gimbalWidgetDefinition, 
@@ -95,14 +94,14 @@ export function resolveGoogleNativeProps(configs: WidgetConfig[]): Record<string
   return props;
 }
 
-export function resolveMaplibreNativeControls(configs: WidgetConfig[]): { type: string; props: Record<string, unknown> }[] {
-  const controls: { type: string; props: Record<string, unknown> }[] = [];
+export function resolveMaplibreNativeControls(configs: WidgetConfig[]): React.ReactNode[] {
+  const controls: React.ReactNode[] = [];
   for (const config of configs) {
     if (!config.visible || !config.native) continue;
     const def = widgetDefinitions.find((d) => d.type === config.type);
     if (def?.nativeControls?.maplibre) {
-      const desc = def.nativeControls.maplibre(config as never);
-      if (desc) controls.push(desc);
+      const node = def.nativeControls.maplibre(config as never);
+      if (node) controls.push(node);
     }
   }
   return controls;

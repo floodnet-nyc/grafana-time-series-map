@@ -1,3 +1,4 @@
+import React from 'react';
 import { 
   FullscreenWidget, 
   _SplitterWidget as SplitterWidget,
@@ -36,19 +37,19 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
   ],
   createWidget: (config) => new FullscreenWidget({ id: config.id, ...config.settings }),
   nativeControls: {
-    google: (config) => ({
-      fullscreenControl: true,
-      fullscreenControlOptions: {
-        position: getControlPosition(
-          getFullscreenControlPosition(config.settings.placement ?? 'top-right'),
-          'TOP_RIGHT'
-        ),
-      },
-    }),
+    google: (config) => {
+      const pos = config.settings.placement === 'fill' ? 'top-right' : config.settings.placement;
+      return {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+          position: getControlPosition(getFullscreenControlPosition(pos ?? 'top-right'), 'TOP_RIGHT'),
+        },
+      };
+    },
     maplibre: (config) => (
       <FullscreenControl
         key="widget-fullscreen-native"
-        position={config.settings.placement ?? 'top-right'}
+        position={(config.settings.placement === 'fill' ? 'top-right' : config.settings.placement) ?? 'top-right'}
       />
     ),
   },

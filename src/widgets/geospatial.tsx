@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   CompassWidget,
   _ScaleWidget as ScaleWidget,
@@ -51,19 +52,19 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
         : undefined,
     }),
   nativeControls: {
-    google: (config) => ({
-      rotateControl: true,
-      rotateControlOptions: {
-        position: getControlPosition(
-          getCameraControlPosition(config.settings.placement ?? 'top-left'),
-          'INLINE_START_BLOCK_END'
-        ),
-      },
-    }),
+    google: (config) => {
+      const pos = config.settings.placement === 'fill' ? 'top-left' : config.settings.placement;
+      return {
+        rotateControl: true,
+        rotateControlOptions: {
+          position: getControlPosition(getCameraControlPosition(pos ?? 'top-left'), 'INLINE_START_BLOCK_END'),
+        },
+      };
+    },
     maplibre: (config) => (
       <NavigationControl
         key="widget-compass-native"
-        position={config.settings.placement ?? 'top-left'}
+        position={(config.settings.placement === 'fill' ? 'top-left' : config.settings.placement) ?? 'top-left'}
         showZoom={false}
         showCompass={true}
         visualizePitch={true}

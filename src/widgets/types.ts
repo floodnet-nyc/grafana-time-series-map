@@ -62,7 +62,7 @@ export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> 
   nativeControls?: {
     /** Returns props to spread onto the Google Maps <Map> component. */
     google?: (config: TConfig) => Record<string, unknown>;
-    /** Returns a descriptor rendered as native JSX by the MapLibre map provider. */
-    maplibre?: (config: TConfig) => { type: 'NavigationControl' | 'FullscreenControl' | 'ScaleControl'; props: Record<string, unknown> } | null;
+    /** Returns a React element rendered as a native child of the MapLibre <Map> component. */
+    maplibre?: (config: TConfig) => React.ReactNode;
   };
 }
