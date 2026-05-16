@@ -264,6 +264,20 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: false,
         category: ['Legend'],
       })
+      .addNumberInput({
+        path: 'legend.maxWidth',
+        name: 'Max width (px)',
+        description: 'Maximum legend width in pixels. Leave empty for no limit.',
+        defaultValue: 220,
+        category: ['Legend'],
+      })
+      .addNumberInput({
+        path: 'legend.maxHeight',
+        name: 'Max height (px)',
+        description: 'Maximum legend height in pixels before scrolling. Leave empty for no limit.',
+        defaultValue: 300,
+        category: ['Legend'],
+      })
       .addBooleanSwitch({
         path: 'tooltip.show',
         name: 'Show hover tooltip',

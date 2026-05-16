@@ -158,7 +158,13 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         onViewportChange={handleViewportChange}
       />
       {options.legend.show && (
-        <MapLegend layers={options.layers} onToggleVisibility={onToggleLayerVisibility} panelWidth={width} />
+        <MapLegend
+          layers={options.layers}
+          onToggleVisibility={onToggleLayerVisibility}
+          panelWidth={width}
+          maxWidth={options.legend.maxWidth}
+          maxHeight={options.legend.maxHeight}
+        />
       )}
       {selectedKey && (
         <SensorPopup
