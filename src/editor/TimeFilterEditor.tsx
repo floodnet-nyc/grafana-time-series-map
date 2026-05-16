@@ -20,7 +20,7 @@ export function TimeFilterEditor({ timeFilter, availableFields, onChange }: Prop
 
   return (
     <>
-      <Field label="Mode">
+      <Field label="Time Filtering">
         <Combobox
           options={TIME_FILTER_MODES}
           value={timeFilter.mode}

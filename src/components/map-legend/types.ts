@@ -5,4 +5,6 @@ export interface MapLegendProps {
   onToggleVisibility?: (layerId: string) => void;
   panelWidth?: number;
   showEye?: boolean;
+  maxWidth?: number;
+  maxHeight?: number;
 }

@@ -5,10 +5,17 @@ import { LayerLegendEntry } from './LayerLegendEntry';
 import { legendBoxStyle } from './styles';
 import type { MapLegendProps } from './types';
 
-export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEye = false }: MapLegendProps) {
+export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEye = false, maxWidth, maxHeight }: MapLegendProps) {
   const [collapsed, setCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
 
   const entries = useMemo(() => getLegendEntries(layers), [layers]);
+
+  const boxStyle: React.CSSProperties = useMemo(() => ({
+    ...legendBoxStyle,
+    maxWidth: maxWidth ?? undefined,
+    maxHeight: maxHeight ?? undefined,
+    overflowY: maxHeight ? 'auto' : undefined,
+  }), [maxWidth, maxHeight]);
 
   if (entries.length === 0) {
     return null;
@@ -16,7 +23,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
 
   if (collapsed) {
     return (
-      <div style={{ ...legendBoxStyle, padding: '5px 8px' }}>
+      <div style={{ ...boxStyle, padding: '5px 8px' }}>
         <button
           onClick={() => setCollapsed(false)}
           title="Expand legend"
@@ -42,7 +49,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
   }
 
   return (
-    <div style={{ ...legendBoxStyle, padding: '10px 14px 8px' }}>
+    <div style={{ ...boxStyle, padding: '10px 14px 8px' }}>
       {entries.map((layer) => (
         <LayerLegendEntry
           key={layer.id}

@@ -278,6 +278,8 @@ export interface MapPanelOptions {
   };
   legend: {
     show: boolean;
+    maxWidth?: number;
+    maxHeight?: number;
   };
   tooltip: {
     show: boolean;
