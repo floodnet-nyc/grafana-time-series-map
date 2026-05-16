@@ -7,6 +7,7 @@ import {
 } from './navigation';
 import { 
   compassWidgetDefinition, 
+  geolocateWidgetDefinition,
   geocoderWidgetDefinition, 
   scaleWidgetDefinition 
 } from './geospatial';
@@ -43,6 +44,7 @@ export const widgetDefinitions = [
   // scrollbarWidgetDefinition,
   // Geospatial
   compassWidgetDefinition,
+  geolocateWidgetDefinition,
   geocoderWidgetDefinition,
   scaleWidgetDefinition,
   // View
