@@ -17,10 +17,25 @@ export interface BaseWidgetConfig<TType extends string, TSettings> {
 
 export type BlankWidgetConfig = BaseWidgetConfig<'', Record<string, never>>;
 
+export interface WidgetViewStateChange {
+  latitude?: number;
+  longitude?: number;
+  zoom?: number;
+  bearing?: number;
+  pitch?: number;
+  delta?: number;
+  viewId?: string;
+  zoomX?: number;
+  zoomY?: number;
+  rotationOrbit?: number;
+  rotationX?: number;
+  transitionDuration?: number;
+}
+
 export interface WidgetCallbacks {
-  onViewStateChange?: (next: object) => void;
+  onViewStateChange?: (next: WidgetViewStateChange) => void;
   /** The view state to reset to (used by ResetViewWidget in controlled mode). */
-  resetViewState?: object;
+  resetViewState?: WidgetViewStateChange;
   playback?: {
     cursorTimeMs: number;
     timeRange: [number, number];
