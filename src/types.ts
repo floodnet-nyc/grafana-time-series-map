@@ -266,6 +266,7 @@ export interface MapPanelOptions {
     parameters: DeckRenderParametersOptions;
     lighting: DeckLightingOptions;
     interleaved: boolean;
+    pickingRadius: number;
   };
   initialView: InitialViewOptions;
   layers: LayerConfig[];
