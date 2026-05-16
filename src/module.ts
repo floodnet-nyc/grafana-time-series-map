@@ -374,37 +374,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Map controls'],
       })
       .addBooleanSwitch({
-        path: 'basemap.controls.geolocateControl',
-        name: 'Geolocate control',
-        description: 'Find the user location using the browser geolocation API.',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
-        category: ['Map controls'],
-      })
-      .addSelect({
-        path: 'basemap.controlSettings.geolocate.position',
-        name: 'Geolocate control position',
-        defaultValue: 'top-right',
-        settings: {
-          options: [
-            { label: 'Top left', value: 'top-left' },
-            { label: 'Top right', value: 'top-right' },
-            { label: 'Bottom left', value: 'bottom-left' },
-            { label: 'Bottom right', value: 'bottom-right' },
-          ],
-        },
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true,
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
-        path: 'basemap.controlSettings.geolocate.trackUserLocation',
-        name: 'Find user location',
-        description: 'MapLibre only. Keep watching the user position after geolocation is enabled.',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.basemap?.controls?.geolocateControl === true && cfg.basemap?.provider !== 'google',
-        category: ['Map controls'],
-      })
-      .addBooleanSwitch({
         path: 'basemap.controls.fullscreenControl',
         name: 'Fullscreen control',
         defaultValue: false,

@@ -29,7 +29,6 @@ describe('controlSettings', () => {
         basemap: {
           controls: {
             navigationControl: true,
-            geolocateControl: true,
             fullscreenControl: true,
             scaleControl: true,
           },
@@ -45,11 +44,6 @@ describe('controlSettings', () => {
     //   visualizePitch: false,
     //   visualizeRoll: false,
     // });
-    expect(resolved.geolocate).toEqual({
-      enabled: true,
-      position: 'top-right',
-      trackUserLocation: false,
-    });
     expect(resolved.fullscreen).toEqual({
       enabled: true,
       position: 'top-right',
@@ -69,24 +63,12 @@ describe('controlSettings', () => {
       createOptions({
         basemap: {
           controlSettings: {
-            // navigation: {
-            //   position: 'bottom-left',
-            //   showZoom: false,
-            //   showCompass: false,
-            //   visualizePitch: true,
-            //   visualizeRoll: true,
-            // },
-            geolocate: {
-              position: 'bottom-right',
-              trackUserLocation: true,
-            },
             fullscreen: {
               position: 'top-left',
             },
           },
           controls: {
             navigationControl: true,
-            geolocateControl: true,
             fullscreenControl: true,
             scaleControl: false,
           },
@@ -99,11 +81,6 @@ describe('controlSettings', () => {
     // expect(resolved.navigation.showCompass).toBe(false);
     // expect(resolved.navigation.visualizePitch).toBe(true);
     // expect(resolved.navigation.visualizeRoll).toBe(true);
-    expect(resolved.geolocate).toEqual({
-      enabled: true,
-      position: 'bottom-right',
-      trackUserLocation: true,
-    });
     expect(resolved.fullscreen).toEqual({
       enabled: true,
       position: 'top-left',

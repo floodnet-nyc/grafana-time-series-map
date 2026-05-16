@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map, {
   // AttributionControl,
   FullscreenControl,
-  GeolocateControl,
   NavigationControl,
   ScaleControl,
   type MapRef,
@@ -125,13 +124,6 @@ export default function MaplibreMap({
           showCompass={controlSettings.navigation.showCompass}
           visualizePitch={controlSettings.navigation.visualizePitch}
           visualizeRoll={controlSettings.navigation.visualizeRoll}
-        />
-      )}
-      {controlSettings.geolocate.enabled && interactive && (
-        <GeolocateControl
-          position={controlSettings.geolocate.position}
-          trackUserLocation={controlSettings.geolocate.trackUserLocation}
-          positionOptions={{ enableHighAccuracy: true }}
         />
       )}
       {controlSettings.fullscreen.enabled && <FullscreenControl position={controlSettings.fullscreen.position} />}
