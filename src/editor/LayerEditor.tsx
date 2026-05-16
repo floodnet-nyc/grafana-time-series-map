@@ -209,6 +209,48 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <Field label="Layer name">
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
+        <Field label="Description">
+          <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
+        </Field>
+        
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Field label="Visible">
+            <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
+          </Field>
+          <Field label="Pickable">
+            <Switch value={layer.pickable ?? true} onChange={(e) => patch({ pickable: e.currentTarget.checked })} />
+          </Field>
+          <Field label="Show in legend">
+            <Switch value={layer.showInLegend ?? true} onChange={(e) => patch({ showInLegend: e.currentTarget.checked })} />
+          </Field>
+        </div>
+        <Field label="Opacity">
+          <Slider value={layer.opacity} min={0} max={1} step={0.01} onChange={(value) => patch({ opacity: Number(value) })} inputId="opacity" />
+        </Field>
+
+        <Field label="Zoom range">
+          <div className={styles.zoomRow}>
+            <Input
+              value={String(layer.minZoom ?? DEFAULT_MIN_ZOOM)}
+              onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, layer.minZoom ?? DEFAULT_MIN_ZOOM), layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
+            />
+            <Input
+              value={String(layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
+              onChange={(e) => patchZoomRange(layer.minZoom ?? DEFAULT_MIN_ZOOM, parseZoomInput(e.currentTarget.value, layer.maxZoom ?? DEFAULT_MAX_ZOOM))}
+            />
+          </div>
+        </Field>
+        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
+          <FieldSelect
+            value={layer.selectionKeyField ?? ''}
+            onChange={(v) => patch({ selectionKeyField: v || undefined })}
+            availableFields={availableFields}
+            placeholder="None (click disabled)"
+          />
+        </Field>
+      </CollapsableSection>
+
+      <CollapsableSection label="Data Source" isOpen>
         <Field label="Layer type">
           <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
         </Field>
@@ -242,44 +284,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             />
           </Field>
         )}
-        <Field label="Visible">
-          <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
-        </Field>
-        <Field label="Pickable">
-          <Switch value={layer.pickable ?? true} onChange={(e) => patch({ pickable: e.currentTarget.checked })} />
-        </Field>
-        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
-          <FieldSelect
-            value={layer.selectionKeyField ?? ''}
-            onChange={(v) => patch({ selectionKeyField: v || undefined })}
-            availableFields={availableFields}
-            placeholder="None (click disabled)"
-          />
-        </Field>
-        <Field label="Show in legend">
-          <Switch value={layer.showInLegend ?? true} onChange={(e) => patch({ showInLegend: e.currentTarget.checked })} />
-        </Field>
-      </CollapsableSection>
-
-      <CollapsableSection label="Geometry" isOpen>
-        <GeometryEditor
-          geometry={layer.geometry}
-          elevation={layer.elevation}
-          availableFields={availableFields}
-          onGeometryChange={(geometry) => patch({ geometry })}
-          onElevationChange={(elevation) => patch({ elevation })}
-        />
-      </CollapsableSection>
-
-      <CollapsableSection label="Time" isOpen={false}>
-        <TimeFilterEditor
-          timeFilter={layer.timeFilter}
-          availableFields={availableFields}
-          onChange={(timeFilter) => patch({ timeFilter })}
-        />
-      </CollapsableSection>
-
-      <CollapsableSection label="Data" isOpen={false}>
         <DataEditor
           derivedFields={layer.derivedFields ?? []}
           secondarySources={layer.secondarySources ?? []}
@@ -292,31 +296,32 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         />
       </CollapsableSection>
 
-      <CollapsableSection label="Appearance" isOpen={false}>
-        <Field label="Opacity">
-          <Slider value={layer.opacity} min={0} max={1} step={0.01} onChange={(value) => patch({ opacity: Number(value) })} inputId="opacity" />
-        </Field>
-        <Field label="Description">
-          <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
-        </Field>
-        <Field label="Zoom range">
-          <div className={styles.zoomRow}>
-            <Input
-              value={String(layer.minZoom ?? DEFAULT_MIN_ZOOM)}
-              onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, layer.minZoom ?? DEFAULT_MIN_ZOOM), layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
-            />
-            <Input
-              value={String(layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
-              onChange={(e) => patchZoomRange(layer.minZoom ?? DEFAULT_MIN_ZOOM, parseZoomInput(e.currentTarget.value, layer.maxZoom ?? DEFAULT_MAX_ZOOM))}
-            />
-          </div>
-        </Field>
+      <CollapsableSection label="Geometry & Time" isOpen>
+        <GeometryEditor
+          geometry={layer.geometry}
+          elevation={layer.elevation}
+          availableFields={availableFields}
+          onGeometryChange={(geometry) => patch({ geometry })}
+          onElevationChange={(elevation) => patch({ elevation })}
+        />
+        <TimeFilterEditor
+          timeFilter={layer.timeFilter}
+          availableFields={availableFields}
+          onChange={(timeFilter) => patch({ timeFilter })}
+        />
       </CollapsableSection>
 
-      <CollapsableSection label="Color" isOpen={false}>
+      {currentRenderer?.editorSections.map((editorSection) => (
+        <CollapsableSection key={editorSection.title} label={editorSection.title} isOpen={true}>
+          {editorSection.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
+        </CollapsableSection>
+      ))}
+
+      <CollapsableSection label="Color" isOpen={true}>
         <ColorScaleEditor layer={layer} availableFields={availableFields} onChange={patch} />
       </CollapsableSection>
 
+      <CollapsableSection label="Extensions" isOpen={true}>
       <SelectableListEditor<LayerExtensionInstance>
         items={layer.extensions ?? []}
         selectedIndex={selectedExtensionIndex}
@@ -363,12 +368,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
           }
         }}
       />
-
-      {currentRenderer?.editorSections.map((editorSection) => (
-        <CollapsableSection key={editorSection.title} label={editorSection.title} isOpen={false}>
-          {editorSection.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
-        </CollapsableSection>
-      ))}
+      </CollapsableSection>
     </div>
   );
 }
