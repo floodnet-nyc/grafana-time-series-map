@@ -451,6 +451,13 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: true,
         category: ['Rendering'],
       })
+      .addNumberInput({
+        path: 'deck.pickingRadius',
+        name: 'Picking radius',
+        description: 'Radius in pixels used for mouse picking. Increase if it is hard to hover or click on small objects.',
+        defaultValue: 5,
+        category: ['Rendering', 'Interactivity'],
+      })
       .addBooleanSwitch({
         path: 'deck.parameters.blend',
         name: 'Custom Blending',

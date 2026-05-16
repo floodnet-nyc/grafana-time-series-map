@@ -44,6 +44,7 @@ export function useDeckGLProps({
     layers,
     getTooltip,
     interleaved: options.deck.interleaved,
+    pickingRadius: options.deck.pickingRadius,
   };
 }
 
