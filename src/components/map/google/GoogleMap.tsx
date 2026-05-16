@@ -8,8 +8,6 @@ import { GoogleFitBounds } from './GoogleFitBounds';
 import {
   getGoogleColorScheme,
   getControlPosition,
-  getCameraControlPosition,
-  getFullscreenControlPosition,
   mapTypeControlStyleValues,
 } from './controlMappings';
 import { resolveMapControlSettings } from '../controlSettings';
@@ -116,19 +114,13 @@ function GoogleMapInner({
   );
 
   const googleControlProps = useMemo(() => ({
-    cameraControl: (googleNativeProps.cameraControl as boolean | undefined) ?? controlSettings.navigation.enabled,
-    cameraControlOptions: (googleNativeProps.cameraControlOptions as { position: number } | undefined) ?? {
-      position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
-    },
-    fullscreenControl: (googleNativeProps.fullscreenControl as boolean | undefined) ?? controlSettings.fullscreen.enabled,
-    fullscreenControlOptions: (googleNativeProps.fullscreenControlOptions as { position: number } | undefined) ?? {
-      position: getControlPosition(getFullscreenControlPosition(controlSettings.fullscreen.position), 'TOP_RIGHT'),
-    },
-    scaleControl: (googleNativeProps.scaleControl as boolean | undefined) ?? controlSettings.scale.enabled,
-    rotateControl: (googleNativeProps.rotateControl as boolean | undefined) ?? controlSettings.navigation.showCompass,
-    rotateControlOptions: (googleNativeProps.rotateControlOptions as { position: number } | undefined) ?? {
-      position: getControlPosition(getCameraControlPosition(controlSettings.navigation.position), 'INLINE_START_BLOCK_END'),
-    },
+    cameraControl: googleNativeProps.cameraControl as boolean | undefined,
+    cameraControlOptions: googleNativeProps.cameraControlOptions as { position: number } | undefined,
+    fullscreenControl: googleNativeProps.fullscreenControl as boolean | undefined,
+    fullscreenControlOptions: googleNativeProps.fullscreenControlOptions as { position: number } | undefined,
+    scaleControl: googleNativeProps.scaleControl as boolean | undefined,
+    rotateControl: googleNativeProps.rotateControl as boolean | undefined,
+    rotateControlOptions: googleNativeProps.rotateControlOptions as { position: number } | undefined,
     mapTypeControl: controlSettings.google.mapTypeControl,
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
