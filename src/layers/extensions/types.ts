@@ -1,6 +1,6 @@
 import type { Layer } from '@deck.gl/core';
 import type { DeckBlendFactor, DeckBlendOperation } from '../../types';
-import type { BaseLayerConfig, LayerEditorSection } from '../types';
+import type { LayerEditorSection } from '../types';
 
 export interface LayerBlendingConfig {
   enabled: boolean;
@@ -30,15 +30,16 @@ export interface LayerCollisionConfig {
   testScale: number;
 }
 
-export interface LayerExtensionsConfig {
-  blending?: LayerBlendingConfig;
-  material?: LayerMaterialConfig;
-  collision?: LayerCollisionConfig;
+export interface LayerExtensionInstance {
+  id: string;
+  type: string;
+  config: Record<string, unknown>;
 }
 
-export interface LayerExtensionDefinition {
-  id: keyof NonNullable<LayerExtensionsConfig>;
-  createDefaults: () => NonNullable<LayerExtensionsConfig>[keyof NonNullable<LayerExtensionsConfig>];
+export interface LayerExtensionDefinition<TConfig = Record<string, unknown>> {
+  id: string;
+  label: string;
+  createDefaults: () => TConfig;
   editorSections: LayerEditorSection[];
-  apply: (layer: Layer, config: BaseLayerConfig<string, any>) => Layer;
+  apply: (layer: Layer, config: TConfig) => Layer;
 }

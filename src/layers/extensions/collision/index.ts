@@ -24,8 +24,9 @@ export function createDefaultCollisionConfig(): LayerCollisionConfig {
   };
 }
 
-export const collisionExtensionDefinition: LayerExtensionDefinition = {
+export const collisionExtensionDefinition: LayerExtensionDefinition<LayerCollisionConfig> = {
   id: 'collision',
+  label: 'Collision',
   createDefaults: createDefaultCollisionConfig,
   editorSections: [
     {
@@ -41,8 +42,7 @@ export const collisionExtensionDefinition: LayerExtensionDefinition = {
     },
   ],
   apply(layer, config) {
-    const options = config.extensions?.collision;
-    if (!options?.enabled) {
+    if (!config.enabled) {
       return layer;
     }
 
@@ -50,20 +50,20 @@ export const collisionExtensionDefinition: LayerExtensionDefinition = {
 
     return layer.clone({
       collisionEnabled: true,
-      collisionGroup: String(options.group || config.id),
+      collisionGroup: String(config.group),
       collisionTestProps: {
         ...(props.collisionTestProps ?? {}),
-        radiusScale: options.testScale,
-        sizeScale: options.testScale,
+        radiusScale: config.testScale,
+        sizeScale: config.testScale,
       },
-      getCollisionPriority: options.priorityField
+      getCollisionPriority: config.priorityField
         ? (datum: any) =>
-            Number(getFeatureProperties(datum)[options.priorityField] ?? 0) * options.priorityScale + options.priorityOffset
-        : options.priorityOffset,
+            Number(getFeatureProperties(datum)[config.priorityField] ?? 0) * config.priorityScale + config.priorityOffset
+        : config.priorityOffset,
       extensions: appendDeckExtension(layer, new CollisionFilterExtension()),
       updateTriggers: {
         ...(props.updateTriggers ?? {}),
-        getCollisionPriority: [options.priorityField, options.priorityScale, options.priorityOffset],
+        getCollisionPriority: [config.priorityField, config.priorityScale, config.priorityOffset],
       },
     } as any);
   },

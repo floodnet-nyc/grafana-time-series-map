@@ -26,8 +26,9 @@ const blendFactors = [
   { label: 'One minus constant', value: 'one-minus-constant' },
 ];
 
-export const blendingExtensionDefinition: LayerExtensionDefinition = {
+export const blendingExtensionDefinition: LayerExtensionDefinition<LayerBlendingConfig> = {
   id: 'blending',
+  label: 'Blending',
   createDefaults(): LayerBlendingConfig {
     return {
       enabled: false,
@@ -92,8 +93,7 @@ export const blendingExtensionDefinition: LayerExtensionDefinition = {
     },
   ],
   apply(layer, config) {
-    const options = config.extensions?.blending;
-    if (!options?.enabled) {
+    if (!config.enabled) {
       return layer;
     }
     const props = getLayerProps(layer);
@@ -101,13 +101,13 @@ export const blendingExtensionDefinition: LayerExtensionDefinition = {
     return layer.clone({
       parameters: {
         ...(props.parameters ?? {}),
-        blend: options.blend,
-        blendColorOperation: options.colorOperation,
-        blendColorSrcFactor: options.colorSrcFactor,
-        blendColorDstFactor: options.colorDstFactor,
-        blendAlphaOperation: options.alphaOperation,
-        blendAlphaSrcFactor: options.alphaSrcFactor,
-        blendAlphaDstFactor: options.alphaDstFactor,
+        blend: config.blend,
+        blendColorOperation: config.colorOperation,
+        blendColorSrcFactor: config.colorSrcFactor,
+        blendColorDstFactor: config.colorDstFactor,
+        blendAlphaOperation: config.alphaOperation,
+        blendAlphaSrcFactor: config.alphaSrcFactor,
+        blendAlphaDstFactor: config.alphaDstFactor,
       },
     } as any);
   },

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/css';
 import {
   useStyles2,
@@ -14,7 +14,7 @@ import {
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { DataSource } from '../types';
-import type { LayerOptionField } from '../layers/types';
+import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import { type LayerConfig, layerDefinitions } from '../layers/_all';
 import { layerExtensionDefinitions } from '../layers/extensions';
 import { FieldSelect } from './FieldSelect';
@@ -22,6 +22,7 @@ import { GeometryEditor } from './GeometryEditor';
 import { TimeFilterEditor } from './TimeFilterEditor';
 import { ColorScaleEditor } from './ColorScaleEditor';
 import { DataEditor } from './DataEditor';
+import { SelectableListEditor } from './SelectableListEditor';
 
 const DATA_SOURCE_OPTIONS: Array<ComboboxOption<string>> = [
   { label: 'Grafana query', value: 'query' },
@@ -65,7 +66,12 @@ interface Props {
 export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [], queryFieldsByRefId = {} }: Props) {
   const styles = useStyles2(getStyles);
   const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), []);
-  const extensionDefinitions = useMemo(() => layerExtensionDefinitions, []);
+  const extensionDefs = useMemo(() => layerExtensionDefinitions, []);
+  const addExtensionOptions = useMemo(
+    () => extensionDefs.map((d) => ({ label: d.label, value: d.id })),
+    [extensionDefs]
+  );
+  const [selectedExtensionIndex, setSelectedExtensionIndex] = useState<number | null>(null);
   const refIdOptions = useMemo(
     () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
     [availableRefIds],
@@ -76,19 +82,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
   const patch = useCallback(
     (updates: Partial<LayerConfig>) => onChange({ ...(layer as any), ...updates } as LayerConfig),
     [layer, onChange],
-  );
-
-  const patchExtensionValue = useCallback(
-    (extensionKey: string, key: string, value: unknown) => {
-      const current = (layer.extensions ?? {}) as Record<string, Record<string, unknown>>;
-      patch({
-        extensions: {
-          ...layer.extensions,
-          [extensionKey]: { ...(current[extensionKey] ?? {}), [key]: value },
-        },
-      });
-    },
-    [layer.extensions, patch],
   );
 
   const patchZoomRange = useCallback(
@@ -324,14 +317,52 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <ColorScaleEditor layer={layer} availableFields={availableFields} onChange={patch} />
       </CollapsableSection>
 
-      {extensionDefinitions.map((extension) => {
-        const source = ((layer.extensions ?? {}) as Record<string, Record<string, unknown>>)[extension.id] ?? {};
-        return extension.editorSections.map((editorSection) => (
-          <CollapsableSection key={`${extension.id}-${editorSection.title}`} label={editorSection.title} isOpen={false}>
-            {editorSection.fields.map((field) => renderOptionField(field, source, (key, value) => patchExtensionValue(extension.id, key, value)))}
-          </CollapsableSection>
-        ));
-      })}
+      <SelectableListEditor<LayerExtensionInstance>
+        items={layer.extensions ?? []}
+        selectedIndex={selectedExtensionIndex}
+        onSelect={setSelectedExtensionIndex}
+        getItemKey={(item) => item.id}
+        getItemLabel={(item) => extensionDefs.find((d) => d.id === item.type)?.label ?? item.type}
+        addButtonLabel="Add extension"
+        addOptions={addExtensionOptions}
+        onAdd={(type) => {
+          if (!type) return;
+          const def = extensionDefs.find((d) => d.id === type);
+          if (!def) return;
+          const instance: LayerExtensionInstance = {
+            id: `${type}-${Date.now()}`,
+            type,
+            config: def.createDefaults() as unknown as Record<string, unknown>,
+          };
+          const next = [...(layer.extensions ?? []), instance];
+          patch({ extensions: next });
+          setSelectedExtensionIndex(next.length - 1);
+        }}
+        renderEditor={(item, index) => {
+          const def = extensionDefs.find((d) => d.id === item.type);
+          if (!def) return null;
+          return def.editorSections.map((section) => (
+            <CollapsableSection key={section.title} label={section.title} isOpen>
+              {section.fields.map((field) =>
+                renderOptionField(field, item.config, (key, value) => {
+                  const updated = (layer.extensions ?? []).map((ext, i) =>
+                    i === index ? { ...ext, config: { ...ext.config, [key]: value } } : ext
+                  );
+                  patch({ extensions: updated });
+                })
+              )}
+            </CollapsableSection>
+          ));
+        }}
+        onRemove={(index) => {
+          patch({ extensions: (layer.extensions ?? []).filter((_, i) => i !== index) });
+          if (selectedExtensionIndex === index) {
+            setSelectedExtensionIndex(null);
+          } else if (selectedExtensionIndex !== null && selectedExtensionIndex > index) {
+            setSelectedExtensionIndex(selectedExtensionIndex - 1);
+          }
+        }}
+      />
 
       {currentRenderer?.editorSections.map((editorSection) => (
         <CollapsableSection key={editorSection.title} label={editorSection.title} isOpen={false}>
