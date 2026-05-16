@@ -54,52 +54,6 @@ export function DataEditor({
 
   return (
     <>
-      <Field label="Derived fields">
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => onDerivedFieldsChange([...derivedFields, { as: '', expression: '', type: 'number' }])}
-        >
-          Add derived field
-        </Button>
-      </Field>
-      {derivedFields.map((field, index) => (
-        <div key={`derived-${index}`} className={styles.card}>
-          <Field label="Name">
-            <Input
-              value={field.as}
-              onChange={(e) =>
-                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, as: e.currentTarget.value } : item)))
-              }
-            />
-          </Field>
-          <Field label="Expression">
-            <TextArea
-              value={field.expression}
-              onChange={(e) =>
-                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, expression: e.currentTarget.value } : item)))
-              }
-            />
-          </Field>
-          <Field label="Type">
-            <Combobox
-              options={DERIVED_FIELD_TYPES}
-              value={field.type ?? 'number'}
-              onChange={(v) =>
-                onDerivedFieldsChange(
-                  derivedFields.map((item, i) =>
-                    i === index ? { ...item, type: v?.value as 'number' | 'string' | 'boolean' } : item,
-                  ),
-                )
-              }
-            />
-          </Field>
-          <Button size="sm" variant="destructive" onClick={() => onDerivedFieldsChange(derivedFields.filter((_, i) => i !== index))}>
-            Remove derived field
-          </Button>
-        </div>
-      ))}
-
       <Field label="Secondary sources">
         <Button
           size="sm"
@@ -182,6 +136,52 @@ export function DataEditor({
           </div>
         );
       })}
+      <Field label="Derived fields">
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => onDerivedFieldsChange([...derivedFields, { as: '', expression: '', type: 'number' }])}
+        >
+          Add derived field
+        </Button>
+      </Field>
+      {derivedFields.map((field, index) => (
+        <div key={`derived-${index}`} className={styles.card}>
+          <Field label="Name">
+            <Input
+              value={field.as}
+              onChange={(e) =>
+                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, as: e.currentTarget.value } : item)))
+              }
+            />
+          </Field>
+          <Field label="Expression">
+            <TextArea
+              value={field.expression}
+              onChange={(e) =>
+                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, expression: e.currentTarget.value } : item)))
+              }
+            />
+          </Field>
+          <Field label="Type">
+            <Combobox
+              options={DERIVED_FIELD_TYPES}
+              value={field.type ?? 'number'}
+              onChange={(v) =>
+                onDerivedFieldsChange(
+                  derivedFields.map((item, i) =>
+                    i === index ? { ...item, type: v?.value as 'number' | 'string' | 'boolean' } : item,
+                  ),
+                )
+              }
+            />
+          </Field>
+          <Button size="sm" variant="destructive" onClick={() => onDerivedFieldsChange(derivedFields.filter((_, i) => i !== index))}>
+            Remove derived field
+          </Button>
+        </div>
+      ))}
+
     </>
   );
 }
