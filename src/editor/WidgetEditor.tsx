@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Input, Switch, Combobox, Field, CollapsableSection, ColorPicker } from '@grafana/ui';
+import { useStyles2, Input, Switch, Combobox, Field, ColorPicker } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField } from '../layers/types';
 import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';

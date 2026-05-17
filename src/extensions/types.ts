@@ -1,6 +1,6 @@
 import type { Layer } from '@deck.gl/core';
-import type { DeckBlendFactor, DeckBlendOperation } from '../../types';
-import type { LayerEditorSection } from '../types';
+import type { DeckBlendFactor, DeckBlendOperation } from '../types';
+import type { LayerEditorSection } from '../layers/types';
 
 export interface LayerBlendingConfig {
   enabled: boolean;

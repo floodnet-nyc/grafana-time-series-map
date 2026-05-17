@@ -1,7 +1,7 @@
 import type { DataFrame } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
-import { getExtensionDefinition } from '../../layers/extensions';
+import { getExtensionDefinition } from '../../extensions';
 import { layerDefinitions, type LayerConfig } from '../../layers/_all';
 import type { LayerDefinition, LayerRenderContext } from '../../layers/types';
 import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';

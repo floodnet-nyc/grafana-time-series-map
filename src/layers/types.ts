@@ -11,7 +11,7 @@ import type {
   ShaderConfig,
   TimeFilterConfig,
 } from '../types';
-import type { LayerExtensionInstance } from './extensions/types';
+import type { LayerExtensionInstance } from '../extensions/types';
 
 export type { LayerExtensionInstance };
 
