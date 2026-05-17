@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import type { ColorStep } from '../../types';
-import { formatValue, sortThresholdSteps, swatchHex } from './helpers';
+import type { ColorStep } from '../../../types';
+import { formatValue, sortThresholdSteps, swatchHex } from '../helpers';
 
 export function ThresholdLegend({ steps }: { steps: ColorStep[] }) {
   const sorted = useMemo(() => sortThresholdSteps(steps), [steps]);
