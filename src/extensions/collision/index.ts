@@ -1,6 +1,15 @@
-import type { LayerCollisionConfig, LayerExtensionDefinition } from '../types';
+import type { LayerExtensionDefinition } from '../types';
 import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
 import { getFeatureProperties, getLayerProps } from '../utils';
+
+export interface LayerCollisionConfig {
+  enabled: boolean;
+  group: string;
+  priorityField: string;
+  priorityScale: number;
+  priorityOffset: number;
+  testScale: number;
+}
 
 function appendDeckExtension(layer: any, extension: unknown) {
   const props = layer.props ?? {};
