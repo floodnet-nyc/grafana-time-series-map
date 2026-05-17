@@ -1,5 +1,6 @@
 import { Widget, type WidgetPlacement, type WidgetProps } from '@deck.gl/core';
 import { computePosition, offset, flip, shift } from '@floating-ui/dom';
+import { renderLiquidTemplate } from 'utils/liquid';
 
 export type WelcomeWidgetProps = WidgetProps & {
   placement?: WidgetPlacement;
@@ -10,6 +11,11 @@ export type WelcomeWidgetProps = WidgetProps & {
   /** Panel heading shown above the template content. */
   title?: string;
 };
+
+export const DEFAULT_WELCOME_TEMPLATE = `\
+<h2>Welcome to the map</h2>
+<p>Use <strong>drag</strong> to pan, <strong>scroll</strong> to zoom, and <strong>click</strong> on features for details.</p>
+`;
 
 export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
   static defaultProps: Required<WelcomeWidgetProps> = {
@@ -37,7 +43,9 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
   setProps(props: Partial<WelcomeWidgetProps>) {
     this.placement = props.placement ?? this.placement;
     this.viewId = props.viewId ?? this.viewId;
-    super.setProps(props);
+    const raw = props.template || DEFAULT_WELCOME_TEMPLATE;
+    const template = renderLiquidTemplate(raw, {}) ?? raw;
+    super.setProps({ ...props, template });
   }
 
   onRenderHTML(rootElement: HTMLElement): void {
