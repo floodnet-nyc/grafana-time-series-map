@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Feature } from 'geojson';
 import { buildLiquidScope, renderLiquidTemplate } from '../utils/liquid';
-import { mapCardStyle } from './mapCard';
 
 
 export const DEFAULT_POPUP_TEMPLATE = `\
@@ -29,7 +28,6 @@ export function SensorPopup({ selectedKey, feature, template, onClose }: SensorP
   return (
     <div
       style={{
-        ...mapCardStyle,
         position: 'absolute',
         top: 12,
         right: 12,
@@ -40,6 +38,7 @@ export function SensorPopup({ selectedKey, feature, template, onClose }: SensorP
         zIndex: 100,
         fontFamily: 'inherit',
       }}
+      className='map-card'
     >
       <button
         style={{

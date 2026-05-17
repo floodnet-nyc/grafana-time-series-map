@@ -7,7 +7,7 @@ import { DeckGLMap } from './map/DeckGLMap';
 import type { ViewportSnapshot } from './map/types';
 import { TimePlaybackControls } from './controls/TimePlaybackControls';
 import { SensorPopup, DEFAULT_POPUP_TEMPLATE } from './SensorPopup';
-import { MapLegend } from './MapLegend';
+import { MapLegend } from './map-legend/MapLegend';
 import { usePlayback } from '../hooks/usePlayback';
 import { usePanelFeatures, usePanelLayers } from '../hooks/usePanelLayers';
 import { useFitBounds } from '../hooks/useFitBounds';

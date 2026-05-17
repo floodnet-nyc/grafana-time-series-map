@@ -1,7 +1,6 @@
 import type { PickingInfo } from '@deck.gl/core';
 import type { DeckTooltipContent } from '../../components/map/types';
 import { liquid, getFeatureFromDatum, buildLiquidScope } from '../liquid';
-import { mapCardTooltipStyle } from '../../components/mapCard';
 
 // ── Liquid filters for tooltip templates ──────────────────────────────────────
 
@@ -74,7 +73,7 @@ export function buildDeckTooltip(template: string): (info: PickingInfo) => DeckT
 
     try {
       const html = liquid.renderSync(parsed, buildLiquidScope(props)).trim();
-      return html ? { html, style: mapCardTooltipStyle } : null;
+      return html ? { html, className: 'map-card-tooltip' } : null;
     } catch {
       return null;
     }
