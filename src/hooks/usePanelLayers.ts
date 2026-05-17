@@ -4,7 +4,7 @@ import type { Layer, PickingInfo } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import type { DeckTooltipContent } from '../components/map/types';
-import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from '../layers/extensions/tooltip';
+import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from '../extensions/tooltip';
 import {
   buildSecondarySourcePackedByLayerId,
   buildSecondarySourceValuesByLayerId,

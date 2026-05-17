@@ -16,7 +16,7 @@ import type { GrafanaTheme2 } from '@grafana/data';
 import type { DataSource } from '../types';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import { type LayerConfig, layerDefinitions } from '../layers/_all';
-import { layerExtensionDefinitions } from '../layers/extensions';
+import { layerExtensionDefinitions } from '../extensions';
 import { FieldSelect } from './FieldSelect';
 import { GeometryEditor } from './GeometryEditor';
 import { TimeFilterEditor } from './TimeFilterEditor';

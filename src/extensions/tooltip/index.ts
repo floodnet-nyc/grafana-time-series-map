@@ -1,8 +1,7 @@
 import type { PickingInfo } from '@deck.gl/core';
-import type { DeckTooltipContent } from '../../../components/map/types';
-import { liquid, getFeatureFromDatum, buildLiquidScope } from '../../../utils/liquid';
-import { mapCardTooltipStyle } from '../../../components/mapCard';
-import '../../../widgets/stylesheet.css';
+import type { DeckTooltipContent } from '../../components/map/types';
+import { liquid, getFeatureFromDatum, buildLiquidScope } from '../../utils/liquid';
+import { mapCardTooltipStyle } from '../../components/mapCard';
 
 // ── Liquid filters for tooltip templates ──────────────────────────────────────
 

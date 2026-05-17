@@ -1,4 +1,4 @@
-import { DEFAULT_DECK_PARAMETERS } from '../../../utils/deckgl/parameters';
+import { DEFAULT_DECK_PARAMETERS } from '../../utils/deckgl/parameters';
 import type { LayerBlendingConfig, LayerExtensionDefinition } from '../types';
 import { getLayerProps } from '../utils';
 

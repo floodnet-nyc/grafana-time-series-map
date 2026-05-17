@@ -1,7 +1,7 @@
 import React from 'react';
 import type { StandardEditorProps } from '@grafana/data';
 import { HtmlCodeEditor } from './HtmlCodeEditor';
-import { DEFAULT_TOOLTIP_TEMPLATE } from '../layers/extensions/tooltip';
+import { DEFAULT_TOOLTIP_TEMPLATE } from '../extensions/tooltip';
 
 export function TooltipTemplateEditor({ value, onChange }: StandardEditorProps<string>) {
   return (
