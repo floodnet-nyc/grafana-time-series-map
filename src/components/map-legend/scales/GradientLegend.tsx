@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import type { ColorScaleConfig } from '../../types';
-import { schemeToGradientCss } from '../../utils/deckgl/colorSchemes';
-import { formatValue } from './helpers';
+import type { ColorScaleConfig } from '../../../types';
+import { schemeToGradientCss } from '../../../utils/deckgl/colorSchemes';
+import { formatValue } from '../helpers';
 
 export function GradientLegend({ colorScale }: { colorScale: ColorScaleConfig }) {
   const gradient = useMemo(
