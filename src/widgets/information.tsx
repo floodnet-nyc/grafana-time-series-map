@@ -6,11 +6,13 @@ import {
   type InfoWidgetProps,
   type PopupWidgetProps,
 } from '@deck.gl/widgets';
-import type { BaseWidgetConfig, WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { WelcomeWidget, WelcomeWidgetProps } from './welcome-widget';
 
 type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
 type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;
 type PopupWidgetConfig = BaseWidgetConfig<'popup', Omit<PopupWidgetProps, 'id'>>;
+type WelcomeWidgetConfig = BaseWidgetConfig<'welcome', Omit<WelcomeWidgetProps, 'id' | 'template'> & { templateHtml: string }>;
 
 export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConfig> = {
   type: 'context-menu',
@@ -77,4 +79,36 @@ export const popupWidgetDefinition: WidgetDefinition<PopupWidgetConfig> = {
     },
   ],
   createWidget: (config) => new PopupWidget({ id: config.id, ...config.settings }),
+};
+
+
+export const welcomeWidgetDefinition: WidgetDefinition<WelcomeWidgetConfig> = {
+  type: 'welcome',
+  label: 'Welcome',
+  description: 'Show a welcome panel with help text to orient users.',
+  createDefaultConfig: (i) => ({
+    id: `widget-welcome-${i + 1}`,
+    type: 'welcome',
+    label: `Welcome ${i + 1}`,
+    visible: true,
+    settings: { placement: 'top-left', label: 'Help', title: '', templateHtml: '' },
+  }),
+  editorSections: [
+    {
+      title: 'Welcome',
+      fields: [
+        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
+        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Help' },
+        { key: 'title', label: 'Panel title', type: 'string', defaultValue: '' },
+        { key: 'templateHtml', label: 'HTML content', type: 'string', defaultValue: '' },
+      ],
+    },
+  ],
+  createWidget: (config) => {
+    return new WelcomeWidget({
+      id: config.id,
+      ...config.settings,
+      template: config.settings.templateHtml,
+    });
+  },
 };
