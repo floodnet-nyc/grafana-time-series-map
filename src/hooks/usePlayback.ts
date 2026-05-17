@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import useAnimationFrame from './util/useAnimationFrame';
-import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer } from '../utils/playback/playbackModel';
+import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer, selectSpeedOptions } from '../utils/playback/playbackModel';
 
 export interface UsePlaybackResult {
   cursorTimeMs: number;
   playing: boolean;
   scrubbing: boolean;
   playbackSpeed: number;
+  speeds: number[];
   play(): void;
   pause(): void;
   scrubTo(ms: number): void;
@@ -26,12 +27,19 @@ export function usePlayback({
   defaultPlaybackSpeed: number;
   loop: boolean;
 }): UsePlaybackResult {
+  const [defaultSpeed, speeds] = useMemo(() => selectSpeedOptions({ 
+    rangeMs: toTimeMs - fromTimeMs, 
+    defaultSpeed: defaultPlaybackSpeed,
+  }), [fromTimeMs, toTimeMs, defaultPlaybackSpeed]);
   const [playback, dispatch] = useReducer(playbackReducer, {
     referenceStartTimeMs: fromTimeMs,
     playbackClockStartTimeMs: null,
-    playbackSpeed: defaultPlaybackSpeed,
+    playbackSpeed: defaultSpeed,
+    speeds,
     scrubbing: false,
   });
+
+  
 
   const { referenceStartTimeMs, playbackClockStartTimeMs, playbackSpeed, scrubbing } = playback;
   const playing = !!playbackClockStartTimeMs;
@@ -100,5 +108,5 @@ export function usePlayback({
     dispatch({ type: 'pause', timeMs: cursorTimeMsRef.current, speed });
   }, []);
 
-  return { cursorTimeMs, playing, scrubbing, playbackSpeed, play, pause, scrubTo, seekTo, setSpeed };
+  return { cursorTimeMs, playing, scrubbing, playbackSpeed, speeds, play, pause, scrubTo, seekTo, setSpeed };
 }

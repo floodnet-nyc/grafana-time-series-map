@@ -1,6 +1,6 @@
 import type { LayerExtensionDefinition } from '../types';
 import { BrushingExtension } from '@deck.gl/extensions';
-import { appendDeckExtension, getLayerProps } from '../utils';
+import { appendDeckExtension } from '../utils';
 
 export interface LayerBrushingConfig {
   enabled: boolean;

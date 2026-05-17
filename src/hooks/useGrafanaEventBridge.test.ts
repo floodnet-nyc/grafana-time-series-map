@@ -47,6 +47,7 @@ function createPlayback(overrides: Partial<UsePlaybackResult> = {}): UsePlayback
     playing: false,
     scrubbing: false,
     playbackSpeed: 1,
+    speeds: [0.25, 0.5, 1, 2, 4],
     play: jest.fn(),
     pause: jest.fn(),
     scrubTo: jest.fn(),
