@@ -33,8 +33,10 @@ import {
   themeWidgetDefinition 
 } from './utility';
 import type { BlankWidgetConfig, WidgetCallbacks } from './types';
-import './stylesheet.css';
 import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
+import './deckgl-widgets-stylesheet-do-not-edit.css';
+import './styles.css';
+
 
 export const widgetDefinitions = [
   // Navigation
