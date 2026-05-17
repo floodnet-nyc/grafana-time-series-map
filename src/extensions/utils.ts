@@ -18,3 +18,15 @@ export function getLayerProps(layer: Layer): Record<string, unknown> {
 export function getLayerDefaultProps(layer: Layer): Record<string, unknown> {
   return (layer as any).constructor?.defaultProps ?? {};
 }
+
+export function appendDeckExtension(layer: any, extension: unknown) {
+  const props = layer.props ?? {};
+  const existing = props.extensions ?? [];
+  const extensionName = (extension as any).constructor?.extensionName ?? (extension as any).constructor?.name;
+  const hasExtension = existing.some((item: any) => {
+    const itemName = item?.constructor?.extensionName ?? item?.constructor?.name;
+    return itemName === extensionName;
+  });
+  return hasExtension ? existing : [...existing, extension];
+}
+

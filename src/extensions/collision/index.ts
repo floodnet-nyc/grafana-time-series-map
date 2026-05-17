@@ -1,6 +1,6 @@
 import type { LayerExtensionDefinition } from '../types';
-import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
-import { getFeatureProperties, getLayerProps } from '../utils';
+import CollisionFilterExtension from 'utils/deckgl/collisionFilterFix';
+import { getFeatureProperties, getLayerProps, appendDeckExtension } from '../utils';
 
 export interface LayerCollisionConfig {
   enabled: boolean;
@@ -11,32 +11,20 @@ export interface LayerCollisionConfig {
   testScale: number;
 }
 
-function appendDeckExtension(layer: any, extension: unknown) {
-  const props = layer.props ?? {};
-  const existing = props.extensions ?? [];
-  const extensionName = (extension as any).constructor?.extensionName ?? (extension as any).constructor?.name;
-  const hasExtension = existing.some((item: any) => {
-    const itemName = item?.constructor?.extensionName ?? item?.constructor?.name;
-    return itemName === extensionName;
-  });
-  return hasExtension ? existing : [...existing, extension];
-}
-
-export function createDefaultCollisionConfig(): LayerCollisionConfig {
-  return {
-    enabled: false,
-    group: '',
-    priorityField: '',
-    priorityScale: 1,
-    priorityOffset: 0,
-    testScale: 1,
-  };
-}
 
 export const collisionExtensionDefinition: LayerExtensionDefinition<LayerCollisionConfig> = {
   id: 'collision',
   label: 'Collision',
-  createDefaults: createDefaultCollisionConfig,
+  createDefaults: () => {
+    return {
+      enabled: false,
+      group: '',
+      priorityField: '',
+      priorityScale: 1,
+      priorityOffset: 0,
+      testScale: 1,
+    };
+  },
   editorSections: [
     {
       title: 'Collision',
