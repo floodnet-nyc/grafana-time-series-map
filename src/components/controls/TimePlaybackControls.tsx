@@ -1,17 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, IconButton, Slider, Combobox, type ComboboxOption } from '@grafana/ui';
+import { useStyles2, IconButton, Slider, Combobox } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { UsePlaybackResult } from '../../hooks/usePlayback';
+import { formatSpeedLabel } from 'utils/playback/playbackModel';
 
-const SPEED_OPTIONS: Array<ComboboxOption<number>> = [
-  { label: '15 min/s', value: 1000 * 60 * 15 },
-  { label: '30 min/s', value: 1000 * 60 * 30 },
-  { label: '1 hr/s', value: 1000 * 60 * 60 },
-  { label: '3 hr/s', value: 1000 * 60 * 60 * 3 },
-  { label: '6 hr/s', value: 1000 * 60 * 60 * 6 },
-  { label: '1 day/s', value: 1000 * 60 * 60 * 24 },
-];
 
 function formatTime(ms: number): string {
   const d = new Date(ms);
@@ -32,7 +25,9 @@ interface Props {
 
 export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: Props) {
   const styles = useStyles2(getStyles);
-  const { cursorTimeMs, playing, playbackSpeed, play, pause, scrubTo, setSpeed } = playback;
+  const { cursorTimeMs, playing, playbackSpeed, speeds, play, pause, scrubTo, setSpeed } = playback;
+  const speedOptions = useMemo(() => speeds.map((value) => ({ label: formatSpeedLabel(value), value })), [speeds]);
+  console.log('rendering playback controls', { cursorTimeMs, playing, playbackSpeed });
 
   const handleSliderChange = useCallback(
     (value: number) => scrubTo(fromTimeMs + value * (toTimeMs - fromTimeMs)),
@@ -63,7 +58,7 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
       </div>
       <Combobox
         width={14}
-        options={SPEED_OPTIONS}
+        options={speedOptions}
         value={playbackSpeed}
         onChange={(v) => setSpeed(v.value)}
       />

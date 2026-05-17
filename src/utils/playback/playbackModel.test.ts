@@ -5,6 +5,7 @@ describe('playbackModel', () => {
     referenceStartTimeMs: 1000,
     playbackClockStartTimeMs: null,
     playbackSpeed: 2,
+    speeds: [0.25, 0.5, 1, 2, 4],
     scrubbing: false,
   };
 
