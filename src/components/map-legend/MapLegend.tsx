@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { ChevronIcon } from './icons';
 import { getLegendEntries, SMALL_PANEL_THRESHOLD } from './helpers';
 import { LayerLegendEntry } from './LayerLegendEntry';
-import { legendBoxStyle } from './styles';
 import type { MapLegendProps } from './types';
 
 export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEye = false, maxWidth, maxHeight }: MapLegendProps) {
@@ -10,12 +9,11 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
 
   const entries = useMemo(() => getLegendEntries(layers), [layers]);
 
-  const boxStyle: React.CSSProperties = useMemo(() => ({
-    ...legendBoxStyle,
+  const boxStyle = {
     maxWidth: maxWidth ?? undefined,
     maxHeight: maxHeight ?? undefined,
-    overflowY: maxHeight ? 'auto' : undefined,
-  }), [maxWidth, maxHeight]);
+    overflowY: maxHeight ? 'auto' as const : undefined,
+  }
 
   if (entries.length === 0) {
     return null;
@@ -23,7 +21,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
 
   if (collapsed) {
     return (
-      <div style={{ ...boxStyle, padding: '5px 8px' }}>
+      <div style={{ ...boxStyle, padding: '5px 8px' }} className="map-card legend-box">
         <button
           onClick={() => setCollapsed(false)}
           title="Expand legend"
@@ -49,7 +47,7 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
   }
 
   return (
-    <div style={{ ...boxStyle, padding: '10px 14px 8px' }}>
+    <div style={{ ...boxStyle, padding: '10px 14px 8px' }} className="map-card legend-box">
       {entries.map((layer) => (
         <LayerLegendEntry
           key={layer.id}

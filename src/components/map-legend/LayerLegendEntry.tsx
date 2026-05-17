@@ -67,7 +67,7 @@ export function LayerLegendEntry({ layer, onToggle, showEye }: LayerLegendEntryP
               style={{ position: 'relative', color: '#666', flexShrink: 0, lineHeight: 0, cursor: 'default' }}
             >
               <InfoIcon />
-              {tooltipVisible && <div style={tooltipStyle}>{layer.description}</div>}
+              {tooltipVisible && <div className="legend-tooltip">{layer.description}</div>}
             </span>
           )}
         </div>
