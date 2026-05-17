@@ -27,20 +27,18 @@ function supportsMaterial(layer: Layer): boolean {
   return 'material' in props || 'material' in defaultProps;
 }
 
-export function createDefaultMaterialConfig(): LayerMaterialConfig {
-  return {
-    enabled: false,
-    ambient: 0.64,
-    diffuse: 0.6,
-    shininess: 32,
-    specularColor: DEFAULT_SPECULAR_COLOR,
-  };
-}
-
 export const materialExtensionDefinition: LayerExtensionDefinition<LayerMaterialConfig> = {
   id: 'material',
   label: 'Material',
-  createDefaults: createDefaultMaterialConfig,
+  createDefaults: () => {
+    return {
+      enabled: false,
+      ambient: 0.64,
+      diffuse: 0.6,
+      shininess: 32,
+      specularColor: DEFAULT_SPECULAR_COLOR,
+    };
+  },
   editorSections: [
     {
       title: 'Material',
