@@ -4,7 +4,6 @@ import { EyeIcon, InfoIcon } from './icons';
 import { GradientLegend } from './GradientLegend';
 import { ThresholdLegend } from './ThresholdLegend';
 import { swatchHex } from './helpers';
-import { tooltipStyle } from './styles';
 
 interface LayerLegendEntryProps {
   layer: LayerConfig;
