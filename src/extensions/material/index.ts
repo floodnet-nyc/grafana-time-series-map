@@ -1,6 +1,14 @@
 import type { Layer } from '@deck.gl/core';
-import type { LayerMaterialConfig, LayerExtensionDefinition } from '../types';
+import type { LayerExtensionDefinition } from '../types';
 import { getLayerDefaultProps, getLayerProps } from '../utils';
+
+export interface LayerMaterialConfig {
+  enabled: boolean;
+  ambient: number;
+  diffuse: number;
+  shininess: number;
+  specularColor: [number, number, number, number];
+}
 
 const DEFAULT_SPECULAR_COLOR: [number, number, number, number] = [51, 51, 51, 255];
 

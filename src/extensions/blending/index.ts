@@ -1,6 +1,18 @@
+import type { DeckBlendOperation, DeckBlendFactor } from 'types';
 import { DEFAULT_DECK_PARAMETERS } from '../../utils/deckgl/parameters';
-import type { LayerBlendingConfig, LayerExtensionDefinition } from '../types';
+import type { LayerExtensionDefinition } from '../types';
 import { getLayerProps } from '../utils';
+
+export interface LayerBlendingConfig {
+  enabled: boolean;
+  blend: boolean;
+  colorOperation: DeckBlendOperation;
+  colorSrcFactor: DeckBlendFactor;
+  colorDstFactor: DeckBlendFactor;
+  alphaOperation: DeckBlendOperation;
+  alphaSrcFactor: DeckBlendFactor;
+  alphaDstFactor: DeckBlendFactor;
+}
 
 const blendOperations = [
   { label: 'Add', value: 'add' },

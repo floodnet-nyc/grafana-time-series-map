@@ -1,6 +1,5 @@
 import type { GeometrySource } from '../types';
 import type { BaseLayerConfig, LayerEditorSection, LayerOptionField } from './types';
-import { createDefaultLayerExtensions } from '../extensions';
 
 
 export function createBaseLayerConfig<TType extends string, TSettings>(
@@ -21,7 +20,7 @@ export function createBaseLayerConfig<TType extends string, TSettings>(
     fieldMappings: [],
     opacity: 1,
     settings,
-    extensions: createDefaultLayerExtensions(),
+    extensions: [],
   };
 }
 
