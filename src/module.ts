@@ -226,7 +226,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         name: 'Cooperative gestures',
         description: 'Require Ctrl/Cmd or two-finger gestures before scroll zoom and rotate interactions capture the page.',
         defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
+        showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false && cfg.deck.interleaved,
         category: ['Map bounds', 'Interactions'],
       })
       .addBooleanSwitch({
