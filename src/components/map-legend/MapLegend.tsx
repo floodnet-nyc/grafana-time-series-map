@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronIcon } from './icons';
-import { getLegendEntries, SMALL_PANEL_THRESHOLD } from './helpers';
+import { getLegendEntries, SMALL_PANEL_THRESHOLD } from './utils';
 import { LayerLegendEntry } from './LayerLegendEntry';
 import type { MapLegendProps } from './types';
 

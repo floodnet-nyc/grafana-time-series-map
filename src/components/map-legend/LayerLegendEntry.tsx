@@ -3,7 +3,7 @@ import type { LayerConfig } from '../../layers/_all';
 import { EyeIcon, InfoIcon } from './icons';
 import { GradientLegend } from './scales/GradientLegend';
 import { ThresholdLegend } from './scales/ThresholdLegend';
-import { swatchHex } from './helpers';
+import { swatchHex } from './utils';
 
 interface LayerLegendEntryProps {
   layer: LayerConfig;
