@@ -8,6 +8,7 @@ export interface TextLayerSettings {
   sizeMinPixels: number;
   sizeMaxPixels: number;
   sizeField: string;
+  sizeScale: number;
   fontFamily: string;
   fontWeight: string;
   anchor: 'start' | 'middle' | 'end';
@@ -16,6 +17,7 @@ export interface TextLayerSettings {
   background: boolean;
   pixelOffsetX: number;
   pixelOffsetY: number;
+  autoDecimals: boolean;
 }
 
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
@@ -29,6 +31,7 @@ const defaultSettings: TextLayerSettings = {
   sizeMinPixels: 6,
   sizeMaxPixels: 64,
   sizeField: '',
+  sizeScale: 1,
   fontFamily: 'Helvetica Neue, Verdana, Roboto, sans-serif',
   fontWeight: 'normal',
   anchor: 'middle',
@@ -37,6 +40,7 @@ const defaultSettings: TextLayerSettings = {
   background: false,
   pixelOffsetX: 0,
   pixelOffsetY: 0,
+  autoDecimals: false,
 };
 
 export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
@@ -52,6 +56,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
       { key: 'sizeMinPixels', label: 'Min size (px)', type: 'number', defaultValue: 6 },
       { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64 },
       { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'sizeScale', label: 'Size scale', type: 'number', defaultValue: 1, step: 0.1 },
       { key: 'fontFamily', label: 'Font family', type: 'string', defaultValue: 'Helvetica Neue, Verdana, Roboto, sans-serif' },
       {
         key: 'fontWeight',
@@ -89,6 +94,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
           { label: 'Bottom', value: 'bottom' },
         ],
       },
+      { key: 'autoDecimals', label: 'Auto decimal formatting', type: 'boolean', defaultValue: false },
     ]),
     section('Style', [
       { key: 'billboard', label: 'Billboard (face camera)', type: 'boolean', defaultValue: true },
@@ -105,6 +111,9 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
     const commonProps = createCommonLayerProps(context);
     const textField = options.textField;
+
+    const getDecimals = (v: number) => (v > 6 ? 0 : 1);
+
     return [
       new TextLayer({
         ...commonProps,
@@ -123,20 +132,34 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
             return '';
           }
           if (typeof v === 'number') {
+            if (options.autoDecimals) {
+              return v.toFixed(getDecimals(v));
+            }
             return Number.isInteger(v) ? String(v) : v.toFixed(2);
           }
           return String(v);
         },
-        getSize: options.sizeField ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.fontSize) : options.fontSize,
+        getSize: options.sizeField
+          ? (f: Feature) => {
+              const v = Number(f.properties?.[options.sizeField] ?? 0);
+              if (options.autoDecimals) {
+                const decs = getDecimals(v);
+                const chars = String(v.toFixed(decs)).length;
+                return Math.max(options.sizeMinPixels, Math.min(options.sizeMaxPixels, options.sizeMinPixels + v * options.sizeScale) / chars);
+              }
+              return Math.max(options.sizeMinPixels, Math.min(options.sizeMaxPixels, v * options.sizeScale));
+            }
+          : options.fontSize,
         getColor,
         getTextAnchor: options.anchor,
         getAlignmentBaseline: options.baseline,
         getPixelOffset: [options.pixelOffsetX, options.pixelOffsetY] as [number, number],
+        polygonOffset: 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: [selectedKey],
-          getText: [textField],
-          getSize: [options.sizeField, options.fontSize],
+          getText: [textField, options.autoDecimals],
+          getSize: [options.sizeField, options.fontSize, options.sizeScale, options.autoDecimals],
         },
       }),
     ];
