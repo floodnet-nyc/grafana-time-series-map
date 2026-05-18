@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Feature } from 'geojson';
-import type { GeoFeature } from '../dataframe/toGeoJsonFeatures';
+import type { GeoFeature } from './toGeoJsonFeatures';
 
 type PackedSeries = {
   times: Float64Array;
