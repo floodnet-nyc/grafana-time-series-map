@@ -117,7 +117,7 @@ export function dataFramesToFeatures(
       const rawB = Number(b.properties?.[field]);
       const az = Number.isFinite(rawA) ? rawA : 0;
       const bz = Number.isFinite(rawB) ? rawB : 0;
-      return az - bz;
+      return bz - az;
     });
   }
   return all;
