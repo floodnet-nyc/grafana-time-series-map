@@ -1,5 +1,5 @@
 import type { LayerExtensionDefinition } from '../types';
-import CollisionFilterExtension from 'utils/deckgl/collisionFilterFix';
+import CollisionFilterExtension from 'utils/deckgl/CollisionFilterExtension';
 import { getFeatureProperties, getLayerProps, appendDeckExtension } from '../utils';
 
 export interface LayerCollisionConfig {
