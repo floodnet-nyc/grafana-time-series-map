@@ -69,7 +69,7 @@ describe('usePlayback', () => {
   });
 
   it('advances and pauses via the animation frame callback', () => {
-    jest.spyOn(Date, 'now').mockReturnValue(5000);
+    jest.spyOn(performance, 'now').mockReturnValue(5000);
 
     const { result } = renderHook(() =>
       usePlayback({
@@ -89,12 +89,12 @@ describe('usePlayback', () => {
     expect(latestAnimationConfig?.enabled).toBe(true);
 
     act(() => {
-      latestAnimationConfig?.onUpdate(5500, 500);
+      latestAnimationConfig?.onUpdate(performance.timeOrigin + 5500, 500);
     });
     expect(result.current.cursorTimeMs).toBe(1201);
 
     act(() => {
-      latestAnimationConfig?.onUpdate(405000, 500);
+      latestAnimationConfig?.onUpdate(performance.timeOrigin + 405000, 500);
     });
     expect(result.current.cursorTimeMs).toBe(2000);
     expect(result.current.playing).toBe(false);

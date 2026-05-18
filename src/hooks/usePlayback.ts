@@ -83,7 +83,7 @@ export function usePlayback({
   }, [fromTimeMs, toTimeMs]);
 
   const play = useCallback(() => {
-    dispatch({ type: 'startPlay', timeMs: cursorTimeMsRef.current, nowMs: Date.now() });
+    dispatch({ type: 'startPlay', timeMs: cursorTimeMsRef.current, nowMs: performance.timeOrigin + performance.now() });
   }, []);
 
   const pause = useCallback(() => {
@@ -101,6 +101,8 @@ export function usePlayback({
     setCursorTimeMs(ms);
     if (pause) {
       dispatch({ type: 'pause', timeMs: ms });
+    } else {
+      dispatch({ type: 'setCursor', timeMs: ms });
     }
   }, []);
 

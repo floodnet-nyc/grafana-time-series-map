@@ -32,6 +32,11 @@ describe('playbackModel', () => {
       scrubbing: true,
     });
 
+    expect(playbackReducer(baseState, { type: 'setCursor', timeMs: 1450 })).toEqual({
+      ...baseState,
+      referenceStartTimeMs: 1450,
+    });
+
     expect(playbackReducer(baseState, { type: 'reset', timeMs: 1500 })).toEqual({
       ...baseState,
       referenceStartTimeMs: 1500,
@@ -47,7 +52,9 @@ describe('playbackModel', () => {
 
   it('normalizes cursor time with clamping and looping', () => {
     expect(normalizeCursorTimeMs(3000, 1000, 2000, false)).toBe(2000);
+    expect(normalizeCursorTimeMs(500, 1000, 2000, false)).toBe(1000);
     expect(normalizeCursorTimeMs(2500, 1000, 2000, true)).toBe(1500);
+    expect(normalizeCursorTimeMs(500, 1000, 2000, true)).toBe(1500);
     expect(normalizeCursorTimeMs(1000, 1000, 1000, true)).toBe(1000);
   });
 });
