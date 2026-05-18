@@ -28,7 +28,6 @@ function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
     },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
-    fieldMappings: [],
     opacity: 1,
   };
   return { ...base, ...overrides } as LayerConfig;

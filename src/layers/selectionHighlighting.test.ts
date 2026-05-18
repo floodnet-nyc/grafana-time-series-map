@@ -73,8 +73,7 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
         timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
-        fieldMappings: [],
-        opacity: 1,
+            opacity: 1,
         selectionKeyField: 'deployment_id',
       },
     } as LayerRenderContext<any>);
@@ -107,8 +106,7 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
         timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
-        fieldMappings: [],
-        opacity: 1,
+            opacity: 1,
         selectionKeyField: 'deployment_id',
       },
     } as LayerRenderContext<any>);
@@ -144,8 +142,7 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
         timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
-        fieldMappings: [],
-        opacity: 1,
+            opacity: 1,
         selectionKeyField: 'deployment_id',
       },
     } as LayerRenderContext<any>);

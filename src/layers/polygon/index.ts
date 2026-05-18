@@ -59,7 +59,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
   ],
   renderLayers({ config, features, timeFilterFlags, onFeatureClick }: LayerRenderContext<PolygonLayerConfig>) {
     const options = config.settings;
-    const valueField = config.colorScale?.field || config.fieldMappings.find((m) => m.alias === 'value')?.fieldName || '';
+    const valueField = config.colorScale?.field || '';
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField);
     const extensions: any[] = [new DataFilterExtension({ filterSize: 1 })];

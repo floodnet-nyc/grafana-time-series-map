@@ -25,8 +25,7 @@ jest.mock('../layers/_all', () => ({
         },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', timeField: 'time' },
-        fieldMappings: [],
-        opacity: 1,
+            opacity: 1,
       }),
       editorSections: [{ title: 'Point', fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }] }],
       renderLayers: jest.fn(() => []),
@@ -49,8 +48,7 @@ jest.mock('../layers/_all', () => ({
         },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', timeField: 'time' },
-        fieldMappings: [],
-        opacity: 1,
+            opacity: 1,
       }),
       editorSections: [{ title: 'Path', fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }] }],
       renderLayers: jest.fn(() => []),
@@ -110,7 +108,6 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '' },
-    fieldMappings: [],
     opacity: 1,
     extensions: [
       {

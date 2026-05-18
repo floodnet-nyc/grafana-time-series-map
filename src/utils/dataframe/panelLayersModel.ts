@@ -60,7 +60,7 @@ export function buildSecondarySourcePackedByLayerId(layerConfigs: LayerConfig[],
         continue;
       }
 
-      const features = dataFramesToFeatures(series, secondarySource.queryRefId, { type: 'none' }, undefined, []);
+      const features = dataFramesToFeatures(series, secondarySource.queryRefId, { type: 'none' }, undefined);
       packedBySourceId.set(secondarySource.queryRefId, {
         features,
         packed: buildPacked(features, secondarySource.join.remoteKeyField, secondarySource.join.timeField),
