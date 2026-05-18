@@ -19,7 +19,6 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     },
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '' },
-    fieldMappings: [],
     opacity: 1,
   };
   return { ...base, ...overrides } as LayerConfig;

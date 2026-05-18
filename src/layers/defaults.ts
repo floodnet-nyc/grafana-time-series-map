@@ -17,7 +17,6 @@ export function createBaseLayerConfig<TType extends string, TSettings>(
     queryRefId: undefined,
     geometry,
     timeFilter: { mode: 'none', timeField: 'time' },
-    fieldMappings: [],
     opacity: 1,
     settings,
     extensions: [],

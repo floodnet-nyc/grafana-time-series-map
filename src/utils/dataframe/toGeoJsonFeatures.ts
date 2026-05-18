@@ -1,6 +1,6 @@
 import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
-import type { GeometrySource, FieldMapping, ElevationConfig } from '../../types';
+import type { GeometrySource, ElevationConfig } from '../../types';
 import { parseGeometry } from '../geometry';
 
 export type GeoFeature = Feature & { __idx: number };
@@ -20,7 +20,6 @@ function resolveValue(field: Field, i: number): unknown {
 export function dataFrameToFeatures(
   frame: DataFrame,
   geometry: GeometrySource,
-  fieldMappings: FieldMapping[],
 ): GeoFeature[] {
   const len = frame.length;
   const features: GeoFeature[] = [];
@@ -39,11 +38,6 @@ export function dataFrameToFeatures(
     lngField = resolveField(frame, geometry.lngField);
     if (!latField || !lngField) { return []; }
   }
-
-  const resolvedMappings = fieldMappings.map((m) => ({
-    alias: m.alias || m.fieldName,
-    field: resolveField(frame, m.fieldName),
-  }));
 
   for (let i = 0; i < len; i++) {
     let geom: Geometry | null = null;
@@ -72,10 +66,6 @@ export function dataFrameToFeatures(
     for (const field of frame.fields) {
       properties[field.name] = resolveValue(field, i);
     }
-    // Aliases from fieldMappings override original names.
-    for (const { alias, field } of resolvedMappings) {
-      if (field) { properties[alias] = resolveValue(field, i); }
-    }
 
     features.push({
       type: 'Feature',
@@ -94,7 +84,6 @@ export function dataFramesToFeatures(
   refId: string | undefined,
   geometry: GeometrySource,
   elevation: ElevationConfig | undefined,
-  fieldMappings: FieldMapping[],
 ): GeoFeature[] {
   const matching = refId
     ? frames.filter((f) => f.refId === refId)
@@ -103,7 +92,7 @@ export function dataFramesToFeatures(
   const all: GeoFeature[] = [];
   let offset = 0;
   for (const frame of matching) {
-    const feats = dataFrameToFeatures(frame, geometry, fieldMappings);
+    const feats = dataFrameToFeatures(frame, geometry);
     for (const f of feats) {
       f.__idx = offset++;
       all.push(f);

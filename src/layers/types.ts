@@ -4,7 +4,6 @@ import type {
   ColorScaleConfig,
   DataSource,
   ElevationConfig,
-  FieldMapping,
   GeometrySource,
   LayerDerivedFieldConfig,
   LayerSecondarySourceConfig,
@@ -28,7 +27,6 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   geometry: GeometrySource;
   elevation?: ElevationConfig;
   timeFilter: TimeFilterConfig;
-  fieldMappings: FieldMapping[];
   opacity: number;
   colorScale?: ColorScaleConfig;
   showInLegend?: boolean;

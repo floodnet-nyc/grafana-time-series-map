@@ -34,7 +34,6 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
     visible: true,
     geometry: { type: 'none' },
     timeFilter: { mode: 'none', timeField: '' },
-    fieldMappings: [],
     opacity: 1,
     settings: {
       pointRadiusMinPixels: 4,

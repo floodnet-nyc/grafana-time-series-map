@@ -68,7 +68,6 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const valueField =
       config.colorScale?.field ||
       config.shader?.valueField ||
-      config.fieldMappings?.find((m) => m.alias === 'value')?.alias ||
       '';
 
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
