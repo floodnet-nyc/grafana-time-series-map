@@ -23,6 +23,25 @@
             "id": 1,
             "title": "FloodNet NYC \u2014 Depth Animation",
             "type": "floodnet-timeseriesmap-panel",
+            "transformations": [
+                {
+                "id": "sortBy",
+                "options": {
+                    "fields": {},
+                    "sort": [
+                    {
+                        "field": "depth_inches",
+                        "desc": true
+                    }
+                    ]
+                },
+                "filter": {
+                    "id": "byRefId",
+                    "options": "/^(?:A)$/"
+                },
+                "topic": "series"
+                }
+            ],
             "targets": [
                 {
                     "datasource": {
@@ -93,6 +112,11 @@
                             "selector": "geometry.coordinates.1",
                             "text": "lat",
                             "type": "number"
+                        },
+                        {
+                        "text": "deployment_id",
+                        "selector": "properties.deployment_id",
+                        "type": "string"
                         }
                     ],
                     "format": "table"
@@ -675,6 +699,121 @@
                             "field": "depth_inches",
                             "scale": 0.0254,
                             "depthTest": false
+                        }
+                    },
+                    {
+                        "extensions": [
+                        {
+                            "id": "collision-1779123167648",
+                            "type": "collision",
+                            "config": {
+                            "enabled": true,
+                            "group": "depth",
+                            "priorityField": "depth_inches",
+                            "priorityScale": 1,
+                            "priorityOffset": 0,
+                            "testScale": 1
+                            }
+                        }
+                        ],
+                        "fieldMappings": [],
+                        "geometry": {
+                        "field": "geom",
+                        "type": "wkb"
+                        },
+                        "id": "event-depth-2",
+                        "label": "Flood Depth (in)",
+                        "opacity": 1,
+                        "queryRefId": "B",
+                        "secondarySources": [
+                        {
+                            "fields": [
+                            {
+                                "sourceField": "depth_inches"
+                            }
+                            ],
+                            "join": {
+                                "localKeyField": "deployment_id",
+                                "maxLagMs": 3600000,
+                                "remoteKeyField": "deployment_id",
+                                "timeField": "time",
+                                "type": "keyed-asof"
+                            },
+                            "queryRefId": "A"
+                        }
+                        ],
+                        "settings": {
+                            "labelField": "depth_inches",
+                            "radiusField": "depth_inches",
+                            "radiusMaxPixels": 20,
+                            "radiusMinPixels": 4,
+                            "radiusScale": 1,
+                            "showLabels": true,
+                            "stroked": true
+                        },
+                        "timeFilter": {
+                            "mode": "asof",
+                            "timeField": "time",
+                            "groupByField": "deployment_id"
+                        },
+                        "type": "scatterplot",
+                        "visible": true,
+                        "colorScale": {
+                            "type": "threshold",
+                            "field": "depth_inches",
+                            "steps": [
+                                {
+                                    "value": 0,
+                                    "color": [
+                                        0,
+                                        155,
+                                        104,
+                                        255
+                                    ]
+                                },
+                                {
+                                    "value": 1,
+                                    "color": [
+                                        0,
+                                        204,
+                                        255,
+                                        255
+                                    ]
+                                },
+                                {
+                                    "value": 4,
+                                    "color": [
+                                        253,
+                                        191,
+                                        75,
+                                        255
+                                    ]
+                                },
+                                {
+                                    "value": 12,
+                                    "color": [
+                                        254,
+                                        77,
+                                        76,
+                                        255
+                                    ]
+                                },
+                                {
+                                    "value": 24,
+                                    "color": [
+                                        215,
+                                        77,
+                                        254,
+                                        255
+                                    ]
+                                }
+                            ]
+                        },
+                        "shader": {
+                            "enabled": true,
+                            "valueField": "",
+                            "vsDecl": "",
+                            "vsFilterColor": "float v = instanceValue;\ncolor = interpolateColor(v);"
                         }
                     }
                 ],
