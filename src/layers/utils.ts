@@ -8,8 +8,20 @@ type LayerFeature = Feature & { __idx: number };
 const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
 
 
+
+export function getProperty<F extends Feature>(
+    feature: F, 
+    field: string
+  ): any {
+  const derived = (feature as Feature & { __derived?: Record<string, any> }).__derived;
+  const properties = feature.properties;
+  return derived && field in derived ? derived[field] : properties?.[field];
+}
+
+
+
 export function getNumericProperty(feature: Feature, field: string, defaultValue = 0): number {
-  const value = Number(feature.properties?.[String(field)] ?? defaultValue);
+  const value = Number(getProperty(feature, field) ?? defaultValue);
   return isNaN(value) ? defaultValue : value;
 }
 
@@ -62,14 +74,14 @@ export function getFeatureLngLat(feature: Feature): [number, number] {
 export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config'], offset=0): [number, number, number] {
   const [lng, lat] = getFeatureLngLat(feature);
   const z = config.elevation?.field
-    ? Number(feature.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1)
+    ? Number(getProperty(feature, config.elevation.field) ?? 0) * (config.elevation.scale ?? 1)
     : 0;
   return [lng, lat, z + offset];
 }
 
 export function createSelectionState(selectedKey: string | null | undefined, keyField: string | undefined) {
   const hasSelection = selectedKey != null && Boolean(keyField);
-  const isSelected = (feature: Feature) => hasSelection && String(feature.properties?.[keyField ?? '']) === selectedKey;
+  const isSelected = (feature: Feature) => hasSelection && String(getProperty(feature, keyField ?? '')) === selectedKey;
 
   return { hasSelection, isSelected };
 }

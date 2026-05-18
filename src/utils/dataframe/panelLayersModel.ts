@@ -5,8 +5,8 @@ import { getExtensionDefinition } from '../../extensions';
 import { layerDefinitions, type LayerConfig } from '../../layers/_all';
 import type { LayerDefinition, LayerRenderContext } from '../../layers/types';
 import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';
-import { compileExpression } from '../expressionEngine';
-import { buildFeatureScope } from '../featureScope';
+import { compileExpression } from './derivedFields/expressionEngine';
+import { buildFeatureScope } from './featureScope';
 import { dataFramesToFeatures } from './toGeoJsonFeatures';
 import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../deckgl/closestTimeFiltering';
 import type { PanelFeaturesByLayerId } from '../../hooks/usePanelLayers';
@@ -283,6 +283,7 @@ function buildDerivedValues(
   return features.map((feature) => {
     const scope = buildFeatureScope(config, feature, secondarySourceValues);
     const derived: Record<string, unknown> = {};
+    (feature as Feature & { __derived?: Record<string, unknown> }).__derived = derived;
 
     for (const derivedField of compiledDerivedFields) {
       try {

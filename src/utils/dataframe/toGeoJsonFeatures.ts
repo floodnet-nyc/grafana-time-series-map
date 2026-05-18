@@ -1,7 +1,7 @@
 import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
 import type { GeometrySource, ElevationConfig } from '../../types';
-import { parseGeometry } from '../geometry';
+import { parseGeometry } from './geometry';
 
 export type GeoFeature = Feature & { __idx: number };
 
