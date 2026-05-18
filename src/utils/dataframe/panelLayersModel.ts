@@ -8,7 +8,7 @@ import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';
 import { compileExpression } from './derivedFields/expressionEngine';
 import { buildFeatureScope } from './featureScope';
 import { dataFramesToFeatures } from './toGeoJsonFeatures';
-import { buildPacked, computeClosestFlags, resolveAsofLookup } from '../deckgl/closestTimeFiltering';
+import { buildPacked, computeClosestFlags, resolveAsofLookup } from './closestTimeFiltering';
 import type { PanelFeaturesByLayerId } from '../../hooks/usePanelLayers';
 
 type PackedLookupEntry = {

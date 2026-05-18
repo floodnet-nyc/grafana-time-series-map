@@ -12,7 +12,7 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from './panelLayersModel';
-import { buildPacked } from '../deckgl/closestTimeFiltering';
+import { buildPacked } from './closestTimeFiltering';
 import type { MapPanelOptions } from '../../types';
 import type { LayerConfig } from '../../layers/_all';
 import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
