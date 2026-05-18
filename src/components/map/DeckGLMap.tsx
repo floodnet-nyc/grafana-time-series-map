@@ -36,6 +36,7 @@ export function useDeckGLProps({
   const effects = buildDeckEffects(options.deck.lighting);
   const parameters = buildDeckParameters(options.deck.parameters);
   const widgets = createWidgets(options.widgets ?? [], widgetCallbacks);
+  // console.log('DeckGL props', { effects, parameters, widgets, layers });
   return {
     effects,
     parameters,
