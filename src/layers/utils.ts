@@ -59,12 +59,12 @@ export function getFeatureLngLat(feature: Feature): [number, number] {
   return coords ? [coords[0] ?? 0, coords[1] ?? 0] : [0, 0];
 }
 
-export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config']): [number, number, number] {
+export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config'], offset=0): [number, number, number] {
   const [lng, lat] = getFeatureLngLat(feature);
   const z = config.elevation?.field
     ? Number(feature.properties?.[config.elevation.field] ?? 0) * (config.elevation.scale ?? 1)
     : 0;
-  return [lng, lat, z];
+  return [lng, lat, z + offset];
 }
 
 export function createSelectionState(selectedKey: string | null | undefined, keyField: string | undefined) {
