@@ -10,6 +10,7 @@ export type PlaybackAction =
   | { type: 'startPlay'; timeMs: number; nowMs: number; speed?: number }
   | { type: 'pause'; timeMs: number; speed?: number }
   | { type: 'scrub'; timeMs: number; speed?: number }
+  | { type: 'setCursor'; timeMs: number }
   | { type: 'reset'; timeMs: number };
 
 export function playbackReducer(state: PlaybackState, action: PlaybackAction): PlaybackState {
@@ -37,6 +38,11 @@ export function playbackReducer(state: PlaybackState, action: PlaybackAction): P
         playbackClockStartTimeMs: null,
         scrubbing: true,
         ...(action.speed != null ? { playbackSpeed: action.speed } : {}),
+      };
+    case 'setCursor':
+      return {
+        ...state,
+        referenceStartTimeMs: action.timeMs,
       };
     case 'reset':
       return {
@@ -69,11 +75,15 @@ export function normalizeCursorTimeMs(raw: number, fromTimeMs: number, toTimeMs:
     return toTimeMs;
   }
 
+  if (raw <= fromTimeMs) {
+    return loop ? ((raw - fromTimeMs) % span + span) % span + fromTimeMs : fromTimeMs;
+  }
+
   if (!loop && raw >= toTimeMs) {
     return toTimeMs;
   }
 
-  return ((raw - fromTimeMs) % span) + fromTimeMs;
+  return (((raw - fromTimeMs) % span) + span) % span + fromTimeMs;
 }
 
 /* ------------------------------ Speed Options ----------------------------- */
