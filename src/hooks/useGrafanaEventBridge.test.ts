@@ -44,10 +44,14 @@ function createEventBus() {
 function createPlayback(overrides: Partial<UsePlaybackResult> = {}): UsePlaybackResult {
   return {
     cursorTimeMs: 1500,
+    cursorTimeMsRef: { current: 1500 },
+    getCursorTimeMs: jest.fn(() => 1500),
     playing: false,
     scrubbing: false,
+    followLive: false,
     playbackSpeed: 1,
     speeds: [0.25, 0.5, 1, 2, 4],
+    setCursorState: jest.fn(),
     play: jest.fn(),
     pause: jest.fn(),
     scrubTo: jest.fn(),

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/css';
-import type { PanelProps } from '@grafana/data';
+import type { PanelProps, RawTimeRange } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { DeckGLMap } from './map/DeckGLMap';
@@ -18,6 +18,9 @@ import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
 
+function isLiveTimeRange(raw: RawTimeRange): boolean {
+  return typeof raw.to === 'string' && raw.to.includes('now');
+}
 
 function useMapViewState(options: MapPanelOptions) {
   const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
@@ -33,12 +36,14 @@ function useMapViewState(options: MapPanelOptions) {
 export function MapPanel({ data, options, onOptionsChange, width, height, eventBus, replaceVariables }: PanelProps<MapPanelOptions>) {
   const fromTimeMs = data.timeRange.from.valueOf();
   const toTimeMs = data.timeRange.to.valueOf();
+  const live = isLiveTimeRange(data.timeRange.raw);
 
   const playback = usePlayback({
     fromTimeMs,
     toTimeMs,
     defaultPlaybackSpeed: options.time.defaultSpeed,
     loop: options.time.loop,
+    live,
   });
 
   const { selectedKey, setSelectedKey: selectKey } = useGrafanaEventBridge({
