@@ -1,6 +1,6 @@
 import type { MapHashView } from '../../hooks/useMapHashRoute';
 import type { MapPanelOptions } from '../../types';
-import type { FitBounds, ViewportSnapshot } from './types';
+import type { FitBounds, ViewportSnapshot } from '../../components/map/types';
 
 export const FIT_BOUNDS_PADDING_PX = 48;
 export const FIT_BOUNDS_MAX_ZOOM = 22;

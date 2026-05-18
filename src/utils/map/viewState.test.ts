@@ -1,5 +1,5 @@
 import type { MapPanelOptions } from '../../types';
-import { FIT_BOUNDS_MAX_ZOOM, FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getFitBoundsOptions, getInitialViewport, getManualViewport } from './viewState';
+import { FIT_BOUNDS_MAX_ZOOM, FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getFitBoundsOptions, getInitialViewport, getManualViewport } from '../../utils/map/viewState';
 
 function createOptions(overrides: { initialView?: Partial<MapPanelOptions['initialView']> } = {}): MapPanelOptions {
   return {
