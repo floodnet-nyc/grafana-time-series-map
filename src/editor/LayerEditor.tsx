@@ -126,7 +126,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         geometry: layer.geometry,
         elevation: layer.elevation,
         timeFilter: layer.timeFilter,
-        fieldMappings: layer.fieldMappings,
         opacity: layer.opacity,
         colorScale: layer.colorScale,
         showInLegend: layer.showInLegend,
