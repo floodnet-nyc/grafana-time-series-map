@@ -50,6 +50,42 @@ function buildFieldIndex(series: DataFrame[]) {
   return { refIds, fieldsByRefId, firstFrameFields };
 }
 
+
+const getAvailableFieldsForQuery = (queryRefId: string | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
+  if (!queryRefId) {
+    return fieldIndex.firstFrameFields;
+  }
+  return fieldIndex.fieldsByRefId.get(queryRefId) ?? [];
+}
+
+const getAvailableFieldsForLayer = (layer: LayerConfig | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
+  if (!layer) {
+    return [];
+  }
+  let availableFields: string[] = [...getAvailableFieldsForQuery(layer.queryRefId, fieldIndex)];
+
+  if (layer.secondarySources) {
+    for (const secondarySource of layer.secondarySources) {
+      availableFields.push(secondarySource.join.timeField);
+      for (const secondaryField of secondarySource.fields) {
+        if (!availableFields.includes(secondaryField.sourceField)) {
+          availableFields.push(secondaryField.sourceField);
+        }
+      }
+    }
+  }
+  if (layer.derivedFields) {
+    for (const derivedField of layer.derivedFields) {
+      if (!availableFields.includes(derivedField.as)) {
+        availableFields.push(derivedField.as);
+      }
+    }
+  }
+
+  return availableFields;
+}
+
+
 export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const styles = useStyles2(getStyles);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -58,9 +94,10 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const fieldIndex = useMemo(() => buildFieldIndex(context?.data ?? []), [context?.data]);
   const queryFieldsByRefId = useMemo(() => Object.fromEntries(fieldIndex.fieldsByRefId), [fieldIndex.fieldsByRefId]);
   const selectedLayer = selectedIndex !== null ? layerList[selectedIndex] : undefined;
-  const availableFields = !selectedLayer?.queryRefId
-    ? fieldIndex.firstFrameFields
-    : fieldIndex.fieldsByRefId.get(selectedLayer.queryRefId) ?? [];
+
+  const availableFields = useMemo(() => {
+    return getAvailableFieldsForLayer(selectedLayer, fieldIndex);
+  }, [selectedLayer, fieldIndex]);
 
   const addLayer = useCallback(() => {
     const firstType = layerDefinitions[0]?.type ?? 'scatterplot';
