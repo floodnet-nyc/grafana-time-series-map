@@ -3,7 +3,7 @@ import { useMap } from '@vis.gl/react-google-maps';
 import { WebMercatorViewport, FlyToInterpolator } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../../types';
 import type { FitBounds } from '../types';
-import { getFitBoundsKey, getFitBoundsOptions } from '../viewState';
+import { getFitBoundsKey, getFitBoundsOptions } from '../../../utils/map/viewState';
 
 interface GoogleFitBoundsProps {
   disabled: boolean;

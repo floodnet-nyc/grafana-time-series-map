@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import useAnimationFrame from './util/useAnimationFrame';
-import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer, selectSpeedOptions } from '../utils/playback/playbackModel';
+import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer } from '../utils/playback/playbackModel';
+import { selectSpeedOptions } from "utils/playback/speedOptions";
 
 const LIVE_PIN_TOLERANCE_MS = 1000;
 
@@ -58,7 +59,7 @@ export function usePlayback({
   const playing = !!playbackClockStartTimeMs;
   const followLive = live && livePinned && !playing && !scrubbing;
   const playbackRef = useRef(playback);
-  playbackRef.current = playback;
+  useEffect(() => { playbackRef.current = playback; }, [playback]);
 
   const cursorTimeMsRef = useRef<number>(initialCursorTimeMs);
   const [cursorTimeMs, setCursorTimeMs] = useState(initialCursorTimeMs);

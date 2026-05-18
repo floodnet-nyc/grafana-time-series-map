@@ -3,7 +3,7 @@ import { css } from '@emotion/css';
 import { useStyles2, IconButton, Slider, Combobox } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { UsePlaybackResult } from '../../hooks/usePlayback';
-import { formatSpeedLabel } from 'utils/playback/playbackModel';
+import { formatSpeedLabel } from "utils/playback/speedOptions";
 
 
 function formatTime(ms: number): string {

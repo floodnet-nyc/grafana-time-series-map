@@ -1,6 +1,6 @@
 import type { DeckProps } from '@deck.gl/core';
-import type { MapPanelOptions } from '../../types';
-import type { WidgetCallbacks, WidgetViewStateChange } from '../../widgets/types';
+import type { MapPanelOptions } from 'types';
+import type { WidgetCallbacks, WidgetViewStateChange } from 'widgets/types';
 
 export type { WidgetCallbacks, WidgetViewStateChange };
 
