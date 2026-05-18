@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Field, Button, Combobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
+import { useStyles2, Field, Button, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerDerivedFieldConfig, LayerSecondarySourceConfig } from '../types';
 import { FieldSelect } from './FieldSelect';
@@ -31,6 +31,90 @@ interface Props {
   onSecondarySourcesChange: (sources: LayerSecondarySourceConfig[]) => void;
 }
 
+export function JoinSourceEditor({
+  source, availableFields, availableRefIds, queryFieldsByRefId, patchSource,
+}: {
+  source: LayerSecondarySourceConfig;
+  index: number;
+  secondarySources: LayerSecondarySourceConfig[];
+  availableFields: string[];
+  availableRefIds: string[];
+  queryFieldsByRefId: Record<string, string[]>;
+  patchSource: (updates: Partial<LayerSecondarySourceConfig>) => void;
+}) {
+  const sourceFields = source.queryRefId ? queryFieldsByRefId[source.queryRefId] ?? [] : [];
+  const refIdOptions = [
+    { label: 'First query', value: '' },
+    ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
+  ];
+
+  const patchJoin = (updates: Partial<LayerSecondarySourceConfig['join']>) => patchSource({ join: { ...source.join, ...updates } });
+
+  return (
+    <>
+      <Field label="Query">
+        <Combobox
+          options={refIdOptions}
+          value={source.queryRefId}
+          onChange={(v) => patchSource({ queryRefId: String(v?.value ?? '') })}
+        />
+      </Field>
+      <Field label="Local key field">
+        <FieldSelect value={source.join.localKeyField} onChange={(v) => patchJoin({ localKeyField: v })} availableFields={availableFields} />
+      </Field>
+      <Field label="Remote key field">
+        <FieldSelect value={source.join.remoteKeyField} onChange={(v) => patchJoin({ remoteKeyField: v })} availableFields={sourceFields} />
+      </Field>
+      <Field label="Time field">
+        <FieldSelect value={source.join.timeField} onChange={(v) => patchJoin({ timeField: v })} availableFields={sourceFields} />
+      </Field>
+      <Field label="Max lag (ms)">
+        <Input
+          type="number"
+          value={String(source.join.maxLagMs ?? 3600000)}
+          onChange={(e) => patchJoin({ maxLagMs: Number(e.currentTarget.value) })}
+        />
+      </Field>
+      <Field label="Source fields">
+        <MultiCombobox
+          options={sourceFields.map((f) => ({ label: f, value: f }))}
+          value={source.fields.map((f) => f.sourceField)}
+          onChange={(v) =>
+            patchSource({
+              fields: v.map((value) => ({ sourceField: String(value) })),
+            })
+          }
+        />
+      </Field>
+    </>
+  );
+}
+
+export function DerivedFieldEditor({
+  field, patchField,
+}: {
+  field: LayerDerivedFieldConfig;
+  patchField: (updates: Partial<LayerDerivedFieldConfig>) => void;
+}) {
+  return (
+    <>
+      <Field label="Name">
+        <Input value={field.as} onChange={(e) => patchField({ as: e.currentTarget.value })} />
+      </Field>
+      <Field label="Expression">
+        <TextArea value={field.expression} onChange={(e) => patchField({ expression: e.currentTarget.value })} />
+      </Field>
+      <Field label="Type">
+        <Combobox
+          options={DERIVED_FIELD_TYPES}
+          value={field.type ?? 'number'}
+          onChange={(v) => patchField({ type: v?.value as 'number' | 'string' | 'boolean' })}
+        />
+      </Field>
+    </>
+  );
+}
+
 export function DataEditor({
   derivedFields,
   secondarySources,
@@ -42,15 +126,6 @@ export function DataEditor({
   onSecondarySourcesChange,
 }: Props) {
   const styles = useStyles2(getStyles);
-  const refIdOptions = [
-    { label: 'First query', value: '' },
-    ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
-  ];
-
-  const getFieldsForRefId = useCallback(
-    (refId: string | undefined) => (refId ? queryFieldsByRefId[refId] ?? [] : []),
-    [queryFieldsByRefId],
-  );
 
   return (
     <>
@@ -64,68 +139,17 @@ export function DataEditor({
         </Button>
       </Field>
       {secondarySources.map((source, index) => {
-        const sourceFields = getFieldsForRefId(source.queryRefId);
-        const patchSource = (updates: Partial<LayerSecondarySourceConfig>) =>
-          onSecondarySourcesChange(secondarySources.map((item, i) => (i === index ? { ...item, ...updates } : item)));
-        const patchJoin = (updates: Partial<LayerSecondarySourceConfig['join']>) =>
-          patchSource({ join: { ...source.join, ...updates } });
-
         return (
           <div key={source.queryRefId || index} className={styles.card}>
-            <Field label="Query">
-              <Combobox
-                options={refIdOptions}
-                value={source.queryRefId}
-                onChange={(v) => patchSource({ queryRefId: String(v?.value ?? '') })}
-              />
-            </Field>
-            <Field label="Local key field">
-              <FieldSelect value={source.join.localKeyField} onChange={(v) => patchJoin({ localKeyField: v })} availableFields={availableFields} />
-            </Field>
-            <Field label="Remote key field">
-              <FieldSelect value={source.join.remoteKeyField} onChange={(v) => patchJoin({ remoteKeyField: v })} availableFields={sourceFields} />
-            </Field>
-            <Field label="Time field">
-              <FieldSelect value={source.join.timeField} onChange={(v) => patchJoin({ timeField: v })} availableFields={sourceFields} />
-            </Field>
-            <Field label="Max lag (ms)">
-              <Input
-                type="number"
-                value={String(source.join.maxLagMs ?? 3600000)}
-                onChange={(e) => patchJoin({ maxLagMs: Number(e.currentTarget.value) })}
-              />
-            </Field>
-            <Field label="Source fields">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => patchSource({ fields: [...source.fields, { sourceField: '' }] })}
-              >
-                Add source field
-              </Button>
-            </Field>
-            {source.fields.map((mappedField, fieldIndex) => (
-              <div key={`${source.queryRefId || index}-field-${fieldIndex}`} className={styles.nestedCard}>
-                <Field label="Source field">
-                  <FieldSelect
-                    value={mappedField.sourceField}
-                    onChange={(v) =>
-                      patchSource({
-                        fields: source.fields.map((f, j) => (j === fieldIndex ? { ...f, sourceField: v } : f)),
-                      })
-                    }
-                    availableFields={sourceFields}
-                  />
-                </Field>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => patchSource({ fields: source.fields.filter((_, j) => j !== fieldIndex) })}
-                >
-                  Remove source field
-                </Button>
-              </div>
-            ))}
+            <JoinSourceEditor
+              source={source}
+              index={index}
+              secondarySources={secondarySources}
+              availableFields={availableFields}
+              availableRefIds={availableRefIds}
+              queryFieldsByRefId={queryFieldsByRefId}
+              patchSource={(updates) => onSecondarySourcesChange(secondarySources.map((item, i) => (i === index ? { ...item, ...updates } : item)))}
+            />
             <Button
               size="sm"
               variant="destructive"
@@ -147,41 +171,14 @@ export function DataEditor({
       </Field>
       {derivedFields.map((field, index) => (
         <div key={`derived-${index}`} className={styles.card}>
-          <Field label="Name">
-            <Input
-              value={field.as}
-              onChange={(e) =>
-                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, as: e.currentTarget.value } : item)))
-              }
-            />
-          </Field>
-          <Field label="Expression">
-            <TextArea
-              value={field.expression}
-              onChange={(e) =>
-                onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, expression: e.currentTarget.value } : item)))
-              }
-            />
-          </Field>
-          <Field label="Type">
-            <Combobox
-              options={DERIVED_FIELD_TYPES}
-              value={field.type ?? 'number'}
-              onChange={(v) =>
-                onDerivedFieldsChange(
-                  derivedFields.map((item, i) =>
-                    i === index ? { ...item, type: v?.value as 'number' | 'string' | 'boolean' } : item,
-                  ),
-                )
-              }
-            />
-          </Field>
-          <Button size="sm" variant="destructive" onClick={() => onDerivedFieldsChange(derivedFields.filter((_, i) => i !== index))}>
-            Remove derived field
-          </Button>
+          <DerivedFieldEditor
+            field={field}
+            patchField={(updates) =>
+              onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, ...updates } : item)))
+            }
+          />
         </div>
       ))}
-
     </>
   );
 }

@@ -90,9 +90,9 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
       }));
     }
 
+    const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale);
     const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
-    const commonProps = createCommonLayerProps(context);
     const lineAccessors = createLineSelectionAccessors(selectionState);
     // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
 
@@ -106,9 +106,9 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         radiusUnits: 'pixels' as const,
         stroked: options.stroked,
         filled: true,
+        lineWidthMinPixels: 0,
         getLineColor: lineAccessors.getLineColor,
         getLineWidth: lineAccessors.getLineWidth,
-        lineWidthMinPixels: 0,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
         getRadius: options.radiusField

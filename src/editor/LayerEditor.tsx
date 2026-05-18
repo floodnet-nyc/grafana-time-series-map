@@ -208,6 +208,9 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <Field label="Layer name">
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
+        <Field label="Layer type">
+          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
+        </Field>
         <Field label="Description">
           <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
         </Field>
@@ -250,9 +253,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
       </CollapsableSection>
 
       <CollapsableSection label="Data Source" isOpen>
-        <Field label="Layer type">
-          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
-        </Field>
         {/* <Field label="Data source">
           <Combobox
             options={DATA_SOURCE_OPTIONS}
