@@ -2,15 +2,16 @@ export type PlaybackState = {
   referenceStartTimeMs: number;
   playbackClockStartTimeMs: number | null;
   playbackSpeed: number;
-  speeds: number[];
   scrubbing: boolean;
+  livePinned: boolean;
 };
 
 export type PlaybackAction =
   | { type: 'startPlay'; timeMs: number; nowMs: number; speed?: number }
-  | { type: 'pause'; timeMs: number; speed?: number }
-  | { type: 'scrub'; timeMs: number; speed?: number }
-  | { type: 'setCursor'; timeMs: number }
+  | { type: 'pause'; timeMs: number; nearLiveEdge: boolean; speed?: number }
+  | { type: 'scrub'; timeMs: number; nearLiveEdge: boolean; speed?: number }
+  | { type: 'pinLive'; toTimeMs: number }
+  | { type: 'unpinLive' }
   | { type: 'reset'; timeMs: number };
 
 export function playbackReducer(state: PlaybackState, action: PlaybackAction): PlaybackState {
@@ -21,6 +22,7 @@ export function playbackReducer(state: PlaybackState, action: PlaybackAction): P
         referenceStartTimeMs: action.timeMs,
         playbackClockStartTimeMs: action.nowMs,
         scrubbing: false,
+        livePinned: false,
         ...(action.speed != null ? { playbackSpeed: action.speed } : {}),
       };
     case 'pause':
@@ -29,6 +31,7 @@ export function playbackReducer(state: PlaybackState, action: PlaybackAction): P
         referenceStartTimeMs: action.timeMs,
         playbackClockStartTimeMs: null,
         scrubbing: false,
+        livePinned: action.nearLiveEdge,
         ...(action.speed != null ? { playbackSpeed: action.speed } : {}),
       };
     case 'scrub':
@@ -37,12 +40,19 @@ export function playbackReducer(state: PlaybackState, action: PlaybackAction): P
         referenceStartTimeMs: action.timeMs,
         playbackClockStartTimeMs: null,
         scrubbing: true,
+        livePinned: action.nearLiveEdge,
         ...(action.speed != null ? { playbackSpeed: action.speed } : {}),
       };
-    case 'setCursor':
+    case 'pinLive':
       return {
         ...state,
-        referenceStartTimeMs: action.timeMs,
+        referenceStartTimeMs: action.toTimeMs,
+        livePinned: true,
+      };
+    case 'unpinLive':
+      return {
+        ...state,
+        livePinned: false,
       };
     case 'reset':
       return {
@@ -50,6 +60,7 @@ export function playbackReducer(state: PlaybackState, action: PlaybackAction): P
         referenceStartTimeMs: action.timeMs,
         playbackClockStartTimeMs: null,
         scrubbing: false,
+        livePinned: false,
       };
   }
 }

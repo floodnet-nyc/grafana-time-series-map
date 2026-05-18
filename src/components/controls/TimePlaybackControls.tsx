@@ -27,7 +27,6 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
   const styles = useStyles2(getStyles);
   const { cursorTimeMs, playing, playbackSpeed, speeds, play, pause, scrubTo, setSpeed } = playback;
   const speedOptions = useMemo(() => speeds.map((value) => ({ label: formatSpeedLabel(value), value })), [speeds]);
-  console.log('rendering playback controls', { cursorTimeMs, playing, playbackSpeed });
 
   const handleSliderChange = useCallback(
     (value: number) => scrubTo(fromTimeMs + value * (toTimeMs - fromTimeMs)),

@@ -49,7 +49,7 @@ jest.mock('./map/DeckGLMap', () => ({
   },
 }));
 
-jest.mock('./MapLegend', () => ({
+jest.mock('./map-legend/MapLegend', () => ({
   MapLegend: ({ layers, onToggleVisibility }: { layers: Array<{ id: string }>; onToggleVisibility?: (layerId: string) => void }) => (
     <button type="button" onClick={() => onToggleVisibility?.(layers[0].id)}>
       toggle-layer
@@ -117,6 +117,7 @@ function createProps(options = createOptions()): PanelProps<MapPanelOptions> {
       timeRange: {
         from: { valueOf: () => 1000 },
         to: { valueOf: () => 2000 },
+        raw: { from: 'now-15m', to: 'now' },
       } as any,
     } as any,
     timeZone: 'utc',
@@ -139,9 +140,14 @@ function createProps(options = createOptions()): PanelProps<MapPanelOptions> {
 describe('MapPanel', () => {
   const playback = {
     cursorTimeMs: 1500,
+    cursorTimeMsRef: { current: 1500 },
+    getCursorTimeMs: jest.fn(() => 1500),
     playing: false,
     scrubbing: false,
+    followLive: false,
     playbackSpeed: 1,
+    speeds: [1],
+    setCursorState: jest.fn(),
     play: jest.fn(),
     pause: jest.fn(),
     scrubTo: jest.fn(),

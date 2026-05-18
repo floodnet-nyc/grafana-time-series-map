@@ -5,8 +5,8 @@ describe('playbackModel', () => {
     referenceStartTimeMs: 1000,
     playbackClockStartTimeMs: null,
     playbackSpeed: 2,
-    speeds: [0.25, 0.5, 1, 2, 4],
     scrubbing: false,
+    livePinned: false,
   };
 
   it('updates state for play, pause, scrub, and reset actions', () => {
@@ -17,24 +17,31 @@ describe('playbackModel', () => {
       scrubbing: false,
     });
 
-    expect(playbackReducer(baseState, { type: 'pause', timeMs: 1300, speed: 4 })).toEqual({
+    expect(playbackReducer(baseState, { type: 'pause', timeMs: 1300, nearLiveEdge: true, speed: 4 })).toEqual({
       ...baseState,
       referenceStartTimeMs: 1300,
       playbackClockStartTimeMs: null,
       playbackSpeed: 4,
       scrubbing: false,
+      livePinned: true,
     });
 
-    expect(playbackReducer(baseState, { type: 'scrub', timeMs: 1400 })).toEqual({
+    expect(playbackReducer(baseState, { type: 'scrub', timeMs: 1400, nearLiveEdge: false })).toEqual({
       ...baseState,
       referenceStartTimeMs: 1400,
       playbackClockStartTimeMs: null,
       scrubbing: true,
+      livePinned: false,
     });
 
-    expect(playbackReducer(baseState, { type: 'setCursor', timeMs: 1450 })).toEqual({
+    expect(playbackReducer(baseState, { type: 'pinLive', toTimeMs: 1450 })).toEqual({
       ...baseState,
       referenceStartTimeMs: 1450,
+      livePinned: true,
+    });
+
+    expect(playbackReducer({ ...baseState, livePinned: true }, { type: 'unpinLive' })).toEqual({
+      ...baseState,
     });
 
     expect(playbackReducer(baseState, { type: 'reset', timeMs: 1500 })).toEqual({
