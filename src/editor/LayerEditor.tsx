@@ -10,10 +10,10 @@ import {
   TextArea,
   CollapsableSection,
   ColorPicker,
-  type ComboboxOption,
+  // type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-import type { DataSource } from '../types';
+// import type { DataSource } from '../types';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import { type LayerConfig, layerDefinitions } from '../layers/_all';
 import { layerExtensionDefinitions } from '../extensions';
@@ -24,10 +24,10 @@ import { ColorScaleEditor } from './ColorScaleEditor';
 import { DataEditor } from './DataEditor';
 import { SelectableListEditor } from './SelectableListEditor';
 
-const DATA_SOURCE_OPTIONS: Array<ComboboxOption<string>> = [
-  { label: 'Grafana query', value: 'query' },
-  { label: 'GeoJSON URL', value: 'geojson-url' },
-];
+// const DATA_SOURCE_OPTIONS: Array<ComboboxOption<string>> = [
+//   { label: 'Grafana query', value: 'query' },
+//   { label: 'GeoJSON URL', value: 'geojson-url' },
+// ];
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;
@@ -102,13 +102,13 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
     [layer.settings, patch],
   );
 
-  const patchDataSource = useCallback(
-    (type: DataSource['type']) => {
-      const dataSource: DataSource = type === 'geojson-url' ? { type: 'geojson-url', url: '' } : { type: 'query' };
-      patch({ dataSource });
-    },
-    [patch],
-  );
+  // const patchDataSource = useCallback(
+  //   (type: DataSource['type']) => {
+  //     const dataSource: DataSource = type === 'geojson-url' ? { type: 'geojson-url', url: '' } : { type: 'query' };
+  //     patch({ dataSource });
+  //   },
+  //   [patch],
+  // );
 
   const handleTypeChange = useCallback(
     (type: string) => {
@@ -253,14 +253,14 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <Field label="Layer type">
           <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
         </Field>
-        <Field label="Data source">
+        {/* <Field label="Data source">
           <Combobox
             options={DATA_SOURCE_OPTIONS}
             value={layer.dataSource?.type ?? 'query'}
             onChange={(v) => v?.value && patchDataSource(v.value as DataSource['type'])}
           />
-        </Field>
-        {layer.dataSource?.type === 'geojson-url' && (
+        </Field> */}
+        {/* {layer.dataSource?.type === 'geojson-url' && (
           <Field label="GeoJSON URL">
             <Input
               value={layer.dataSource.url}
@@ -273,8 +273,8 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
               placeholder="https://example.com/data.geojson"
             />
           </Field>
-        )}
-        {layer.dataSource?.type !== 'geojson-url' && (
+        )} */}
+        {/* {layer.dataSource?.type === 'query' && ( */}
           <Field label="Query">
             <Combobox
               options={refIdOptions}
@@ -282,7 +282,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
               onChange={(v) => patch({ queryRefId: String(v?.value ?? '') || undefined })}
             />
           </Field>
-        )}
+        {/* )} */}
         <DataEditor
           derivedFields={layer.derivedFields ?? []}
           secondarySources={layer.secondarySources ?? []}

@@ -4,7 +4,7 @@ import type { WidgetConfig } from './widgets/_all';
 
 export type DataSource =
   | { type: 'query' }
-  | { type: 'geojson-url'; url: string };
+  // | { type: 'geojson-url'; url: string };
 
 export type GeometrySource =
   | { type: 'none' }
