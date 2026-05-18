@@ -2,7 +2,16 @@ import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
-
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
+import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, section } from '../defaults';
+import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
+import {
+  createCommonLayerProps,
+  createLineSelectionAccessors,
+  createSelectionState,
+  getFeaturePosition,
+} from '../utils';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
   radiusMaxPixels: number;
@@ -14,16 +23,7 @@ export interface ScatterplotLayerSettings {
 }
 
 export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
-import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
-import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
-import CollisionFilterExtension from '../../utils/deckgl/collisionFilterFix';
-import {
-  createCommonLayerProps,
-  createLineSelectionAccessors,
-  createSelectionState,
-  getFeaturePosition,
-} from '../utils';
+
 
 const ScatterColorExtension = CreateMathExtensionSubclass({
   name: 'ScatterColor',
@@ -93,6 +93,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
     const commonProps = createCommonLayerProps(context);
     const lineAccessors = createLineSelectionAccessors(selectionState);
+    // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -135,7 +136,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           data: features,
           visible: config.visible,
           pickable: false,
-          getPosition: (f: Feature) => getFeaturePosition(f, config),
+          getPosition: (f: Feature) => getFeaturePosition(f, config, 2),
           getText: (f: Feature) => {
             const v = f.properties?.[labelField];
             if (v === undefined || v === null) {
