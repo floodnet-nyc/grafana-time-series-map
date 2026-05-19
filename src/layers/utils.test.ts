@@ -21,6 +21,9 @@ function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
       radiusMaxPixels: 20,
       radiusField: '',
       radiusScale: 1,
+      elevationField: '',
+      elevationScale: 1,
+      depthTest: false,
       stroked: true,
       showLabels: false,
       labelField: '',
@@ -79,12 +82,13 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
 describe('layer utils', () => {
   it('computes elevated positions from feature geometry', () => {
     const config = createConfig({
-      elevation: {
-        field: 'depth',
-        scale: 2,
+      settings: {
+        ...createConfig().settings,
+        elevationField: 'depth',
+        elevationScale: 2,
         depthTest: false,
       },
-    });
+    } as any);
 
     expect(getFeaturePosition(createPointFeature({ depth: 3 }), config)).toEqual([-73.9, 40.7, 6]);
   });

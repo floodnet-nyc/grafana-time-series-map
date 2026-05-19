@@ -16,6 +16,7 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from '../utils/dataframe/panelLayersModel';
+import { getLayerElevation } from '../layers/utils';
 import { 
   type GeoFeature, dataFramesToFeatures, 
   // geojsonToFeatures 
@@ -89,7 +90,7 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
         data.series,
         layerConfig.queryRefId,
         layerConfig.geometry,
-        layerConfig.elevation,
+        getLayerElevation(layerConfig).field,
       );
       featuresByLayerId.set(layerConfig.id, features);
     }

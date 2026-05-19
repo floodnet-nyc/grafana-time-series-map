@@ -1,6 +1,6 @@
 import { PanelPlugin } from '@grafana/data';
 // import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
-import type { DeckDepthCompare, MapPanelOptions } from './types';
+import type { MapPanelOptions } from './types';
 import { MapPanel } from './components/MapPanel';
 // import { LightingEditor } from './editor/LightingEditor';
 import { InitialViewEditor } from './editor/InitialViewEditor';
@@ -39,17 +39,6 @@ const googleControlPositions = [
   { label: 'Bottom left', value: 'BOTTOM_LEFT' },
   { label: 'Bottom center', value: 'BOTTOM_CENTER' },
   { label: 'Bottom right', value: 'BOTTOM_RIGHT' },
-];
-
-const deckDepthCompareOptions: Array<{ label: string; value: DeckDepthCompare }> = [
-  { label: 'Never', value: 'never' },
-  { label: 'Less', value: 'less' },
-  { label: 'Equal', value: 'equal' },
-  { label: 'Less or equal', value: 'less-equal' },
-  { label: 'Greater', value: 'greater' },
-  { label: 'Not equal', value: 'not-equal' },
-  { label: 'Greater or equal', value: 'greater-equal' },
-  { label: 'Always', value: 'always' },
 ];
 
 export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)

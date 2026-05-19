@@ -1,6 +1,6 @@
 import React from 'react';
-import { Field, Input, Switch, Combobox, type ComboboxOption } from '@grafana/ui';
-import type { ElevationConfig, GeometrySource } from '../types';
+import { Field, Combobox, type ComboboxOption } from '@grafana/ui';
+import type { GeometrySource } from '../types';
 import { FieldSelect } from './FieldSelect';
 
 const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
@@ -11,20 +11,13 @@ const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'None', value: 'none' },
 ];
 
-const ELEVATION_DEFAULTS: ElevationConfig = { field: '', scale: 0.0254, depthTest: false };
-
 interface Props {
   geometry: GeometrySource;
-  elevation?: ElevationConfig;
   availableFields: string[];
   onGeometryChange: (geometry: GeometrySource) => void;
-  onElevationChange: (elevation: ElevationConfig) => void;
 }
 
-export function GeometryEditor({ geometry, elevation, availableFields, onGeometryChange, onElevationChange }: Props) {
-  const patchElevation = (updates: Partial<ElevationConfig>) =>
-    onElevationChange({ ...ELEVATION_DEFAULTS, ...elevation, ...updates });
-
+export function GeometryEditor({ geometry, availableFields, onGeometryChange }: Props) {
   const handleGeometryType = (type: GeometrySource['type']) => {
     const next: GeometrySource =
       type === 'none'
@@ -67,31 +60,6 @@ export function GeometryEditor({ geometry, elevation, availableFields, onGeometr
               value={geometry.lngField}
               onChange={(v) => onGeometryChange({ ...geometry, lngField: v })}
               availableFields={availableFields}
-            />
-          </Field>
-        </>
-      )}
-      <Field label="Elevation field" description="Leave empty to render flat">
-        <FieldSelect
-          value={elevation?.field ?? ''}
-          onChange={(v) => patchElevation({ field: v })}
-          availableFields={availableFields}
-          placeholder="None"
-        />
-      </Field>
-      {elevation?.field && (
-        <>
-          <Field label="Elevation scale">
-            <Input
-              type="number"
-              value={String(elevation.scale ?? 0.0254)}
-              onChange={(e) => patchElevation({ scale: Number(e.currentTarget.value) })}
-            />
-          </Field>
-          <Field label="Depth test">
-            <Switch
-              value={elevation.depthTest ?? false}
-              onChange={(e) => patchElevation({ depthTest: e.currentTarget.checked })}
             />
           </Field>
         </>

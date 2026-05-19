@@ -9,6 +9,8 @@ import { createCommonLayerProps } from 'layers/utils';
 
 export interface FloodInundationLayerSettings {
   depthDiffField: string;
+  elevationScale: number;
+  depthTest: boolean;
   fillOpacity: number;
 }
 
@@ -63,6 +65,8 @@ function getPolygonCoords(f: Feature): number[][][] | null {
 
 const defaultSettings: FloodInundationLayerSettings = {
   depthDiffField: 'depthDiff',
+  elevationScale: 1,
+  depthTest: false,
   fillOpacity: 0.5,
 };
 
@@ -75,6 +79,8 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
   editorSections: [
     section('Flood Inundation', [
       { key: 'depthDiffField', label: 'Depth difference field', type: 'string', defaultValue: 'depthDiff' },
+      { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
+      { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
     ]),
   ],
@@ -95,7 +101,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
         getFillOpacity: options.fillOpacity,
         getDepthDiff: getElevation ?? 0,
         getElevation: getElevation ?? 0,
-        elevationScale: config.elevation?.scale ?? 1,
+        elevationScale: options.elevationScale,
         extensions: [
           new InundationExtension({
             name: `floodinundation_${config.id}`,

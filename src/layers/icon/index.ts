@@ -7,6 +7,9 @@ export interface IconLayerSettings {
   iconField: string;
   iconAtlasUrl: string;
   iconMappingUrl: string;
+  elevationField: string;
+  elevationScale: number;
+  depthTest: boolean;
   sizeScale: number;
   sizeMinPixels: number;
   sizeMaxPixels: number;
@@ -69,6 +72,9 @@ const defaultSettings: IconLayerSettings = {
   iconField: '',
   iconAtlasUrl: '',
   iconMappingUrl: '',
+  elevationField: '',
+  elevationScale: 1,
+  depthTest: false,
   sizeScale: 32,
   sizeMinPixels: 8,
   sizeMaxPixels: 64,
@@ -89,6 +95,9 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
       { key: 'iconField', label: 'Icon name field (overrides above)', type: 'fieldPicker', defaultValue: '' },
       { key: 'iconAtlasUrl', label: 'Custom atlas URL', type: 'string', defaultValue: '' },
       { key: 'iconMappingUrl', label: 'Custom mapping URL', type: 'string', defaultValue: '' },
+      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
+      { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
     ]),
     section('Size', [
       { key: 'sizeScale', label: 'Size (px)', type: 'number', defaultValue: 32 },

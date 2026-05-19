@@ -4,6 +4,8 @@ import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext } from './types';
 
 type LayerFeature = Feature & { __idx: number };
+type LegacyElevationConfig = { field?: string; scale?: number; depthTest?: boolean };
+type ElevationSettings = { elevationField?: string; elevationScale?: number; depthTest?: boolean };
 
 const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
 
@@ -25,6 +27,21 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
   return isNaN(value) ? defaultValue : value;
 }
 
+function getLegacyElevation(config: BaseLayerConfig<string, any>): LegacyElevationConfig | undefined {
+  return (config as BaseLayerConfig<string, any> & { elevation?: LegacyElevationConfig }).elevation;
+}
+
+export function getLayerElevation(config: BaseLayerConfig<string, any>): Required<LegacyElevationConfig> {
+  const settings = (config.settings ?? {}) as ElevationSettings;
+  const legacy = getLegacyElevation(config);
+
+  return {
+    field: settings.elevationField ?? legacy?.field ?? '',
+    scale: settings.elevationScale ?? legacy?.scale ?? 1,
+    depthTest: settings.depthTest ?? legacy?.depthTest ?? false,
+  };
+}
+
 
 export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, any>>({
   config,
@@ -32,6 +49,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
   timeFilterFlags,
   onFeatureClick,
 }: LayerRenderContext<TLayerConfig>) {
+  const elevation = getLayerElevation(config);
   return {
     config: config,
     id: `${config.type}/${config.id}`,
@@ -60,7 +78,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
     ].filter(Boolean) as LayerExtension[],
     
     parameters: { 
-      depthTest: config.elevation?.depthTest ?? false
+      depthTest: elevation.depthTest
     },
   };
 }
@@ -73,8 +91,9 @@ export function getFeatureLngLat(feature: Feature): [number, number] {
 
 export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config'], offset=0): [number, number, number] {
   const [lng, lat] = getFeatureLngLat(feature);
-  const z = config.elevation?.field
-    ? Number(getProperty(feature, config.elevation.field) ?? 0) * (config.elevation.scale ?? 1)
+  const elevation = getLayerElevation(config);
+  const z = elevation.field
+    ? Number(getProperty(feature, elevation.field) ?? 0) * elevation.scale
     : 0;
   return [lng, lat, z + offset];
 }

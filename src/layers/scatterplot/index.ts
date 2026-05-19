@@ -18,6 +18,9 @@ export interface ScatterplotLayerSettings {
   radiusMaxPixels: number;
   radiusField: string;
   radiusScale: number;
+  elevationField: string;
+  elevationScale: number;
+  depthTest: boolean;
   stroked: boolean;
   showLabels: boolean;
   labelField: string;
@@ -38,6 +41,9 @@ const defaultSettings: ScatterplotLayerSettings = {
   radiusMaxPixels: 20,
   radiusField: '',
   radiusScale: 1,
+  elevationField: '',
+  elevationScale: 1,
+  depthTest: false,
   stroked: true,
   showLabels: false,
   labelField: '',
@@ -55,6 +61,9 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
       { key: 'radiusMaxPixels', label: 'Max radius (px)', type: 'number', defaultValue: 20 },
       { key: 'radiusField', label: 'Radius field', type: 'fieldPicker', defaultValue: '' },
       { key: 'radiusScale', label: 'Radius scale', type: 'number', defaultValue: 1 },
+      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
+      { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'stroked', label: 'Stroke outline', type: 'boolean', defaultValue: true },
     ]),
     section('Text', [
@@ -128,7 +137,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     if (options.showLabels) {
       const [getText, updateText] = getAccessor(options.labelField || valueField, '');
-      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(config.elevation?.field, config.elevation ? config.elevation.scale : 1);
+      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(options.elevationField, options.elevationScale);
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
