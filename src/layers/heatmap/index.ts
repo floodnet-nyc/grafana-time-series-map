@@ -53,8 +53,6 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
       new HeatmapLayer({
         ...commonProps,
         data: features,
-        visible: config.visible,
-        opacity: config.opacity,
         radiusPixels: options.radiusPixels,
         intensity: options.intensity,
         threshold: options.threshold,
