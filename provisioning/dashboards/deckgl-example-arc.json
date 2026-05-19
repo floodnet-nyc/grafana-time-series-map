@@ -208,7 +208,18 @@
                             "srcLatField": "srcLat",
                             "tgtLngField": "tgtLng",
                             "tgtLatField": "tgtLat"
-                        }
+                        },
+                        "extensions": [
+                            {
+                                "id": "brushing-1779206505356",
+                                "type": "brushing",
+                                "config": {
+                                    "enabled": true,
+                                    "brushingRadius": 300000,
+                                    "brushingTarget": "source_target"
+                                }
+                            }
+                        ]
                     }
                 ],
                 "time": {
