@@ -1,10 +1,12 @@
 import { blendingExtensionDefinition } from './blending';
+import { brushingExtensionDefinition } from './brushing';
 import { collisionExtensionDefinition } from './collision';
 import { materialExtensionDefinition } from './material';
 
 export const layerExtensionDefinitions = [
   blendingExtensionDefinition,
   collisionExtensionDefinition,
+  brushingExtensionDefinition,
   materialExtensionDefinition,
 ];
 
