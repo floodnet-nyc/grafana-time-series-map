@@ -1,17 +1,17 @@
 import { PanelPlugin } from '@grafana/data';
 // import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
 import type { DeckDepthCompare, MapPanelOptions } from './types';
-import type { DeckBlendFactor, DeckBlendOperation } from "types";
 import { MapPanel } from './components/MapPanel';
-import { LightingEditor } from './editor/LightingEditor';
+// import { LightingEditor } from './editor/LightingEditor';
 import { InitialViewEditor } from './editor/InitialViewEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
 import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
+// import { DeckBlendingEditor } from './editor/DeckBlendingEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
 import { PopupTemplateEditor } from './editor/PopupTemplateEditor';
 import { VariableSelectEditor } from './editor/VariableSelectEditor';
-import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
-import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
+// import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
+// import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
 
 const googleControlPositions = [
@@ -39,30 +39,6 @@ const googleControlPositions = [
   { label: 'Bottom left', value: 'BOTTOM_LEFT' },
   { label: 'Bottom center', value: 'BOTTOM_CENTER' },
   { label: 'Bottom right', value: 'BOTTOM_RIGHT' },
-];
-
-const deckBlendOperations: Array<{ label: string; value: DeckBlendOperation }> = [
-  { label: 'Add', value: 'add' },
-  { label: 'Subtract', value: 'subtract' },
-  { label: 'Reverse subtract', value: 'reverse-subtract' },
-  { label: 'Min', value: 'min' },
-  { label: 'Max', value: 'max' },
-];
-
-const deckBlendFactors: Array<{ label: string; value: DeckBlendFactor }> = [
-  { label: 'Zero', value: 'zero' },
-  { label: 'One', value: 'one' },
-  { label: 'Source', value: 'src' },
-  { label: 'One minus source', value: 'one-minus-src' },
-  { label: 'Source alpha', value: 'src-alpha' },
-  { label: 'One minus source alpha', value: 'one-minus-src-alpha' },
-  { label: 'Destination', value: 'dst' },
-  { label: 'One minus destination', value: 'one-minus-dst' },
-  { label: 'Destination alpha', value: 'dst-alpha' },
-  { label: 'One minus destination alpha', value: 'one-minus-dst-alpha' },
-  { label: 'Source alpha saturated', value: 'src-alpha-saturated' },
-  { label: 'Constant', value: 'constant' },
-  { label: 'One minus constant', value: 'one-minus-constant' },
 ];
 
 const deckDepthCompareOptions: Array<{ label: string; value: DeckDepthCompare }> = [
@@ -236,6 +212,13 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: true,
         showIf: (cfg) => cfg.basemap?.interactions?.interactive !== false,
         category: ['Map bounds', 'Interactions'],
+      })
+      .addBooleanSwitch({
+        path: 'deck.interleaved',
+        name: 'Interleaved rendering',
+        description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
+        defaultValue: true,
+        category: ['Map bounds', 'Rendering'],
       })
       .addBooleanSwitch({
         path: 'time.show',
@@ -468,97 +451,45 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.streetViewControl === true,
         category: ['Map controls', 'Google Maps placement'],
       })
-      .addBooleanSwitch({
-        path: 'deck.interleaved',
-        name: 'Interleaved rendering',
-        description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
-        defaultValue: true,
-        category: ['Rendering'],
-      })
-      .addBooleanSwitch({
-        path: 'deck.parameters.blend',
-        name: 'Blending',
-        description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blend,
-        category: ['Rendering'],
-      })
-      .addSelect({
-        path: 'deck.parameters.blendColorOperation',
-        name: 'Color blend operation',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorOperation,
-        settings: { options: deckBlendOperations },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.blendColorSrcFactor',
-        name: 'Color source factor',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorSrcFactor,
-        settings: { options: deckBlendFactors },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.blendColorDstFactor',
-        name: 'Color destination factor',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendColorDstFactor,
-        settings: { options: deckBlendFactors },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.blendAlphaOperation',
-        name: 'Alpha blend operation',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaOperation,
-        settings: { options: deckBlendOperations },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.blendAlphaSrcFactor',
-        name: 'Alpha source factor',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaSrcFactor,
-        settings: { options: deckBlendFactors },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.blendAlphaDstFactor',
-        name: 'Alpha destination factor',
-        defaultValue: DEFAULT_DECK_PARAMETERS.blendAlphaDstFactor,
-        settings: { options: deckBlendFactors },
-        category: ['Rendering', 'Blending'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addBooleanSwitch({
-        path: 'deck.parameters.polygonOffsetFill',
-        name: 'Polygon offset fill',
-        defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
-        category: ['Rendering', 'Depth'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addBooleanSwitch({
-        path: 'deck.parameters.depthWriteEnabled',
-        name: 'Depth write enabled',
-        defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
-        category: ['Rendering', 'Depth'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addSelect({
-        path: 'deck.parameters.depthCompare',
-        name: 'Depth compare',
-        defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
-        settings: { options: deckDepthCompareOptions },
-        category: ['Rendering', 'Depth'],
-        showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      })
-      .addCustomEditor({
-        id: 'deckLighting',
-        path: 'deck.lighting',
-        name: 'Custom Lighting',
-        description: 'Configure deck.gl LightingEffect light sources.',
-        editor: LightingEditor,
-        defaultValue: DEFAULT_DECK_LIGHTING,
-        category: ['Rendering', 'Lighting'],
-      });
+      // .addCustomEditor({
+      //   id: 'deckLighting',
+      //   path: 'deck.lighting',
+      //   name: 'Custom Lighting',
+      //   description: 'Configure deck.gl LightingEffect light sources.',
+      //   editor: LightingEditor,
+      //   defaultValue: DEFAULT_DECK_LIGHTING,
+      //   category: ['Rendering', 'Lighting'],
+      // })
+      // .addCustomEditor({
+      //   id: 'deckBlending',
+      //   path: 'deck.parameters',
+      //   name: 'Blending',
+      //   description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
+      //   editor: DeckBlendingEditor,
+      //   defaultValue: DEFAULT_DECK_PARAMETERS,
+      //   category: ['Rendering'],
+      // })
+      // .addBooleanSwitch({
+      //   path: 'deck.parameters.polygonOffsetFill',
+      //   name: 'Polygon offset fill',
+      //   defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
+      //   category: ['Rendering', 'Depth'],
+      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
+      // })
+      // .addBooleanSwitch({
+      //   path: 'deck.parameters.depthWriteEnabled',
+      //   name: 'Depth write enabled',
+      //   defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
+      //   category: ['Rendering', 'Depth'],
+      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
+      // })
+      // .addSelect({
+      //   path: 'deck.parameters.depthCompare',
+      //   name: 'Depth compare',
+      //   defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
+      //   settings: { options: deckDepthCompareOptions },
+      //   category: ['Rendering', 'Depth'],
+      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
+      // })
+      ;
   });
