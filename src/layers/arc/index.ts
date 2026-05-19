@@ -44,12 +44,12 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
   renderLayers(context: LayerRenderContext<ArcLayerConfig>) {
     const { config, features, getNumericAccessor } = context;
     const options = config.settings;
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
     const commonProps = createCommonLayerProps(context);
-    const srcLngAccessor = getNumericAccessor(options.srcLngField);
-    const srcLatAccessor = getNumericAccessor(options.srcLatField);
-    const tgtLngAccessor = getNumericAccessor(options.tgtLngField);
-    const tgtLatAccessor = getNumericAccessor(options.tgtLatField);
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
+    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLngField);
+    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLatField);
+    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLngField);
+    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLatField);
 
     return [
       new ArcLayer({
@@ -68,6 +68,10 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
         ] : undefined,
         getSourceColor: getColor as any,
         getTargetColor: getColor as any,
+        updateTriggers: {
+          getSourcePosition: [...updatesSrcLng, ...updatesSrcLat],
+          getTargetPosition: [...updatesTgtLng, ...updatesTgtLat],
+        },
       }),
     ];
   },

@@ -119,8 +119,8 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     // const data = getPointFeatures(features, timeFilterFlags);
     const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
-    const getColorWeight = getNumericAccessor(options.colorWeightField, 1) ?? 1;
-    const getElevationWeight = getNumericAccessor(options.elevationWeightField, 1) ?? 1;
+    const [getColorWeight, updatesColorWeight] = getNumericAccessor(options.colorWeightField, 1);
+    const [getElevationWeight, updatesElevationWeight] = getNumericAccessor(options.elevationWeightField, 1);
 
     return [
       new HexagonLayer({
@@ -139,8 +139,8 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         getColorWeight: getColorWeight ?? 1,
         getElevationWeight: getElevationWeight ?? 1,
         updateTriggers: {
-          getColorWeight: [options.colorWeightField],
-          getElevationWeight: [options.elevationWeightField],
+          getColorWeight: updatesColorWeight,
+          getElevationWeight: updatesElevationWeight,
         },
       } as any),
     ];

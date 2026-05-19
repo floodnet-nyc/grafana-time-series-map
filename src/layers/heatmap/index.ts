@@ -46,7 +46,7 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
     const options = config.settings;
     
     const { onClick: _, ...commonProps } = createCommonLayerProps(context);
-    const getWeight = getNumericAccessor(options.weightField, 1);
+    const [getWeight, updatesWeight] = getNumericAccessor(options.weightField, 1);
     const colorRange = buildColorRange(config.colorScale, 'HeatmapFire', 7) as Array<[number, number, number, number]>;
 
     return [
@@ -59,6 +59,9 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
         colorRange,
         getPosition: (f: Feature) => (f.geometry as Point).coordinates as [number, number],
         getWeight: getWeight ?? 1,
+        updateTriggers: {
+          getWeight: updatesWeight,
+        },
       }),
     ];
   },
