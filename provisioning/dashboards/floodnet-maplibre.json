@@ -403,9 +403,6 @@
                             "latField": "lat",
                             "lngField": "lng"
                         },
-                        "elevation": {
-                            "depthTest": false
-                        },
                         "timeFilter": {
                             "mode": "none",
                             "timeField": ""
@@ -430,6 +427,9 @@
                             "radiusMaxPixels": 10,
                             "radiusField": "",
                             "radiusScale": 1,
+                            "elevationField": "",
+                            "elevationScale": 1,
+                            "depthTest": false,
                             "stroked": false,
                             "showLabels": false,
                             "labelField": ""
@@ -446,11 +446,6 @@
                             "type": "latlng",
                             "latField": "lat",
                             "lngField": "lng"
-                        },
-                        "elevation": {
-                            "field": "max_depth_inches",
-                            "scale": 0.0254,
-                            "depthTest": false
                         },
                         "timeFilter": {
                             "mode": "none",
@@ -523,6 +518,9 @@
                             "radiusMaxPixels": 22,
                             "radiusField": "max_depth_inches",
                             "radiusScale": 0.6,
+                            "elevationField": "max_depth_inches",
+                            "elevationScale": 0.0254,
+                            "depthTest": false,
                             "stroked": true,
                             "showLabels": false,
                             "labelField": ""
@@ -537,11 +535,6 @@
                         "geometry": {
                             "type": "geojson",
                             "field": "geometry"
-                        },
-                        "elevation": {
-                            "field": "",
-                            "scale": 0.254,
-                            "depthTest": false
                         },
                         "timeFilter": {
                             "mode": "none",
@@ -581,6 +574,8 @@
                         },
                         "settings": {
                             "depthDiffField": "depthDiff",
+                            "elevationScale": 0.254,
+                            "depthTest": false,
                             "fillOpacity": 0.5
                         }
                     },
@@ -668,15 +663,13 @@
                             "radiusMinPixels": 8,
                             "radiusMaxPixels": 12,
                             "radiusScale": 1,
+                            "elevationField": "depth_inches",
+                            "elevationScale": 0.0254,
+                            "depthTest": false,
                             "showLabels": true,
                             "stroked": true,
                             "radiusField": "depth_inches",
                             "labelField": ""
-                        },
-                        "elevation": {
-                            "field": "depth_inches",
-                            "scale": 0.0254,
-                            "depthTest": false
                         }
                     }
                 ],
