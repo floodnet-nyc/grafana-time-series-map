@@ -106,12 +106,12 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     const options = config.settings;
 
     const baseColor = buildColorAccessor(config.colorScale);
-    const isSelected = getAccessor(config.selectionKeyField);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
     const getColor = createSelectionColorAccessor(baseColor, isSelected);
 
     const commonProps = createCommonLayerProps(context);
-    const getIcon = getAccessor(options.iconField, options.fixedIcon);
-    const getSize = getNumericAccessor(options.sizeField, options.sizeScale);
+    const [getIcon, updatesIcon] = getAccessor(options.iconField, options.fixedIcon);
+    const [getSize, updatesSize] = getNumericAccessor(options.sizeField, options.sizeScale);
     const iconAtlas = options.iconAtlasUrl.trim();
     const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);
@@ -138,9 +138,9 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         getColor: getColor ?? [255, 255, 255, 255],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: [selectedKey],
-          getIcon: [options.iconField, options.fixedIcon],
-          getSize: [options.sizeField, options.sizeScale],
+          getColor: updatesSelected,
+          getIcon: updatesIcon,
+          getSize: updatesSize,
         },
       }),
     ];

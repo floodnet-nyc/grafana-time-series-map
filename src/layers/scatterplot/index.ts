@@ -91,7 +91,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale);
-    const [isSelected] = getAccessor(config.selectionKeyField);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
     const lineAccessors = createLineSelectionAccessors(isSelected);
 
     // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
@@ -117,8 +117,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         extensions: [...commonProps.extensions, ...(shaderExtensions as any[])],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getLineColor: [selectedKey],
-          getLineWidth: [selectedKey],
+          getLineColor: updatesSelected,
+          getLineWidth: updatesSelected,
           getRadius: [...updateRadius],
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
         },

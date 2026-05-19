@@ -105,14 +105,14 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
-    const { config, selectedKey, getAccessor, getNumericAccessor } = context;
+    const { config, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
-    const isSelected = getAccessor(config.selectionKeyField);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
     const getColor = createSelectionColorAccessor(baseColor, isSelected);
     const commonProps = createCommonLayerProps(context);
-    const getText = getAccessor(options.textField, '');
-    const getSize = getNumericAccessor(options.sizeField, options.fontSize);
+    const [getText, updatesText] = getAccessor(options.textField, '');
+    const [getSize, updatesSize] = getNumericAccessor(options.sizeField, options.fontSize);
 
     // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 
@@ -138,9 +138,9 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         polygonOffset: 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: [selectedKey],
-          getText: [options.textField, options.autoDecimals],
-          getSize: [options.sizeField, options.fontSize, options.sizeScale, options.autoDecimals],
+          getColor: updatesSelected,
+          getText: updatesText,
+          getSize: updatesSize,
         },
       }),
     ];

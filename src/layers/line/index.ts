@@ -58,11 +58,11 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
 
     const commonProps = createCommonLayerProps(context);
-    const srcLngAccessor = getNumericAccessor(options.srcLngField);
-    const srcLatAccessor = getNumericAccessor(options.srcLatField);
-    const tgtLngAccessor = getNumericAccessor(options.tgtLngField);
-    const tgtLatAccessor = getNumericAccessor(options.tgtLatField);
-    const getWidth = getNumericAccessor(options.widthField, options.widthScale);
+    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLngField);
+    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLatField);
+    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLngField);
+    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLatField);
+    const [getWidth, updatesWidth] = getNumericAccessor(options.widthField, options.widthScale);
 
     return [
       new LineLayer({
@@ -84,7 +84,9 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
         getWidth: getWidth ?? 0,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getWidth: [options.widthField, options.widthScale],
+          getWidth: updatesWidth,
+          getSourcePosition: [...updatesSrcLat, ...updatesSrcLng],
+          getTargetPosition: [...updatesTgtLat, ...updatesTgtLng],
         },
       }),
     ];

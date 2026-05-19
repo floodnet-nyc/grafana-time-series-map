@@ -61,10 +61,10 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
   renderLayers(context: LayerRenderContext<GeoJsonLayerConfig>) {
     const { config, features, getAccessor } = context;
     const options = config.settings;
+    const commonProps = createCommonLayerProps(context);
     const getFillColor = buildColorAccessor(config.colorScale);
     const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200]);
-    const getLineWidth = getAccessor(options.lineWidthField, 0);
-    const commonProps = createCommonLayerProps(context);
+    const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidthField, 0);
     return [
       new GeoJsonLayer({
         ...commonProps,
@@ -83,7 +83,7 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
         getLineColor: getLineColor as any,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getLineWidth: [options.lineWidthField, options.lineWidthScale],
+          getLineWidth: updatesLineWidth,
         },
       }),
     ];

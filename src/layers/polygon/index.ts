@@ -83,8 +83,8 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     }
 
     const commonProps = createCommonLayerProps(context);
-    const getElevation = getNumericAccessor(options.elevationField, options.elevationScale);
-    const getValue = useShader ? getNumericAccessor(valueField) : undefined;
+    const [getElevation, updatesElevation] = getNumericAccessor(options.elevationField, options.elevationScale);
+    const [getValue, updatesValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
     
     const getColor = buildColorAccessor(config.colorScale);
     const fillOpacity = options.fillOpacity;
@@ -108,8 +108,8 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
           ...commonProps.updateTriggers,
           getFilterValue: [timeFilterFlags],
           getFillColor: [config.colorScale, options.fillOpacity],
-          getElevation: [options.elevationField, options.elevationScale],
-          ...(useShader ? { getValue: [valueField, config.colorScale] } : {}),
+          getElevation: updatesElevation,
+          ...(useShader ? { getValue: updatesValue } : {}),
         },
       }),
     ];

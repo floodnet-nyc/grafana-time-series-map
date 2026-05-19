@@ -62,7 +62,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
 
     const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
-    const getWidth = getNumericAccessor(options.widthField, options.widthScale);
+    const [getWidth, updatesWidth] = getNumericAccessor(options.widthField, options.widthScale);
     
     return [
       new PathLayer({
@@ -74,7 +74,10 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         jointRounded: options.jointRounded,
         getPath: (f: Feature) => getPath(f)! as any,
         getColor,
-        getWidth,
+        getWidth: getWidth ?? 1,
+        updateTriggers: {
+          getWidth: updatesWidth,
+        },
       }),
     ];
   },
