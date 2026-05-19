@@ -18,6 +18,7 @@ interface Props<T> {
   isVisible?: (item: T, index: number) => boolean;
   getVisibilityTooltip?: (item: T, index: number) => string;
   addOptions?: Array<{ label: string; value: string; description?: string }>;
+  maxLength?: number;
 }
 
 export function SelectableListEditor<T>({
@@ -35,6 +36,7 @@ export function SelectableListEditor<T>({
   isVisible,
   getVisibilityTooltip,
   addOptions,
+  maxLength,
 }: Props<T>) {
   const styles = useStyles2(getStyles);
   const selectedItem = selectedIndex !== null ? items[selectedIndex] : undefined;
@@ -103,7 +105,8 @@ export function SelectableListEditor<T>({
             </div>
           );
         })}
-        {addOptions ? (
+        {maxLength !== undefined && items.length >= maxLength ? null : 
+        addOptions ? (
           <Combobox
             options={addOptions}
             onChange={(option) => option?.value && onAdd(option.value)}

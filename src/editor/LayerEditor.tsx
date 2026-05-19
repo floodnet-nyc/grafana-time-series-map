@@ -242,14 +242,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             />
           </div>
         </Field>
-        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
-          <FieldSelect
-            value={layer.selectionKeyField ?? ''}
-            onChange={(v) => patch({ selectionKeyField: v || undefined })}
-            availableFields={availableFields}
-            placeholder="None (click disabled)"
-          />
-        </Field>
       </CollapsableSection>
 
       <CollapsableSection label="Data Source" isOpen>
@@ -283,6 +275,13 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
             />
           </Field>
         {/* )} */}
+        <GeometryEditor
+          geometry={layer.geometry}
+          elevation={layer.elevation}
+          availableFields={availableFields}
+          onGeometryChange={(geometry) => patch({ geometry })}
+          onElevationChange={(elevation) => patch({ elevation })}
+        />
         <DataEditor
           derivedFields={layer.derivedFields ?? []}
           secondarySources={layer.secondarySources ?? []}
@@ -293,21 +292,19 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
           onDerivedFieldsChange={(derivedFields) => patch({ derivedFields })}
           onSecondarySourcesChange={(secondarySources) => patch({ secondarySources })}
         />
-      </CollapsableSection>
-
-      <CollapsableSection label="Geometry & Time" isOpen>
-        <GeometryEditor
-          geometry={layer.geometry}
-          elevation={layer.elevation}
-          availableFields={availableFields}
-          onGeometryChange={(geometry) => patch({ geometry })}
-          onElevationChange={(elevation) => patch({ elevation })}
-        />
         <TimeFilterEditor
           timeFilter={layer.timeFilter}
           availableFields={availableFields}
           onChange={(timeFilter) => patch({ timeFilter })}
         />
+        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
+          <FieldSelect
+            value={layer.selectionKeyField ?? ''}
+            onChange={(v) => patch({ selectionKeyField: v || undefined })}
+            availableFields={availableFields}
+            placeholder="None (click disabled)"
+          />
+        </Field>
       </CollapsableSection>
 
       {currentRenderer?.editorSections.map((editorSection) => (
@@ -320,7 +317,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <ColorScaleEditor layer={layer} availableFields={availableFields} onChange={patch} />
       </CollapsableSection>
 
-      <CollapsableSection label="Extensions" isOpen={true}>
+      <CollapsableSection label="Advanced" isOpen={true}>
       <SelectableListEditor<LayerExtensionInstance>
         items={layer.extensions ?? []}
         selectedIndex={selectedExtensionIndex}
