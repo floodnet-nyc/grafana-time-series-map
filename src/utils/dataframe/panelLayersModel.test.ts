@@ -17,6 +17,7 @@ import type { MapPanelOptions } from '../../types';
 import type { LayerConfig } from '../../layers/_all';
 import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
 import type { GeoFeature } from './toGeoJsonFeatures';
+import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../layers/types';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -65,6 +66,27 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
   };
 }
 
+function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getNumericAccessor'> {
+  const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
+    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
+    [fieldName, defaultValue],
+  ];
+  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
+    const [accessor, deps] = getAccessor(fieldName, defaultValue);
+    return [
+      accessor
+        ? (feature, ctx) => {
+            const value = accessor(feature, ctx);
+            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+          }
+        : undefined,
+      deps,
+    ];
+  };
+
+  return { getAccessor, getNumericAccessor };
+}
+
 describe('panelLayersModel', () => {
   it('builds window time-filter flags with tolerance', () => {
     const config = createLayerConfig({
@@ -96,7 +118,7 @@ describe('panelLayersModel', () => {
     ];
     const featuresByLayerId = new Map([[config.id, features]]);
     const packedByLayerId = new Map([
-      [config.id, buildPacked(features, 'deployment_id', 'time')],
+      [config.id, buildPacked('geojson', features, 'deployment_id', 'time')],
     ]);
 
     const flags = buildTimeFilterFlagsByLayerId([config], featuresByLayerId, packedByLayerId, 2100, 0, 0);
@@ -132,15 +154,15 @@ describe('panelLayersModel', () => {
       [config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])],
     ]);
 
-    expect(buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, secondarySourceValues)).toEqual([
-      {
-        config,
-        features,
-        timeFilterFlags: new Uint8Array([1]),
-        secondarySourceValues: new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]),
-        derivedValues: [{ depthDiff: 3 }],
-      },
-    ]);
+    const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, secondarySourceValues);
+
+    expect(state.config).toBe(config);
+    expect(state.features).toEqual(features);
+    expect(state.timeFilterFlags).toEqual(new Uint8Array([1]));
+    expect(state.secondarySourceValues).toEqual(new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]));
+    expect(state.derivedValues).toEqual([{ depthDiff: 3 }]);
+    expect(state.getAccessor).toEqual(expect.any(Function));
+    expect(state.getNumericAccessor).toEqual(expect.any(Function));
   });
 
   it('resolves keyed as-of secondary source values at the current cursor time', () => {
@@ -173,7 +195,7 @@ describe('panelLayersModel', () => {
             'B',
             {
               features: sourceFeatures,
-              packed: buildPacked(sourceFeatures, 'deployment_id', 'time'),
+              packed: buildPacked('geojson', sourceFeatures, 'deployment_id', 'time'),
             },
           ],
         ]),
@@ -199,10 +221,11 @@ describe('panelLayersModel', () => {
     const visibleConfig = createLayerConfig({ id: 'visible', type: 'scatterplot' });
     const hiddenConfig = createLayerConfig({ id: 'hidden', type: 'scatterplot', visible: false });
     const missingConfig = createLayerConfig({ id: 'missing', type: 'line' });
+    const accessors = createAccessors();
     const preparedLayerStates: PreparedLayerState[] = [
-      { config: visibleConfig, features: [createFeature({ value: 1 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
-      { config: hiddenConfig, features: [createFeature({ value: 2 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
-      { config: missingConfig, features: [createFeature({ value: 3 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]) },
+      { config: visibleConfig, features: [createFeature({ value: 1 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: hiddenConfig, features: [createFeature({ value: 2 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: missingConfig, features: [createFeature({ value: 3 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
     ];
 
     const renderer = {

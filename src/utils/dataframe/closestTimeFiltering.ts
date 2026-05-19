@@ -73,16 +73,40 @@ export type AccessorType = keyof typeof fieldAccessors;
 
 // type AccessorFactory<T> = (data: T, fieldName: string) => ((i: number) => any) | undefined;
 
-export const buildPacked = <T extends DataFrame | Feature[], S extends AccessorType = 'geojson'>(
-    accessorType: S,
-    data: T,
+export function buildPacked(
+    accessorType: 'grafana',
+    data: DataFrame,
     keyFieldName?: string,
     timeFieldName?: string,
-) => {
-    const getAccessor = fieldAccessors[accessorType];
-    const length = lengthAccessors[accessorType](data);
-    const keyAccessor = getAccessor(data, keyFieldName);
-    const timeAccessor = getAccessor(data, timeFieldName);
+): ReturnType<typeof buildPackedFromAccessors>;
+export function buildPacked(
+    accessorType: 'geojson',
+    data: Feature[],
+    keyFieldName?: string,
+    timeFieldName?: string,
+): ReturnType<typeof buildPackedFromAccessors>;
+export function buildPacked(
+    accessorType: AccessorType,
+    data: DataFrame | Feature[],
+    keyFieldName?: string,
+    timeFieldName?: string,
+) {
+    if (accessorType === 'grafana') {
+        const frame = data as DataFrame;
+        const length = lengthAccessors.grafana(frame);
+        const keyAccessor = getGrafanaFieldAccessor(frame, keyFieldName ?? '');
+        const timeAccessor = getGrafanaFieldAccessor(frame, timeFieldName ?? '');
+        return buildPackedFromAccessors(
+            length,
+            keyAccessor ? (i) => keyAccessor(i) : undefined,
+            timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined,
+        );
+    }
+
+    const features = data as Feature[];
+    const length = lengthAccessors.geojson(features);
+    const keyAccessor = getGeoJsonFieldAccessor(features, keyFieldName ?? '');
+    const timeAccessor = getGeoJsonFieldAccessor(features, timeFieldName ?? '');
     return buildPackedFromAccessors(
         length,
         keyAccessor ? (i) => keyAccessor(i) : undefined,

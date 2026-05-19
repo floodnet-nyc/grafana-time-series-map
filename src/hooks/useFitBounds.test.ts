@@ -3,6 +3,7 @@ import type { Feature } from 'geojson';
 import type { InitialViewFitDataSource, MapPanelOptions } from '../types';
 import { useFitBounds } from './useFitBounds';
 import type { PreparedLayerState } from '../utils/dataframe/panelLayersModel';
+import type { GetAccessorFunction, GetNumericAccessorFunction } from '../layers/types';
 
 function createOptions(): MapPanelOptions {
   return {
@@ -30,6 +31,24 @@ function pointFeature(longitude: number, latitude: number): Feature {
   };
 }
 
+const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
+  fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
+  [fieldName, defaultValue],
+];
+
+const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
+  const [accessor, deps] = getAccessor(fieldName, defaultValue);
+  return [
+    accessor
+      ? (feature, ctx) => {
+          const value = accessor(feature, ctx);
+          return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+        }
+      : undefined,
+    deps,
+  ];
+};
+
 function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): PreparedLayerState {
   return {
     config: {
@@ -44,6 +63,8 @@ function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): 
     } as any,
     features: [pointFeature(-122, 37), pointFeature(-74, 40)],
     timeFilterFlags: new Uint8Array([0, 1]),
+    getAccessor,
+    getNumericAccessor,
     ...overrides,
   };
 }

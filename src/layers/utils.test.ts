@@ -6,10 +6,9 @@ import {
   createLineSelectionAccessors,
   createSelectionColorAccessor,
   createSelectionState,
-  createSourcePositionAccessor,
-  createTargetPositionAccessor,
   getFeaturePosition,
 } from './utils';
+import type { GetAccessorFunction, GetNumericAccessorFunction } from './types';
 
 function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -45,6 +44,23 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 }
 
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
+  const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
+    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
+    [fieldName, defaultValue],
+  ];
+  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
+    const [accessor, deps] = getAccessor(fieldName, defaultValue);
+    return [
+      accessor
+        ? (feature, ctx) => {
+            const value = accessor(feature, ctx);
+            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+          }
+        : undefined,
+      deps,
+    ];
+  };
+
   return {
     config: createConfig(),
     panelOptions: {} as any,
@@ -54,6 +70,8 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
     toTimeMs: 0,
     timeFilterFlags: new Uint8Array([1]),
     selectedKey: null,
+    getAccessor,
+    getNumericAccessor,
     ...overrides,
   };
 }
@@ -76,31 +94,17 @@ describe('layer utils', () => {
     const unselected = createPointFeature({ sensor_id: 'b' });
     const selectionState = createSelectionState('a', 'sensor_id');
     const baseColor = () => [10, 20, 30, 255] as [number, number, number, number];
+    const ctx = { index: 0, data: [selected, unselected], target: [] };
 
-    const colorAccessor = createSelectionColorAccessor(baseColor, selectionState);
-    const lineAccessors = createLineSelectionAccessors(selectionState);
+    const colorAccessor = createSelectionColorAccessor(baseColor, selectionState.isSelected);
+    const lineAccessors = createLineSelectionAccessors(selectionState.isSelected);
 
-    expect(colorAccessor(selected)).toEqual([255, 230, 60, 255]);
-    expect(colorAccessor(unselected)).toEqual([10, 20, 30, 255]);
-    expect(lineAccessors.getLineColor(selected)).toEqual([255, 230, 60, 255]);
-    expect(lineAccessors.getLineColor(unselected)).toEqual([200, 200, 240, 60]);
-    expect(lineAccessors.getLineWidth(selected)).toBe(3);
-    expect(lineAccessors.getLineWidth(unselected)).toBe(1);
-  });
-
-  it('builds source and target position accessors from option fields', () => {
-    const feature = createPointFeature({
-      src_lng: -74.1,
-      src_lat: 40.8,
-      dst_lng: -73.8,
-      dst_lat: 40.6,
-    });
-
-    const source = createSourcePositionAccessor({ srcLngField: 'src_lng', srcLatField: 'src_lat' });
-    const target = createTargetPositionAccessor({ tgtLngField: 'dst_lng', tgtLatField: 'dst_lat' });
-
-    expect(source(feature)).toEqual([-74.1, 40.8]);
-    expect(target(feature)).toEqual([-73.8, 40.6]);
+    expect(colorAccessor(selected, ctx)).toEqual([255, 230, 60, 255]);
+    expect(colorAccessor(unselected, ctx)).toEqual([10, 20, 30, 255]);
+    expect(lineAccessors.getLineColor(selected, ctx)).toEqual([255, 230, 60, 255]);
+    expect(lineAccessors.getLineColor(unselected, ctx)).toEqual([200, 200, 240, 200]);
+    expect(lineAccessors.getLineWidth(selected, ctx)).toBe(3);
+    expect(lineAccessors.getLineWidth(unselected, ctx)).toBe(1);
   });
 
   it('builds common layer props with click and filter wiring', () => {
