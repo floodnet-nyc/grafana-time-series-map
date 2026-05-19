@@ -115,7 +115,7 @@
                         },
                         {
                         "text": "deployment_id",
-                        "selector": "properties.deployment_id",
+                        "selector": "properties.id",
                         "type": "string"
                         }
                     ],
@@ -718,8 +718,9 @@
                         ],
                         "fieldMappings": [],
                         "geometry": {
-                        "field": "geom",
-                        "type": "wkb"
+                            "type": "latlng",
+                            "latField": "lat",
+                            "lngField": "lng"
                         },
                         "id": "event-depth-2",
                         "label": "Flood Depth (in)",
@@ -752,7 +753,7 @@
                             "stroked": true
                         },
                         "timeFilter": {
-                            "mode": "asof",
+                            "mode": "none",
                             "timeField": "time",
                             "groupByField": "deployment_id"
                         },

@@ -97,11 +97,9 @@ export function createSelectionColorAccessor(
 export function createLineSelectionAccessors(isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean) {
   return {
     getLineColor: (feature: Feature, ctx: AccessorContext<Feature>): [number, number, number, number] =>
-      isSelected
-        ? isSelected(feature, ctx)
+      isSelected?.(feature, ctx)
           ? DEFAULT_SELECTED_COLOR
-          : ([200, 200, 240, 60] as [number, number, number, number])
         : ([200, 200, 240, 200] as [number, number, number, number]),
-    getLineWidth: (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected ? (isSelected(feature, ctx) ? 3 : 1) : 2),
+    getLineWidth: (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected ? (isSelected?.(feature, ctx) ? 3 : 1) : 2),
   };
 }
