@@ -4,11 +4,9 @@ import {
   // useRef, useState 
 } from 'react';
 import type { PanelData } from '@grafana/data';
-import type { Layer, PickingInfo } from '@deck.gl/core';
+import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
-import type { DeckTooltipContent } from '../components/map/types';
-import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from '../utils/tooltip';
 import {
   buildSecondarySourcePackedByLayerId,
   buildSecondarySourceValuesByLayerId,

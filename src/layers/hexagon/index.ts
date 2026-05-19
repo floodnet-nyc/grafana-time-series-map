@@ -41,17 +41,17 @@ const defaultSettings: HexagonLayerSettings = {
   upperPercentile: 100,
 };
 
-function getPointFeatures(features: Feature[], timeFilterFlags: Uint8Array) {
-  return features.filter((feature: any) => feature.geometry?.type === 'Point' && timeFilterFlags[feature.__idx]);
-}
+// function getPointFeatures(features: Feature[], timeFilterFlags: Uint8Array) {
+//   return features.filter((feature: any) => feature.geometry?.type === 'Point' && timeFilterFlags[feature.__idx]);
+// }
 
-function getWeight(feature: Feature, field: string) {
-  if (!field) {
-    return 1;
-  }
-  const value = Number(feature.properties?.[field] ?? 0);
-  return Number.isFinite(value) ? value : 0;
-}
+// function getWeight(feature: Feature, field: string) {
+//   if (!field) {
+//     return 1;
+//   }
+//   const value = Number(feature.properties?.[field] ?? 0);
+//   return Number.isFinite(value) ? value : 0;
+// }
 
 export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
   type: 'hexagon',

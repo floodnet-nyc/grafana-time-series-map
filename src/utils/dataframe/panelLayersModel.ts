@@ -1,5 +1,5 @@
-import type { DataFrame, PanelData } from '@grafana/data';
-import type { Layer, AccessorFunction, AccessorContext, Accessor } from '@deck.gl/core';
+import type { DataFrame } from '@grafana/data';
+import type { Layer, AccessorContext } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { getExtensionDefinition } from '../../extensions';
 import { layerDefinitions, type LayerConfig } from '../../layers/_all';

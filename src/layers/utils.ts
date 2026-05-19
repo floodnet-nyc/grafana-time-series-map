@@ -1,4 +1,4 @@
-import type { LayerExtension } from '@deck.gl/core';
+import type { AccessorContext, LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext } from './types';
@@ -81,27 +81,27 @@ export function getFeaturePosition(feature: Feature, config: LayerRenderContext[
 
 export function createSelectionState(selectedKey: string | null | undefined, keyField: string | undefined) {
   const hasSelection = selectedKey != null && Boolean(keyField);
-  const isSelected = hasSelection ? (feature: Feature) => hasSelection && String(getProperty(feature, keyField ?? '')) === selectedKey : undefined;
+  const isSelected = hasSelection ? (feature: Feature, ctx: AccessorContext<Feature>) => hasSelection && String(getProperty(feature, keyField ?? '')) === selectedKey : undefined;
 
   return { hasSelection, isSelected };
 }
 
 export function createSelectionColorAccessor(
   baseColor: (feature: Feature) => [number, number, number, number],
-  selectionState: ReturnType<typeof createSelectionState>,
+  isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean,
   selectedColor: [number, number, number, number] = DEFAULT_SELECTED_COLOR,
 ) {
-  return selectionState.isSelected ? (feature: Feature, ctx) => (selectionState.isSelected(feature, ctx) ? selectedColor : baseColor(feature)) : baseColor;
+  return isSelected ? (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected?.(feature, ctx) ? selectedColor : baseColor(feature)) : baseColor;
 }
 
-export function createLineSelectionAccessors(selectionState: ReturnType<typeof createSelectionState>) {
+export function createLineSelectionAccessors(isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean) {
   return {
-    getLineColor: (feature: Feature, ctx): [number, number, number, number] =>
-      selectionState.isSelected
-        ? selectionState.isSelected(feature, ctx)
+    getLineColor: (feature: Feature, ctx: AccessorContext<Feature>): [number, number, number, number] =>
+      isSelected
+        ? isSelected(feature, ctx)
           ? DEFAULT_SELECTED_COLOR
           : ([200, 200, 240, 60] as [number, number, number, number])
         : ([200, 200, 240, 200] as [number, number, number, number]),
-    getLineWidth: (feature: Feature, ctx) => (selectionState.isSelected ? (selectionState.isSelected(feature, ctx) ? 3 : 1) : 2),
+    getLineWidth: (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected ? (isSelected(feature, ctx) ? 3 : 1) : 2),
   };
 }

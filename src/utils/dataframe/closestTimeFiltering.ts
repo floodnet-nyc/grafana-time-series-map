@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import type { Feature } from 'geojson';
-import type { GeoFeature } from './toGeoJsonFeatures';
 import { DataFrame } from '@grafana/data';
 
 type PackedSeries = {
@@ -74,7 +73,7 @@ export type AccessorType = keyof typeof fieldAccessors;
 
 // type AccessorFactory<T> = (data: T, fieldName: string) => ((i: number) => any) | undefined;
 
-export const buildPacked = <T, S extends AccessorType = 'geojson'>(
+export const buildPacked = <T extends DataFrame | Feature[], S extends AccessorType = 'geojson'>(
     accessorType: S,
     data: T,
     keyFieldName?: string,
@@ -212,7 +211,7 @@ export function useCurrentTimeFilter(
   timeKey = 'time',
 ): Uint8Array {
   const { buckets } = useMemo(
-    () => (features ? buildPacked(features, idKey, timeKey) : { buckets: [] }),
+    () => (features ? buildPacked('geojson', features, idKey, timeKey) : { buckets: [] }),
     [features, idKey, timeKey],
   );
 

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, Field, Button, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
