@@ -23,7 +23,71 @@
             "id": 1,
             "title": "Collision Filter",
             "type": "floodnet-timeseriesmap-panel",
-            "targets": [],
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "A",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/ne_10_roads.json",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.scalerank",
+                            "text": "scalerank",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
+                },
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "B",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/road-labels.geojson",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.name",
+                            "text": "name",
+                            "type": "string"
+                        },
+                        {
+                            "selector": "properties.scalerank",
+                            "text": "scalerank",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
+                }
+            ],
             "options": {
                 "basemap": {
                     "provider": "maplibre",
@@ -64,12 +128,10 @@
                         "type": "path",
                         "label": "Road outline",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/ne_10_roads.json"
-                        },
+                        "queryRefId": "A",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",
@@ -100,12 +162,10 @@
                         "type": "path",
                         "label": "Road centerlines",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/ne_10_roads.json"
-                        },
+                        "queryRefId": "A",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",
@@ -136,12 +196,10 @@
                         "type": "text",
                         "label": "Road labels",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/collision-filter/road-labels.geojson"
-                        },
+                        "queryRefId": "B",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",

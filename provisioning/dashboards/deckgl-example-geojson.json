@@ -23,7 +23,57 @@
             "id": 1,
             "title": "GeoJSON",
             "type": "floodnet-timeseriesmap-panel",
-            "targets": [],
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "A",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/geojson/vancouver-blocks.json",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.name",
+                            "text": "name",
+                            "type": "string"
+                        },
+                        {
+                            "selector": "properties.value",
+                            "text": "value",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "properties.fatalities",
+                            "text": "fatalities",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "properties.incidents",
+                            "text": "incidents",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "properties.valuePerSqm",
+                            "text": "valuePerSqm",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
+                }
+            ],
             "options": {
                 "basemap": {
                     "provider": "maplibre",
@@ -64,12 +114,10 @@
                         "type": "geojson",
                         "label": "Vancouver blocks",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/geojson/vancouver-blocks.json"
-                        },
+                        "queryRefId": "A",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",

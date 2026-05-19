@@ -82,6 +82,35 @@
                         }
                     ],
                     "format": "table"
+                },
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "B",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/arc/counties.json",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.name",
+                            "text": "name",
+                            "type": "string"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
                 }
             ],
             "options": {
@@ -124,12 +153,10 @@
                         "type": "geojson",
                         "label": "US counties",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/arc/counties.json"
-                        },
+                        "queryRefId": "B",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",

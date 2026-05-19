@@ -23,7 +23,71 @@
             "id": 1,
             "title": "Trips",
             "type": "floodnet-timeseriesmap-panel",
-            "targets": [],
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "A",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/buildings.geojson",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.height",
+                            "text": "height",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
+                },
+                {
+                    "datasource": {
+                        "type": "yesoreyeram-infinity-datasource",
+                        "uid": "infinity-ds"
+                    },
+                    "refId": "B",
+                    "type": "json",
+                    "source": "url",
+                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/trips-v7.geojson",
+                    "url_options": {
+                        "method": "GET",
+                        "data": ""
+                    },
+                    "parser": "backend",
+                    "root_selector": "features",
+                    "columns": [
+                        {
+                            "selector": "properties.vendor",
+                            "text": "vendor",
+                            "type": "number"
+                        },
+                        {
+                            "selector": "properties.timestamps",
+                            "text": "timestamps",
+                            "type": "string"
+                        },
+                        {
+                            "selector": "geometry",
+                            "text": "geometry",
+                            "type": "string"
+                        }
+                    ],
+                    "format": "table"
+                }
+            ],
             "options": {
                 "basemap": {
                     "provider": "maplibre",
@@ -92,12 +156,10 @@
                         "type": "polygon",
                         "label": "Buildings",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/buildings.geojson"
-                        },
+                        "queryRefId": "A",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",
@@ -144,12 +206,10 @@
                         "type": "trips",
                         "label": "Cab trips",
                         "visible": true,
-                        "dataSource": {
-                            "type": "geojson-url",
-                            "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/trips-v7.geojson"
-                        },
+                        "queryRefId": "B",
                         "geometry": {
-                            "type": "none"
+                            "type": "geojson",
+                            "field": "geometry"
                         },
                         "timeFilter": {
                             "mode": "none",
