@@ -18,6 +18,7 @@ export interface HexagonLayerSettings {
 
 export type HexagonLayerConfig = BaseLayerConfig<'hexagon', HexagonLayerSettings>;
 import { createBaseLayerConfig, section } from '../defaults';
+import { createCommonLayerProps } from 'layers/utils';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   teal: [[214, 245, 238], [153, 225, 210], [87, 197, 174], [24, 161, 135], [0, 124, 101], [0, 84, 70]],
@@ -112,19 +113,19 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
       { key: 'upperPercentile', label: 'Upper percentile', type: 'number', defaultValue: 100 },
     ]),
   ],
-  renderLayers({ config, features, timeFilterFlags }: LayerRenderContext<HexagonLayerConfig>) {
+  renderLayers(ctx: LayerRenderContext<HexagonLayerConfig>) {
+    const { config, features, getNumericAccessor } = ctx;
     const options = config.settings;
-    const data = getPointFeatures(features, timeFilterFlags);
+    // const data = getPointFeatures(features, timeFilterFlags);
+    const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
+    const getColorWeight = getNumericAccessor(options.colorWeightField, 1) ?? 1;
+    const getElevationWeight = getNumericAccessor(options.elevationWeightField, 1) ?? 1;
+
     return [
       new HexagonLayer({
-        id: `hexagon/${config.id}`,
-        data,
-        visible: config.visible,
-        opacity: config.opacity,
-        pickable: config.pickable ?? true,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
+        ...commonProps,
+        data: features,
         radius: options.radius,
         coverage: options.coverage,
         extruded: options.extruded,
@@ -135,9 +136,12 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         lowerPercentile: options.lowerPercentile,
         upperPercentile: options.upperPercentile,
         getPosition: (feature: Feature) => (feature.geometry as Point).coordinates as [number, number],
-        getColorWeight: (feature: Feature) => getWeight(feature, options.colorWeightField),
-        getElevationWeight: (feature: Feature) => getWeight(feature, options.elevationWeightField),
-        parameters: { depthTest: config.elevation?.depthTest ?? false },
+        getColorWeight: getColorWeight ?? 1,
+        getElevationWeight: getElevationWeight ?? 1,
+        updateTriggers: {
+          getColorWeight: [options.colorWeightField],
+          getElevationWeight: [options.elevationWeightField],
+        },
       } as any),
     ];
   },

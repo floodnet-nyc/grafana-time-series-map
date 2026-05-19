@@ -2,6 +2,10 @@ import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { ColorScaleConfig } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
+import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, section } from '../defaults';
+import { createCommonLayerProps } from 'layers/utils';
 
 export interface FloodInundationLayerSettings {
   depthDiffField: string;
@@ -9,9 +13,7 @@ export interface FloodInundationLayerSettings {
 }
 
 export type FloodInundationLayerConfig = BaseLayerConfig<'flood-inundation', FloodInundationLayerSettings>;
-import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
-import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+
 
 const VS_FILTER_COLOR = `
 float depthDiff = instanceDepthDiff;
@@ -54,10 +56,10 @@ function getPolygonCoords(f: Feature): number[][][] | null {
   return null;
 }
 
-function getDerivedNumber(feature: Feature, derivedValues: Array<Record<string, unknown>> | undefined, field: string): number {
-  const index = (feature as Feature & { __idx?: number }).__idx;
-  return Number(derivedValues?.[index ?? -1]?.[field] ?? 0);
-}
+// function getDerivedNumber(feature: Feature, derivedValues: Array<Record<string, unknown>> | undefined, field: string): number {
+//   const index = (feature as Feature & { __idx?: number }).__idx;
+//   return Number(derivedValues?.[index ?? -1]?.[field] ?? 0);
+// }
 
 const defaultSettings: FloodInundationLayerSettings = {
   depthDiffField: 'depthDiff',
@@ -76,26 +78,24 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
       { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
     ]),
   ],
-  renderLayers({ config, features, derivedValues, onFeatureClick }: LayerRenderContext<FloodInundationLayerConfig>) {
+  renderLayers(context: LayerRenderContext<FloodInundationLayerConfig>) {
+    const { config, features, derivedValues, getNumericAccessor } = context;
     const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
+    const commonProps = createCommonLayerProps(context);
+    const getElevation = getNumericAccessor(options.depthDiffField, 0);
     return [
       new SolidPolygonLayer({
-        id: `flood-inundation/${config.id}`,
+        ...commonProps,
         data: features,
-        visible: config.visible,
-        pickable: false,
         filled: true,
         stroked: false,
         getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
-        elevationScale: config.elevation?.scale ?? 1,
-        getElevation: (f: Feature) => (config.elevation ? getDerivedNumber(f, derivedValues, options.depthDiffField) : 0),
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: options.fillOpacity,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
-        onClick: onFeatureClick ? (info: any) => info.object && onFeatureClick(info.object, info) : undefined,
-        getDepthDiff: (f: Feature) => getDerivedNumber(f, derivedValues, options.depthDiffField),
+        getDepthDiff: getElevation ?? 0,
+        getElevation: getElevation ?? 0,
+        elevationScale: config.elevation?.scale ?? 1,
         extensions: [
           new InundationExtension({
             name: `floodinundation_${config.id}`,
@@ -107,9 +107,9 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
           }),
         ],
         updateTriggers: {
+          ...commonProps.updateTriggers,
           getDepthDiff: [derivedValues, options.depthDiffField],
         },
-        parameters: { depthTest: false },
       }),
     ];
   },

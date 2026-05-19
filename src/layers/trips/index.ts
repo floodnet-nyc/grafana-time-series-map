@@ -1,6 +1,9 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, section } from '../defaults';
+import { createCommonLayerProps } from 'layers/utils';
 
 export interface TripsLayerSettings {
   timestampsField: string;
@@ -16,8 +19,6 @@ export interface TripsLayerSettings {
 }
 
 export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
 
 interface TripDatum {
   feature: Feature;
@@ -134,19 +135,16 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
       { key: 'jointRounded', label: 'Rounded joints', type: 'boolean', defaultValue: true },
     ]),
   ],
-  renderLayers({ config, features, cursorTimeMs, timeFilterFlags, onFeatureClick }: LayerRenderContext<TripsLayerConfig>) {
+  renderLayers(context: LayerRenderContext<TripsLayerConfig>) {
+    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick } = context;
     const options = config.settings;
     const data = getTripData(features, timeFilterFlags, options);
     const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220]);
+    const commonProps = createCommonLayerProps(context);
     return [
       new TripsLayer<TripDatum>({
-        id: `trips/${config.id}`,
+        ...commonProps,
         data,
-        visible: config.visible,
-        opacity: config.opacity,
-        pickable: config.pickable ?? true,
-        minZoom: config.minZoom,
-        maxZoom: config.maxZoom,
         currentTime: cursorTimeMs,
         trailLength: options.trailLengthMs,
         fadeTrail: options.fadeTrail,
@@ -160,7 +158,6 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
         getColor: (datum: TripDatum) => getColor(datum.feature) as [number, number, number, number],
         getWidth: (datum: TripDatum) => (options.widthField ? Number(datum.feature.properties?.[options.widthField] ?? 1) * options.widthScale : 1),
         onClick: onFeatureClick ? (info: any) => info.object && onFeatureClick(info.object.feature, info) : undefined,
-        parameters: { blend: true, depthTest: config.elevation?.depthTest ?? false } as any,
       } as any),
     ];
   },

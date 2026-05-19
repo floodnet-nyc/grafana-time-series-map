@@ -25,7 +25,6 @@ import {
 
 export interface UsePanelLayersResult {
   layers: Layer[];
-  getTooltip: ((info: PickingInfo) => DeckTooltipContent) | null;
   preparedLayerStates: PreparedLayerState[];
 }
 
@@ -71,18 +70,12 @@ export function usePanelLayers(
     });
   }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 
-  const getTooltip = useMemo(
-    () => (options.tooltip.show !== false ? buildDeckTooltip(options.tooltip.template ?? DEFAULT_TOOLTIP_TEMPLATE) : null),
-    [options.tooltip.show, options.tooltip.template],
-  );
-
   return useMemo(
     () => ({
       layers,
-      getTooltip,
       preparedLayerStates,
     }),
-    [getTooltip, layers, preparedLayerStates],
+    [layers, preparedLayerStates],
   );
 }
 

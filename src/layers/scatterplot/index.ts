@@ -14,6 +14,7 @@ import {
   getNumericProperty,
   getProperty,
 } from '../utils';
+import { autoDecimalsSize, autoDecimalsText } from 'layers/text';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
   radiusMaxPixels: number;
@@ -64,7 +65,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
-    const { config, features, timeFilterFlags, selectedKey } = context;
+    const { config, features, timeFilterFlags, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
 
     const valueField =
@@ -92,9 +93,11 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale);
-    const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
-    const lineAccessors = createLineSelectionAccessors(selectionState);
+    const isSelected = getAccessor(config.selectionKeyField);
+    const lineAccessors = createLineSelectionAccessors({ isSelected, hasSelection: !!config.selectionKeyField && selectedKey !== null });
     // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
+    const getRadius = getNumericAccessor(options.radiusField, options.radiusScale);
+    const getValue = useShader ? getNumericAccessor(valueField) : undefined;
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -111,13 +114,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         getLineWidth: lineAccessors.getLineWidth,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
-        getRadius: options.radiusField
-          ? (f: Feature) => {
-              const v = getNumericProperty(f, options.radiusField);
-              return Math.max(options.radiusMinPixels, v * options.radiusScale);
-            }
-          : options.radiusMinPixels,
-        ...(useShader ? { getValue: (f: Feature) => getNumericProperty(f, valueField) } : {}),
+        getRadius: getRadius ?? options.radiusMinPixels,
+        ...(useShader ? { getValue } : {}),
         extensions: [...commonProps.extensions, ...(shaderExtensions as any[])],
         updateTriggers: {
           ...commonProps.updateTriggers,
@@ -130,7 +128,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ];
 
     if (options.showLabels) {
-      const labelField = options.labelField || valueField;
+      const getText = getAccessor(options.labelField || valueField, '');
+      const getCollisionPriority = getNumericAccessor(config.elevation?.field, config.elevation ? config.elevation.scale : 1);
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
@@ -139,22 +138,13 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           visible: config.visible,
           pickable: false,
           getPosition: (f: Feature) => getFeaturePosition(f, config, 2),
-          getText: (f: Feature) => {
-            const v = getProperty(f, labelField);
-            if (v === undefined || v === null) {
-              return '';
-            }
-            if (typeof v === 'number') {
-              return v.toFixed(getDecimals(v));
-            }
-            return String(v);
-          },
-          getSize: (f: Feature) => {
-            const v = getNumericProperty(f, options.radiusField);
+          getText: getText ? (f: Feature, ctx) => autoDecimalsText(getText(f, ctx), true) : undefined,
+          getSize: getRadius ? (f: Feature, ctx) => {
+            const v = getRadius(f, ctx);
             const decs = getDecimals(v);
             const chars = String(v.toFixed(decs)).length;
             return options.radiusMinPixels + Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / chars;
-          },
+          } : 12,
           getColor: [255, 255, 255, 220],
           getAlignmentBaseline: 'center',
           getAnchor: 'middle',
@@ -167,7 +157,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           filterRange: [1, 1] as [number, number],
           collisionGroup: 'scatter-labels',
           collisionTestProps: { sizeScale: 2 },
-          getCollisionPriority: (f: any) => config.elevation?.field ? getNumericProperty(f, config.elevation.field) - 1000 : -1000,
+          getCollisionPriority: getCollisionPriority ?? 0,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
           updateTriggers: { getFilterValue: [timeFilterFlags] },
           parameters: { depthTest: false },
