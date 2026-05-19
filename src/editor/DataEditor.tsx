@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
-import { useStyles2, Field, Button, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
+import { useStyles2, Field, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerDerivedFieldConfig, LayerSecondarySourceConfig } from '../types';
 import { FieldSelect } from './FieldSelect';
@@ -139,10 +139,25 @@ export function DataEditor({
     items: secondarySources,
     onChange: onSecondarySourcesChange,
   });
+  const {
+    selectedIndex: selectedDerivedFieldIndex,
+    setSelectedIndex: setSelectedDerivedFieldIndex,
+    patchAt: patchDerivedField,
+    addItem: addDerivedFieldItem,
+    removeAt: removeDerivedField,
+    moveAt: moveDerivedField,
+  } = useSelectableListState({
+    items: derivedFields,
+    onChange: onDerivedFieldsChange,
+  });
 
   const addSecondarySource = useCallback(() => {
     addSecondarySourceItem(getDefaultSecondarySource(queryRefId, availableRefIds));
   }, [addSecondarySourceItem, availableRefIds, queryRefId]);
+
+  const addDerivedField = useCallback(() => {
+    addDerivedFieldItem({ as: '', expression: '', type: 'number' });
+  }, [addDerivedFieldItem]);
 
   return (
     <>
@@ -173,24 +188,23 @@ export function DataEditor({
         />
       </Field>
       <Field label="Derived fields">
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => onDerivedFieldsChange([...derivedFields, { as: '', expression: '', type: 'number' }])}
-        >
-          Add derived field
-        </Button>
+        <SelectableListEditor
+          items={derivedFields}
+          selectedIndex={selectedDerivedFieldIndex}
+          onSelect={setSelectedDerivedFieldIndex}
+          getItemKey={(field, index) => `${field.as || 'derived-field'}-${index}`}
+          getItemLabel={(field, index) => field.as || `Derived field ${index + 1}`}
+          addButtonLabel="Add derived field"
+          onAdd={addDerivedField}
+          onMove={moveDerivedField}
+          onRemove={removeDerivedField}
+          renderEditor={(field, index) => (
+            <div className={styles.card}>
+              <DerivedFieldEditor field={field} patchField={(updates) => patchDerivedField(index, updates)} />
+            </div>
+          )}
+        />
       </Field>
-      {derivedFields.map((field, index) => (
-        <div key={`derived-${index}`} className={styles.card}>
-          <DerivedFieldEditor
-            field={field}
-            patchField={(updates) =>
-              onDerivedFieldsChange(derivedFields.map((item, i) => (i === index ? { ...item, ...updates } : item)))
-            }
-          />
-        </div>
-      ))}
     </>
   );
 }
