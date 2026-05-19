@@ -154,7 +154,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
       { key: 'maxFrameRate', label: 'Max frame rate (fps)', type: 'number', defaultValue: 0 },
     ]),
   ],
-  renderLayers({ config, features, cursorTimeMs }: LayerRenderContext<CogLayerConfig>) {
+  renderLayers(context: LayerRenderContext<CogLayerConfig>) {
+    const { config, features, cursorTimeMs, getAccessor } = context;
     const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
     const frames: TimeCOGFrame[] = [];
@@ -169,11 +170,17 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
       return [];
     }
     const renderTile = getStableRenderTile(options.colorMaxValue, colorScale);
+
+    const [getUrl, updatesUrl] = getAccessor(options.urlField);
+    const [getTime, updatesTime] = getAccessor(options.timestampField);
+
     return [
       new TimeCOGLayer({
         id: `cog/${config.id}`,
-        frames,
+        frames: features,
         currentTime: cursorTimeMs,
+        getUrl,
+        getTime,
         getTileData,
         renderTile,
         opacity: config.opacity,
@@ -181,6 +188,10 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
         maxRequests: options.maxRequests,
         maxFrameRate: options.maxFrameRate,
         pool: mainThreadPool,
+        updateTriggers: {
+          getUrl: updatesUrl,
+          getTime: updatesTime,
+        },
       }),
     ];
   },

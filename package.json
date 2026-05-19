@@ -84,7 +84,7 @@
     "@developmentseed/geotiff": "^0.6.1",
     "@emotion/css": "11.10.6",
     "@floating-ui/dom": "^1.7.6",
-    "@floodnet/deck.gl-time-cog-layer": "^0.1.2",
+    "@floodnet/deck.gl-time-cog-layer": "^0.2.10",
     "@grafana/data": "12.4.2",
     "@grafana/i18n": "12.4.2",
     "@grafana/runtime": "12.4.2",
