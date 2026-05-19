@@ -1,64 +1,39 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
 import { WidgetEditor } from './WidgetEditor';
 import { SelectableListEditor } from './SelectableListEditor';
+import { useSelectableListState } from './useSelectableListState';
 
 interface Props extends StandardEditorProps<WidgetConfig[]> {}
 
 export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
   const styles = useStyles2(getStyles);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
   const widgetList = useMemo(() => widgets ?? [], [widgets]);
+  const {
+    selectedIndex,
+    setSelectedIndex,
+    updateAt: updateWidget,
+    addItem: addWidgetItem,
+    removeAt: removeWidget,
+    moveAt: moveWidget,
+  } = useSelectableListState({
+    items: widgetList,
+    onChange,
+    removeBehavior: 'clear',
+  });
 
-  const addWidget = useCallback((type='') => {
-    const next = [
-      ...widgetList,
-      {
-        id: `widget-${widgetList.length + 1}`,
-        type,
-        label: '',
-        visible: true,
-        settings: {},
-      } as WidgetConfig,
-    ];
-    onChange(next);
-    setSelectedIndex(next.length - 1);
-  }, [widgetList, onChange]);
-
-  const removeWidget = useCallback(
-    (i: number) => {
-      onChange(widgetList.filter((_, idx) => idx !== i));
-      setSelectedIndex(null);
-    },
-    [widgetList, onChange],
-  );
-
-  const moveWidget = useCallback(
-    (i: number, dir: -1 | 1) => {
-      const j = i + dir;
-      if (j < 0 || j >= widgetList.length) {
-        return;
-      }
-      const next = [...widgetList];
-      [next[i], next[j]] = [next[j], next[i]];
-      onChange(next);
-      setSelectedIndex(j);
-    },
-    [widgetList, onChange],
-  );
-
-  const updateWidget = useCallback(
-    (i: number, widget: WidgetConfig) => {
-      const next = [...widgetList];
-      next[i] = widget;
-      onChange(next);
-    },
-    [widgetList, onChange],
-  );
+  const addWidget = useCallback((type = '') => {
+    addWidgetItem({
+      id: `widget-${widgetList.length + 1}`,
+      type,
+      label: '',
+      visible: true,
+      settings: {},
+    } as WidgetConfig);
+  }, [addWidgetItem, widgetList.length]);
 
   const toggleVisibility = useCallback(
     (i: number) => {

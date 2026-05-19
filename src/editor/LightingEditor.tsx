@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
 import {
   ColorPicker,
@@ -14,6 +14,7 @@ import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { DeckLightColor, DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
 import { DEFAULT_DECK_LIGHTING } from '../utils/deckgl/lighting';
 import { SelectableListEditor } from './SelectableListEditor';
+import { useSelectableListState } from './useSelectableListState';
 
 const lightTypes: Array<ComboboxOption<DeckLightType>> = [
   { label: 'Ambient', value: 'ambient' },
@@ -124,7 +125,6 @@ function NumberField({ label, value, fallback, onChange }: NumberFieldProps) {
 
 export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLightingOptions>) {
   const styles = useStyles2(getStyles);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const lighting = value ?? DEFAULT_DECK_LIGHTING;
   const lights = lighting.lights ?? DEFAULT_DECK_LIGHTING.lights;
 
@@ -132,40 +132,21 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
     onChange({ ...lighting, ...updates });
   }, [lighting, onChange]);
 
-  const patchLight = useCallback((index: number, updates: Partial<DeckLightConfig>) => {
-    const next = lights.map((light, i) => i === index ? { ...light, ...updates } : light);
-    patch({ lights: next });
-  }, [lights, patch]);
+  const {
+    selectedIndex,
+    setSelectedIndex,
+    patchAt: patchLight,
+    addItem: addLightItem,
+    removeAt: removeLight,
+    moveAt: moveLight,
+  } = useSelectableListState({
+    items: lights,
+    onChange: (next) => patch({ lights: next }),
+  });
 
   const addLight = useCallback(() => {
-    patch({ lights: [...lights, defaultLight('point', lights.length)] });
-    setSelectedIndex(lights.length);
-  }, [lights, patch]);
-
-  const removeLight = useCallback((index: number) => {
-    patch({ lights: lights.filter((_, i) => i !== index) });
-    setSelectedIndex((current) => {
-      if (current === null) {
-        return current;
-      }
-      if (current === index) {
-        return null;
-      }
-      return current > index ? current - 1 : current;
-    });
-  }, [lights, patch]);
-
-  const moveLight = useCallback((index: number, direction: -1 | 1) => {
-    const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= lights.length) {
-      return;
-    }
-
-    const next = [...lights];
-    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-    patch({ lights: next });
-    setSelectedIndex(nextIndex);
-  }, [lights, patch]);
+    addLightItem(defaultLight('point', lights.length));
+  }, [addLightItem, lights.length]);
 
   return (
     <div className={styles.container}>

@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import { layerDefinitions, type LayerConfig } from '../layers/_all';
 import { LayerEditor } from './LayerEditor';
 import { SelectableListEditor } from './SelectableListEditor';
+import { useSelectableListState } from './useSelectableListState';
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
   const renderer = layerDefinitions.find((definition) => definition.type === type);
@@ -88,9 +89,19 @@ const getAvailableFieldsForLayer = (layer: LayerConfig | undefined, fieldIndex: 
 
 export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const styles = useStyles2(getStyles);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
   const layerList = useMemo(() => layers ?? [], [layers]);
+  const {
+    selectedIndex,
+    setSelectedIndex,
+    updateAt: updateLayer,
+    addItem: addLayerItem,
+    removeAt: removeLayer,
+    moveAt: moveLayer,
+  } = useSelectableListState({
+    items: layerList,
+    onChange,
+    removeBehavior: 'clear',
+  });
   const fieldIndex = useMemo(() => buildFieldIndex(context?.data ?? []), [context?.data]);
   const queryFieldsByRefId = useMemo(() => Object.fromEntries(fieldIndex.fieldsByRefId), [fieldIndex.fieldsByRefId]);
   const selectedLayer = selectedIndex !== null ? layerList[selectedIndex] : undefined;
@@ -101,44 +112,8 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
 
   const addLayer = useCallback(() => {
     const firstType = layerDefinitions[0]?.type ?? 'scatterplot';
-    const newLayer = makeDefaultLayer(firstType, layerList.length);
-    const next = [...layerList, newLayer];
-    onChange(next);
-    setSelectedIndex(next.length - 1);
-  }, [layerList, onChange]);
-
-  const removeLayer = useCallback(
-    (i: number) => {
-      const next = layerList.filter((_, idx) => idx !== i);
-      onChange(next);
-      setSelectedIndex(null);
-    },
-    [layerList, onChange],
-  );
-
-  const moveLayer = useCallback(
-    (i: number, dir: -1 | 1) => {
-      const j = i + dir;
-      if (j < 0 || j >= layerList.length) {
-        return;
-      }
-
-      const next = [...layerList];
-      [next[i], next[j]] = [next[j], next[i]];
-      onChange(next);
-      setSelectedIndex(j);
-    },
-    [layerList, onChange],
-  );
-
-  const updateLayer = useCallback(
-    (i: number, layer: LayerConfig) => {
-      const next = [...layerList];
-      next[i] = layer;
-      onChange(next);
-    },
-    [layerList, onChange],
-  );
+    addLayerItem(makeDefaultLayer(firstType, layerList.length));
+  }, [addLayerItem, layerList.length]);
 
   const toggleLayerVisibility = useCallback(
     (i: number) => {

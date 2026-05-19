@@ -1,9 +1,11 @@
-import React, { } from 'react';
+import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, Field, Button, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerDerivedFieldConfig, LayerSecondarySourceConfig } from '../types';
 import { FieldSelect } from './FieldSelect';
+import { SelectableListEditor } from './SelectableListEditor';
+import { useSelectableListState } from './useSelectableListState';
 
 const DERIVED_FIELD_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Number', value: 'number' },
@@ -126,40 +128,50 @@ export function DataEditor({
   onSecondarySourcesChange,
 }: Props) {
   const styles = useStyles2(getStyles);
+  const {
+    selectedIndex: selectedSecondarySourceIndex,
+    setSelectedIndex: setSelectedSecondarySourceIndex,
+    patchAt: patchSecondarySource,
+    addItem: addSecondarySourceItem,
+    removeAt: removeSecondarySource,
+    moveAt: moveSecondarySource,
+  } = useSelectableListState({
+    items: secondarySources,
+    onChange: onSecondarySourcesChange,
+  });
+
+  const addSecondarySource = useCallback(() => {
+    addSecondarySourceItem(getDefaultSecondarySource(queryRefId, availableRefIds));
+  }, [addSecondarySourceItem, availableRefIds, queryRefId]);
 
   return (
     <>
       <Field label="Secondary sources">
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => onSecondarySourcesChange([...secondarySources, getDefaultSecondarySource(queryRefId, availableRefIds)])}
-        >
-          Add secondary source
-        </Button>
+        <SelectableListEditor
+          items={secondarySources}
+          selectedIndex={selectedSecondarySourceIndex}
+          onSelect={setSelectedSecondarySourceIndex}
+          getItemKey={(source, index) => `${source.queryRefId || 'first-query'}-${index}`}
+          getItemLabel={(source, index) => source.queryRefId || `First query source ${index + 1}`}
+          addButtonLabel="Add secondary source"
+          onAdd={addSecondarySource}
+          onMove={moveSecondarySource}
+          onRemove={removeSecondarySource}
+          renderEditor={(source, index) => (
+            <div className={styles.card}>
+              <JoinSourceEditor
+                source={source}
+                index={index}
+                secondarySources={secondarySources}
+                availableFields={availableFields}
+                availableRefIds={availableRefIds}
+                queryFieldsByRefId={queryFieldsByRefId}
+                patchSource={(updates) => patchSecondarySource(index, updates)}
+              />
+            </div>
+          )}
+        />
       </Field>
-      {secondarySources.map((source, index) => {
-        return (
-          <div key={source.queryRefId || index} className={styles.card}>
-            <JoinSourceEditor
-              source={source}
-              index={index}
-              secondarySources={secondarySources}
-              availableFields={availableFields}
-              availableRefIds={availableRefIds}
-              queryFieldsByRefId={queryFieldsByRefId}
-              patchSource={(updates) => onSecondarySourcesChange(secondarySources.map((item, i) => (i === index ? { ...item, ...updates } : item)))}
-            />
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => onSecondarySourcesChange(secondarySources.filter((_, i) => i !== index))}
-            >
-              Remove secondary source
-            </Button>
-          </div>
-        );
-      })}
       <Field label="Derived fields">
         <Button
           size="sm"
@@ -186,16 +198,7 @@ export function DataEditor({
 function getStyles(theme: GrafanaTheme2) {
   return {
     card: css({
-      border: `1px solid ${theme.colors.border.weak}`,
       padding: theme.spacing(1),
-      borderRadius: theme.shape.radius.default,
-      marginBottom: theme.spacing(1),
-    }),
-    nestedCard: css({
-      border: `1px solid ${theme.colors.border.weak}`,
-      padding: theme.spacing(1),
-      borderRadius: theme.shape.radius.default,
-      marginBottom: theme.spacing(1),
     }),
   };
 }
