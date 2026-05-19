@@ -91,17 +91,16 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale);
-    const isSelected = getAccessor(config.selectionKeyField);
+    const [isSelected] = getAccessor(config.selectionKeyField);
     const lineAccessors = createLineSelectionAccessors(isSelected);
 
     // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
-    const getRadius = getNumericAccessor(options.radiusField, options.radiusScale);
-    const getValue = useShader ? getNumericAccessor(valueField) : undefined;
+    const [getRadius, updateRadius] = getNumericAccessor(options.radiusField, options.radiusScale);
+    const [getValue, updateValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
 
     const layers: any[] = [
       new ScatterplotLayer({
         ...commonProps,
-        id: `scatterplot/${config.id}`,
         data: features,
         radiusMinPixels: options.radiusMinPixels,
         radiusMaxPixels: options.radiusMaxPixels,
@@ -120,15 +119,16 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           ...commonProps.updateTriggers,
           getLineColor: [selectedKey],
           getLineWidth: [selectedKey],
-          ...(useShader ? { getValue: [selectedKey, valueField, config.colorScale] } : {}),
+          getRadius: [...updateRadius],
+          ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
         },
         parameters: { blend: true, depthTest: false },
       }),
     ];
 
     if (options.showLabels) {
-      const getText = getAccessor(options.labelField || valueField, '');
-      const getCollisionPriority = getNumericAccessor(config.elevation?.field, config.elevation ? config.elevation.scale : 1);
+      const [getText, updateText] = getAccessor(options.labelField || valueField, '');
+      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(config.elevation?.field, config.elevation ? config.elevation.scale : 1);
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
@@ -158,7 +158,11 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           collisionTestProps: { sizeScale: 2 },
           getCollisionPriority: getCollisionPriority ?? 0,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
-          updateTriggers: { getFilterValue: [timeFilterFlags] },
+          updateTriggers: { 
+            getFilterValue: [timeFilterFlags],
+            getText: updateText,
+            getCollisionPriority: updateCollisionPriority,
+          },
           parameters: { depthTest: false },
           polygonOffset: 1,
         }),

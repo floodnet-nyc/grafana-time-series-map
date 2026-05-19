@@ -180,43 +180,48 @@ export function buildPreparedLayerStates(
   secondarySourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, number>>>> = new Map(),
 ): PreparedLayerState[] {
   return layerConfigs.map((config) => {
+    if (config.id !== 'event-depth-2') config.visible = false; // --- IGNORE ---
     const features = featuresByLayerId.get(config.id) ?? [];
     const timeFilterFlags = flagsByLayerId.get(config.id) ?? new Uint8Array(features.length);
     const secondarySourceValues = secondarySourceValuesByLayerId.get(config.id);
     const derivedFields = compileDerivedFields(config);
     const derivedValues = buildDerivedValues(derivedFields, config, features, secondarySourceValues);
+    console.log(config.id, { features, timeFilterFlags, secondarySourceValues, derivedValues });
 
     const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => {
       if (!fieldName) {
         // console.log('Using default accessor for empty field name');
-        return undefined;
+        return [undefined, []];
       }
 
       const derivedField = derivedFields?.find((f) => f.as === fieldName);
       if (derivedField) {
         console.log('Using derived field accessor for field', fieldName);
-        return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => derivedValues?.[index]?.[fieldName] ?? defaultValue;
+        return [(f: Feature, { index, ...ctx }: AccessorContext<Feature>) => derivedValues?.[index]?.[fieldName] ?? defaultValue, [fieldName, defaultValue]];
       }
       if (secondarySourceValues) {
-        for (const sourceValues of secondarySourceValues.values()) {
-          const secConfig = config.secondarySources?.find((s) => s.join.localKeyField === fieldName);
+        for (const [refId, sourceValues] of secondarySourceValues.entries()) {
+          const secConfig = config.secondarySources?.find((s) => s.queryRefId === refId);
           if (secConfig) {
-            console.log('Using secondary source accessor for field', fieldName);
-            return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => {
-              const properties = features[index]?.properties;
-              if (!properties) return undefined;
-              const localKey = String(properties?.[secConfig.join.localKeyField] ?? '');
-              return sourceValues.get(localKey)?.[fieldName] ?? defaultValue;
-            };
+            const field = secConfig.fields.find((f) => f.sourceField === fieldName);
+            if (field) {
+              const localKeyField = secConfig.join.localKeyField;
+              console.log('Using secondary source accessor for field', fieldName);
+              return [(f: Feature, { index, ...ctx }: AccessorContext<Feature>) => {
+                const localKey = String(f.properties?.[localKeyField] ?? '');
+                const value = sourceValues.get(localKey)?.[fieldName];
+                return value ?? defaultValue;
+              }, [fieldName, defaultValue, secondarySourceValues]];
+            }
           }
         }
       }
       console.log('Using primary accessor for field', fieldName);
-      return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => {
+      return [(f: Feature, ctx: AccessorContext<Feature>) => {
         // const feature = features[index];
         // if (!feature) return undefined;
         return f.properties?.[fieldName] ?? defaultValue;
-      };
+      }, [fieldName, defaultValue]];
     };
 
     return {
@@ -227,11 +232,11 @@ export function buildPreparedLayerStates(
       derivedValues,
       getAccessor,
       getNumericAccessor: (fieldName: string, defaultValue = 0) => {
-        const accessor = getAccessor(fieldName, defaultValue);
-        return accessor ? (f: Feature, ctx: AccessorContext<Feature>) => {
+        const [accessor, updates] = getAccessor(fieldName, defaultValue);
+        return [accessor ? (f: Feature, ctx: AccessorContext<Feature>) => {
           const v = accessor(f, ctx);
           return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
-        } : undefined;
+        } : undefined, updates];
       },
     }
   });
