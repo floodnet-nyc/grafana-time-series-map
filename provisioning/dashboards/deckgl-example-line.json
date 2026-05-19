@@ -178,15 +178,23 @@
                         "type": "scatterplot",
                         "label": "Airports",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.9,
@@ -203,11 +211,23 @@
                         "settings": {
                             "radiusMinPixels": 2,
                             "radiusMaxPixels": 6,
-                            "radiusField": "",
                             "radiusScale": 1,
                             "stroked": false,
                             "showLabels": false,
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     },
                     {
@@ -215,19 +235,24 @@
                         "type": "line",
                         "label": "Flights from Heathrow",
                         "visible": true,
-                        "queryRefId": "B",
                         "geometry": {
                             "type": "none"
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.8,
                         "colorScale": {
                             "type": "threshold",
-                            "field": "srcAlt",
+                            "field": {
+                                "source": "main",
+                                "field": "srcAlt"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -340,14 +365,35 @@
                             ]
                         },
                         "settings": {
-                            "srcLngField": "srcLng",
-                            "srcLatField": "srcLat",
-                            "tgtLngField": "tgtLng",
-                            "tgtLatField": "tgtLat",
                             "widthMinPixels": 3,
                             "widthMaxPixels": 3,
-                            "widthField": "",
-                            "widthScale": 1
+                            "widthScale": 1,
+                            "width": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "srcLng": {
+                                "source": "main",
+                                "field": "srcLng"
+                            },
+                            "srcLat": {
+                                "source": "main",
+                                "field": "srcLat"
+                            },
+                            "tgtLng": {
+                                "source": "main",
+                                "field": "tgtLng"
+                            },
+                            "tgtLat": {
+                                "source": "main",
+                                "field": "tgtLat"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "B"
+                            }
                         }
                     }
                 ],
@@ -386,7 +432,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Line",
+    "title": "Deck.gl Showcase — Line",
     "uid": "deckgl-showcase-line",
     "version": 1,
     "weekStart": ""

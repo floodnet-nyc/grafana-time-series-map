@@ -64,8 +64,10 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const popupFeature =
     selectedFeature && selectedKey
       ? options.layers.some((layer) => {
-          const keyField = layer.selectionKeyField;
-          return keyField ? String(selectedFeature.properties?.[keyField] ?? '') === selectedKey : false;
+          const keyField = layer.selectionKey;
+          return keyField?.field && keyField.source === layer.data.featureSource.id
+            ? String(selectedFeature.properties?.[keyField.field] ?? '') === selectedKey
+            : false;
         })
         ? selectedFeature
         : null
@@ -73,9 +75,10 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   const onFeatureClick = useCallback(
     (feature: Feature, info: any) => {
-      const keyField = info.layer.props.config?.selectionKeyField;
-      if (!keyField) { return; }
-      const key = String(feature.properties?.[keyField] ?? '');
+      const keyField = info.layer.props.config?.selectionKey;
+      const featureSourceId = info.layer.props.config?.data?.featureSource?.id;
+      if (!keyField?.field || keyField.source !== featureSourceId) { return; }
+      const key = String(feature.properties?.[keyField.field] ?? '');
       if (!key) { return; }
       if (key === selectedKey) {
         selectKey(null);

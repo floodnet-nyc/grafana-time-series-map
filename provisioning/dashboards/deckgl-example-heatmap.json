@@ -99,15 +99,23 @@
                         "type": "heatmap",
                         "label": "Pickup density",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.95,
@@ -120,7 +128,16 @@
                             "radiusPixels": 5,
                             "intensity": 1,
                             "threshold": 5,
-                            "weightField": "weight"
+                            "weight": {
+                                "source": "main",
+                                "field": "weight"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -159,7 +176,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Heatmap",
+    "title": "Deck.gl Showcase — Heatmap",
     "uid": "deckgl-showcase-heatmap",
     "version": 1,
     "weekStart": ""

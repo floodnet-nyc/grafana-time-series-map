@@ -204,12 +204,12 @@ export function computeClosestFlags(
 export function resolveAsofLookup(
   features: Feature[],
   packed: { keyIndex: Map<string, number>; buckets: PackedSeries[] },
-  fields: Array<{ sourceField: string }>,
+  fields: Array<{ sourceField: string; targetField?: string }>,
   t0: number,
   maxLag = DEFAULT_MAX_LAG_MS,
-): Map<string, Record<string, number>> {
+): Map<string, Record<string, unknown>> {
   const { keyIndex, buckets } = packed;
-  const result = new Map<string, Record<string, number>>();
+  const result = new Map<string, Record<string, unknown>>();
 
   for (const [groupKey, idx] of keyIndex.entries()) {
     const bucket = buckets[idx];
@@ -217,9 +217,9 @@ export function resolveAsofLookup(
     if (j < 0 || t0 - bucket.times[j] > maxLag) continue;
 
     const props = features[bucket.indices[j]].properties ?? {};
-    const record: Record<string, number> = {};
-    for (const { sourceField } of fields) {
-      record[sourceField] = Number(props[sourceField] ?? 0);
+    const record: Record<string, unknown> = {};
+    for (const { sourceField, targetField } of fields) {
+      record[targetField ?? sourceField] = props[sourceField];
     }
     result.set(groupKey, record);
   }

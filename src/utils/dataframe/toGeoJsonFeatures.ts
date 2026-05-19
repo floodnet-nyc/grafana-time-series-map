@@ -1,6 +1,7 @@
 import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
 import type { GeometrySource } from '../../types';
+import { DEFAULT_FEATURE_SOURCE_ID } from '../../layers/defaults';
 import { parseGeometry } from './geometry';
 
 export type GeoFeature = Feature & { __idx: number };
@@ -20,6 +21,7 @@ function resolveValue(field: Field, i: number): unknown {
 export function dataFrameToFeatures(
   frame: DataFrame,
   geometry: GeometrySource,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID,
 ): GeoFeature[] {
   const len = frame.length;
   const features: GeoFeature[] = [];
@@ -31,11 +33,17 @@ export function dataFrameToFeatures(
   if (geometry.type === 'none') {
     // no geometry needed — fall through to property extraction
   } else if (geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') {
-    geomField = resolveField(frame, geometry.field);
+    if (geometry.value.source !== featureSourceId) {
+      return [];
+    }
+    geomField = resolveField(frame, geometry.value.field);
     if (!geomField) { return []; }
   } else if (geometry.type === 'latlng') {
-    latField = resolveField(frame, geometry.latField);
-    lngField = resolveField(frame, geometry.lngField);
+    if (geometry.lat.source !== featureSourceId || geometry.lng.source !== featureSourceId) {
+      return [];
+    }
+    latField = resolveField(frame, geometry.lat.field);
+    lngField = resolveField(frame, geometry.lng.field);
     if (!latField || !lngField) { return []; }
   }
 
@@ -84,6 +92,7 @@ export function dataFramesToFeatures(
   refId: string | undefined,
   geometry: GeometrySource,
   elevationField: string | undefined,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID,
 ): GeoFeature[] {
   const matching = refId
     ? frames.filter((f) => f.refId === refId)
@@ -92,7 +101,7 @@ export function dataFramesToFeatures(
   const all: GeoFeature[] = [];
   let offset = 0;
   for (const frame of matching) {
-    const feats = dataFrameToFeatures(frame, geometry);
+    const feats = dataFrameToFeatures(frame, geometry, featureSourceId);
     for (const f of feats) {
       f.__idx = offset++;
       all.push(f);

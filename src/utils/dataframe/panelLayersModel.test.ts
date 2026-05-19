@@ -2,11 +2,11 @@ import type { Layer } from '@deck.gl/core';
 jest.mock('../../layers/_all', () => ({
   layerDefinitions: [],
 }));
-jest.mock('../../layers/extensions', () => ({
+jest.mock('../../extensions', () => ({
   layerExtensionDefinitions: [],
 }));
 import {
-  buildSecondarySourceValuesByLayerId,
+  buildJoinedSourceValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
   renderPreparedLayers,
@@ -15,6 +15,7 @@ import {
 import { buildPacked } from './closestTimeFiltering';
 import type { MapPanelOptions } from '../../types';
 import type { LayerConfig } from '../../layers/_all';
+import { createSourceRef } from '../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
 import type { GeoFeature } from './toGeoJsonFeatures';
 import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../layers/types';
@@ -25,20 +26,21 @@ function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
     type: 'scatterplot',
     label: 'Layer 1',
     visible: true,
+    data: { featureSource: { id: 'main', refId: '' } },
     settings: {
       radiusMinPixels: 4,
       radiusMaxPixels: 20,
-      radiusField: '',
+      radius: createSourceRef(),
       radiusScale: 1,
-      elevationField: '',
+      elevation: createSourceRef(),
       elevationScale: 1,
       depthTest: false,
       stroked: true,
       showLabels: false,
-      labelField: '',
+      label: createSourceRef(),
     },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: 'time' },
+    timeFilter: { mode: 'none', time: createSourceRef('time') },
     opacity: 1,
   };
   return { ...base, ...overrides } as LayerConfig;
@@ -71,8 +73,8 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
 
 function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getNumericAccessor'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
-    [fieldName, defaultValue],
+    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
     const [accessor, deps] = getAccessor(fieldName, defaultValue);
@@ -93,7 +95,7 @@ function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getNumeric
 describe('panelLayersModel', () => {
   it('builds window time-filter flags with tolerance', () => {
     const config = createLayerConfig({
-      timeFilter: { mode: 'window', timeField: 'time', windowToleranceMs: 100 },
+      timeFilter: { mode: 'window', time: createSourceRef('time'), windowToleranceMs: 100 },
     });
     const featuresByLayerId = new Map([
       [
@@ -112,7 +114,7 @@ describe('panelLayersModel', () => {
 
   it('builds as-of time-filter flags from packed series', () => {
     const config = createLayerConfig({
-      timeFilter: { mode: 'asof', timeField: 'time', groupByField: 'deployment_id', maxLagMs: 1000 },
+      timeFilter: { mode: 'asof', time: createSourceRef('time'), groupBy: createSourceRef('deployment_id'), maxLagMs: 1000 },
     });
     const features = [
       createFeature({ deployment_id: 'a', time: 1000 }, 'a-1', 0),
@@ -128,20 +130,24 @@ describe('panelLayersModel', () => {
     expect(Array.from(flags.get(config.id) ?? [])).toEqual([0, 1, 1]);
   });
 
-  it('builds prepared layer state objects from feature and secondary source maps', () => {
+  it('builds prepared layer state objects from feature and joined source maps', () => {
     const config = createLayerConfig({
-      secondarySources: [
+      data: {
+        featureSource: { id: 'main', refId: '' },
+        joinedSources: [
         {
-          queryRefId: 'A',
+          id: 'A',
+          refId: 'A',
           join: {
             type: 'keyed-asof',
-            localKeyField: 'deployment_id',
-            remoteKeyField: 'deployment_id',
-            timeField: 'time',
+            localKey: createSourceRef('deployment_id'),
+            remoteKey: 'deployment_id',
+            time: 'time',
           },
-          fields: [{ sourceField: 'depth' }],
+          fields: [{ field: 'depth' }],
         },
       ],
+      },
       derivedFields: [
         {
           as: 'depthDiff',
@@ -153,36 +159,40 @@ describe('panelLayersModel', () => {
     const features = [createFeature({ time: 1000, deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
     const featuresByLayerId = new Map([[config.id, features]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
-    const secondarySourceValues = new Map([
+    const joinedSourceValues = new Map([
       [config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])],
     ]);
 
-    const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, secondarySourceValues);
+    const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, joinedSourceValues);
 
     expect(state.config).toBe(config);
     expect(state.features).toEqual(features);
     expect(state.timeFilterFlags).toEqual(new Uint8Array([1]));
-    expect(state.secondarySourceValues).toEqual(new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]));
+    expect(state.joinedSourceValues).toEqual(new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]));
     expect(state.derivedValues).toEqual([{ depthDiff: 3 }]);
     expect(state.getAccessor).toEqual(expect.any(Function));
     expect(state.getNumericAccessor).toEqual(expect.any(Function));
   });
 
-  it('resolves keyed as-of secondary source values at the current cursor time', () => {
+  it('resolves keyed as-of joined source values at the current cursor time', () => {
     const config = createLayerConfig({
-      secondarySources: [
+      data: {
+        featureSource: { id: 'main', refId: '' },
+        joinedSources: [
         {
-          queryRefId: 'B',
+          id: 'B',
+          refId: 'B',
           join: {
             type: 'keyed-asof',
-            localKeyField: 'deployment_id',
-            remoteKeyField: 'deployment_id',
-            timeField: 'time',
+            localKey: createSourceRef('deployment_id'),
+            remoteKey: 'deployment_id',
+            time: 'time',
             maxLagMs: 1000,
           },
-          fields: [{ sourceField: 'depth' }],
+          fields: [{ field: 'depth' }],
         },
       ],
+      },
     });
 
     const sourceFeatures = [
@@ -205,7 +215,7 @@ describe('panelLayersModel', () => {
       ],
     ]);
 
-    const valuesByLayerId = buildSecondarySourceValuesByLayerId([config], packedByLayerId, 2100);
+    const valuesByLayerId = buildJoinedSourceValuesByLayerId([config], packedByLayerId, 2100);
 
     expect(valuesByLayerId.get(config.id)).toEqual(
       new Map([

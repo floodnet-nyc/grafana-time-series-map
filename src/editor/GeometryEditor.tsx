@@ -1,7 +1,8 @@
 import React from 'react';
 import { Field, Combobox, type ComboboxOption } from '@grafana/ui';
 import type { GeometrySource } from '../types';
-import { FieldSelect } from './FieldSelect';
+import { createSourceRef } from '../layers/defaults';
+import { SourceRefEditor } from './SourceRefEditor';
 
 const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Lat / Lng columns', value: 'latlng' },
@@ -13,18 +14,21 @@ const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
 
 interface Props {
   geometry: GeometrySource;
-  availableFields: string[];
+  sourceOptions: Array<{ id: string; label: string }>;
+  fieldsBySource: Record<string, string[]>;
   onGeometryChange: (geometry: GeometrySource) => void;
 }
 
-export function GeometryEditor({ geometry, availableFields, onGeometryChange }: Props) {
+export function GeometryEditor({ geometry, sourceOptions, fieldsBySource, onGeometryChange }: Props) {
+  const defaultSource = sourceOptions[0]?.id;
+
   const handleGeometryType = (type: GeometrySource['type']) => {
     const next: GeometrySource =
       type === 'none'
         ? { type: 'none' }
         : type === 'latlng'
-          ? { type: 'latlng', latField: '', lngField: '' }
-          : { type, field: '' };
+          ? { type: 'latlng', lat: createSourceRef('', defaultSource), lng: createSourceRef('', defaultSource) }
+          : { type, value: createSourceRef('', defaultSource) };
     onGeometryChange(next);
   };
 
@@ -39,27 +43,30 @@ export function GeometryEditor({ geometry, availableFields, onGeometryChange }: 
       </Field>
       {(geometry.type === 'wkb' || geometry.type === 'wkt' || geometry.type === 'geojson') && (
         <Field label="Geometry field">
-          <FieldSelect
-            value={geometry.field}
-            onChange={(v) => onGeometryChange({ ...geometry, field: v })}
-            availableFields={availableFields}
+          <SourceRefEditor
+            value={geometry.value}
+            onChange={(value) => onGeometryChange({ ...geometry, value })}
+            sourceOptions={sourceOptions}
+            fieldsBySource={fieldsBySource}
           />
         </Field>
       )}
       {geometry.type === 'latlng' && (
         <>
           <Field label="Latitude field">
-            <FieldSelect
-              value={geometry.latField}
-              onChange={(v) => onGeometryChange({ ...geometry, latField: v })}
-              availableFields={availableFields}
+            <SourceRefEditor
+              value={geometry.lat}
+              onChange={(lat) => onGeometryChange({ ...geometry, lat })}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
             />
           </Field>
           <Field label="Longitude field">
-            <FieldSelect
-              value={geometry.lngField}
-              onChange={(v) => onGeometryChange({ ...geometry, lngField: v })}
-              availableFields={availableFields}
+            <SourceRefEditor
+              value={geometry.lng}
+              onChange={(lng) => onGeometryChange({ ...geometry, lng })}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
             />
           </Field>
         </>

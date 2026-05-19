@@ -1,4 +1,5 @@
 import type { LayerConfig } from '../../layers/_all';
+import { createSourceRef } from '../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
 import { formatValue, getLegendEntries, hasLegendContent, sortThresholdSteps, swatchHex } from './utils';
 
@@ -11,18 +12,19 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     settings: {
       radiusMinPixels: 4,
       radiusMaxPixels: 20,
-      radiusField: '',
+      radius: createSourceRef(),
       radiusScale: 1,
-      elevationField: '',
+      elevation: createSourceRef(),
       elevationScale: 1,
       depthTest: false,
       stroked: true,
       showLabels: false,
-      labelField: '',
+      label: createSourceRef(),
     },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: '' },
+    timeFilter: { mode: 'none', time: createSourceRef() },
     opacity: 1,
+    data: { featureSource: { id: 'main', refId: '' } },
   };
   return { ...base, ...overrides } as LayerConfig;
 }

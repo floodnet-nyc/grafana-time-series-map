@@ -1,14 +1,14 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
-import type { ColorScaleConfig } from '../../types';
+import type { ColorScaleConfig, SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';
 
 export interface FloodInundationLayerSettings {
-  depthDiffField: string;
+  depthDiff: SourceRef;
   elevationScale: number;
   depthTest: boolean;
   fillOpacity: number;
@@ -64,7 +64,7 @@ function getPolygonCoords(f: Feature): number[][][] | null {
 // }
 
 const defaultSettings: FloodInundationLayerSettings = {
-  depthDiffField: 'depthDiff',
+  depthDiff: createSourceRef('depthDiff'),
   elevationScale: 1,
   depthTest: false,
   fillOpacity: 0.5,
@@ -74,11 +74,14 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
   type: 'flood-inundation',
   label: 'Flood Inundation',
   createDefaultConfig(index) {
-    return createBaseLayerConfig('flood-inundation', 'Flood Inundation', index, defaultSettings, { type: 'geojson', field: 'geometry' });
+    return createBaseLayerConfig('flood-inundation', 'Flood Inundation', index, defaultSettings, {
+      type: 'geojson',
+      value: createSourceRef('geometry'),
+    });
   },
   editorSections: [
     section('Flood Inundation', [
-      { key: 'depthDiffField', label: 'Depth difference field', type: 'string', defaultValue: 'depthDiff' },
+      { key: 'depthDiff', label: 'Depth difference field', type: 'fieldPicker', defaultValue: createSourceRef('depthDiff') },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
@@ -89,7 +92,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
     const commonProps = createCommonLayerProps(context);
-    const [getElevation, updatesElevation] = getNumericAccessor(options.depthDiffField, 0);
+    const [getElevation, updatesElevation] = getNumericAccessor(options.depthDiff, 0);
     return [
       new SolidPolygonLayer({
         ...commonProps,

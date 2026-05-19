@@ -2,18 +2,16 @@ import type { AccessorContext, LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext } from './types';
+import type { SourceRef } from '../types';
 
 type LayerFeature = Feature & { __idx: number };
-type ElevationSettings = { elevationField?: string; elevationScale?: number; depthTest?: boolean };
+type ElevationSettings = { elevation?: SourceRef; elevationScale?: number; depthTest?: boolean };
 
 const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
 
 
 
-export function getProperty<F extends Feature>(
-    feature: F, 
-    field: string
-  ): any {
+export function getProperty<F extends Feature>(feature: F, field: string): any {
   const derived = (feature as Feature & { __derived?: Record<string, any> }).__derived;
   const properties = feature.properties;
   return derived && field in derived ? derived[field] : properties?.[field];
@@ -30,7 +28,7 @@ export function getLayerElevation(config: BaseLayerConfig<string, any>) {
   const settings = (config.settings ?? {}) as ElevationSettings;
 
   return {
-    field: settings.elevationField ?? '',
+    field: settings.elevation,
     scale: settings.elevationScale ?? 1,
     depthTest: settings.depthTest ?? false,
   };
@@ -71,7 +69,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
     ].filter(Boolean) as LayerExtension[],
     
     parameters: { 
-      depthTest: config.settings.depthTest ?? false
+      depthTest: getLayerElevation(config).depthTest
     },
   };
 }
@@ -85,25 +83,31 @@ export function getFeatureLngLat(feature: Feature): [number, number] {
 export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config'], offset=0): [number, number, number] {
   const [lng, lat] = getFeatureLngLat(feature);
   const elevation = getLayerElevation(config);
-  const z = elevation.field
-    ? Number(getProperty(feature, elevation.field) ?? 0) * elevation.scale
+  const z = elevation.field?.field && elevation.field.source === config.data.featureSource.id
+    ? Number(getProperty(feature, elevation.field.field) ?? 0) * elevation.scale
     : 0;
   return [lng, lat, z + offset];
 }
 
-export function createSelectionState(selectedKey: string | null | undefined, keyField: string | undefined) {
-  const hasSelection = selectedKey != null && Boolean(keyField);
-  const isSelected = hasSelection ? (feature: Feature, ctx: AccessorContext<Feature>) => hasSelection && String(getProperty(feature, keyField ?? '')) === selectedKey : undefined;
+export function createSelectionState(
+  selectedKey: string | null | undefined,
+  keyField: SourceRef | undefined,
+  featureSourceId = 'main'
+) {
+  const hasSelection = selectedKey != null && Boolean(keyField?.field) && keyField?.source === featureSourceId;
+  const isSelected = hasSelection
+    ? (feature: Feature, ctx: AccessorContext<Feature>) => hasSelection && String(getProperty(feature, keyField?.field ?? '')) === selectedKey
+    : undefined;
 
   return { hasSelection, isSelected };
 }
 
 export function createSelectionColorAccessor(
-  baseColor: (feature: Feature) => [number, number, number, number],
+  baseColor: (feature: Feature, ctx: AccessorContext<Feature>) => [number, number, number, number],
   isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean,
   selectedColor: [number, number, number, number] = DEFAULT_SELECTED_COLOR,
 ) {
-  return isSelected ? (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected?.(feature, ctx) ? selectedColor : baseColor(feature)) : baseColor;
+  return isSelected ? (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected?.(feature, ctx) ? selectedColor : baseColor(feature, ctx)) : baseColor;
 }
 
 export function createLineSelectionAccessors(isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean) {

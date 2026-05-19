@@ -156,14 +156,19 @@
                         "type": "polygon",
                         "label": "Buildings",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.5,
@@ -197,8 +202,17 @@
                         "settings": {
                             "fillOpacity": 180,
                             "extruded": true,
-                            "elevationField": "height",
-                            "elevationScale": 1
+                            "elevationScale": 1,
+                            "elevation": {
+                                "source": "main",
+                                "field": "height"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     },
                     {
@@ -206,14 +220,19 @@
                         "type": "trips",
                         "label": "Cab trips",
                         "visible": true,
-                        "queryRefId": "B",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [
                             {
@@ -224,7 +243,10 @@
                         "opacity": 0.35,
                         "colorScale": {
                             "type": "threshold",
-                            "field": "vendor",
+                            "field": {
+                                "source": "main",
+                                "field": "vendor"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -247,16 +269,28 @@
                             ]
                         },
                         "settings": {
-                            "timestampsField": "timestamps",
                             "timestampUnit": "s",
                             "trailLengthMs": 180000,
                             "fadeTrail": true,
                             "widthMinPixels": 2,
                             "widthMaxPixels": 4,
-                            "widthField": "",
                             "widthScale": 1,
                             "capRounded": true,
-                            "jointRounded": true
+                            "jointRounded": true,
+                            "width": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "timestamps": {
+                                "source": "main",
+                                "field": "timestamps"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "B"
+                            }
                         }
                     }
                 ],
@@ -295,7 +329,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Trips",
+    "title": "Deck.gl Showcase — Trips",
     "uid": "deckgl-showcase-trips",
     "version": 1,
     "weekStart": ""

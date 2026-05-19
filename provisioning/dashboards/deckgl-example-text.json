@@ -104,15 +104,23 @@
                         "type": "text",
                         "label": "Cities",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 1,
@@ -140,11 +148,9 @@
                             }
                         ],
                         "settings": {
-                            "textField": "name",
                             "fontSize": 14,
                             "sizeMinPixels": 8,
                             "sizeMaxPixels": 28,
-                            "sizeField": "",
                             "fontFamily": "Monaco, Menlo, monospace",
                             "fontWeight": "500",
                             "anchor": "middle",
@@ -152,7 +158,21 @@
                             "billboard": true,
                             "background": false,
                             "pixelOffsetX": 0,
-                            "pixelOffsetY": 0
+                            "pixelOffsetY": 0,
+                            "size": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "text": {
+                                "source": "main",
+                                "field": "name"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -191,7 +211,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Text",
+    "title": "Deck.gl Showcase — Text",
     "uid": "deckgl-showcase-text",
     "version": 1,
     "weekStart": ""

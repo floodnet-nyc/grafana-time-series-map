@@ -114,21 +114,29 @@
                         "type": "geojson",
                         "label": "Vancouver blocks",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.88,
                         "pickable": true,
                         "colorScale": {
                             "type": "gradient",
-                            "field": "valuePerSqm",
+                            "field": {
+                                "source": "main",
+                                "field": "valuePerSqm"
+                            },
                             "schemeName": "YlGnBu",
                             "scaleMin": 0,
                             "scaleMax": 16000
@@ -140,6 +148,12 @@
                             "filled": true,
                             "stroked": true,
                             "extruded": false
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -178,7 +192,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 GeoJSON",
+    "title": "Deck.gl Showcase — GeoJSON",
     "uid": "deckgl-showcase-geojson",
     "version": 1,
     "weekStart": ""

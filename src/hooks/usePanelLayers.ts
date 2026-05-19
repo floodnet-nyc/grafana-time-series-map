@@ -8,8 +8,8 @@ import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import {
-  buildSecondarySourcePackedByLayerId,
-  buildSecondarySourceValuesByLayerId,
+  buildJoinedSourcePackedByLayerId,
+  buildJoinedSourceValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
   buildTimePackedByLayerId,
@@ -41,21 +41,21 @@ export function usePanelLayers(
     return buildTimePackedByLayerId(options.layers, featuresByLayerId);
   }, [featuresByLayerId, options.layers]);
 
-  const secondarySourcePackedByLayerId = useMemo(() => {
-    return buildSecondarySourcePackedByLayerId(options.layers, data.series);
+  const joinedSourcePackedByLayerId = useMemo(() => {
+    return buildJoinedSourcePackedByLayerId(options.layers, data.series);
   }, [data.series, options.layers]);
 
-  const secondarySourceValuesByLayerId = useMemo(() => {
-    return buildSecondarySourceValuesByLayerId(options.layers, secondarySourcePackedByLayerId, cursorTimeMs);
-  }, [cursorTimeMs, options.layers, secondarySourcePackedByLayerId]);
+  const joinedSourceValuesByLayerId = useMemo(() => {
+    return buildJoinedSourceValuesByLayerId(options.layers, joinedSourcePackedByLayerId, cursorTimeMs);
+  }, [cursorTimeMs, options.layers, joinedSourcePackedByLayerId]);
 
   const flagsByLayerId = useMemo(() => {
     return buildTimeFilterFlagsByLayerId(options.layers, featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
   }, [featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
-    return buildPreparedLayerStates(options.layers, featuresByLayerId, flagsByLayerId, secondarySourceValuesByLayerId);
-  }, [featuresByLayerId, flagsByLayerId, options.layers, secondarySourceValuesByLayerId]);
+    return buildPreparedLayerStates(options.layers, featuresByLayerId, flagsByLayerId, joinedSourceValuesByLayerId);
+  }, [featuresByLayerId, flagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
 
   const layers = useMemo(() => {
     return renderPreparedLayers({
@@ -88,9 +88,10 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
     for (const layerConfig of options.layers) {
       const features = dataFramesToFeatures(
         data.series,
-        layerConfig.queryRefId,
+        layerConfig.data.featureSource.refId,
         layerConfig.geometry,
-        getLayerElevation(layerConfig)?.field,
+        getLayerElevation(layerConfig).field?.field,
+        layerConfig.data.featureSource.id,
       );
       featuresByLayerId.set(layerConfig.id, features);
     }

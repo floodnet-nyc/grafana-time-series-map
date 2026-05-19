@@ -1,5 +1,6 @@
 import type { Feature } from 'geojson';
 import type { LayerConfig } from './_all';
+import { createSourceRef } from './defaults';
 import type { ScatterplotLayerConfig } from './scatterplot';
 import {
   createCommonLayerProps,
@@ -19,18 +20,19 @@ function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
     settings: {
       radiusMinPixels: 4,
       radiusMaxPixels: 20,
-      radiusField: '',
+      radius: createSourceRef(),
       radiusScale: 1,
-      elevationField: '',
+      elevation: createSourceRef(),
       elevationScale: 1,
       depthTest: false,
       stroked: true,
       showLabels: false,
-      labelField: '',
+      label: createSourceRef(),
     },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
+    timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
     opacity: 1,
+    data: { featureSource: { id: 'main', refId: '' } },
   };
   return { ...base, ...overrides } as LayerConfig;
 }
@@ -48,8 +50,8 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
-    [fieldName, defaultValue],
+    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
     const [accessor, deps] = getAccessor(fieldName, defaultValue);
@@ -84,7 +86,7 @@ describe('layer utils', () => {
     const config = createConfig({
       settings: {
         ...createConfig().settings,
-        elevationField: 'depth',
+        elevation: createSourceRef('depth'),
         elevationScale: 2,
         depthTest: false,
       },
@@ -96,7 +98,7 @@ describe('layer utils', () => {
   it('builds selection-aware color and line accessors', () => {
     const selected = createPointFeature({ sensor_id: 'a' });
     const unselected = createPointFeature({ sensor_id: 'b' });
-    const selectionState = createSelectionState('a', 'sensor_id');
+    const selectionState = createSelectionState('a', createSourceRef('sensor_id'));
     const baseColor = () => [10, 20, 30, 255] as [number, number, number, number];
     const ctx = { index: 0, data: [selected, unselected], target: [] };
 

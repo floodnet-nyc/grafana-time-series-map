@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { LayerConfig } from '../layers/_all';
+import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 import { LayerEditor } from './LayerEditor';
 
@@ -14,17 +15,21 @@ jest.mock('../layers/_all', () => ({
         type: 'scatterplot',
         label: 'Scatter Plot 1',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
           radiusMinPixels: 4,
           radiusMaxPixels: 20,
           radiusScale: 1,
-          radiusField: '',
+          radius: createSourceRef(),
+          elevation: createSourceRef(),
+          elevationScale: 1,
+          depthTest: false,
           stroked: true,
           showLabels: false,
-          labelField: '',
+          label: createSourceRef(),
         },
         geometry: { type: 'none' },
-        timeFilter: { mode: 'none', timeField: 'time' },
+        timeFilter: { mode: 'none', time: createSourceRef('time') },
             opacity: 1,
       }),
       editorSections: [{ title: 'Point', fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }] }],
@@ -38,16 +43,17 @@ jest.mock('../layers/_all', () => ({
         type: 'path',
         label: 'Path 1',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
           widthMinPixels: 2,
           widthMaxPixels: 10,
-          widthField: '',
+          width: createSourceRef(),
           widthScale: 1,
           capRounded: true,
           jointRounded: true,
         },
         geometry: { type: 'none' },
-        timeFilter: { mode: 'none', timeField: 'time' },
+        timeFilter: { mode: 'none', time: createSourceRef('time') },
             opacity: 1,
       }),
       editorSections: [{ title: 'Path', fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }] }],
@@ -97,20 +103,21 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     type: 'scatterplot',
     label: 'Layer 1',
     visible: true,
+    data: { featureSource: { id: 'main', refId: '' } },
     settings: {
       radiusMinPixels: 7,
       radiusMaxPixels: 20,
       radiusScale: 1,
-      radiusField: '',
-      elevationField: '',
+      radius: createSourceRef(),
+      elevation: createSourceRef(),
       elevationScale: 1,
       depthTest: false,
       stroked: true,
       showLabels: false,
-      labelField: '',
+      label: createSourceRef(),
     },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: '' },
+    timeFilter: { mode: 'none', time: createSourceRef() },
     opacity: 1,
     extensions: [
       {
@@ -139,9 +146,12 @@ function Harness({ initialLayer }: { initialLayer?: LayerConfig }) {
       <LayerEditor
         layer={layer}
         onChange={setLayer}
-        availableFields={['depth', 'sensor_id']}
         availableRefIds={['A', 'B']}
         queryFieldsByRefId={{ A: ['deployment_id', 'time', 'depth_inches'], B: ['sensor_id', 'time', 'status'] }}
+        sourceOptions={[{ id: 'main', label: 'Feature source' }]}
+        fieldsBySource={{ main: ['depth', 'sensor_id'] }}
+        featureSourceOptions={[{ id: 'main', label: 'Feature source' }]}
+        featureFieldsBySource={{ main: ['deployment_id', 'time', 'depth_inches'] }}
       />
       <pre data-testid="layer-state">{JSON.stringify(layer)}</pre>
     </div>
@@ -153,11 +163,11 @@ function currentLayer(): LayerConfig {
 }
 
 describe('LayerEditor interactions', () => {
-  it('updates query refId through the combobox', () => {
+  it('updates feature source refId through the combobox', () => {
     render(<Harness />);
     const selects = screen.getAllByRole('combobox');
     fireEvent.change(selects[2], { target: { value: 'B' } });
-    expect(currentLayer().queryRefId).toBe('B');
+    expect(currentLayer().data.featureSource.refId).toBe('B');
   });
 
   it('switches layer type and resets settings to that definition', () => {

@@ -3,6 +3,7 @@ import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
 import { layerDefinitions, type LayerConfig } from '../layers/_all';
+import { DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
 import { LayerEditor } from './LayerEditor';
 import { SelectableListEditor } from './SelectableListEditor';
 import { useSelectableListState } from './useSelectableListState';
@@ -52,38 +53,58 @@ function buildFieldIndex(series: DataFrame[]) {
 }
 
 
-const getAvailableFieldsForQuery = (queryRefId: string | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
-  if (!queryRefId) {
+const getAvailableFieldsForRefId = (refId: string | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
+  if (!refId) {
     return fieldIndex.firstFrameFields;
   }
-  return fieldIndex.fieldsByRefId.get(queryRefId) ?? [];
-}
+  return fieldIndex.fieldsByRefId.get(refId) ?? [];
+};
 
-const getAvailableFieldsForLayer = (layer: LayerConfig | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
+function getSourceContext(layer: LayerConfig | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) {
   if (!layer) {
-    return [];
+    return {
+      sourceOptions: [] as Array<{ id: string; label: string }>,
+      featureSourceOptions: [] as Array<{ id: string; label: string }>,
+      fieldsBySource: {} as Record<string, string[]>,
+      featureFieldsBySource: {} as Record<string, string[]>,
+    };
   }
-  let availableFields: string[] = [...getAvailableFieldsForQuery(layer.queryRefId, fieldIndex)];
 
-  if (layer.secondarySources) {
-    for (const secondarySource of layer.secondarySources) {
-      availableFields.push(secondarySource.join.timeField);
-      for (const secondaryField of secondarySource.fields) {
-        if (!availableFields.includes(secondaryField.sourceField)) {
-          availableFields.push(secondaryField.sourceField);
-        }
-      }
-    }
-  }
-  if (layer.derivedFields) {
-    for (const derivedField of layer.derivedFields) {
-      if (!availableFields.includes(derivedField.as)) {
-        availableFields.push(derivedField.as);
-      }
+  const featureSource = layer.data.featureSource;
+  const featureFields = [...getAvailableFieldsForRefId(featureSource.refId, fieldIndex)];
+  for (const derivedField of layer.derivedFields ?? []) {
+    if (derivedField.as && !featureFields.includes(derivedField.as)) {
+      featureFields.push(derivedField.as);
     }
   }
 
-  return availableFields;
+  const fieldsBySource: Record<string, string[]> = {
+    [featureSource.id]: featureFields,
+  };
+
+  for (const joinedSource of layer.data.joinedSources ?? []) {
+    fieldsBySource[joinedSource.id] = joinedSource.fields.map((field) => field.as ?? field.field);
+  }
+
+  const sourceOptions = [
+    {
+      id: featureSource.id || DEFAULT_FEATURE_SOURCE_ID,
+      label: featureSource.id === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSource.id,
+    },
+    ...(layer.data.joinedSources ?? []).map((source) => ({
+      id: source.id,
+      label: source.id,
+    })),
+  ];
+
+  return {
+    sourceOptions,
+    featureSourceOptions: sourceOptions.slice(0, 1),
+    fieldsBySource,
+    featureFieldsBySource: {
+      [featureSource.id]: featureFields,
+    },
+  };
 }
 
 
@@ -106,9 +127,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const queryFieldsByRefId = useMemo(() => Object.fromEntries(fieldIndex.fieldsByRefId), [fieldIndex.fieldsByRefId]);
   const selectedLayer = selectedIndex !== null ? layerList[selectedIndex] : undefined;
 
-  const availableFields = useMemo(() => {
-    return getAvailableFieldsForLayer(selectedLayer, fieldIndex);
-  }, [selectedLayer, fieldIndex]);
+  const sourceContext = useMemo(() => getSourceContext(selectedLayer, fieldIndex), [selectedLayer, fieldIndex]);
 
   const addLayer = useCallback(() => {
     const firstType = layerDefinitions[0]?.type ?? 'scatterplot';
@@ -146,9 +165,12 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
           <LayerEditor
             layer={layer}
             onChange={(updated) => updateLayer(index, updated)}
-            availableFields={selectedIndex === index ? availableFields : []}
             availableRefIds={fieldIndex.refIds}
             queryFieldsByRefId={queryFieldsByRefId}
+            sourceOptions={selectedIndex === index ? sourceContext.sourceOptions : []}
+            fieldsBySource={selectedIndex === index ? sourceContext.fieldsBySource : {}}
+            featureSourceOptions={selectedIndex === index ? sourceContext.featureSourceOptions : []}
+            featureFieldsBySource={selectedIndex === index ? sourceContext.featureFieldsBySource : {}}
           />
         )}
       />

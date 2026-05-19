@@ -1,4 +1,5 @@
 import type { Feature } from 'geojson';
+import { createSourceRef } from '../defaults';
 jest.mock('@deck.gl/layers', () => ({
   GeoJsonLayer: class GeoJsonLayer {
     props: any;
@@ -32,14 +33,15 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
     type: 'geojson',
     label: 'GeoJSON 1',
     visible: true,
+    data: { featureSource: { id: 'main', refId: '' } },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: '' },
+    timeFilter: { mode: 'none', time: createSourceRef() },
     opacity: 1,
     settings: {
       pointRadiusMinPixels: 4,
       pointRadiusMaxPixels: 20,
       lineWidthMinPixels: 1,
-      lineWidthField: '',
+      lineWidth: createSourceRef(),
       lineWidthScale: 1,
       lineWidthUnits: 'pixels',
       filled: true,
@@ -52,8 +54,8 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
 
 function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRenderContext<GeoJsonLayerConfig> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
-    [fieldName, defaultValue],
+    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
     const [accessor, deps] = getAccessor(fieldName, defaultValue);
@@ -87,7 +89,7 @@ describe('geoJsonLayerDefinition', () => {
     const config = createConfig({
       colorScale: {
         type: 'threshold',
-        field: 'severity',
+        field: createSourceRef('severity'),
         steps: [
           { value: 0, color: [0, 0, 255, 255] },
           { value: 10, color: [255, 0, 0, 255] },
@@ -108,7 +110,7 @@ describe('geoJsonLayerDefinition', () => {
         pointRadiusMinPixels: 4,
         pointRadiusMaxPixels: 20,
         lineWidthMinPixels: 0.5,
-        lineWidthField: 'width_value',
+        lineWidth: createSourceRef('width_value'),
         lineWidthScale: 10,
         lineWidthUnits: 'meters',
         filled: false,

@@ -1,15 +1,16 @@
 import { TextLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 
 export interface TextLayerSettings {
-  textField: string;
+  text: SourceRef;
   fontSize: number;
   sizeMinPixels: number;
   sizeMaxPixels: number;
-  sizeField: string;
+  size: SourceRef;
   sizeScale: number;
-  elevationField: string;
+  elevation: SourceRef;
   elevationScale: number;
   depthTest: boolean;
   fontFamily: string;
@@ -25,18 +26,18 @@ export interface TextLayerSettings {
 
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
 import { AccessorContext } from '@deck.gl/core';
 
 const defaultSettings: TextLayerSettings = {
-  textField: '',
+  text: createSourceRef(),
   fontSize: 14,
   sizeMinPixels: 6,
   sizeMaxPixels: 64,
-  sizeField: '',
+  size: createSourceRef(),
   sizeScale: 1,
-  elevationField: '',
+  elevation: createSourceRef(),
   elevationScale: 1,
   depthTest: false,
   fontFamily: 'Helvetica Neue, Verdana, Roboto, sans-serif',
@@ -58,13 +59,13 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
   },
   editorSections: [
     section('Text', [
-      { key: 'textField', label: 'Text field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'text', label: 'Text field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'fontSize', label: 'Font size (px)', type: 'number', defaultValue: 14 },
       { key: 'sizeMinPixels', label: 'Min size (px)', type: 'number', defaultValue: 6 },
       { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64 },
-      { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'size', label: 'Size field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'sizeScale', label: 'Size scale', type: 'number', defaultValue: 1, step: 0.1 },
-      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevation', label: 'Elevation field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'fontFamily', label: 'Font family', type: 'string', defaultValue: 'Helvetica Neue, Verdana, Roboto, sans-serif' },
@@ -116,12 +117,13 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
     const { config, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
-    const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220], getColorValue);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
     const getColor = createSelectionColorAccessor(baseColor, isSelected);
     const commonProps = createCommonLayerProps(context);
-    const [getText, updatesText] = getAccessor(options.textField, '');
-    const [getSize, updatesSize] = getNumericAccessor(options.sizeField, options.fontSize);
+    const [getText, updatesText] = getAccessor(options.text, '');
+    const [getSize, updatesSize] = getNumericAccessor(options.size, options.fontSize);
 
     // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 

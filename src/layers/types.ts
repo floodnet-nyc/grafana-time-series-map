@@ -4,8 +4,9 @@ import type {
   ColorScaleConfig,
   DataSource,
   GeometrySource,
+  LayerDataConfig,
   LayerDerivedFieldConfig,
-  LayerSecondarySourceConfig,
+  SourceRef,
   ShaderConfig,
   TimeFilterConfig,
 } from '../types';
@@ -17,11 +18,10 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   id: string;
   type: TType;
   settings: TSettings;
-  secondarySources?: LayerSecondarySourceConfig[];
   derivedFields?: LayerDerivedFieldConfig[];
   label: string;
   visible: boolean;
-  queryRefId?: string;
+  data: LayerDataConfig;
   dataSource?: DataSource;
   geometry: GeometrySource;
   timeFilter: TimeFilterConfig;
@@ -32,13 +32,13 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   minZoom?: number;
   maxZoom?: number;
   pickable?: boolean;
-  selectionKeyField?: string;
+  selectionKey?: SourceRef;
   shader?: ShaderConfig;
   extensions?: LayerExtensionInstance[];
 }
 
-export type GetAccessorFunction = <O = any, T extends Feature = Feature>(fieldName?: string, defaultValue?: O) => [AccessorFunction<T, O | undefined> | undefined, any[]];
-export type GetNumericAccessorFunction = <T extends Feature = Feature>(fieldName?: string, defaultValue?: number) => [AccessorFunction<T, number> | undefined, any[]];
+export type GetAccessorFunction = <O = any, T extends Feature = Feature>(fieldRef?: SourceRef, defaultValue?: O) => [AccessorFunction<T, O | undefined> | undefined, any[]];
+export type GetNumericAccessorFunction = <T extends Feature = Feature>(fieldRef?: SourceRef, defaultValue?: number) => [AccessorFunction<T, number> | undefined, any[]];
 
 export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
   config: TLayerConfig;
@@ -48,7 +48,7 @@ export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string,
   fromTimeMs: number;
   toTimeMs: number;
   timeFilterFlags: Uint8Array;
-  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
+  joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;
   selectedKey?: string | null;
   onFeatureClick?: (feature: Feature, info: unknown) => void;
@@ -60,7 +60,7 @@ export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string,
 export interface LayerOptionField {
   key: string;
   label: string;
-  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker';
+  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker' | 'sourceRef';
   defaultValue?: unknown;
   section?: string;
   min?: number;

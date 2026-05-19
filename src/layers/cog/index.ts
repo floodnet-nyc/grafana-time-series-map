@@ -4,20 +4,20 @@ import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu
 import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
 import type { Texture } from '@luma.gl/core';
-import type { ColorScaleConfig } from '../../types';
+import type { ColorScaleConfig, SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 
 export interface CogLayerSettings {
-  urlField: string;
-  timestampField: string;
+  url: SourceRef;
+  timestamp: SourceRef;
   colorMaxValue: number;
   maxRequests: number;
   maxFrameRate: number;
 }
 
 export type CogLayerConfig = BaseLayerConfig<'cog', CogLayerSettings>;
-import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
 
 const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
   type: 'gradient',
@@ -133,8 +133,8 @@ async function getTileData(image: GeoTIFF | Overview, { device, x, y, signal, po
 }
 
 const defaultSettings: CogLayerSettings = {
-  urlField: 'url',
-  timestampField: 'time',
+  url: createSourceRef('url'),
+  timestamp: createSourceRef('time'),
   colorMaxValue: 200,
   maxRequests: 4,
   maxFrameRate: 0,
@@ -148,8 +148,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
   },
   editorSections: [
     section('COG Raster', [
-      { key: 'urlField', label: 'URL field', type: 'fieldPicker', defaultValue: 'url' },
-      { key: 'timestampField', label: 'Timestamp field', type: 'fieldPicker', defaultValue: 'time' },
+      { key: 'url', label: 'URL field', type: 'fieldPicker', defaultValue: createSourceRef('url') },
+      { key: 'timestamp', label: 'Timestamp field', type: 'fieldPicker', defaultValue: createSourceRef('time') },
       { key: 'maxRequests', label: 'Max concurrent tile requests', type: 'number', defaultValue: 4 },
       { key: 'maxFrameRate', label: 'Max frame rate (fps)', type: 'number', defaultValue: 0 },
     ]),
@@ -160,8 +160,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
     const frames: TimeCOGFrame[] = [];
     for (const f of features) {
-      const url = f.properties?.[options.urlField];
-      const ts = f.properties?.[options.timestampField];
+      const url = options.url.field ? f.properties?.[options.url.field] : undefined;
+      const ts = options.timestamp.field ? f.properties?.[options.timestamp.field] : undefined;
       if (url && ts != null) {
         frames.push({ time: Number(ts), url: String(url) });
       }
@@ -171,8 +171,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     }
     const renderTile = getStableRenderTile(options.colorMaxValue, colorScale);
 
-    const [getUrl, updatesUrl] = getAccessor(options.urlField);
-    const [getTime, updatesTime] = getAccessor(options.timestampField);
+    const [getUrl, updatesUrl] = getAccessor(options.url);
+    const [getTime, updatesTime] = getAccessor(options.timestamp);
 
     return [
       new TimeCOGLayer({

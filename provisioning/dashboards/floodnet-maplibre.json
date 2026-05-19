@@ -21,7 +21,7 @@
                 "y": 0
             },
             "id": 1,
-            "title": "FloodNet NYC \u2014 Depth Animation",
+            "title": "FloodNet NYC — Depth Animation",
             "type": "floodnet-timeseriesmap-panel",
             "targets": [
                 {
@@ -279,13 +279,15 @@
                         "type": "cog",
                         "label": "Precipitation",
                         "visible": false,
-                        "queryRefId": "E",
                         "geometry": {
                             "type": "none"
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.86,
@@ -296,11 +298,23 @@
                             "scaleMax": 1
                         },
                         "settings": {
-                            "urlField": "url",
-                            "timestampField": "time",
                             "colorMaxValue": 200,
                             "maxRequests": 4,
-                            "maxFrameRate": 0
+                            "maxFrameRate": 0,
+                            "url": {
+                                "source": "main",
+                                "field": "url"
+                            },
+                            "timestamp": {
+                                "source": "main",
+                                "field": "time"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "E"
+                            }
                         }
                     },
                     {
@@ -308,17 +322,24 @@
                         "type": "scatterplot",
                         "label": "Past Flood Events",
                         "visible": false,
-                        "queryRefId": "D",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
-                        "selectionKeyField": "deployment_id",
                         "fieldMappings": [
                             {
                                 "fieldName": "max_depth_inches",
@@ -328,11 +349,17 @@
                         "opacity": 0.5,
                         "shader": {
                             "enabled": false,
-                            "valueField": ""
+                            "value": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "colorScale": {
                             "type": "threshold",
-                            "field": "max_depth_inches",
+                            "field": {
+                                "source": "main",
+                                "field": "max_depth_inches"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -384,34 +411,60 @@
                         "settings": {
                             "radiusMinPixels": 3,
                             "radiusMaxPixels": 14,
-                            "radiusField": "max_depth_inches",
                             "radiusScale": 0.4,
                             "stroked": false,
                             "showLabels": false,
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": "max_depth_inches"
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "D"
+                            }
+                        },
+                        "selectionKey": {
+                            "source": "main",
+                            "field": "deployment_id"
                         }
                     },
                     {
                         "id": "sensors",
                         "type": "scatterplot",
                         "label": "Sensor Locations",
-                        "selectionKeyField": "id",
                         "visible": true,
-                        "queryRefId": "B",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.6,
                         "shader": {
                             "enabled": false,
-                            "valueField": ""
+                            "value": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "colorScale": {
                             "type": "fixed",
@@ -425,14 +478,33 @@
                         "settings": {
                             "radiusMinPixels": 4,
                             "radiusMaxPixels": 10,
-                            "radiusField": "",
                             "radiusScale": 1,
-                            "elevationField": "",
                             "elevationScale": 1,
                             "depthTest": false,
                             "stroked": false,
                             "showLabels": false,
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "elevation": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "B"
+                            }
+                        },
+                        "selectionKey": {
+                            "source": "main",
+                            "field": "id"
                         }
                     },
                     {
@@ -441,15 +513,23 @@
                         "label": "Flood Events",
                         "visible": false,
                         "showInLegend": true,
-                        "queryRefId": "C",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [
                             {
@@ -460,11 +540,17 @@
                         "opacity": 0.85,
                         "shader": {
                             "enabled": false,
-                            "valueField": ""
+                            "value": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "colorScale": {
                             "type": "threshold",
-                            "field": "max_depth_inches",
+                            "field": {
+                                "source": "main",
+                                "field": "max_depth_inches"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -516,14 +602,29 @@
                         "settings": {
                             "radiusMinPixels": 5,
                             "radiusMaxPixels": 22,
-                            "radiusField": "max_depth_inches",
                             "radiusScale": 0.6,
-                            "elevationField": "max_depth_inches",
                             "elevationScale": 0.0254,
                             "depthTest": false,
                             "stroked": true,
                             "showLabels": false,
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": "max_depth_inches"
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "elevation": {
+                                "source": "main",
+                                "field": "max_depth_inches"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "C"
+                            }
                         }
                     },
                     {
@@ -531,14 +632,19 @@
                         "type": "flood-inundation",
                         "label": "Flood Inundation",
                         "visible": true,
-                        "queryRefId": "F",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "derivedFields": [
@@ -549,23 +655,6 @@
                             }
                         ],
                         "opacity": 1,
-                        "secondarySources": [
-                            {
-                                "queryRefId": "A",
-                                "join": {
-                                    "type": "keyed-asof",
-                                    "localKeyField": "deployment_id",
-                                    "remoteKeyField": "deployment_id",
-                                    "timeField": "time",
-                                    "maxLagMs": 600000
-                                },
-                                "fields": [
-                                    {
-                                        "sourceField": "depth_inches"
-                                    }
-                                ]
-                            }
-                        ],
                         "colorScale": {
                             "type": "gradient",
                             "schemeName": "FloodDepth",
@@ -573,10 +662,40 @@
                             "scaleMax": 24
                         },
                         "settings": {
-                            "depthDiffField": "depthDiff",
                             "elevationScale": 0.254,
                             "depthTest": false,
-                            "fillOpacity": 0.5
+                            "fillOpacity": 0.5,
+                            "depthDiff": {
+                                "source": "main",
+                                "field": "depthDiff"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "F"
+                            },
+                            "joinedSources": [
+                                {
+                                    "id": "A",
+                                    "refId": "A",
+                                    "join": {
+                                        "type": "keyed-asof",
+                                        "localKey": {
+                                            "source": "main",
+                                            "field": "deployment_id"
+                                        },
+                                        "remoteKey": "deployment_id",
+                                        "time": "time",
+                                        "maxLagMs": 600000
+                                    },
+                                    "fields": [
+                                        {
+                                            "field": "depth_inches"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     },
                     {
@@ -584,19 +703,29 @@
                         "type": "scatterplot",
                         "label": "Flood Depth (in)",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "asof",
-                            "timeField": "time",
-                            "groupByField": "deployment_id",
-                            "maxLagMs": 600000
+                            "maxLagMs": 600000,
+                            "time": {
+                                "source": "main",
+                                "field": "time"
+                            },
+                            "groupBy": {
+                                "source": "main",
+                                "field": "deployment_id"
+                            }
                         },
-                        "selectionKeyField": "deployment_id",
                         "fieldMappings": [
                             {
                                 "fieldName": "depth_inches",
@@ -606,11 +735,17 @@
                         "opacity": 1,
                         "shader": {
                             "enabled": true,
-                            "valueField": "depth_inches"
+                            "value": {
+                                "source": "main",
+                                "field": "depth_inches"
+                            }
                         },
                         "colorScale": {
                             "type": "threshold",
-                            "field": "depth_inches",
+                            "field": {
+                                "source": "main",
+                                "field": "depth_inches"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -663,13 +798,32 @@
                             "radiusMinPixels": 8,
                             "radiusMaxPixels": 12,
                             "radiusScale": 1,
-                            "elevationField": "depth_inches",
                             "elevationScale": 0.0254,
                             "depthTest": false,
                             "showLabels": true,
                             "stroked": true,
-                            "radiusField": "depth_inches",
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": "depth_inches"
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "elevation": {
+                                "source": "main",
+                                "field": "depth_inches"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
+                        },
+                        "selectionKey": {
+                            "source": "main",
+                            "field": "deployment_id"
                         }
                     }
                 ],
@@ -699,7 +853,7 @@
                 "y": 16
             },
             "id": 2,
-            "title": "Sensor Depth \u2014 Selected Deployment",
+            "title": "Sensor Depth — Selected Deployment",
             "type": "timeseries",
             "targets": [
                 {

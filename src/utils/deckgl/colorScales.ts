@@ -1,5 +1,6 @@
 import type { ColorScaleConfig, ColorStep } from '../../types';
 import type { Feature } from 'geojson';
+import type { AccessorContext } from '@deck.gl/core';
 import { interpolateScheme } from './colorSchemes';
 
 export type RGBA = [number, number, number, number];
@@ -18,24 +19,26 @@ function thresholdToColor(steps: ColorStep[], value: number): RGBA {
 export function buildColorAccessor(
   colorScale: ColorScaleConfig | undefined,
   defaultColor: RGBA = [0, 155, 104, 255],
-): (feature: Feature) => RGBA {
+  getValue?: (feature: Feature, ctx: AccessorContext<Feature>) => number,
+): (feature: Feature, ctx: AccessorContext<Feature>) => RGBA {
   if (!colorScale) { return () => defaultColor; }
   if (colorScale.type === 'fixed') { return () => colorScale.fixedColor ?? defaultColor; }
 
   if (colorScale.type === 'threshold' && colorScale.steps?.length && colorScale.field) {
     const steps = [...colorScale.steps].sort((a, b) => a.value - b.value);
-    const field = colorScale.field;
-    return (f: Feature) => {
-      const raw = Number(f.properties?.[field]);
+    const field = colorScale.field.field;
+    return (f: Feature, ctx: AccessorContext<Feature>) => {
+      const raw = getValue ? getValue(f, ctx) : Number(f.properties?.[field]);
       return thresholdToColor(steps, Number.isFinite(raw) ? raw : 0);
     };
   }
 
   if (colorScale.schemeName && colorScale.field) {
-    const { schemeName, field, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
+    const { schemeName, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
+    const field = colorScale.field.field;
     const range = scaleMax - scaleMin || 1;
-    return (f: Feature) => {
-      const raw = Number(f.properties?.[field]);
+    return (f: Feature, ctx: AccessorContext<Feature>) => {
+      const raw = getValue ? getValue(f, ctx) : Number(f.properties?.[field]);
       const v = Number.isFinite(raw) ? raw : scaleMin;
       const t = Math.max(0, Math.min(1, (v - scaleMin) / range));
       return interpolateScheme(schemeName, t, invert);
