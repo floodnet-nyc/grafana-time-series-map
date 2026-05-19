@@ -1,31 +1,32 @@
 import { LineLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
+import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
+import { createCommonLayerProps } from '../utils';
 
 export interface LineLayerSettings {
-  srcLngField: string;
-  srcLatField: string;
-  tgtLngField: string;
-  tgtLatField: string;
+  srcLng: SourceRef;
+  srcLat: SourceRef;
+  tgtLng: SourceRef;
+  tgtLat: SourceRef;
   widthMinPixels: number;
   widthMaxPixels: number;
-  widthField: string;
+  width: SourceRef;
   widthScale: number;
 }
 
 export type LineLayerConfig = BaseLayerConfig<'line', LineLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps } from '../utils';
 
 const defaultSettings: LineLayerSettings = {
-  srcLngField: '',
-  srcLatField: '',
-  tgtLngField: '',
-  tgtLatField: '',
+  srcLng: createSourceRef(),
+  srcLat: createSourceRef(),
+  tgtLng: createSourceRef(),
+  tgtLat: createSourceRef(),
   widthMinPixels: 1,
   widthMaxPixels: 20,
-  widthField: '',
+  width: createSourceRef(),
   widthScale: 1,
 };
 
@@ -37,32 +38,32 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
   },
   editorSections: [
     section('Source', [
-      { key: 'srcLngField', label: 'Source longitude field', type: 'fieldPicker', defaultValue: '' },
-      { key: 'srcLatField', label: 'Source latitude field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'srcLng', label: 'Source longitude field', type: 'fieldPicker', defaultValue: createSourceRef() },
+      { key: 'srcLat', label: 'Source latitude field', type: 'fieldPicker', defaultValue: createSourceRef() },
     ]),
     section('Target', [
-      { key: 'tgtLngField', label: 'Target longitude field', type: 'fieldPicker', defaultValue: '' },
-      { key: 'tgtLatField', label: 'Target latitude field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'tgtLng', label: 'Target longitude field', type: 'fieldPicker', defaultValue: createSourceRef() },
+      { key: 'tgtLat', label: 'Target latitude field', type: 'fieldPicker', defaultValue: createSourceRef() },
     ]),
     section('Style', [
       { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 1 },
       { key: 'widthMaxPixels', label: 'Max width (px)', type: 'number', defaultValue: 20 },
-      { key: 'widthField', label: 'Width field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'width', label: 'Width field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'widthScale', label: 'Width scale', type: 'number', defaultValue: 1 },
     ]),
   ],
   renderLayers(context: LayerRenderContext<LineLayerConfig>) {
     const { config, features, getNumericAccessor } = context;
     const options = config.settings;
-
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
 
     const commonProps = createCommonLayerProps(context);
-    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLngField);
-    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLatField);
-    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLngField);
-    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLatField);
-    const [getWidth, updatesWidth] = getNumericAccessor(options.widthField, options.widthScale);
+    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLng);
+    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLat);
+    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLng);
+    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLat);
+    const [getWidth, updatesWidth] = getNumericAccessor(options.width, options.widthScale);
 
     return [
       new LineLayer({

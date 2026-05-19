@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, Combobox, Input, type ComboboxOption } from '@grafana/ui';
 import type { TimeFilterConfig, TimeFilterMode } from '../types';
-import { FieldSelect } from './FieldSelect';
+import { SourceRefEditor } from './SourceRefEditor';
 
 const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
   { label: 'None (show all rows)', value: 'none' },
@@ -11,11 +11,12 @@ const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
 
 interface Props {
   timeFilter: TimeFilterConfig;
-  availableFields: string[];
+  sourceOptions: Array<{ id: string; label: string }>;
+  fieldsBySource: Record<string, string[]>;
   onChange: (timeFilter: TimeFilterConfig) => void;
 }
 
-export function TimeFilterEditor({ timeFilter, availableFields, onChange }: Props) {
+export function TimeFilterEditor({ timeFilter, sourceOptions, fieldsBySource, onChange }: Props) {
   const patch = (updates: Partial<TimeFilterConfig>) => onChange({ ...timeFilter, ...updates });
 
   return (
@@ -29,20 +30,22 @@ export function TimeFilterEditor({ timeFilter, availableFields, onChange }: Prop
       </Field>
       {timeFilter.mode !== 'none' && (
         <Field label="Time field">
-          <FieldSelect
-            value={timeFilter.timeField}
-            onChange={(v) => patch({ timeField: v })}
-            availableFields={availableFields}
+          <SourceRefEditor
+            value={timeFilter.time}
+            onChange={(value) => patch({ time: value })}
+            sourceOptions={sourceOptions}
+            fieldsBySource={fieldsBySource}
           />
         </Field>
       )}
       {timeFilter.mode === 'asof' && (
         <>
           <Field label="Group-by field">
-            <FieldSelect
-              value={timeFilter.groupByField ?? ''}
-              onChange={(v) => patch({ groupByField: v })}
-              availableFields={availableFields}
+            <SourceRefEditor
+              value={timeFilter.groupBy}
+              onChange={(value) => patch({ groupBy: value })}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
             />
           </Field>
           <Field label="Max lag (ms)">

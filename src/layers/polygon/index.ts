@@ -2,15 +2,16 @@ import { SolidPolygonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';
 
 export interface PolygonLayerSettings {
   fillOpacity: number;
   extruded: boolean;
-  elevationField: string;
+  elevation: SourceRef;
   elevationScale: number;
 }
 
@@ -41,7 +42,7 @@ function getPolygonCoords(f: Feature): number[][][] | null {
 const defaultSettings: PolygonLayerSettings = {
   fillOpacity: 180,
   extruded: false,
-  elevationField: '',
+  elevation: createSourceRef(),
   elevationScale: 1,
 };
 
@@ -55,16 +56,16 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     section('Polygon', [
       { key: 'fillOpacity', label: 'Fill opacity (0-255)', type: 'number', defaultValue: 180 },
       { key: 'extruded', label: 'Extruded (3D)', type: 'boolean', defaultValue: false },
-      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevation', label: 'Elevation field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
     ]),
   ],
   renderLayers(context: LayerRenderContext<PolygonLayerConfig>) {
     const { config, features, timeFilterFlags, getNumericAccessor } = context;
     const options = config.settings;
-    const valueField = config.colorScale?.field || '';
+    const valueField = config.colorScale?.field || config.shader?.value;
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
-    const useShader = !!(hasScheme && valueField);
+    const useShader = !!(hasScheme && valueField?.field);
     const extensions: any[] = [new DataFilterExtension({ filterSize: 1 })];
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
@@ -83,10 +84,9 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     }
 
     const commonProps = createCommonLayerProps(context);
-    const [getElevation, updatesElevation] = getNumericAccessor(options.elevationField, options.elevationScale);
+    const [getElevation, updatesElevation] = getNumericAccessor(options.elevation, options.elevationScale);
     const [getValue, updatesValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
-    
-    const getColor = buildColorAccessor(config.colorScale);
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getValue);
     const fillOpacity = options.fillOpacity;
     return [
       new SolidPolygonLayer({

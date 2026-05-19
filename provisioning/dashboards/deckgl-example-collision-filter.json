@@ -128,14 +128,19 @@
                         "type": "path",
                         "label": "Road outline",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 1,
@@ -151,10 +156,19 @@
                         "settings": {
                             "widthMinPixels": 3,
                             "widthMaxPixels": 18,
-                            "widthField": "scalerank",
                             "widthScale": 3.5,
                             "capRounded": true,
-                            "jointRounded": true
+                            "jointRounded": true,
+                            "width": {
+                                "source": "main",
+                                "field": "scalerank"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     },
                     {
@@ -162,14 +176,19 @@
                         "type": "path",
                         "label": "Road centerlines",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 1,
@@ -185,10 +204,19 @@
                         "settings": {
                             "widthMinPixels": 1,
                             "widthMaxPixels": 10,
-                            "widthField": "scalerank",
                             "widthScale": 2.5,
                             "capRounded": true,
-                            "jointRounded": true
+                            "jointRounded": true,
+                            "width": {
+                                "source": "main",
+                                "field": "scalerank"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     },
                     {
@@ -196,14 +224,19 @@
                         "type": "text",
                         "label": "Road labels",
                         "visible": true,
-                        "queryRefId": "B",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 1,
@@ -231,11 +264,9 @@
                             }
                         ],
                         "settings": {
-                            "textField": "name",
                             "fontSize": 12,
                             "sizeMinPixels": 10,
                             "sizeMaxPixels": 18,
-                            "sizeField": "",
                             "fontFamily": "Monaco, Menlo, monospace",
                             "fontWeight": "500",
                             "anchor": "middle",
@@ -243,7 +274,21 @@
                             "billboard": false,
                             "background": true,
                             "pixelOffsetX": 0,
-                            "pixelOffsetY": 0
+                            "pixelOffsetY": 0,
+                            "size": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "text": {
+                                "source": "main",
+                                "field": "name"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "B"
+                            }
                         }
                     }
                 ],
@@ -282,7 +327,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Collision Filter",
+    "title": "Deck.gl Showcase — Collision Filter",
     "uid": "deckgl-showcase-collision-filter",
     "version": 1,
     "weekStart": ""

@@ -6,19 +6,24 @@ export type DataSource =
   | { type: 'query' }
   // | { type: 'geojson-url'; url: string };
 
+export interface SourceRef {
+  source: string;
+  field: string;
+}
+
 export type GeometrySource =
   | { type: 'none' }
-  | { type: 'wkb'; field: string }
-  | { type: 'wkt'; field: string }
-  | { type: 'latlng'; latField: string; lngField: string }
-  | { type: 'geojson'; field: string };
+  | { type: 'wkb'; value: SourceRef }
+  | { type: 'wkt'; value: SourceRef }
+  | { type: 'latlng'; lat: SourceRef; lng: SourceRef }
+  | { type: 'geojson'; value: SourceRef };
 
 export type TimeFilterMode = 'none' | 'window' | 'asof';
 
 export interface TimeFilterConfig {
   mode: TimeFilterMode;
-  timeField: string;
-  groupByField?: string;
+  time?: SourceRef;
+  groupBy?: SourceRef;
   maxLagMs?: number;
   windowToleranceMs?: number;
 }
@@ -40,7 +45,7 @@ export interface ColorScaleConfig {
   type: ColorScaleType;
   fixedColor?: [number, number, number, number];
   steps?: ColorStep[];
-  field?: string;
+  field?: SourceRef;
   schemeName?: string;
   scaleMin?: number;
   scaleMax?: number;
@@ -49,7 +54,7 @@ export interface ColorScaleConfig {
 
 export interface ShaderConfig {
   enabled: boolean;
-  valueField: string;
+  value?: SourceRef;
   vsDecl?: string;
   vsFilterColor?: string;
 }
@@ -59,22 +64,34 @@ export interface FieldMapping {
   alias: string;
 }
 
-export interface LayerSecondarySourceField {
-  sourceField: string;
+export interface FeatureSourceConfig {
+  id: string;
+  refId: string;
 }
 
-export interface LayerSecondarySourceJoinConfig {
+export interface JoinedSourceField {
+  field: string;
+  as?: string;
+}
+
+export interface JoinedSourceJoinConfig {
   type: 'keyed-asof';
-  localKeyField: string;
-  remoteKeyField: string;
-  timeField: string;
+  localKey: SourceRef;
+  remoteKey: string;
+  time: string;
   maxLagMs?: number;
 }
 
-export interface LayerSecondarySourceConfig {
-  queryRefId: string;
-  join: LayerSecondarySourceJoinConfig;
-  fields: LayerSecondarySourceField[];
+export interface JoinedSourceConfig {
+  id: string;
+  refId: string;
+  join: JoinedSourceJoinConfig;
+  fields: JoinedSourceField[];
+}
+
+export interface LayerDataConfig {
+  featureSource: FeatureSourceConfig;
+  joinedSources?: JoinedSourceConfig[];
 }
 
 export interface LayerDerivedFieldConfig {

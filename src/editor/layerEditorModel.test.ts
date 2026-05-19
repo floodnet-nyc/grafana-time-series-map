@@ -1,4 +1,5 @@
 import type { LayerConfig } from '../layers/_all';
+import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 import {
   appendThresholdStep,
@@ -20,18 +21,19 @@ function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
     settings: {
       radiusMinPixels: 4,
       radiusMaxPixels: 20,
-      radiusField: '',
+      radius: createSourceRef(),
       radiusScale: 1,
-      elevationField: '',
+      elevation: createSourceRef(),
       elevationScale: 1,
       depthTest: false,
       stroked: true,
       showLabels: false,
-      labelField: '',
+      label: createSourceRef(),
     },
     geometry: { type: 'none' },
-    timeFilter: { mode: 'none', timeField: '' },
+    timeFilter: { mode: 'none', time: createSourceRef() },
     opacity: 1,
+    data: { featureSource: { id: 'main', refId: '' } },
   };
   return { ...base, ...overrides } as LayerConfig;
 }
@@ -52,8 +54,8 @@ describe('layerEditorModel', () => {
 
   it('derives color mode and active scheme', () => {
     expect(getColorMode(createLayer())).toBe('fixed');
-    expect(getColorMode(createLayer({ colorScale: { type: 'threshold', field: 'depth', steps: [] } }))).toBe('threshold');
-    expect(getColorMode(createLayer({ colorScale: { type: 'gradient', field: 'depth', schemeName: 'FloodDepth' } }))).toBe('gradient');
+    expect(getColorMode(createLayer({ colorScale: { type: 'threshold', field: createSourceRef('depth'), steps: [] } }))).toBe('threshold');
+    expect(getColorMode(createLayer({ colorScale: { type: 'gradient', field: createSourceRef('depth'), schemeName: 'FloodDepth' } }))).toBe('gradient');
     expect(getActiveScheme(createLayer({ colorScale: { type: 'gradient', schemeName: 'FloodDepth' } }))).toBe('FloodDepth');
   });
 
@@ -62,15 +64,15 @@ describe('layerEditorModel', () => {
       colorScale: { type: 'fixed' },
     });
 
-    expect(createColorModePatch('threshold', createLayer({ colorScale: { type: 'fixed', field: 'depth' } as any }), 'glsl'))
+    expect(createColorModePatch('threshold', createLayer({ colorScale: { type: 'fixed', field: createSourceRef('depth') } as any }), 'glsl'))
       .toMatchObject({
-        colorScale: { type: 'threshold', field: 'depth' },
+        colorScale: { type: 'threshold', field: createSourceRef('depth') },
         shader: { enabled: true, vsFilterColor: 'glsl' },
       });
 
-    expect(createColorModePatch('gradient', createLayer({ colorScale: { type: 'fixed', field: 'depth' } as any }), 'glsl'))
+    expect(createColorModePatch('gradient', createLayer({ colorScale: { type: 'fixed', field: createSourceRef('depth') } as any }), 'glsl'))
       .toMatchObject({
-        colorScale: { type: 'gradient', field: 'depth', schemeName: 'FloodDepth' },
+        colorScale: { type: 'gradient', field: createSourceRef('depth'), schemeName: 'FloodDepth' },
         shader: { enabled: true, vsFilterColor: 'glsl' },
       });
   });

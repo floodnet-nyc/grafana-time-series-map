@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { EventBus, PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
+import { createSourceRef } from '../layers/defaults';
 import { MapPanel } from './MapPanel';
 
 const mockUsePlayback = jest.fn();
@@ -84,22 +85,23 @@ function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = 
         type: 'scatterplot',
         label: 'Layer 1',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
           radiusMinPixels: 4,
           radiusMaxPixels: 20,
-          radiusField: '',
+          radius: createSourceRef(),
           radiusScale: 1,
-          elevationField: '',
+          elevation: createSourceRef(),
           elevationScale: 1,
           depthTest: false,
           stroked: true,
           showLabels: false,
-          labelField: '',
+          label: createSourceRef(),
         },
         geometry: { type: 'none' },
-        timeFilter: { mode: 'none', timeField: '' },
+        timeFilter: { mode: 'none', time: createSourceRef() },
             opacity: 1,
-        selectionKeyField: 'deployment_id',
+        selectionKey: createSourceRef('deployment_id'),
       },
     ],
     time: { show: false, defaultSpeed: 1, loop: false },
@@ -226,7 +228,7 @@ describe('MapPanel', () => {
     expect(latestFeatureClick).toBeDefined();
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
     });
     view.rerender(<MapPanel {...props} />);
 
@@ -252,7 +254,7 @@ describe('MapPanel', () => {
     render(<MapPanel {...props} />);
     expect(latestFeatureClick).toBeDefined();
 
-    latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+    latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
 
     expect(setSelectedKey).toHaveBeenCalledWith(null);
   });
@@ -268,7 +270,7 @@ describe('MapPanel', () => {
     const view = render(<MapPanel {...props} />);
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
     });
     view.rerender(<MapPanel {...props} />);
     expect(screen.getByText('sensor-1')).toBeInTheDocument();
@@ -294,7 +296,7 @@ describe('MapPanel', () => {
     );
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKeyField: 'deployment_id' } } } });
+      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
     });
     view.rerender(<MapPanel {...props} />);
 

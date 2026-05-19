@@ -1,14 +1,15 @@
 import { PathLayer } from '@deck.gl/layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from '../utils';
 
 export interface PathLayerSettings {
   widthMinPixels: number;
   widthMaxPixels: number;
-  widthField: string;
+  width: SourceRef;
   widthScale: number;
   capRounded: boolean;
   jointRounded: boolean;
@@ -34,7 +35,7 @@ function getPath(f: Feature): number[][] | null {
 const defaultSettings: PathLayerSettings = {
   widthMinPixels: 2,
   widthMaxPixels: 10,
-  widthField: '',
+  width: createSourceRef(),
   widthScale: 1,
   capRounded: true,
   jointRounded: true,
@@ -50,7 +51,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     section('Path', [
       { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
       { key: 'widthMaxPixels', label: 'Max width (px)', type: 'number', defaultValue: 10 },
-      { key: 'widthField', label: 'Width field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'width', label: 'Width field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'widthScale', label: 'Width scale', type: 'number', defaultValue: 1 },
       { key: 'capRounded', label: 'Rounded caps', type: 'boolean', defaultValue: true },
       { key: 'jointRounded', label: 'Rounded joints', type: 'boolean', defaultValue: true },
@@ -61,8 +62,9 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     const options = config.settings;
 
     const commonProps = createCommonLayerProps(context);
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
-    const [getWidth, updatesWidth] = getNumericAccessor(options.widthField, options.widthScale);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
+    const [getWidth, updatesWidth] = getNumericAccessor(options.width, options.widthScale);
     
     return [
       new PathLayer({

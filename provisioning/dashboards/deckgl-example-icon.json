@@ -114,15 +114,23 @@
                         "type": "icon",
                         "label": "Meteorites",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [
                             {
@@ -133,22 +141,37 @@
                         "opacity": 0.9,
                         "colorScale": {
                             "type": "gradient",
-                            "field": "mass",
+                            "field": {
+                                "source": "main",
+                                "field": "mass"
+                            },
                             "schemeName": "Turbo",
                             "scaleMin": 0,
                             "scaleMax": 60000
                         },
                         "settings": {
                             "fixedIcon": "marker",
-                            "iconField": "",
                             "iconAtlasUrl": "",
                             "iconMappingUrl": "",
                             "sizeScale": 20,
                             "sizeMinPixels": 10,
                             "sizeMaxPixels": 48,
-                            "sizeField": "mass",
                             "billboard": true,
-                            "alphaCutoff": 0.05
+                            "alphaCutoff": 0.05,
+                            "size": {
+                                "source": "main",
+                                "field": "mass"
+                            },
+                            "icon": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -187,7 +210,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Icon",
+    "title": "Deck.gl Showcase — Icon",
     "uid": "deckgl-showcase-icon",
     "version": 1,
     "weekStart": ""

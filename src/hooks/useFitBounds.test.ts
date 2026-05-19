@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import type { Feature } from 'geojson';
 import type { InitialViewFitDataSource, MapPanelOptions } from '../types';
+import { createSourceRef } from '../layers/defaults';
 import { useFitBounds } from './useFitBounds';
 import type { PreparedLayerState } from '../utils/dataframe/panelLayersModel';
 import type { GetAccessorFunction, GetNumericAccessorFunction } from '../layers/types';
@@ -32,8 +33,8 @@ function pointFeature(longitude: number, latitude: number): Feature {
 }
 
 const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-  fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
-  [fieldName, defaultValue],
+  fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+  [fieldName?.source, fieldName?.field, defaultValue],
 ];
 
 const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
@@ -57,8 +58,9 @@ function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): 
       label: 'Layer 1',
       visible: true,
       settings: {},
-      geometry: { type: 'geojson', field: 'geometry' },
-      timeFilter: { mode: 'window', timeField: 'time' },
+      data: { featureSource: { id: 'main', refId: '' } },
+      geometry: { type: 'geojson', value: createSourceRef('geometry') },
+      timeFilter: { mode: 'window', time: createSourceRef('time') },
         opacity: 1,
     } as any,
     features: [pointFeature(-122, 37), pointFeature(-74, 40)],

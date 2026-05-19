@@ -142,15 +142,23 @@
                         "type": "hexagon",
                         "label": "3D heatmap",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 1,
@@ -177,13 +185,25 @@
                             "coverage": 1,
                             "extruded": true,
                             "elevationScale": 300,
-                            "elevationWeightField": "",
                             "elevationAggregation": "SUM",
-                            "colorWeightField": "",
                             "colorAggregation": "SUM",
                             "colorRange": "accidents",
                             "lowerPercentile": 0,
-                            "upperPercentile": 100
+                            "upperPercentile": 100,
+                            "elevationWeight": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "colorWeight": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -222,7 +242,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 3D Heatmap",
+    "title": "Deck.gl Showcase — 3D Heatmap",
     "uid": "deckgl-showcase-3d-heatmap",
     "version": 1,
     "weekStart": ""

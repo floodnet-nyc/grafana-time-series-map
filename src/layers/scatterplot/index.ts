@@ -2,9 +2,10 @@ import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import CollisionFilterExtension from '../../utils/deckgl/CollisionFilterExtension';
 import {
   createCommonLayerProps,
@@ -16,14 +17,14 @@ import { AccessorContext } from '@deck.gl/core';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
   radiusMaxPixels: number;
-  radiusField: string;
+  radius: SourceRef;
   radiusScale: number;
-  elevationField: string;
+  elevation: SourceRef;
   elevationScale: number;
   depthTest: boolean;
   stroked: boolean;
   showLabels: boolean;
-  labelField: string;
+  label: SourceRef;
 }
 
 export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
@@ -39,14 +40,14 @@ const ScatterColorExtension = CreateMathExtensionSubclass({
 const defaultSettings: ScatterplotLayerSettings = {
   radiusMinPixels: 4,
   radiusMaxPixels: 20,
-  radiusField: '',
+  radius: createSourceRef(),
   radiusScale: 1,
-  elevationField: '',
+  elevation: createSourceRef(),
   elevationScale: 1,
   depthTest: false,
   stroked: true,
   showLabels: false,
-  labelField: '',
+  label: createSourceRef(),
 };
 
 export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig> = {
@@ -59,29 +60,25 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     section('Point', [
       { key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 },
       { key: 'radiusMaxPixels', label: 'Max radius (px)', type: 'number', defaultValue: 20 },
-      { key: 'radiusField', label: 'Radius field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'radius', label: 'Radius field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'radiusScale', label: 'Radius scale', type: 'number', defaultValue: 1 },
-      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevation', label: 'Elevation field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'stroked', label: 'Stroke outline', type: 'boolean', defaultValue: true },
     ]),
     section('Text', [
       { key: 'showLabels', label: 'Show labels', type: 'boolean', defaultValue: false },
-      { key: 'labelField', label: 'Label field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'label', label: 'Label field', type: 'fieldPicker', defaultValue: createSourceRef() },
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
     const { config, features, timeFilterFlags, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
-
-    const valueField =
-      config.colorScale?.field ||
-      config.shader?.valueField ||
-      '';
+    const valueField = config.colorScale?.field || config.shader?.value;
 
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
-    const useShader = !!(hasScheme && valueField);
+    const useShader = !!(hasScheme && valueField?.field);
 
     const shaderExtensions: unknown[] = [];
     if (useShader) {
@@ -99,12 +96,12 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     }
 
     const commonProps = createCommonLayerProps(context);
-    const getColor = buildColorAccessor(config.colorScale);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
+    const [getColorValue, updateColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
     const lineAccessors = createLineSelectionAccessors(isSelected);
 
-    // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
-    const [getRadius, updateRadius] = getNumericAccessor(options.radiusField, options.radiusScale);
+    const [getRadius, updateRadius] = getNumericAccessor(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
 
     const layers: any[] = [
@@ -129,6 +126,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           getLineColor: updatesSelected,
           getLineWidth: updatesSelected,
           getRadius: [...updateRadius],
+          getFillColor: updateColorValue,
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
         },
         parameters: { blend: true, depthTest: false },
@@ -136,8 +134,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ];
 
     if (options.showLabels) {
-      const [getText, updateText] = getAccessor(options.labelField || valueField, '');
-      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(options.elevationField, options.elevationScale);
+      const [getText, updateText] = getAccessor(options.label?.field ? options.label : valueField, '');
+      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(options.elevation, options.elevationScale);
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({

@@ -1,15 +1,18 @@
 import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
+import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
+import { createCommonLayerProps } from 'layers/utils';
 
 export interface HexagonLayerSettings {
   radius: number;
   coverage: number;
   extruded: boolean;
   elevationScale: number;
-  elevationWeightField: string;
+  elevationWeight: SourceRef;
   elevationAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
-  colorWeightField: string;
+  colorWeight: SourceRef;
   colorAggregation: 'SUM' | 'MEAN' | 'MIN' | 'MAX';
   colorRange: string;
   lowerPercentile: number;
@@ -17,8 +20,6 @@ export interface HexagonLayerSettings {
 }
 
 export type HexagonLayerConfig = BaseLayerConfig<'hexagon', HexagonLayerSettings>;
-import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps } from 'layers/utils';
 
 const COLOR_RANGES: Record<string, Array<[number, number, number]>> = {
   teal: [[214, 245, 238], [153, 225, 210], [87, 197, 174], [24, 161, 135], [0, 124, 101], [0, 84, 70]],
@@ -32,26 +33,14 @@ const defaultSettings: HexagonLayerSettings = {
   coverage: 0.9,
   extruded: true,
   elevationScale: 50,
-  elevationWeightField: '',
+  elevationWeight: createSourceRef(),
   elevationAggregation: 'SUM',
-  colorWeightField: '',
+  colorWeight: createSourceRef(),
   colorAggregation: 'SUM',
   colorRange: 'teal',
   lowerPercentile: 0,
   upperPercentile: 100,
 };
-
-// function getPointFeatures(features: Feature[], timeFilterFlags: Uint8Array) {
-//   return features.filter((feature: any) => feature.geometry?.type === 'Point' && timeFilterFlags[feature.__idx]);
-// }
-
-// function getWeight(feature: Feature, field: string) {
-//   if (!field) {
-//     return 1;
-//   }
-//   const value = Number(feature.properties?.[field] ?? 0);
-//   return Number.isFinite(value) ? value : 0;
-// }
 
 export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
   type: 'hexagon',
@@ -67,7 +56,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     section('Elevation', [
       { key: 'extruded', label: 'Extruded', type: 'boolean', defaultValue: true },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 50 },
-      { key: 'elevationWeightField', label: 'Elevation weight field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevationWeight', label: 'Elevation weight field', type: 'fieldPicker', defaultValue: createSourceRef() },
       {
         key: 'elevationAggregation',
         label: 'Elevation aggregation',
@@ -82,7 +71,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
       },
     ]),
     section('Color', [
-      { key: 'colorWeightField', label: 'Color weight field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'colorWeight', label: 'Color weight field', type: 'fieldPicker', defaultValue: createSourceRef() },
       {
         key: 'colorAggregation',
         label: 'Color aggregation',
@@ -114,13 +103,12 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     ]),
   ],
   renderLayers(ctx: LayerRenderContext<HexagonLayerConfig>) {
-    const { config, features, getNumericAccessor } = ctx;
-    const options = config.settings;
-    // const data = getPointFeatures(features, timeFilterFlags);
+    const { features, getNumericAccessor } = ctx;
+    const options = ctx.config.settings;
     const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
-    const [getColorWeight, updatesColorWeight] = getNumericAccessor(options.colorWeightField, 1);
-    const [getElevationWeight, updatesElevationWeight] = getNumericAccessor(options.elevationWeightField, 1);
+    const [getColorWeight, updatesColorWeight] = getNumericAccessor(options.colorWeight, 1);
+    const [getElevationWeight, updatesElevationWeight] = getNumericAccessor(options.elevationWeight, 1);
 
     return [
       new HexagonLayer({

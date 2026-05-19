@@ -99,15 +99,23 @@
                         "type": "scatterplot",
                         "label": "Manhattan exits",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "latlng",
-                            "latField": "lat",
-                            "lngField": "lng"
+                            "lat": {
+                                "source": "main",
+                                "field": "lat"
+                            },
+                            "lng": {
+                                "source": "main",
+                                "field": "lng"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [
                             {
@@ -119,7 +127,10 @@
                         "pickable": true,
                         "colorScale": {
                             "type": "threshold",
-                            "field": "exits",
+                            "field": {
+                                "source": "main",
+                                "field": "exits"
+                            },
                             "steps": [
                                 {
                                     "value": 1,
@@ -144,11 +155,23 @@
                         "settings": {
                             "radiusMinPixels": 2,
                             "radiusMaxPixels": 2,
-                            "radiusField": "",
                             "radiusScale": 1,
                             "stroked": false,
                             "showLabels": false,
-                            "labelField": ""
+                            "radius": {
+                                "source": "main",
+                                "field": ""
+                            },
+                            "label": {
+                                "source": "main",
+                                "field": ""
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -187,7 +210,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Scatterplot",
+    "title": "Deck.gl Showcase — Scatterplot",
     "uid": "deckgl-showcase-scatterplot",
     "version": 1,
     "weekStart": ""

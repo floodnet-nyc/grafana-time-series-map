@@ -27,7 +27,7 @@ import {
   patchThresholdStep,
   removeThresholdStep,
 } from './layerEditorModel';
-import { FieldSelect } from './FieldSelect';
+import { SourceRefEditor } from './SourceRefEditor';
 
 const COLOR_MODES: Array<ComboboxOption<string>> = [
   { label: 'Fixed color', value: 'fixed' },
@@ -68,11 +68,12 @@ function ColorSchemePreview({ schemeName, invert }: { schemeName: string; invert
 
 interface Props {
   layer: LayerConfig;
-  availableFields: string[];
+  sourceOptions: Array<{ id: string; label: string }>;
+  fieldsBySource: Record<string, string[]>;
   onChange: (updates: Partial<LayerConfig>) => void;
 }
 
-export function ColorScaleEditor({ layer, availableFields, onChange }: Props) {
+export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChange }: Props) {
   const styles = useStyles2(getStyles);
   const mode = getColorMode(layer);
   const scheme = getActiveScheme(layer);
@@ -104,7 +105,12 @@ export function ColorScaleEditor({ layer, availableFields, onChange }: Props) {
       {mode === 'threshold' && (
         <>
           <Field label="Value field">
-            <FieldSelect value={layer.colorScale?.field ?? ''} onChange={(v) => patchColor({ field: v })} availableFields={availableFields} />
+            <SourceRefEditor
+              value={layer.colorScale?.field}
+              onChange={(value) => patchColor({ field: value })}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
+            />
           </Field>
           {(layer.colorScale?.steps ?? []).map((step, index) => (
             <div key={`threshold-${index}`} className={styles.thresholdRow}>
@@ -129,7 +135,12 @@ export function ColorScaleEditor({ layer, availableFields, onChange }: Props) {
       {mode === 'gradient' && (
         <>
           <Field label="Value field">
-            <FieldSelect value={layer.colorScale?.field ?? ''} onChange={(v) => patchColor({ field: v })} availableFields={availableFields} />
+            <SourceRefEditor
+              value={layer.colorScale?.field}
+              onChange={(value) => patchColor({ field: value })}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
+            />
           </Field>
           <Field label="Scheme">
             <Combobox options={SCHEME_OPTIONS} value={scheme || ''} onChange={(v) => patchColor({ schemeName: String(v?.value ?? '') })} />
@@ -151,7 +162,12 @@ export function ColorScaleEditor({ layer, availableFields, onChange }: Props) {
           <Switch value={layer.shader?.enabled ?? false} onChange={(e) => patchShader({ enabled: e.currentTarget.checked })} />
         </Field>
         <Field label="Value field">
-          <FieldSelect value={layer.shader?.valueField ?? ''} onChange={(v) => patchShader({ valueField: v })} availableFields={availableFields} />
+          <SourceRefEditor
+            value={layer.shader?.value}
+            onChange={(value) => patchShader({ value })}
+            sourceOptions={sourceOptions}
+            fieldsBySource={fieldsBySource}
+          />
         </Field>
         <Field label="Custom vertex declarations">
           <TextArea value={layer.shader?.vsDecl ?? ''} onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })} />

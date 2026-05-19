@@ -100,21 +100,29 @@
                         "type": "geojson",
                         "label": "Fatal highway accidents (1990)",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.9,
                         "pickable": true,
                         "colorScale": {
                             "type": "threshold",
-                            "field": "fatalitiesPer1kMile",
+                            "field": {
+                                "source": "main",
+                                "field": "fatalitiesPer1kMile"
+                            },
                             "steps": [
                                 {
                                     "value": 0,
@@ -212,12 +220,21 @@
                             "pointRadiusMinPixels": 4,
                             "pointRadiusMaxPixels": 20,
                             "lineWidthMinPixels": 0.5,
-                            "lineWidthField": "lineWidthMeters",
                             "lineWidthScale": 1,
                             "lineWidthUnits": "meters",
                             "filled": false,
                             "stroked": true,
-                            "extruded": false
+                            "extruded": false,
+                            "lineWidth": {
+                                "source": "main",
+                                "field": "lineWidthMeters"
+                            }
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
                         }
                     }
                 ],
@@ -255,7 +272,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Highway",
+    "title": "Deck.gl Showcase — Highway",
     "uid": "deckgl-showcase-highway",
     "version": 1,
     "weekStart": ""

@@ -2,8 +2,9 @@ import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2, Field, Combobox, MultiCombobox, Input, TextArea, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-import type { LayerDerivedFieldConfig, LayerSecondarySourceConfig } from '../types';
-import { FieldSelect } from './FieldSelect';
+import type { JoinedSourceConfig, LayerDataConfig, LayerDerivedFieldConfig } from '../types';
+import { createSourceRef, DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
+import { SourceRefEditor } from './SourceRefEditor';
 import { SelectableListEditor } from './SelectableListEditor';
 import { useSelectableListState } from './useSelectableListState';
 
@@ -13,62 +14,87 @@ const DERIVED_FIELD_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Boolean', value: 'boolean' },
 ];
 
-function getDefaultSecondarySource(primaryQueryRefId: string | undefined, availableRefIds: string[]): LayerSecondarySourceConfig {
-  const preferredQueryRefId = availableRefIds.find((refId) => refId !== primaryQueryRefId) ?? availableRefIds[0] ?? '';
+function getDefaultJoinedSource(featureSourceId: string, featureSourceRefId: string | undefined, availableRefIds: string[]): JoinedSourceConfig {
+  const preferredRefId = availableRefIds.find((refId) => refId !== featureSourceRefId) ?? availableRefIds[0] ?? '';
+  const id = `source-${Date.now()}`;
   return {
-    queryRefId: preferredQueryRefId,
-    join: { type: 'keyed-asof', localKeyField: '', remoteKeyField: '', timeField: '', maxLagMs: 3600000 },
+    id,
+    refId: preferredRefId,
+    join: { type: 'keyed-asof', localKey: createSourceRef('', featureSourceId), remoteKey: '', time: '', maxLagMs: 3600000 },
     fields: [],
   };
 }
 
 interface Props {
+  data: LayerDataConfig;
   derivedFields: LayerDerivedFieldConfig[];
-  secondarySources: LayerSecondarySourceConfig[];
-  queryRefId?: string;
-  availableFields: string[];
   availableRefIds: string[];
   queryFieldsByRefId: Record<string, string[]>;
+  featureSourceFields: string[];
+  onDataChange: (data: LayerDataConfig) => void;
   onDerivedFieldsChange: (fields: LayerDerivedFieldConfig[]) => void;
-  onSecondarySourcesChange: (sources: LayerSecondarySourceConfig[]) => void;
 }
 
-export function JoinSourceEditor({
-  source, availableFields, availableRefIds, queryFieldsByRefId, patchSource,
+function JoinedSourceEditor({
+  source,
+  featureSourceId,
+  featureSourceFields,
+  availableRefIds,
+  queryFieldsByRefId,
+  patchSource,
 }: {
-  source: LayerSecondarySourceConfig;
-  index: number;
-  secondarySources: LayerSecondarySourceConfig[];
-  availableFields: string[];
+  source: JoinedSourceConfig;
+  featureSourceId: string;
+  featureSourceFields: string[];
   availableRefIds: string[];
   queryFieldsByRefId: Record<string, string[]>;
-  patchSource: (updates: Partial<LayerSecondarySourceConfig>) => void;
+  patchSource: (updates: Partial<JoinedSourceConfig>) => void;
 }) {
-  const sourceFields = source.queryRefId ? queryFieldsByRefId[source.queryRefId] ?? [] : [];
+  const sourceFields = source.refId ? queryFieldsByRefId[source.refId] ?? [] : [];
   const refIdOptions = [
     { label: 'First query', value: '' },
     ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
   ];
 
-  const patchJoin = (updates: Partial<LayerSecondarySourceConfig['join']>) => patchSource({ join: { ...source.join, ...updates } });
+  const patchJoin = (updates: Partial<JoinedSourceConfig['join']>) => patchSource({ join: { ...source.join, ...updates } });
 
   return (
     <>
+      <Field label="Source id">
+        <Input value={source.id} onChange={(e) => patchSource({ id: e.currentTarget.value })} />
+      </Field>
       <Field label="Query">
         <Combobox
           options={refIdOptions}
-          value={source.queryRefId}
-          onChange={(v) => patchSource({ queryRefId: String(v?.value ?? '') })}
+          value={source.refId}
+          onChange={(v) => patchSource({ refId: String(v?.value ?? '') })}
         />
       </Field>
-      <Field label="Local key field">
-        <FieldSelect value={source.join.localKeyField} onChange={(v) => patchJoin({ localKeyField: v })} availableFields={availableFields} />
+      <Field label="Local key">
+        <SourceRefEditor
+          value={source.join.localKey}
+          onChange={(value) => patchJoin({ localKey: value })}
+          sourceOptions={[{ id: featureSourceId, label: featureSourceId === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSourceId }]}
+          fieldsBySource={{ [featureSourceId]: featureSourceFields }}
+        />
       </Field>
-      <Field label="Remote key field">
-        <FieldSelect value={source.join.remoteKeyField} onChange={(v) => patchJoin({ remoteKeyField: v })} availableFields={sourceFields} />
+      <Field label="Remote key">
+        <Combobox
+          options={sourceFields.map((field) => ({ label: field, value: field }))}
+          value={source.join.remoteKey || null}
+          onChange={(v) => patchJoin({ remoteKey: String(v?.value ?? '') })}
+          isClearable
+          createCustomValue
+        />
       </Field>
-      <Field label="Time field">
-        <FieldSelect value={source.join.timeField} onChange={(v) => patchJoin({ timeField: v })} availableFields={sourceFields} />
+      <Field label="Join time">
+        <Combobox
+          options={sourceFields.map((field) => ({ label: field, value: field }))}
+          value={source.join.time || null}
+          onChange={(v) => patchJoin({ time: String(v?.value ?? '') })}
+          isClearable
+          createCustomValue
+        />
       </Field>
       <Field label="Max lag (ms)">
         <Input
@@ -79,11 +105,11 @@ export function JoinSourceEditor({
       </Field>
       <Field label="Source fields">
         <MultiCombobox
-          options={sourceFields.map((f) => ({ label: f, value: f }))}
-          value={source.fields.map((f) => f.sourceField)}
-          onChange={(v) =>
+          options={sourceFields.map((field) => ({ label: field, value: field }))}
+          value={source.fields.map((field) => field.field)}
+          onChange={(values) =>
             patchSource({
-              fields: v.map((value) => ({ sourceField: String(value) })),
+              fields: values.map((value) => ({ field: String(value) })),
             })
           }
         />
@@ -92,8 +118,9 @@ export function JoinSourceEditor({
   );
 }
 
-export function DerivedFieldEditor({
-  field, patchField,
+function DerivedFieldEditor({
+  field,
+  patchField,
 }: {
   field: LayerDerivedFieldConfig;
   patchField: (updates: Partial<LayerDerivedFieldConfig>) => void;
@@ -118,26 +145,26 @@ export function DerivedFieldEditor({
 }
 
 export function DataEditor({
+  data,
   derivedFields,
-  secondarySources,
-  queryRefId,
-  availableFields,
   availableRefIds,
   queryFieldsByRefId,
+  featureSourceFields,
+  onDataChange,
   onDerivedFieldsChange,
-  onSecondarySourcesChange,
 }: Props) {
   const styles = useStyles2(getStyles);
+  const joinedSources = data.joinedSources ?? [];
   const {
-    selectedIndex: selectedSecondarySourceIndex,
-    setSelectedIndex: setSelectedSecondarySourceIndex,
-    patchAt: patchSecondarySource,
-    addItem: addSecondarySourceItem,
-    removeAt: removeSecondarySource,
-    moveAt: moveSecondarySource,
+    selectedIndex: selectedJoinedSourceIndex,
+    setSelectedIndex: setSelectedJoinedSourceIndex,
+    patchAt: patchJoinedSource,
+    addItem: addJoinedSourceItem,
+    removeAt: removeJoinedSource,
+    moveAt: moveJoinedSource,
   } = useSelectableListState({
-    items: secondarySources,
-    onChange: onSecondarySourcesChange,
+    items: joinedSources,
+    onChange: (next) => onDataChange({ ...data, joinedSources: next }),
   });
   const {
     selectedIndex: selectedDerivedFieldIndex,
@@ -151,43 +178,62 @@ export function DataEditor({
     onChange: onDerivedFieldsChange,
   });
 
-  const addSecondarySource = useCallback(() => {
-    addSecondarySourceItem(getDefaultSecondarySource(queryRefId, availableRefIds));
-  }, [addSecondarySourceItem, availableRefIds, queryRefId]);
+  const addJoinedSource = useCallback(() => {
+    addJoinedSourceItem(getDefaultJoinedSource(data.featureSource.id, data.featureSource.refId, availableRefIds));
+  }, [addJoinedSourceItem, availableRefIds, data.featureSource.id, data.featureSource.refId]);
 
   const addDerivedField = useCallback(() => {
     addDerivedFieldItem({ as: '', expression: '', type: 'number' });
   }, [addDerivedFieldItem]);
 
+  const refIdOptions = [
+    { label: 'First query', value: '' },
+    ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
+  ];
+
   return (
     <>
-      <Field label="Secondary sources">
+      <Field label="Feature Source">
+        <Combobox
+          options={refIdOptions}
+          value={data.featureSource.refId}
+          onChange={(v) =>
+            onDataChange({
+              ...data,
+              featureSource: {
+                ...data.featureSource,
+                refId: String(v?.value ?? ''),
+              },
+            })
+          }
+        />
+      </Field>
+      <Field label="Joined Sources">
         <SelectableListEditor
-          items={secondarySources}
-          selectedIndex={selectedSecondarySourceIndex}
-          onSelect={setSelectedSecondarySourceIndex}
-          getItemKey={(source, index) => `${source.queryRefId || 'first-query'}-${index}`}
-          getItemLabel={(source, index) => source.queryRefId || `First query source ${index + 1}`}
-          addButtonLabel="Add secondary source"
-          onAdd={addSecondarySource}
-          onMove={moveSecondarySource}
-          onRemove={removeSecondarySource}
+          items={joinedSources}
+          selectedIndex={selectedJoinedSourceIndex}
+          onSelect={setSelectedJoinedSourceIndex}
+          getItemKey={(source, index) => `${source.id}-${index}`}
+          getItemLabel={(source, index) => source.id || `Joined source ${index + 1}`}
+          addButtonLabel="Add joined source"
+          onAdd={addJoinedSource}
+          onMove={moveJoinedSource}
+          onRemove={removeJoinedSource}
           renderEditor={(source, index) => (
             <div className={styles.card}>
-              <JoinSourceEditor
+              <JoinedSourceEditor
                 source={source}
-                index={index}
-                secondarySources={secondarySources}
-                availableFields={availableFields}
+                featureSourceId={data.featureSource.id}
+                featureSourceFields={featureSourceFields}
                 availableRefIds={availableRefIds}
                 queryFieldsByRefId={queryFieldsByRefId}
-                patchSource={(updates) => patchSecondarySource(index, updates)}
+                patchSource={(updates) => patchJoinedSource(index, updates)}
               />
             </div>
           )}
         />
       </Field>
-      <Field label="Derived fields">
+      <Field label="Derived Fields">
         <SelectableListEditor
           items={derivedFields}
           selectedIndex={selectedDerivedFieldIndex}

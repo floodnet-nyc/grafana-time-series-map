@@ -1,18 +1,19 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
+import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';
 
 export interface TripsLayerSettings {
-  timestampsField: string;
+  timestamps: SourceRef;
   timestampUnit: 'ms' | 's';
   trailLengthMs: number;
   fadeTrail: boolean;
   widthMinPixels: number;
   widthMaxPixels: number;
-  widthField: string;
+  width: SourceRef;
   widthScale: number;
   capRounded: boolean;
   jointRounded: boolean;
@@ -82,7 +83,7 @@ function getTripData(features: Feature[], timeFilterFlags: Uint8Array, options: 
     if (!path || path.length < 2) {
       continue;
     }
-    const timestamps = getTimestamps(feature, path, options.timestampsField, options.timestampUnit);
+    const timestamps = getTimestamps(feature, path, options.timestamps.field, options.timestampUnit);
     if (!timestamps) {
       continue;
     }
@@ -92,13 +93,13 @@ function getTripData(features: Feature[], timeFilterFlags: Uint8Array, options: 
 }
 
 const defaultSettings: TripsLayerSettings = {
-  timestampsField: '',
+  timestamps: createSourceRef(),
   timestampUnit: 'ms',
   trailLengthMs: 300000,
   fadeTrail: true,
   widthMinPixels: 2,
   widthMaxPixels: 8,
-  widthField: '',
+  width: createSourceRef(),
   widthScale: 1,
   capRounded: true,
   jointRounded: true,
@@ -112,7 +113,7 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
   },
   editorSections: [
     section('Trip time', [
-      { key: 'timestampsField', label: 'Timestamps field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'timestamps', label: 'Timestamps field', type: 'fieldPicker', defaultValue: createSourceRef() },
       {
         key: 'timestampUnit',
         label: 'Timestamp unit',
@@ -129,17 +130,19 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
     section('Path', [
       { key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 },
       { key: 'widthMaxPixels', label: 'Max width (px)', type: 'number', defaultValue: 8 },
-      { key: 'widthField', label: 'Width field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'width', label: 'Width field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'widthScale', label: 'Width scale', type: 'number', defaultValue: 1 },
       { key: 'capRounded', label: 'Rounded caps', type: 'boolean', defaultValue: true },
       { key: 'jointRounded', label: 'Rounded joints', type: 'boolean', defaultValue: true },
     ]),
   ],
   renderLayers(context: LayerRenderContext<TripsLayerConfig>) {
-    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick } = context;
+    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick, getNumericAccessor } = context;
     const options = config.settings;
     const data = getTripData(features, timeFilterFlags, options);
-    const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220]);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
+    const [getWidth] = getNumericAccessor(options.width, 1);
     const commonProps = createCommonLayerProps(context);
     return [
       new TripsLayer<TripDatum>({
@@ -155,8 +158,8 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
         jointRounded: options.jointRounded,
         getPath: (datum: TripDatum) => datum.path as any,
         getTimestamps: (datum: TripDatum) => datum.timestamps,
-        getColor: (datum: TripDatum) => getColor(datum.feature) as [number, number, number, number],
-        getWidth: (datum: TripDatum) => (options.widthField ? Number(datum.feature.properties?.[options.widthField] ?? 1) * options.widthScale : 1),
+        getColor: (datum: TripDatum, ctx: any) => getColor(datum.feature, ctx) as [number, number, number, number],
+        getWidth: getWidth ? (datum: TripDatum, ctx: any) => getWidth(datum.feature, ctx) : 1,
         onClick: onFeatureClick ? (info: any) => info.object && onFeatureClick(info.object.feature, info) : undefined,
       } as any),
     ];

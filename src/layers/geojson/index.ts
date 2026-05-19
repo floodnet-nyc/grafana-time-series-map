@@ -1,14 +1,15 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from '../utils';
 
 export interface GeoJsonLayerSettings {
   pointRadiusMinPixels: number;
   pointRadiusMaxPixels: number;
   lineWidthMinPixels: number;
-  lineWidthField: string;
+  lineWidth: SourceRef;
   lineWidthScale: number;
   lineWidthUnits: 'pixels' | 'meters';
   filled: boolean;
@@ -22,7 +23,7 @@ const defaultSettings: GeoJsonLayerSettings = {
   pointRadiusMinPixels: 4,
   pointRadiusMaxPixels: 20,
   lineWidthMinPixels: 1,
-  lineWidthField: '',
+  lineWidth: createSourceRef(),
   lineWidthScale: 1,
   lineWidthUnits: 'pixels',
   filled: true,
@@ -41,7 +42,7 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
       { key: 'pointRadiusMinPixels', label: 'Point min radius (px)', type: 'number', defaultValue: 4 },
       { key: 'pointRadiusMaxPixels', label: 'Point max radius (px)', type: 'number', defaultValue: 20 },
       { key: 'lineWidthMinPixels', label: 'Line min width (px)', type: 'number', defaultValue: 1 },
-      { key: 'lineWidthField', label: 'Line width field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'lineWidth', label: 'Line width field', type: 'fieldPicker', defaultValue: createSourceRef() },
       // { key: 'lineWidthScale', label: 'Line width scale', type: 'number', defaultValue: 1 },
       {
         key: 'lineWidthUnits',
@@ -59,12 +60,13 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<GeoJsonLayerConfig>) {
-    const { config, features, getAccessor } = context;
+    const { config, features, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
-    const getFillColor = buildColorAccessor(config.colorScale);
-    const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200]);
-    const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidthField, 0);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const getFillColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
+    const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200], getColorValue);
+    const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidth, 0);
     return [
       new GeoJsonLayer({
         ...commonProps,

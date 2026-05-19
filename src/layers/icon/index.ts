@@ -1,26 +1,27 @@
 import { IconLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import type { SourceRef } from '../../types';
 
 export interface IconLayerSettings {
   fixedIcon: string;
-  iconField: string;
+  icon: SourceRef;
   iconAtlasUrl: string;
   iconMappingUrl: string;
-  elevationField: string;
+  elevation: SourceRef;
   elevationScale: number;
   depthTest: boolean;
   sizeScale: number;
   sizeMinPixels: number;
   sizeMaxPixels: number;
-  sizeField: string;
+  size: SourceRef;
   billboard: boolean;
   alphaCutoff: number;
 }
 
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
 
 const BUILT_IN_ICONS = [
@@ -69,16 +70,16 @@ function getBuiltInIconName(iconName: string) {
 
 const defaultSettings: IconLayerSettings = {
   fixedIcon: 'marker',
-  iconField: '',
+  icon: createSourceRef(),
   iconAtlasUrl: '',
   iconMappingUrl: '',
-  elevationField: '',
+  elevation: createSourceRef(),
   elevationScale: 1,
   depthTest: false,
   sizeScale: 32,
   sizeMinPixels: 8,
   sizeMaxPixels: 64,
-  sizeField: '',
+  size: createSourceRef(),
   billboard: true,
   alphaCutoff: 0.05,
 };
@@ -92,10 +93,10 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
   editorSections: [
     section('Icon', [
       { key: 'fixedIcon', label: 'Icon', type: 'select', defaultValue: 'marker', selectOptions: BUILT_IN_ICONS },
-      { key: 'iconField', label: 'Icon name field (overrides above)', type: 'fieldPicker', defaultValue: '' },
+      { key: 'icon', label: 'Icon name field (overrides above)', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'iconAtlasUrl', label: 'Custom atlas URL', type: 'string', defaultValue: '' },
       { key: 'iconMappingUrl', label: 'Custom mapping URL', type: 'string', defaultValue: '' },
-      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevation', label: 'Elevation field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
     ]),
@@ -103,7 +104,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
       { key: 'sizeScale', label: 'Size (px)', type: 'number', defaultValue: 32 },
       { key: 'sizeMinPixels', label: 'Min size (px)', type: 'number', defaultValue: 8 },
       { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64 },
-      { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'size', label: 'Size field', type: 'fieldPicker', defaultValue: createSourceRef() },
     ]),
     section('Style', [
       { key: 'billboard', label: 'Billboard (face camera)', type: 'boolean', defaultValue: true },
@@ -114,13 +115,14 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     const { config, features, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
 
-    const baseColor = buildColorAccessor(config.colorScale);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKeyField);
+    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
+    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
     const getColor = createSelectionColorAccessor(baseColor, isSelected);
 
     const commonProps = createCommonLayerProps(context);
-    const [getIcon, updatesIcon] = getAccessor(options.iconField, options.fixedIcon);
-    const [getSize, updatesSize] = getNumericAccessor(options.sizeField, options.sizeScale);
+    const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);
+    const [getSize, updatesSize] = getNumericAccessor(options.size, options.sizeScale);
     const iconAtlas = options.iconAtlasUrl.trim();
     const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);

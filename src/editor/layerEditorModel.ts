@@ -1,4 +1,5 @@
 import type { LayerOptionField } from '../layers/types';
+import { createSourceRef } from '../layers/defaults';
 import type { LayerConfig } from '../layers/_all';
 import type { ColorScaleConfig, ColorStep, ShaderConfig } from '../types';
 
@@ -53,7 +54,7 @@ export function createColorModePatch(
   layer: LayerConfig,
   defaultVsFilterColor: string
 ): Pick<LayerConfig, 'colorScale' | 'shader'> {
-  const valueField = layer.colorScale?.field ?? '';
+  const value = layer.colorScale?.field ?? layer.shader?.value ?? createSourceRef();
 
   if (mode === 'fixed') {
     return {
@@ -66,12 +67,12 @@ export function createColorModePatch(
     return {
       colorScale: {
         type: 'threshold',
-        field: valueField,
+        field: value,
         steps: DEFAULT_THRESHOLD_STEPS,
       },
       shader: {
         enabled: true,
-        valueField,
+        value,
         vsDecl: '',
         vsFilterColor: defaultVsFilterColor,
       },
@@ -84,11 +85,11 @@ export function createColorModePatch(
       schemeName: 'FloodDepth',
       scaleMin: 0,
       scaleMax: 40,
-      field: valueField,
+      field: value,
     },
     shader: {
       enabled: true,
-      valueField,
+      value,
       vsDecl: '',
       vsFilterColor: defaultVsFilterColor,
     },
@@ -116,7 +117,7 @@ export function createPatchedShader(
   shader: ShaderConfig | undefined,
   updates: Partial<ShaderConfig>
 ): ShaderConfig {
-  return { enabled: false, valueField: '', ...shader, ...updates };
+  return { enabled: false, value: createSourceRef(), ...shader, ...updates };
 }
 
 export function createPatchedColorScale(

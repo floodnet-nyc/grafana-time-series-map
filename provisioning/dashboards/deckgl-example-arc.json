@@ -153,14 +153,19 @@
                         "type": "geojson",
                         "label": "US counties",
                         "visible": true,
-                        "queryRefId": "B",
                         "geometry": {
                             "type": "geojson",
-                            "field": "geometry"
+                            "value": {
+                                "source": "main",
+                                "field": "geometry"
+                            }
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [],
                         "opacity": 0.6,
@@ -172,6 +177,12 @@
                             "filled": false,
                             "stroked": true,
                             "extruded": false
+                        },
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "B"
+                            }
                         }
                     },
                     {
@@ -179,13 +190,15 @@
                         "type": "arc",
                         "label": "Los Angeles migration flows",
                         "visible": true,
-                        "queryRefId": "A",
                         "geometry": {
                             "type": "none"
                         },
                         "timeFilter": {
                             "mode": "none",
-                            "timeField": ""
+                            "time": {
+                                "source": "main",
+                                "field": ""
+                            }
                         },
                         "fieldMappings": [
                             {
@@ -196,7 +209,10 @@
                         "opacity": 0.7,
                         "colorScale": {
                             "type": "gradient",
-                            "field": "absValue",
+                            "field": {
+                                "source": "main",
+                                "field": "absValue"
+                            },
                             "schemeName": "Turbo",
                             "scaleMin": 0,
                             "scaleMax": 500
@@ -204,10 +220,22 @@
                         "settings": {
                             "widthMinPixels": 1,
                             "greatCircle": false,
-                            "srcLngField": "srcLng",
-                            "srcLatField": "srcLat",
-                            "tgtLngField": "tgtLng",
-                            "tgtLatField": "tgtLat"
+                            "srcLng": {
+                                "source": "main",
+                                "field": "srcLng"
+                            },
+                            "srcLat": {
+                                "source": "main",
+                                "field": "srcLat"
+                            },
+                            "tgtLng": {
+                                "source": "main",
+                                "field": "tgtLng"
+                            },
+                            "tgtLat": {
+                                "source": "main",
+                                "field": "tgtLat"
+                            }
                         },
                         "extensions": [
                             {
@@ -219,7 +247,13 @@
                                     "brushingTarget": "source_target"
                                 }
                             }
-                        ]
+                        ],
+                        "data": {
+                            "featureSource": {
+                                "id": "main",
+                                "refId": "A"
+                            }
+                        }
                     }
                 ],
                 "time": {
@@ -257,7 +291,7 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Deck.gl Showcase \u2014 Arc",
+    "title": "Deck.gl Showcase — Arc",
     "uid": "deckgl-showcase-arc",
     "version": 1,
     "weekStart": ""

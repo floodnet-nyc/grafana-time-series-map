@@ -1,4 +1,5 @@
 import type { Feature } from 'geojson';
+import { createSourceRef } from './defaults';
 import type { LayerRenderContext } from './types';
 import { iconLayerDefinition } from './icon';
 import { scatterplotLayerDefinition } from './scatterplot';
@@ -52,7 +53,7 @@ function createBaseContext() {
 }
 
 describe('layer selection highlighting', () => {
-  it('uses selectionKeyField for scatterplot selection styling', () => {
+  it('uses selectionKey for scatterplot selection styling', () => {
     const { features, ...shared } = createBaseContext();
     const [layer] = scatterplotLayerDefinition.renderLayers({
       ...shared,
@@ -62,19 +63,23 @@ describe('layer selection highlighting', () => {
         type: 'scatterplot',
         label: 'Scatter',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
           radiusMinPixels: 4,
           radiusMaxPixels: 20,
-          radiusField: '',
+          radius: createSourceRef(),
           radiusScale: 1,
+          elevation: createSourceRef(),
+          elevationScale: 1,
+          depthTest: false,
           stroked: true,
           showLabels: false,
-          labelField: '',
+          label: createSourceRef(),
         },
-        geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
-        timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
+        geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
+        timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
             opacity: 1,
-        selectionKeyField: 'deployment_id',
+        selectionKey: createSourceRef('deployment_id'),
       },
     } as LayerRenderContext<any>);
 
@@ -82,7 +87,7 @@ describe('layer selection highlighting', () => {
     expect((layer as any).props.getLineColor(features[1])).toEqual([200, 200, 240, 60]);
   });
 
-  it('uses selectionKeyField for icon selection styling', () => {
+  it('uses selectionKey for icon selection styling', () => {
     const { features, ...shared } = createBaseContext();
     const [layer] = iconLayerDefinition.renderLayers({
       ...shared,
@@ -92,22 +97,26 @@ describe('layer selection highlighting', () => {
         type: 'icon',
         label: 'Icon',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
           fixedIcon: 'marker',
-          iconField: '',
+          icon: createSourceRef(),
           iconAtlasUrl: '',
           iconMappingUrl: '',
+          elevation: createSourceRef(),
+          elevationScale: 1,
+          depthTest: false,
           sizeScale: 32,
           sizeMinPixels: 8,
           sizeMaxPixels: 64,
-          sizeField: '',
+          size: createSourceRef(),
           billboard: true,
           alphaCutoff: 0.05,
         },
-        geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
-        timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
+        geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
+        timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
             opacity: 1,
-        selectionKeyField: 'deployment_id',
+        selectionKey: createSourceRef('deployment_id'),
       },
     } as LayerRenderContext<any>);
 
@@ -115,7 +124,7 @@ describe('layer selection highlighting', () => {
     expect((layer as any).props.getColor(features[1])).not.toEqual([255, 230, 60, 255]);
   });
 
-  it('uses selectionKeyField for text selection styling', () => {
+  it('uses selectionKey for text selection styling', () => {
     const { features, ...shared } = createBaseContext();
     const [layer] = textLayerDefinition.renderLayers({
       ...shared,
@@ -125,12 +134,17 @@ describe('layer selection highlighting', () => {
         type: 'text',
         label: 'Text',
         visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
         settings: {
-          textField: 'label',
+          text: createSourceRef('label'),
           fontSize: 14,
           sizeMinPixels: 6,
           sizeMaxPixels: 64,
-          sizeField: '',
+          size: createSourceRef(),
+          sizeScale: 1,
+          elevation: createSourceRef(),
+          elevationScale: 1,
+          depthTest: false,
           fontFamily: 'Helvetica Neue, Verdana, Roboto, sans-serif',
           fontWeight: 'normal',
           anchor: 'middle',
@@ -139,11 +153,12 @@ describe('layer selection highlighting', () => {
           background: false,
           pixelOffsetX: 0,
           pixelOffsetY: 0,
+          autoDecimals: false,
         },
-        geometry: { type: 'latlng', latField: 'lat', lngField: 'lng' },
-        timeFilter: { mode: 'none', timeField: '', groupByField: 'sensor_id' },
+        geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
+        timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
             opacity: 1,
-        selectionKeyField: 'deployment_id',
+        selectionKey: createSourceRef('deployment_id'),
       },
     } as LayerRenderContext<any>);
 

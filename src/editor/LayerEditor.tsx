@@ -10,25 +10,19 @@ import {
   TextArea,
   CollapsableSection,
   ColorPicker,
-  // type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-// import type { DataSource } from '../types';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
-import { type LayerConfig, layerDefinitions } from '../layers/_all';
+import type { SourceRef } from '../types';
+import { layerDefinitions, type LayerConfig } from '../layers/_all';
 import { layerExtensionDefinitions } from '../extensions';
-import { FieldSelect } from './FieldSelect';
 import { GeometryEditor } from './GeometryEditor';
 import { TimeFilterEditor } from './TimeFilterEditor';
 import { ColorScaleEditor } from './ColorScaleEditor';
 import { DataEditor } from './DataEditor';
 import { SelectableListEditor } from './SelectableListEditor';
 import { useSelectableListState } from './useSelectableListState';
-
-// const DATA_SOURCE_OPTIONS: Array<ComboboxOption<string>> = [
-//   { label: 'Grafana query', value: 'query' },
-//   { label: 'GeoJSON URL', value: 'geojson-url' },
-// ];
+import { SourceRefEditor } from './SourceRefEditor';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;
@@ -56,25 +50,38 @@ function hexToRgba(hex: string): [number, number, number, number] {
   return [r, g, b, a];
 }
 
+interface SourceOption {
+  id: string;
+  label: string;
+}
+
 interface Props {
   layer: LayerConfig;
   onChange: (layer: LayerConfig) => void;
-  availableFields?: string[];
   availableRefIds?: string[];
   queryFieldsByRefId?: Record<string, string[]>;
+  sourceOptions?: SourceOption[];
+  fieldsBySource?: Record<string, string[]>;
+  featureSourceOptions?: SourceOption[];
+  featureFieldsBySource?: Record<string, string[]>;
 }
 
-export function LayerEditor({ layer, onChange, availableFields = [], availableRefIds = [], queryFieldsByRefId = {} }: Props) {
+export function LayerEditor({
+  layer,
+  onChange,
+  availableRefIds = [],
+  queryFieldsByRefId = {},
+  sourceOptions = [],
+  fieldsBySource = {},
+  featureSourceOptions = [],
+  featureFieldsBySource = {},
+}: Props) {
   const styles = useStyles2(getStyles);
   const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), []);
   const extensionDefs = useMemo(() => layerExtensionDefinitions, []);
   const addExtensionOptions = useMemo(
     () => extensionDefs.map((d) => ({ label: d.label, value: d.id })),
     [extensionDefs]
-  );
-  const refIdOptions = useMemo(
-    () => [{ label: 'First query', value: '' }, ...availableRefIds.map((refId) => ({ label: refId, value: refId }))],
-    [availableRefIds],
   );
   const currentRenderer = useMemo(() => layerDefinitions.find((definition) => definition.type === layer.type), [layer.type]);
   const settingsRecord = layer.settings as unknown as Record<string, unknown>;
@@ -112,14 +119,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
     [layer.settings, patch],
   );
 
-  // const patchDataSource = useCallback(
-  //   (type: DataSource['type']) => {
-  //     const dataSource: DataSource = type === 'geojson-url' ? { type: 'geojson-url', url: '' } : { type: 'query' };
-  //     patch({ dataSource });
-  //   },
-  //   [patch],
-  // );
-
   const handleTypeChange = useCallback(
     (type: string) => {
       const definition = layerDefinitions.find((item) => item.type === type);
@@ -132,7 +131,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         id: layer.id,
         label: layer.label,
         visible: layer.visible,
-        queryRefId: layer.queryRefId,
+        data: layer.data,
         geometry: layer.geometry,
         timeFilter: layer.timeFilter,
         opacity: layer.opacity,
@@ -142,7 +141,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         minZoom: layer.minZoom,
         maxZoom: layer.maxZoom,
         pickable: layer.pickable,
-        selectionKeyField: layer.selectionKeyField,
+        selectionKey: layer.selectionKey,
         shader: layer.shader,
         extensions: layer.extensions ?? next.extensions,
       });
@@ -174,10 +173,15 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
           </Field>
         );
       }
-      if (field.type === 'fieldPicker') {
+      if (field.type === 'fieldPicker' || field.type === 'sourceRef') {
         return (
           <Field key={field.key} label={field.label}>
-            <FieldSelect value={String(value ?? '')} onChange={(v) => onFieldChange(field.key, v)} availableFields={availableFields} />
+            <SourceRefEditor
+              value={value as SourceRef | undefined}
+              onChange={(next) => onFieldChange(field.key, next)}
+              sourceOptions={sourceOptions}
+              fieldsBySource={fieldsBySource}
+            />
           </Field>
         );
       }
@@ -208,7 +212,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         </Field>
       );
     },
-    [availableFields],
+    [fieldsBySource, sourceOptions],
   );
 
   return (
@@ -223,7 +227,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         <Field label="Description">
           <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
         </Field>
-        
+
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Field label="Visible">
             <Switch value={layer.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
@@ -253,62 +257,43 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         </Field>
       </CollapsableSection>
 
-      <CollapsableSection label="Data Source" isOpen>
-        {/* <Field label="Data source">
-          <Combobox
-            options={DATA_SOURCE_OPTIONS}
-            value={layer.dataSource?.type ?? 'query'}
-            onChange={(v) => v?.value && patchDataSource(v.value as DataSource['type'])}
-          />
-        </Field> */}
-        {/* {layer.dataSource?.type === 'geojson-url' && (
-          <Field label="GeoJSON URL">
-            <Input
-              value={layer.dataSource.url}
-              onChange={(e) => {
-                const ds = layer.dataSource;
-                if (ds?.type === 'geojson-url') {
-                  patch({ dataSource: { ...ds, url: e.currentTarget.value } });
-                }
-              }}
-              placeholder="https://example.com/data.geojson"
-            />
-          </Field>
-        )} */}
-        {/* {layer.dataSource?.type === 'query' && ( */}
-          <Field label="Query">
-            <Combobox
-              options={refIdOptions}
-              value={layer.queryRefId ?? ''}
-              onChange={(v) => patch({ queryRefId: String(v?.value ?? '') || undefined })}
-            />
-          </Field>
-        {/* )} */}
-        <GeometryEditor
-          geometry={layer.geometry}
-          availableFields={availableFields}
-          onGeometryChange={(geometry) => patch({ geometry })}
-        />
+      <CollapsableSection label="Feature Source" isOpen>
         <DataEditor
+          data={layer.data}
           derivedFields={layer.derivedFields ?? []}
-          secondarySources={layer.secondarySources ?? []}
-          queryRefId={layer.queryRefId}
-          availableFields={availableFields}
           availableRefIds={availableRefIds}
           queryFieldsByRefId={queryFieldsByRefId}
+          featureSourceFields={featureFieldsBySource[layer.data.featureSource.id] ?? []}
+          onDataChange={(data) => patch({ data })}
           onDerivedFieldsChange={(derivedFields) => patch({ derivedFields })}
-          onSecondarySourcesChange={(secondarySources) => patch({ secondarySources })}
         />
+      </CollapsableSection>
+
+      <CollapsableSection label="Geometry" isOpen>
+        <GeometryEditor
+          geometry={layer.geometry}
+          sourceOptions={featureSourceOptions}
+          fieldsBySource={featureFieldsBySource}
+          onGeometryChange={(geometry) => patch({ geometry })}
+        />
+      </CollapsableSection>
+
+      <CollapsableSection label="Time Filtering" isOpen>
         <TimeFilterEditor
           timeFilter={layer.timeFilter}
-          availableFields={availableFields}
+          sourceOptions={featureSourceOptions}
+          fieldsBySource={featureFieldsBySource}
           onChange={(timeFilter) => patch({ timeFilter })}
         />
-        <Field label="Selection key field" description="Feature property used as the key for cross-panel selection on click">
-          <FieldSelect
-            value={layer.selectionKeyField ?? ''}
-            onChange={(v) => patch({ selectionKeyField: v || undefined })}
-            availableFields={availableFields}
+      </CollapsableSection>
+
+      <CollapsableSection label="Selection" isOpen>
+        <Field label="Selection key" description="Feature property used as the key for cross-panel selection on click">
+          <SourceRefEditor
+            value={layer.selectionKey}
+            onChange={(selectionKey) => patch({ selectionKey })}
+            sourceOptions={featureSourceOptions}
+            fieldsBySource={featureFieldsBySource}
             placeholder="None (click disabled)"
           />
         </Field>
@@ -321,7 +306,7 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
       ))}
 
       <CollapsableSection label="Color" isOpen={true}>
-        <ColorScaleEditor layer={layer} availableFields={availableFields} onChange={patch} />
+        <ColorScaleEditor layer={layer} sourceOptions={sourceOptions} fieldsBySource={fieldsBySource} onChange={patch} />
       </CollapsableSection>
 
       <CollapsableSection label="Advanced" isOpen={true}>
