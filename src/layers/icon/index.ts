@@ -102,16 +102,19 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
-    const { config, features, selectedKey } = context;
+    const { config, features, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
+
     const baseColor = buildColorAccessor(config.colorScale);
     const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
+
     const commonProps = createCommonLayerProps(context);
+    const getIcon = getAccessor(options.iconField, options.fixedIcon);
+    const getSize = getNumericAccessor(options.sizeField, options.sizeScale);
     const iconAtlas = options.iconAtlasUrl.trim();
     const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);
-    const fixedIcon = options.fixedIcon;
     return [
       new IconLayer({
         ...commonProps,
@@ -125,14 +128,14 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
-        getIcon: options.iconField
-          ? (f: Feature) => {
-              const iconName = String(f.properties?.[options.iconField] ?? fixedIcon);
+        getIcon: getIcon
+          ? (f: Feature, ctx) => {
+              const iconName = getIcon(f, ctx) as string;
               return useCustomAtlas ? iconName : getBuiltInIconName(iconName);
             }
-          : () => (useCustomAtlas ? fixedIcon : getBuiltInIconName(fixedIcon)),
-        getSize: options.sizeField ? (f: Feature) => Number(f.properties?.[options.sizeField] ?? options.sizeScale) : options.sizeScale,
-        getColor,
+          : () => (useCustomAtlas ? options.fixedIcon : getBuiltInIconName(options.fixedIcon)),
+        getSize: getSize ?? options.sizeScale,
+        getColor: getColor ?? [255, 255, 255, 255],
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: [selectedKey],

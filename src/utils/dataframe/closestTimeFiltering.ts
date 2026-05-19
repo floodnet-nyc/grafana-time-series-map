@@ -1,55 +1,146 @@
 import { useMemo } from 'react';
 import type { Feature } from 'geojson';
 import type { GeoFeature } from './toGeoJsonFeatures';
+import { DataFrame } from '@grafana/data';
 
 type PackedSeries = {
   times: Float64Array;
   indices: Uint32Array;
 };
 
-export function buildPacked(
-  features: Feature[],
-  idKey = 'deployment_id',
-  timeKey = 'time',
-): { depToIdx: Map<string, number>; buckets: PackedSeries[] } {
-  if (!features?.length) return { depToIdx: new Map(), buckets: [] };
+const dateAsNumber = (date: Date | number) => date instanceof Date ? date.getTime() : date;
 
-  const depToIdx = new Map<string, number>();
-  let depCounter = 0;
-  for (const f of features) {
-    const id = String(f.properties?.[idKey] ?? f.id ?? '');
-    if (!depToIdx.has(id)) depToIdx.set(id, depCounter++);
-  }
+export function buildPackedFromAccessors(
+  n: number,
+  getKey?: (i: number) => any,
+  getTime?: (i: number) => number,
+): { 
+    keyIndex: Map<string, number>; 
+    buckets: PackedSeries[] 
+} {
+    if (!n || !getTime) return { keyIndex: new Map(), buckets: [] };
 
-  const buckets: PackedSeries[] = Array.from({ length: depCounter }, () => ({
-    times: new Float64Array(0),
-    indices: new Uint32Array(0),
-  }));
-  const tmp: Record<number, Array<{ t: number; i: number }>> = {};
-
-  features.forEach((f, i) => {
-    const id = String(f.properties?.[idKey] ?? f.id ?? '');
-    const di = depToIdx.get(id)!;
-    const raw = f.properties?.[timeKey];
-    const t = raw instanceof Date ? raw.getTime() : Number(raw);
-    (tmp[di] ||= []).push({ t, i });
-    (f as GeoFeature).__idx = i;
-  });
-
-  for (const [k, arr] of Object.entries(tmp)) {
-    arr.sort((a, b) => a.t - b.t);
-    const n = arr.length;
-    const times = new Float64Array(n);
-    const indices = new Uint32Array(n);
-    for (let j = 0; j < n; j++) {
-      times[j] = arr[j].t;
-      indices[j] = arr[j].i;
+    const keyIndex = new Map<string, number>();
+    let counter = 0;
+    const tmp: Record<number, Array<{ t: number; i: number }>> = {};
+    for (let i = 0; i < n; i++) {
+        const key = getKey ? String(getKey(i) ?? '') : '';
+        if (!keyIndex.has(key)) keyIndex.set(key, counter++);
+        const di = keyIndex.get(key)!;
+        const t = getTime(i);
+        (tmp[di] ||= []).push({ t, i });
     }
-    buckets[+k] = { times, indices };
-  }
 
-  return { depToIdx, buckets };
+    const buckets: PackedSeries[] = Array.from({ length: counter }, () => ({
+        times: new Float64Array(0),
+        indices: new Uint32Array(0),
+    }));
+    for (const [k, arr] of Object.entries(tmp)) {
+        arr.sort((a, b) => a.t - b.t);
+        const m = arr.length;
+        const times = new Float64Array(m);
+        const indices = new Uint32Array(m);
+        for (let j = 0; j < m; j++) {
+            times[j] = arr[j].t;
+            indices[j] = arr[j].i;
+        }
+        buckets[+k] = { times, indices };
+    }
+
+    return { keyIndex, buckets };
 }
+
+
+const getGrafanaFieldAccessor = (data: DataFrame, fieldName: string) => {
+    const field = data.fields.find(f => f.name === fieldName);
+    return field ? (index: number) => field.values[index] : undefined;
+}
+
+
+const getGeoJsonFieldAccessor = (data: Feature[], fieldName: string) => {
+    return (index: number) => data[index].properties?.[fieldName];
+}
+
+const lengthAccessors = {
+    grafana: (data: DataFrame) => data.length,
+    geojson: (data: Feature[]) => data.length,
+};
+
+const fieldAccessors = {
+    grafana: getGrafanaFieldAccessor,
+    geojson: getGeoJsonFieldAccessor,
+};
+export type AccessorType = keyof typeof fieldAccessors;
+
+// type AccessorFactory<T> = (data: T, fieldName: string) => ((i: number) => any) | undefined;
+
+export const buildPacked = <T, S extends AccessorType = 'geojson'>(
+    accessorType: S,
+    data: T,
+    keyFieldName?: string,
+    timeFieldName?: string,
+) => {
+    const getAccessor = fieldAccessors[accessorType];
+    const length = lengthAccessors[accessorType](data);
+    const keyAccessor = getAccessor(data, keyFieldName);
+    const timeAccessor = getAccessor(data, timeFieldName);
+    return buildPackedFromAccessors(
+        length,
+        keyAccessor ? (i) => keyAccessor(i) : undefined,
+        timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined,
+    );
+}
+
+
+
+
+/* ------------------------ Implementation Specifics ------------------------ */
+
+
+
+// export function buildPacked(
+//   features: Feature[],
+//   idKey = 'deployment_id',
+//   timeKey = 'time',
+// ): { keyIndex: Map<string, number>; buckets: PackedSeries[] } {
+//   if (!features?.length) return { keyIndex: new Map(), buckets: [] };
+
+//   const keyIndex = new Map<string, number>();
+//   let depCounter = 0;
+//   for (const f of features) {
+//     const id = String(f.properties?.[idKey] ?? f.id ?? '');
+//     if (!keyIndex.has(id)) keyIndex.set(id, depCounter++);
+//   }
+
+//   const buckets: PackedSeries[] = Array.from({ length: depCounter }, () => ({
+//     times: new Float64Array(0),
+//     indices: new Uint32Array(0),
+//   }));
+//   const tmp: Record<number, Array<{ t: number; i: number }>> = {};
+
+//   features.forEach((f, i) => {
+//     const id = String(f.properties?.[idKey] ?? f.id ?? '');
+//     const di = keyIndex.get(id)!;
+//     const raw = f.properties?.[timeKey];
+//     const t = raw instanceof Date ? raw.getTime() : Number(raw);
+//     (tmp[di] ||= []).push({ t, i });
+//     (f as GeoFeature).__idx = i;
+//   });
+
+//   for (const [k, arr] of Object.entries(tmp)) {
+//     arr.sort((a, b) => a.t - b.t);
+//     const n = arr.length;
+//     const times = new Float64Array(n);
+//     const indices = new Uint32Array(n);
+//     for (let j = 0; j < n; j++) {
+//       times[j] = arr[j].t;
+//       indices[j] = arr[j].i;
+//     }
+//     buckets[+k] = { times, indices };
+//   }
+
+//   return { keyIndex, buckets };
+// }
 
 function asofIndex(times: Float64Array, t0: number): number {
   let lo = 0,
@@ -89,15 +180,15 @@ export function computeClosestFlags(
 
 export function resolveAsofLookup(
   features: Feature[],
-  packed: { depToIdx: Map<string, number>; buckets: PackedSeries[] },
+  packed: { keyIndex: Map<string, number>; buckets: PackedSeries[] },
   fields: Array<{ sourceField: string }>,
   t0: number,
   maxLag = DEFAULT_MAX_LAG_MS,
 ): Map<string, Record<string, number>> {
-  const { depToIdx, buckets } = packed;
+  const { keyIndex, buckets } = packed;
   const result = new Map<string, Record<string, number>>();
 
-  for (const [groupKey, idx] of depToIdx) {
+  for (const [groupKey, idx] of keyIndex.entries()) {
     const bucket = buckets[idx];
     const j = asofIndex(bucket.times, t0);
     if (j < 0 || t0 - bucket.times[j] > maxLag) continue;

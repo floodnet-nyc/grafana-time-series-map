@@ -104,19 +104,21 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
-    const { config, selectedKey } = context;
+    const { config, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
     const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
     const getColor = createSelectionColorAccessor(baseColor, selectionState);
     const commonProps = createCommonLayerProps(context);
-    const textField = options.textField;
+    const getText = getAccessor(options.textField, '');
+    const getSize = getNumericAccessor(options.sizeField, options.fontSize);
 
-    const getDecimals = (v: number) => (v > 6 ? 0 : 1);
+    // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 
     return [
       new TextLayer({
         ...commonProps,
+        data: context.features,
         billboard: options.billboard,
         background: options.background,
         backgroundPadding: [4, 2, 4, 2],
@@ -126,30 +128,8 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
-        getText: (f: Feature) => {
-          const v = f.properties?.[textField];
-          if (v == null) {
-            return '';
-          }
-          if (typeof v === 'number') {
-            if (options.autoDecimals) {
-              return v.toFixed(getDecimals(v));
-            }
-            return Number.isInteger(v) ? String(v) : v.toFixed(2);
-          }
-          return String(v);
-        },
-        getSize: options.sizeField
-          ? (f: Feature) => {
-              const v = Number(f.properties?.[options.sizeField] ?? 0);
-              if (options.autoDecimals) {
-                const decs = getDecimals(v);
-                const chars = String(v.toFixed(decs)).length;
-                return Math.max(options.sizeMinPixels, Math.min(options.sizeMaxPixels, options.sizeMinPixels + v * options.sizeScale) / chars);
-              }
-              return Math.max(options.sizeMinPixels, Math.min(options.sizeMaxPixels, v * options.sizeScale));
-            }
-          : options.fontSize,
+        getText: getText ? (f: Feature, ctx) => autoDecimalsText(getText(f, ctx), options.autoDecimals) : undefined,
+        getSize: getSize ? (f: Feature, ctx) => autoDecimalsSize(getSize(f, ctx), options.autoDecimals) : options.fontSize,
         getColor,
         getTextAnchor: options.anchor,
         getAlignmentBaseline: options.baseline,
@@ -158,12 +138,40 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: [selectedKey],
-          getText: [textField, options.autoDecimals],
+          getText: [options.textField, options.autoDecimals],
           getSize: [options.sizeField, options.fontSize, options.sizeScale, options.autoDecimals],
         },
       }),
     ];
   },
+};
+
+export const autoDecimalsSize = (v: string | number | null | undefined, auto: boolean) => {
+  if (v == null) {
+    return 0;
+  }
+  if (typeof v === 'number') {
+    if (auto) {
+      const decs = v > 6 ? 0 : 1;
+      const chars = String(v.toFixed(decs)).length;
+      return Math.max(defaultSettings.sizeMinPixels, Math.min(defaultSettings.sizeMaxPixels, defaultSettings.sizeMinPixels + v * defaultSettings.sizeScale) / chars);
+    }
+    return Math.max(defaultSettings.sizeMinPixels, Math.min(defaultSettings.sizeMaxPixels, v * defaultSettings.sizeScale));
+  }
+  return defaultSettings.fontSize;
+};
+
+export const autoDecimalsText = (v: string | number | null | undefined, auto: boolean) => {
+  if (v == null) {
+    return '';
+  }
+  if (typeof v === 'number') {
+    if (auto) {
+      return v.toFixed(v > 6 ? 0 : 1);
+    }
+    return Number.isInteger(v) ? String(v) : v.toFixed(2);
+  }
+  return String(v);
 };
 
 export default textLayerDefinition;

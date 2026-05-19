@@ -1,6 +1,9 @@
 import { ArcLayer } from '@deck.gl/layers';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, section } from '../defaults';
+import { createCommonLayerProps } from '../utils';
 
 export interface ArcLayerSettings {
   widthMinPixels: number;
@@ -12,9 +15,6 @@ export interface ArcLayerSettings {
 }
 
 export type ArcLayerConfig = BaseLayerConfig<'arc', ArcLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
 
 const defaultSettings: ArcLayerSettings = {
   widthMinPixels: 2,
@@ -42,12 +42,14 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<ArcLayerConfig>) {
-    const { config, features } = context;
+    const { config, features, getNumericAccessor } = context;
     const options = config.settings;
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
     const commonProps = createCommonLayerProps(context);
-    const getSourcePosition = createSourcePositionAccessor(options);
-    const getTargetPosition = createTargetPositionAccessor(options);
+    const srcLngAccessor = getNumericAccessor(options.srcLngField);
+    const srcLatAccessor = getNumericAccessor(options.srcLatField);
+    const tgtLngAccessor = getNumericAccessor(options.tgtLngField);
+    const tgtLatAccessor = getNumericAccessor(options.tgtLatField);
 
     return [
       new ArcLayer({
@@ -56,8 +58,14 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
         data: features,
         greatCircle: options.greatCircle,
         widthMinPixels: options.widthMinPixels,
-        getSourcePosition: (f: Feature) => getSourcePosition(f),
-        getTargetPosition: (f: Feature) => getTargetPosition(f),
+        getSourcePosition: srcLatAccessor && srcLngAccessor ? (f: Feature, ctx) => [
+          srcLngAccessor(f, ctx),
+          srcLatAccessor(f, ctx),
+        ] : undefined,
+        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (f: Feature, ctx) => [
+          tgtLngAccessor(f, ctx),
+          tgtLatAccessor(f, ctx),
+        ] : undefined,
         getSourceColor: getColor as any,
         getTargetColor: getColor as any,
       }),

@@ -1,6 +1,9 @@
 import { PathLayer } from '@deck.gl/layers';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import { createBaseLayerConfig, section } from '../defaults';
+import { createCommonLayerProps } from '../utils';
 
 export interface PathLayerSettings {
   widthMinPixels: number;
@@ -12,9 +15,7 @@ export interface PathLayerSettings {
 }
 
 export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps, getNumericProperty } from '../utils';
+
 
 function getPath(f: Feature): number[][] | null {
   const g = f.geometry as LineString | MultiLineString;
@@ -56,9 +57,13 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<PathLayerConfig>) {
-    const { config } = context;
+    const { config, getNumericAccessor } = context;
     const options = config.settings;
+
     const commonProps = createCommonLayerProps(context);
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
+    const getWidth = getNumericAccessor(options.widthField, options.widthScale);
+    
     return [
       new PathLayer({
         ...commonProps,
@@ -68,10 +73,8 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
         getPath: (f: Feature) => getPath(f)! as any,
-        getColor: buildColorAccessor(config.colorScale, [0, 155, 200, 200]),
-        getWidth: options.widthField
-          ? (f: Feature) => getNumericProperty(f, options.widthField) * options.widthScale
-          : 1,
+        getColor,
+        getWidth,
       }),
     ];
   },

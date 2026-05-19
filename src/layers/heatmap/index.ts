@@ -1,6 +1,9 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import type { Feature, Point } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
+import { createBaseLayerConfig, section } from '../defaults';
+import { buildColorRange } from '../../utils/deckgl/colorScales';
+import { createCommonLayerProps } from 'layers/utils';
 
 export interface HeatmapLayerSettings {
   radiusPixels: number;
@@ -10,8 +13,6 @@ export interface HeatmapLayerSettings {
 }
 
 export type HeatmapLayerConfig = BaseLayerConfig<'heatmap', HeatmapLayerSettings>;
-import { createBaseLayerConfig, section } from '../defaults';
-import { buildColorRange } from '../../utils/deckgl/colorScales';
 
 const defaultSettings: HeatmapLayerSettings = {
   radiusPixels: 30,
@@ -40,23 +41,18 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
       { key: 'weightField', label: 'Weight field', type: 'fieldPicker', defaultValue: '' },
     ]),
   ],
-  renderLayers({ config, features, fromTimeMs, toTimeMs }: LayerRenderContext<HeatmapLayerConfig>) {
+  renderLayers(context: LayerRenderContext<HeatmapLayerConfig>) {
+    const { config, features, getNumericAccessor } = context;
     const options = config.settings;
-    const { mode, timeField } = config.timeFilter;
-    const pointFeatures = features.filter((f) => f.geometry?.type === 'Point');
-    const filtered =
-      mode === 'window' && timeField
-        ? pointFeatures.filter((f) => {
-            const raw = f.properties?.[timeField];
-            const t = raw instanceof Date ? raw.getTime() : Number(raw);
-            return t >= fromTimeMs && t <= toTimeMs;
-          })
-        : pointFeatures;
+    
+    const { onClick: _, ...commonProps } = createCommonLayerProps(context);
+    const getWeight = getNumericAccessor(options.weightField, 1);
     const colorRange = buildColorRange(config.colorScale, 'HeatmapFire', 7) as Array<[number, number, number, number]>;
+
     return [
       new HeatmapLayer({
-        id: `heatmap/${config.id}`,
-        data: filtered,
+        ...commonProps,
+        data: features,
         visible: config.visible,
         opacity: config.opacity,
         radiusPixels: options.radiusPixels,
@@ -64,7 +60,7 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
         threshold: options.threshold,
         colorRange,
         getPosition: (f: Feature) => (f.geometry as Point).coordinates as [number, number],
-        getWeight: options.weightField ? (f: Feature) => Number(f.properties?.[options.weightField] ?? 1) : 1,
+        getWeight: getWeight ?? 1,
       }),
     ];
   },

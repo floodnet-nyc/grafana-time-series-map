@@ -1,9 +1,9 @@
-import type { DataFrame } from '@grafana/data';
-import type { Layer } from '@deck.gl/core';
+import type { DataFrame, PanelData } from '@grafana/data';
+import type { Layer, AccessorFunction, AccessorContext, Accessor } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { getExtensionDefinition } from '../../extensions';
 import { layerDefinitions, type LayerConfig } from '../../layers/_all';
-import type { LayerDefinition, LayerRenderContext } from '../../layers/types';
+import type { GetAccessorFunction, GetNumericAccessorFunction, LayerDefinition, LayerRenderContext } from '../../layers/types';
 import type { LayerSecondarySourceConfig, MapPanelOptions } from '../../types';
 import { compileExpression } from './derivedFields/expressionEngine';
 import { buildFeatureScope } from './featureScope';
@@ -22,6 +22,8 @@ export interface PreparedLayerState {
   timeFilterFlags: Uint8Array;
   secondarySourceValues?: Map<string, Map<string, Record<string, number>>>;
   derivedValues?: Array<Record<string, unknown>>;
+  getAccessor: GetAccessorFunction;
+  getNumericAccessor: GetNumericAccessorFunction;
 }
 
 function getLayerSecondarySources(layerConfig: LayerConfig): LayerSecondarySourceConfig[] {
@@ -38,7 +40,7 @@ export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresBy
 
     const features = featuresByLayerId.get(layerConfig.id) ?? [];
     const { timeField, groupByField = 'id' } = layerConfig.timeFilter;
-    packedByLayerId.set(layerConfig.id, buildPacked(features, groupByField, timeField));
+    packedByLayerId.set(layerConfig.id, buildPacked('geojson', features, groupByField, timeField));
   }
 
   return packedByLayerId;
@@ -63,7 +65,7 @@ export function buildSecondarySourcePackedByLayerId(layerConfigs: LayerConfig[],
       const features = dataFramesToFeatures(series, secondarySource.queryRefId, { type: 'none' }, undefined);
       packedBySourceId.set(secondarySource.queryRefId, {
         features,
-        packed: buildPacked(features, secondarySource.join.remoteKeyField, secondarySource.join.timeField),
+        packed: buildPacked('geojson', features, secondarySource.join.remoteKeyField, secondarySource.join.timeField),
       });
     }
 
@@ -171,22 +173,98 @@ export function buildTimeFilterFlagsByLayerId(
 
 export function buildPreparedLayerStates(
   layerConfigs: LayerConfig[],
+  // data: PanelData,
   featuresByLayerId: PanelFeaturesByLayerId,
   flagsByLayerId: Map<string, Uint8Array>,
+  // layerId -> refId -> key -> field -> value
   secondarySourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, number>>>> = new Map(),
 ): PreparedLayerState[] {
-  return layerConfigs.map((config) => ({
-    config,
-    features: featuresByLayerId.get(config.id) ?? [],
-    timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(),
-    secondarySourceValues: secondarySourceValuesByLayerId.get(config.id),
-    derivedValues: buildDerivedValues(
+  return layerConfigs.map((config) => {
+    const features = featuresByLayerId.get(config.id) ?? [];
+    const timeFilterFlags = flagsByLayerId.get(config.id) ?? new Uint8Array(features.length);
+    const secondarySourceValues = secondarySourceValuesByLayerId.get(config.id);
+    const derivedFields = compileDerivedFields(config);
+    const derivedValues = buildDerivedValues(derivedFields, config, features, secondarySourceValues);
+
+    const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => {
+      if (!fieldName) {
+        // console.log('Using default accessor for empty field name');
+        return undefined;
+      }
+
+      const derivedField = derivedFields?.find((f) => f.as === fieldName);
+      if (derivedField) {
+        console.log('Using derived field accessor for field', fieldName);
+        return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => derivedValues?.[index]?.[fieldName] ?? defaultValue;
+      }
+      if (secondarySourceValues) {
+        for (const sourceValues of secondarySourceValues.values()) {
+          const secConfig = config.secondarySources?.find((s) => s.join.localKeyField === fieldName);
+          if (secConfig) {
+            console.log('Using secondary source accessor for field', fieldName);
+            return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => {
+              const properties = features[index]?.properties;
+              if (!properties) return undefined;
+              const localKey = String(properties?.[secConfig.join.localKeyField] ?? '');
+              return sourceValues.get(localKey)?.[fieldName] ?? defaultValue;
+            };
+          }
+        }
+      }
+      console.log('Using primary accessor for field', fieldName);
+      return (f: Feature, { index, ...ctx }: AccessorContext<Feature>) => {
+        // const feature = features[index];
+        // if (!feature) return undefined;
+        return f.properties?.[fieldName] ?? defaultValue;
+      };
+    };
+
+    return {
       config,
-      featuresByLayerId.get(config.id) ?? [],
-      secondarySourceValuesByLayerId.get(config.id),
-    ),
-  }));
+      features,
+      timeFilterFlags,
+      secondarySourceValues,
+      derivedValues,
+      getAccessor,
+      getNumericAccessor: (fieldName: string, defaultValue = 0) => {
+        const accessor = getAccessor(fieldName, defaultValue);
+        return accessor ? (f: Feature, ctx: AccessorContext<Feature>) => {
+          const v = accessor(f, ctx);
+          return typeof v === 'number' && Number.isFinite(v) ? v : defaultValue;
+        } : undefined;
+      },
+    }
+  });
 }
+
+
+// export type AccessorContext<T> = {
+//   /** The index of the current iteration */
+//   index: number;
+//   /** The value of the `data` prop */
+//   data: LayerData<T>;
+//   /** A pre-allocated array. The accessor function can optionally fill data into this array and return it,
+//    * instead of creating a new array for every object. In some browsers this improves performance significantly
+//    * by reducing garbage collection. */
+//   target: number[];
+// };
+
+// /** Function that returns a value for each object. */
+// export type AccessorFunction<In, Out> = (
+//   /**
+//    * The current element in the data stream.
+//    *
+//    * If `data` is an array or an iterable, the element of the current iteration is used.
+//    * If `data` is a non-iterable object, this argument is always `null`.
+//    * */
+//   object: In,
+//   /** Contextual information of the current element. */
+//   objectInfo: AccessorContext<In>
+// ) => Out;
+
+// /** Either a uniform value for all objects, or a function that returns a value for each object. */
+// export type Accessor<In, Out> = Out | AccessorFunction<In, Out>;
+
 
 interface RenderPreparedLayersArgs {
   preparedLayerStates: PreparedLayerState[];
@@ -233,6 +311,8 @@ export function renderPreparedLayers({
       timeFilterFlags: preparedLayerState.timeFilterFlags,
       secondarySourceValues: preparedLayerState.secondarySourceValues,
       derivedValues: preparedLayerState.derivedValues,
+      getAccessor: preparedLayerState.getAccessor,
+      getNumericAccessor: preparedLayerState.getNumericAccessor,
       selectedKey,
       onFeatureClick,
     };
@@ -262,16 +342,12 @@ function applyLayerExtensions(layers: Layer[], extensions: LayerConfig['extensio
   });
 }
 
-function buildDerivedValues(
-  config: LayerConfig,
-  features: Feature[],
-  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>,
-): Array<Record<string, unknown>> | undefined {
+export function compileDerivedFields(config: LayerConfig) {
   if (!config.derivedFields?.length) {
-    return undefined;
+    return [];
   }
 
-  const compiledDerivedFields = config.derivedFields.flatMap((derivedField) => {
+  return config.derivedFields.flatMap((derivedField) => {
     try {
       return [{ as: derivedField.as, evaluate: compileExpression(derivedField.expression) }];
     } catch (e) {
@@ -279,6 +355,17 @@ function buildDerivedValues(
       return [];
     }
   });
+}
+
+function buildDerivedValues(
+  compiledDerivedFields: ReturnType<typeof compileDerivedFields>,
+  config: LayerConfig,
+  features: Feature[],
+  secondarySourceValues?: Map<string, Map<string, Record<string, number>>>,
+): Array<Record<string, unknown>> | undefined {
+  if (!compiledDerivedFields?.length) {
+    return undefined;
+  }
 
   return features.map((feature) => {
     const scope = buildFeatureScope(config, feature, secondarySourceValues);

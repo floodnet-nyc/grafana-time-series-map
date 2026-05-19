@@ -1,4 +1,4 @@
-import type { Layer } from '@deck.gl/core';
+import type { AccessorFunction, Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type {
   ColorScaleConfig,
@@ -39,6 +39,9 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   extensions?: LayerExtensionInstance[];
 }
 
+export type GetAccessorFunction = <O = any, T extends Feature = Feature>(fieldName?: string, defaultValue?: O) => AccessorFunction<T, O> | undefined;
+export type GetNumericAccessorFunction = <O = number, T extends Feature = Feature>(fieldName?: string, defaultValue?: O) => AccessorFunction<T, O> | undefined;
+
 export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
   config: TLayerConfig;
   panelOptions: unknown;
@@ -51,6 +54,9 @@ export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string,
   derivedValues?: Array<Record<string, unknown>>;
   selectedKey?: string | null;
   onFeatureClick?: (feature: Feature, info: unknown) => void;
+  onFeatureHover?: (feature: Feature | null, info: unknown) => void;
+  getAccessor: GetAccessorFunction;
+  getNumericAccessor: GetNumericAccessorFunction;
 }
 
 export interface LayerOptionField {

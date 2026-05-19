@@ -112,7 +112,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
 
-  const { layers, getTooltip, preparedLayerStates } = usePanelLayers(
+  const { layers, preparedLayerStates } = usePanelLayers(
     options,
     featuresByLayerId,
     data,
@@ -154,7 +154,6 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         height={mapHeight}
         options={options}
         layers={layers}
-        getTooltip={getTooltip ?? undefined}
         widgetCallbacks={widgetCallbacks}
         initialViewState={initialViewState}
         initialViewFromHash={initialViewFromHash}

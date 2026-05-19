@@ -16,7 +16,7 @@ export interface LineLayerSettings {
 export type LineLayerConfig = BaseLayerConfig<'line', LineLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps, createSourcePositionAccessor, createTargetPositionAccessor } from '../utils';
+import { createCommonLayerProps } from '../utils';
 
 const defaultSettings: LineLayerSettings = {
   srcLngField: '',
@@ -52,12 +52,17 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<LineLayerConfig>) {
-    const { config, features } = context;
+    const { config, features, getNumericAccessor } = context;
     const options = config.settings;
+
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200]);
+
     const commonProps = createCommonLayerProps(context);
-    const getSourcePosition = createSourcePositionAccessor(options);
-    const getTargetPosition = createTargetPositionAccessor(options);
+    const srcLngAccessor = getNumericAccessor(options.srcLngField);
+    const srcLatAccessor = getNumericAccessor(options.srcLatField);
+    const tgtLngAccessor = getNumericAccessor(options.tgtLngField);
+    const tgtLatAccessor = getNumericAccessor(options.tgtLatField);
+    const getWidth = getNumericAccessor(options.widthField, options.widthScale);
 
     return [
       new LineLayer({
@@ -67,15 +72,20 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
         widthUnits: 'pixels' as const,
         widthMinPixels: options.widthMinPixels,
         widthMaxPixels: options.widthMaxPixels,
-        getSourcePosition: (f: Feature) => getSourcePosition(f),
-        getTargetPosition: (f: Feature) => getTargetPosition(f),
+        getSourcePosition: srcLatAccessor && srcLngAccessor ? (f: Feature, ctx) => [
+          srcLngAccessor(f, ctx),
+          srcLatAccessor(f, ctx),
+        ] : undefined,
+        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (f: Feature, ctx) => [
+          tgtLngAccessor(f, ctx),
+          tgtLatAccessor(f, ctx),
+        ] : undefined,
         getColor: getColor as any,
-        getWidth: options.widthField ? (f: Feature) => Number(f.properties?.[options.widthField] ?? 1) * options.widthScale : 1,
+        getWidth: getWidth ?? 0,
         updateTriggers: {
           ...commonProps.updateTriggers,
           getWidth: [options.widthField, options.widthScale],
         },
-        parameters: { depthTest: false },
       }),
     ];
   },
