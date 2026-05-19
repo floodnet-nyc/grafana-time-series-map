@@ -43,7 +43,6 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
   timeFilterFlags,
   onFeatureClick,
 }: LayerRenderContext<TLayerConfig>) {
-  const elevation = getLayerElevation(config);
   return {
     config: config,
     id: `${config.type}/${config.id}`,
@@ -72,7 +71,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
     ].filter(Boolean) as LayerExtension[],
     
     parameters: { 
-      depthTest: elevation.depthTest
+      depthTest: config.settings.depthTest ?? false
     },
   };
 }
