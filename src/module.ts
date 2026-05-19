@@ -331,6 +331,13 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: '',
         category: ['Popup'],
       })
+      .addNumberInput({
+        path: 'deck.pickingRadius',
+        name: 'Picking radius',
+        description: 'Radius in pixels used for mouse picking. Increase if it is hard to hover or click on small objects.',
+        defaultValue: 5,
+        category: ['Popup'],
+      })
       .addCustomEditor({
         id: 'widgets',
         path: 'widgets',
@@ -467,13 +474,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         description: 'Render deck.gl layers between basemap layers so map labels appear on top. Disable to render all deck.gl layers above the basemap.',
         defaultValue: true,
         category: ['Rendering'],
-      })
-      .addNumberInput({
-        path: 'deck.pickingRadius',
-        name: 'Picking radius',
-        description: 'Radius in pixels used for mouse picking. Increase if it is hard to hover or click on small objects.',
-        defaultValue: 5,
-        category: ['Rendering', 'Interactivity'],
       })
       .addBooleanSwitch({
         path: 'deck.parameters.blend',
