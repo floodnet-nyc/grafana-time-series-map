@@ -18,7 +18,7 @@ function getDefaultSecondarySource(primaryQueryRefId: string | undefined, availa
   return {
     queryRefId: preferredQueryRefId,
     join: { type: 'keyed-asof', localKeyField: '', remoteKeyField: '', timeField: '', maxLagMs: 3600000 },
-    fields: [{ sourceField: '' }],
+    fields: [],
   };
 }
 
