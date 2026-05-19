@@ -9,6 +9,9 @@ export interface TextLayerSettings {
   sizeMaxPixels: number;
   sizeField: string;
   sizeScale: number;
+  elevationField: string;
+  elevationScale: number;
+  depthTest: boolean;
   fontFamily: string;
   fontWeight: string;
   anchor: 'start' | 'middle' | 'end';
@@ -33,6 +36,9 @@ const defaultSettings: TextLayerSettings = {
   sizeMaxPixels: 64,
   sizeField: '',
   sizeScale: 1,
+  elevationField: '',
+  elevationScale: 1,
+  depthTest: false,
   fontFamily: 'Helvetica Neue, Verdana, Roboto, sans-serif',
   fontWeight: 'normal',
   anchor: 'middle',
@@ -58,6 +64,9 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
       { key: 'sizeMaxPixels', label: 'Max size (px)', type: 'number', defaultValue: 64 },
       { key: 'sizeField', label: 'Size field', type: 'fieldPicker', defaultValue: '' },
       { key: 'sizeScale', label: 'Size scale', type: 'number', defaultValue: 1, step: 0.1 },
+      { key: 'elevationField', label: 'Elevation field', type: 'fieldPicker', defaultValue: '' },
+      { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
+      { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'fontFamily', label: 'Font family', type: 'string', defaultValue: 'Helvetica Neue, Verdana, Roboto, sans-serif' },
       {
         key: 'fontWeight',

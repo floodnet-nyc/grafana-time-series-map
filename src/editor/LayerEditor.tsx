@@ -134,7 +134,6 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         visible: layer.visible,
         queryRefId: layer.queryRefId,
         geometry: layer.geometry,
-        elevation: layer.elevation,
         timeFilter: layer.timeFilter,
         opacity: layer.opacity,
         colorScale: layer.colorScale,
@@ -287,10 +286,8 @@ export function LayerEditor({ layer, onChange, availableFields = [], availableRe
         {/* )} */}
         <GeometryEditor
           geometry={layer.geometry}
-          elevation={layer.elevation}
           availableFields={availableFields}
           onGeometryChange={(geometry) => patch({ geometry })}
-          onElevationChange={(elevation) => patch({ elevation })}
         />
         <DataEditor
           derivedFields={layer.derivedFields ?? []}

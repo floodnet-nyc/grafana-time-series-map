@@ -3,7 +3,6 @@ import type { Feature } from 'geojson';
 import type {
   ColorScaleConfig,
   DataSource,
-  ElevationConfig,
   GeometrySource,
   LayerDerivedFieldConfig,
   LayerSecondarySourceConfig,
@@ -25,7 +24,6 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   queryRefId?: string;
   dataSource?: DataSource;
   geometry: GeometrySource;
-  elevation?: ElevationConfig;
   timeFilter: TimeFilterConfig;
   opacity: number;
   colorScale?: ColorScaleConfig;
