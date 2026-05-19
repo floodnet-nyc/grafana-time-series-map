@@ -56,7 +56,7 @@ export default function GoogleMap(props: MapProviderProps) {
 
 function GoogleMapInner({
   width, height, options,
-  layers, getTooltip, widgetCallbacks,
+  layers, widgetCallbacks,
   initialViewState, initialViewFromHash,
   fitBounds, fitRequestId,
   onViewportChange,
@@ -104,7 +104,6 @@ function GoogleMapInner({
   const deckProps = useDeckGLProps({
     options,
     layers,
-    getTooltip,
     widgetCallbacks: mergedCallbacks,
   });
 

@@ -35,7 +35,7 @@ function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
 
 export default function MaplibreMap({
   width, height, options,
-  layers, getTooltip, widgetCallbacks,
+  layers, widgetCallbacks,
   initialViewState, initialViewFromHash,
   fitBounds, fitRequestId,
   onViewportChange,
@@ -88,7 +88,7 @@ export default function MaplibreMap({
     onThemeModeChange: setThemeMode,
   }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
 
-  const deckProps = useDeckGLProps({ options, layers, getTooltip, widgetCallbacks: mergedCallbacks });
+  const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 
   const handleMoveEnd = useCallback((e: any) => {
     onViewportChange?.(e.viewState);

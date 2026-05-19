@@ -40,7 +40,7 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
 }
 
 export type GetAccessorFunction = <O = any, T extends Feature = Feature>(fieldName?: string, defaultValue?: O) => AccessorFunction<T, O> | undefined;
-export type GetNumericAccessorFunction = <O = number, T extends Feature = Feature>(fieldName?: string, defaultValue?: O) => AccessorFunction<T, O> | undefined;
+export type GetNumericAccessorFunction = <T extends Feature = Feature>(fieldName?: string, defaultValue?: number) => AccessorFunction<T, number> | undefined;
 
 export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
   config: TLayerConfig;

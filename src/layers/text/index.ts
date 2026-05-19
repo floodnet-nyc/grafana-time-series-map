@@ -23,7 +23,8 @@ export interface TextLayerSettings {
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
+import { AccessorContext } from '@deck.gl/core';
 
 const defaultSettings: TextLayerSettings = {
   textField: '',
@@ -107,8 +108,8 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     const { config, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220]);
-    const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
-    const getColor = createSelectionColorAccessor(baseColor, selectionState);
+    const isSelected = getAccessor(config.selectionKeyField);
+    const getColor = createSelectionColorAccessor(baseColor, isSelected);
     const commonProps = createCommonLayerProps(context);
     const getText = getAccessor(options.textField, '');
     const getSize = getNumericAccessor(options.sizeField, options.fontSize);
@@ -128,8 +129,8 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
-        getText: getText ? (f: Feature, ctx) => autoDecimalsText(getText(f, ctx), options.autoDecimals) : undefined,
-        getSize: getSize ? (f: Feature, ctx) => autoDecimalsSize(getSize(f, ctx), options.autoDecimals) : options.fontSize,
+        getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), options.autoDecimals) : undefined,
+        getSize: getSize ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsSize(getSize(f, ctx), options.autoDecimals) : options.fontSize,
         getColor,
         getTextAnchor: options.anchor,
         getAlignmentBaseline: options.baseline,

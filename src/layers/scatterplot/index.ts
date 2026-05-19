@@ -9,12 +9,10 @@ import CollisionFilterExtension from '../../utils/deckgl/CollisionFilterExtensio
 import {
   createCommonLayerProps,
   createLineSelectionAccessors,
-  createSelectionState,
   getFeaturePosition,
-  getNumericProperty,
-  getProperty,
 } from '../utils';
-import { autoDecimalsSize, autoDecimalsText } from 'layers/text';
+import { autoDecimalsText } from 'layers/text';
+import { AccessorContext } from '@deck.gl/core';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
   radiusMaxPixels: number;
@@ -94,7 +92,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const commonProps = createCommonLayerProps(context);
     const getColor = buildColorAccessor(config.colorScale);
     const isSelected = getAccessor(config.selectionKeyField);
-    const lineAccessors = createLineSelectionAccessors({ isSelected, hasSelection: !!config.selectionKeyField && selectedKey !== null });
+    const lineAccessors = createLineSelectionAccessors(isSelected);
+
     // if (timeFilterFlags) console.log(features.map((f) => f.properties?.depth_inches));
     const getRadius = getNumericAccessor(options.radiusField, options.radiusScale);
     const getValue = useShader ? getNumericAccessor(valueField) : undefined;
@@ -110,9 +109,9 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         stroked: options.stroked,
         filled: true,
         lineWidthMinPixels: 0,
-        getLineColor: lineAccessors.getLineColor,
-        getLineWidth: lineAccessors.getLineWidth,
         getPosition: (f: Feature) => getFeaturePosition(f, config),
+        getLineColor: lineAccessors.getLineColor ?? [0, 0, 0, 0],
+        getLineWidth: lineAccessors.getLineWidth ?? 0,
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
         getRadius: getRadius ?? options.radiusMinPixels,
         ...(useShader ? { getValue } : {}),
@@ -138,8 +137,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           visible: config.visible,
           pickable: false,
           getPosition: (f: Feature) => getFeaturePosition(f, config, 2),
-          getText: getText ? (f: Feature, ctx) => autoDecimalsText(getText(f, ctx), true) : undefined,
-          getSize: getRadius ? (f: Feature, ctx) => {
+          getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), true) : undefined,
+          getSize: getRadius ? (f: Feature, ctx: AccessorContext<Feature>) => {
             const v = getRadius(f, ctx);
             const decs = getDecimals(v);
             const chars = String(v.toFixed(decs)).length;

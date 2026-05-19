@@ -18,7 +18,7 @@ export interface IconLayerSettings {
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -106,8 +106,8 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     const options = config.settings;
 
     const baseColor = buildColorAccessor(config.colorScale);
-    const selectionState = createSelectionState(selectedKey, config.selectionKeyField);
-    const getColor = createSelectionColorAccessor(baseColor, selectionState);
+    const isSelected = getAccessor(config.selectionKeyField);
+    const getColor = createSelectionColorAccessor(baseColor, isSelected);
 
     const commonProps = createCommonLayerProps(context);
     const getIcon = getAccessor(options.iconField, options.fixedIcon);
