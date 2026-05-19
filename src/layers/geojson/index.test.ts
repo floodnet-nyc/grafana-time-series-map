@@ -9,7 +9,7 @@ jest.mock('@deck.gl/layers', () => ({
 }));
 
 import { geoJsonLayerDefinition } from './index';
-import type { LayerRenderContext } from '../types';
+import type { GetAccessorFunction, GetNumericAccessorFunction, LayerRenderContext } from '../types';
 import type { GeoJsonLayerConfig } from './index';
 
 function createFeature(properties: Record<string, unknown> = {}): Feature {
@@ -51,6 +51,23 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
 }
 
 function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRenderContext<GeoJsonLayerConfig> {
+  const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
+    fieldName ? (feature) => feature.properties?.[fieldName] ?? defaultValue : undefined,
+    [fieldName, defaultValue],
+  ];
+  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
+    const [accessor, deps] = getAccessor(fieldName, defaultValue);
+    return [
+      accessor
+        ? (feature, ctx) => {
+            const value = accessor(feature, ctx);
+            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+          }
+        : undefined,
+      deps,
+    ];
+  };
+
   return {
     config,
     panelOptions: {} as any,
@@ -59,6 +76,8 @@ function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRe
     fromTimeMs: 0,
     toTimeMs: 0,
     timeFilterFlags: new Uint8Array(features.map(() => 1)),
+    getAccessor,
+    getNumericAccessor,
   };
 }
 
@@ -102,6 +121,6 @@ describe('geoJsonLayerDefinition', () => {
 
     expect(layer.props.lineWidthUnits).toBe('meters');
     expect(layer.props.lineWidthMinPixels).toBe(0.5);
-    expect(layer.props.getLineWidth(feature)).toBe(120);
+    expect(layer.props.getLineWidth(feature, { index: 0, data: [feature], target: [] })).toBe(12);
   });
 });

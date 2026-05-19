@@ -78,7 +78,7 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
         pointRadiusMaxPixels: options.pointRadiusMaxPixels,
         lineWidthUnits: options.lineWidthUnits,
         lineWidthMinPixels: options.lineWidthMinPixels,
-        getLineWidth: getLineWidth ?? 0,
+        getLineWidth: (getLineWidth ? ((feature: any, ctx: any) => getLineWidth(feature, ctx) ?? 0) : 0) as any,
         getFillColor: getFillColor as any,
         getLineColor: getLineColor as any,
         updateTriggers: {

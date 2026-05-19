@@ -102,7 +102,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
-    const { config, features, selectedKey, getAccessor, getNumericAccessor } = context;
+    const { config, features, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
 
     const baseColor = buildColorAccessor(config.colorScale);
