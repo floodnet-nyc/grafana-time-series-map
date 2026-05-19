@@ -4,7 +4,6 @@ import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext } from './types';
 
 type LayerFeature = Feature & { __idx: number };
-type LegacyElevationConfig = { field?: string; scale?: number; depthTest?: boolean };
 type ElevationSettings = { elevationField?: string; elevationScale?: number; depthTest?: boolean };
 
 const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
@@ -27,18 +26,13 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
   return isNaN(value) ? defaultValue : value;
 }
 
-function getLegacyElevation(config: BaseLayerConfig<string, any>): LegacyElevationConfig | undefined {
-  return (config as BaseLayerConfig<string, any> & { elevation?: LegacyElevationConfig }).elevation;
-}
-
-export function getLayerElevation(config: BaseLayerConfig<string, any>): Required<LegacyElevationConfig> {
+export function getLayerElevation(config: BaseLayerConfig<string, any>) {
   const settings = (config.settings ?? {}) as ElevationSettings;
-  const legacy = getLegacyElevation(config);
 
   return {
-    field: settings.elevationField ?? legacy?.field ?? '',
-    scale: settings.elevationScale ?? legacy?.scale ?? 1,
-    depthTest: settings.depthTest ?? legacy?.depthTest ?? false,
+    field: settings.elevationField ?? '',
+    scale: settings.elevationScale ?? 1,
+    depthTest: settings.depthTest ?? false,
   };
 }
 

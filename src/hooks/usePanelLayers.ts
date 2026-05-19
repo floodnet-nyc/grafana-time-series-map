@@ -90,7 +90,7 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
         data.series,
         layerConfig.queryRefId,
         layerConfig.geometry,
-        getLayerElevation(layerConfig).field,
+        getLayerElevation(layerConfig)?.field,
       );
       featuresByLayerId.set(layerConfig.id, features);
     }
