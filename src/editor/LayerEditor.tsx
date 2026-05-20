@@ -21,7 +21,7 @@ import { ColorScaleEditor } from './utils/ColorScaleEditor';
 import { DataEditor } from './DataEditor';
 import { SelectableListEditor } from './utils/SelectableListEditor';
 import { useSelectableListState } from './utils/useSelectableListState';
-import { SourceRefEditor } from './SourceRefEditor';
+import { SourceRefEditor } from './utils/SourceRefEditor';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;

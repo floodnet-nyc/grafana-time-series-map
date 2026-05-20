@@ -10,8 +10,8 @@ import {
   type ScrollbarWidgetProps,
 } from '@deck.gl/widgets';
 import { NavigationControl } from 'react-map-gl/maplibre';
-import { getCameraControlPosition, getControlPosition } from '../components/map/google/controlMappings';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
+import { getCameraControlPosition, getControlPosition } from 'components/map/google/controlMappings';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 
 type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
 type ResetViewWidgetConfig = BaseWidgetConfig<'reset-view', Omit<ResetViewWidgetProps, 'id'>>;

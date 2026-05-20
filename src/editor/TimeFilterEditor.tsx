@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, Combobox, Input, type ComboboxOption } from '@grafana/ui';
 import type { TimeFilterConfig, TimeFilterMode } from '../types';
-import { SourceRefEditor } from './SourceRefEditor';
+import { SourceRefEditor } from './utils/SourceRefEditor';
 
 const TIME_FILTER_MODES: Array<ComboboxOption<TimeFilterMode>> = [
   { label: 'None (show all rows)', value: 'none' },

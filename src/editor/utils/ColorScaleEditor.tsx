@@ -27,7 +27,7 @@ import {
   patchThresholdStep,
   removeThresholdStep,
 } from '../layerEditorModel';
-import { SourceRefEditor } from '../SourceRefEditor';
+import { SourceRefEditor } from './SourceRefEditor';
 
 const COLOR_MODES: Array<ComboboxOption<string>> = [
   { label: 'Fixed color', value: 'fixed' },

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { Field, Combobox, MultiCombobox, Input, TextArea, Switch, type ComboboxOption } from '@grafana/ui';
 import type { FeatureSourceConfig, JoinedSourceConfig, LayerDataConfig, LayerDerivedFieldConfig, TimeFilterConfig } from '../types';
 import { createSourceRef, DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
-import { SourceRefEditor } from './SourceRefEditor';
+import { SourceRefEditor } from './utils/SourceRefEditor';
 import { SelectableListEditor } from './utils/SelectableListEditor';
 import { useSelectableListState } from './utils/useSelectableListState';
 

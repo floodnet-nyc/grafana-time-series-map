@@ -4,35 +4,35 @@ import {
   resetViewWidgetDefinition, 
   // scrollbarWidgetDefinition, 
   zoomWidgetDefinition,
-} from './navigation';
+} from './categories/navigation';
 import { 
   compassWidgetDefinition, 
   geolocateWidgetDefinition,
   geocoderWidgetDefinition, 
   scaleWidgetDefinition 
-} from './geospatial';
+} from './categories/geospatial';
 import { 
   fullscreenWidgetDefinition, 
   // splitterWidgetDefinition 
-} from './view';
+} from './categories/view';
 import { 
   // contextMenuWidgetDefinition, 
   infoWidgetDefinition, 
   popupWidgetDefinition, 
   welcomeWidgetDefinition
-} from './information';
+} from './categories/information';
 import { 
   // iconWidgetDefinition, 
   // selectorWidgetDefinition, 
   timelineWidgetDefinition, 
   // toggleWidgetDefinition 
-} from './control';
+} from './categories/control';
 import { 
   // loadingWidgetDefinition, 
   screenshotWidgetDefinition, 
   statsWidgetDefinition, 
   themeWidgetDefinition 
-} from './utility';
+} from './categories/utility';
 import type { BlankWidgetConfig, GoogleNativeControlProps, WidgetCallbacks } from './types';
 import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
 import './deckgl-widgets-stylesheet-do-not-edit.css';

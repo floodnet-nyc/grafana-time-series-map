@@ -8,9 +8,9 @@ import {
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
 import { NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
-import { getCameraControlPosition, getControlPosition } from '../components/map/google/controlMappings';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
-import { GeolocateWidget, type GeolocateWidgetProps } from './custom/geolocate-widget';
+import { getCameraControlPosition, getControlPosition } from 'components/map/google/controlMappings';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
+import { GeolocateWidget, type GeolocateWidgetProps } from '../custom/geolocate-widget';
 
 type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 'id'>>;
 type GeolocateWidgetConfig = BaseWidgetConfig<'geolocate', Omit<GeolocateWidgetProps, 'id' | 'onGeolocate' | 'onError'>>;
