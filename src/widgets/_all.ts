@@ -20,6 +20,7 @@ import {
   // infoWidgetDefinition, 
   // popupWidgetDefinition, 
   messageWidgetDefinition,
+  streetViewWidgetDefinition,
 } from './categories/information';
 import { 
   // iconWidgetDefinition, 
@@ -70,6 +71,7 @@ export const widgetDefinitions = [
   statsWidgetDefinition,
   themeWidgetDefinition,
   messageWidgetDefinition,
+  streetViewWidgetDefinition,
 ] as const;
 
 export type WidgetType = (typeof widgetDefinitions)[number]['type'] | '';

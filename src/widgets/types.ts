@@ -1,5 +1,6 @@
 import type { Widget, WidgetProps } from '@deck.gl/core';
 import type { ScreenshotWidget } from '@deck.gl/widgets';
+import type { Feature } from 'geojson';
 import type { LayerEditorSection } from '../layers/types';
 
 export type WidgetEditorSection = LayerEditorSection;
@@ -36,6 +37,7 @@ export interface WidgetViewStateChange {
 }
 
 export interface WidgetCallbacks {
+  provider?: 'google' | 'maplibre';
   onViewStateChange?: (next: WidgetViewStateChange) => void;
   /** The view state to reset to (used by ResetViewWidget in controlled mode). */
   resetViewState?: WidgetViewStateChange;
@@ -53,6 +55,10 @@ export interface WidgetCallbacks {
     onPlayingChange: (playing: boolean) => void;
     onSeekTo: (ms: number) => void;
     formatLabel: (value: number) => string;
+  };
+  selection?: {
+    key: string | null;
+    feature: Feature | null;
   };
   themeMode?: 'light' | 'dark';
   onThemeModeChange?: (mode: 'light' | 'dark') => void;

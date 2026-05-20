@@ -63,18 +63,6 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
   const [currentLocation, setCurrentLocation] = useState<CurrentLocationState | null>(null);
 
-  const popupFeature =
-    selectedFeature && selectedKey
-      ? options.layers.some((layer) => {
-          const keyField = layer.selectionKey;
-          return keyField?.field && keyField.source === layer.data.featureSource.id
-            ? String(selectedFeature.properties?.[keyField.field] ?? '') === selectedKey
-            : false;
-        })
-        ? selectedFeature
-        : null
-      : null;
-
   const onFeatureClick = useCallback(
     (feature: Feature, info: any) => {
       const keyField = info.layer.props.config?.selectionKey;
@@ -116,6 +104,38 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
+  const resolvedSelectedFeature = useMemo(() => {
+    if (!selectedKey) {
+      return null;
+    }
+
+    if (
+      selectedFeature &&
+      options.layers.some((layer) => {
+        const keyField = layer.selectionKey;
+        return keyField?.field && keyField.source === layer.data.featureSource.id
+          ? String(selectedFeature.properties?.[keyField.field] ?? '') === selectedKey
+          : false;
+      })
+    ) {
+      return selectedFeature;
+    }
+
+    for (const layer of options.layers) {
+      const keyField = layer.selectionKey;
+      if (!keyField?.field || keyField.source !== layer.data.featureSource.id) {
+        continue;
+      }
+
+      const features = featuresByLayerId.get(layer.id) ?? [];
+      const match = features.find((feature) => String(feature.properties?.[keyField.field] ?? '') === selectedKey);
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  }, [featuresByLayerId, options.layers, selectedFeature, selectedKey]);
 
   const { layers, preparedLayerStates } = usePanelLayers(
     options,
@@ -134,6 +154,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
 
   // Widget callbacks sourced from panel-level state (viewport callbacks are added by each provider).
   const widgetCallbacks = useMemo(() => ({
+    provider: options.basemap.provider,
     geolocate: {
       onLocation: ({ latitude, longitude, accuracy }: CurrentLocationState & { zoom: number }) =>
         setCurrentLocation({ latitude, longitude, accuracy }),
@@ -147,7 +168,11 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
       onSeekTo: (t: number) => playback.seekTo(t, false),
       formatLabel: (timeMs: number) => new Date(timeMs).toLocaleString(),
     },
-  }), [playback, fromTimeMs, toTimeMs]);
+    selection: {
+      key: selectedKey,
+      feature: resolvedSelectedFeature,
+    },
+  }), [playback, fromTimeMs, options.basemap.provider, resolvedSelectedFeature, selectedKey, toTimeMs]);
 
   return (
     <div
@@ -184,7 +209,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
       {selectedKey && (
         <SensorPopup
           selectedKey={selectedKey}
-          feature={popupFeature}
+          feature={resolvedSelectedFeature}
           template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
           onClose={handlePopupClose}
         />
