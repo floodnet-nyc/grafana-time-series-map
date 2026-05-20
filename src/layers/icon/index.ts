@@ -22,7 +22,7 @@ export interface IconLayerSettings {
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -112,13 +112,13 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
-    const { config, features, getAccessor, getNumericAccessor } = context;
+    const { config, features, getAccessor, getNumericAccessor, selectedKey } = context;
     const options = config.settings;
 
     const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
-    const getColor = createSelectionColorAccessor(baseColor, isSelected);
+    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
+    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected);
 
     const commonProps = createCommonLayerProps(context);
     const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);
@@ -149,7 +149,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         getColor: getColor ?? [255, 255, 255, 255],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: updatesSelected,
+          getColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
           getIcon: updatesIcon,
           getSize: updatesSize,
         },
