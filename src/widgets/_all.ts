@@ -17,8 +17,8 @@ import {
 } from './categories/view';
 import { 
   // contextMenuWidgetDefinition, 
-  infoWidgetDefinition, 
-  popupWidgetDefinition, 
+  // infoWidgetDefinition, 
+  // popupWidgetDefinition, 
   messageWidgetDefinition,
 } from './categories/information';
 import { 
@@ -55,8 +55,10 @@ export const widgetDefinitions = [
   // splitterWidgetDefinition,
   // Information
   // contextMenuWidgetDefinition,
-  infoWidgetDefinition,
-  popupWidgetDefinition,
+  
+  // infoWidgetDefinition,
+  // popupWidgetDefinition,
+  
   // Control
   // iconWidgetDefinition,
   // toggleWidgetDefinition,

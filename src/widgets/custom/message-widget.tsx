@@ -1,5 +1,7 @@
+/* eslint-disable react/react-in-jsx-scope */
+/** @jsxImportSource preact */
 import { Widget, type WidgetPlacement, type WidgetProps } from '@deck.gl/core';
-import { h, render } from 'preact';
+import { render } from 'preact';
 import { renderLiquidTemplate } from 'utils/liquid';
 
 export type MessageWidgetProps = WidgetProps & {
@@ -60,15 +62,15 @@ export class MessageWidget extends Widget<MessageWidgetProps> {
     rootElement.className = 'message-widget-root';
 
     render(
-      h(MessageWidgetView, {
-        collapsed: this.collapsed_,
-        label: this.props.label,
-        icon: this.props.icon,
-        imageUrl: this.props.imageUrl,
-        title: this.props.title,
-        template: this.props.template,
-        onToggle: () => this.toggle(),
-      }),
+      <MessageWidgetView
+        collapsed={this.collapsed_}
+        label={this.props.label}
+        icon={this.props.icon}
+        imageUrl={this.props.imageUrl}
+        title={this.props.title}
+        template={this.props.template}
+        onToggle={() => this.toggle()}
+      />,
       rootElement
     );
   }
@@ -108,54 +110,46 @@ function MessageWidgetView({
   const hasTriggerContent = Boolean(icon || imageUrl || label);
 
   if (collapsed) {
-    return h(
-      'div',
-      { className: 'map-card legend-box message-widget-card message-widget-card-collapsed' },
-      h(
-        'button',
-        {
-          className: 'message-widget-toggle message-widget-toggle-collapsed',
-          type: 'button',
-          onClick: onToggle,
-          title: 'Expand message panel',
-        },
-        h('span', { className: 'message-widget-chevron' }, '\u203A'),
-        imageUrl ? h('img', { className: 'message-widget-image', src: imageUrl, alt: '' }) : null,
-        icon ? h('span', { className: 'message-widget-icon' }, icon) : null,
-        label ? h('span', { className: 'message-widget-label' }, label) : null,
-        !hasTriggerContent ? h('span', { className: 'message-widget-label' }, 'Welcome') : null,
-      )
+    return (
+      <div className="map-card legend-box message-widget-card message-widget-card-collapsed">
+        <button
+          className="message-widget-toggle message-widget-toggle-collapsed"
+          type="button"
+          onClick={onToggle}
+          title="Expand message panel"
+        >
+          <span className="message-widget-chevron">{'\u203A'}</span>
+          {imageUrl ? <img className="message-widget-image" src={imageUrl} alt="" /> : null}
+          {icon ? <span className="message-widget-icon">{icon}</span> : null}
+          {label ? <span className="message-widget-label">{label}</span> : null}
+          {!hasTriggerContent ? <span className="message-widget-label">Welcome</span> : null}
+        </button>
+      </div>
     );
   }
 
-  return h(
-    'div',
-    { className: 'map-card legend-box message-widget-card message-widget-card-expanded' },
-    h(
-      'div',
-      { className: 'message-widget-header' },
-      h(
-        'div',
-        { className: 'message-widget-header-main' },
-        imageUrl ? h('img', { className: 'message-widget-image', src: imageUrl, alt: '' }) : null,
-        icon ? h('span', { className: 'message-widget-icon' }, icon) : null,
-        label ? h('span', { className: 'message-widget-label' }, label) : null,
-        title ? h('span', { className: 'message-widget-title' }, title) : null,
-      ),
-      h(
-        'button',
-        {
-          className: 'message-widget-toggle message-widget-toggle-expanded',
-          type: 'button',
-          onClick: onToggle,
-          title: 'Collapse message panel',
-        },
-        h('span', { className: 'message-widget-chevron' }, '\u2039')
-      )
-    ),
-    h('div', {
-      className: 'message-widget-content',
-      dangerouslySetInnerHTML: { __html: template },
-    })
+  return (
+    <div className="map-card legend-box message-widget-card message-widget-card-expanded">
+      <div className="message-widget-header">
+        <div className="message-widget-header-main">
+          {imageUrl ? <img className="message-widget-image" src={imageUrl} alt="" /> : null}
+          {icon ? <span className="message-widget-icon">{icon}</span> : null}
+          {label ? <span className="message-widget-label">{label}</span> : null}
+          {title ? <span className="message-widget-title">{title}</span> : null}
+        </div>
+        <button
+          className="message-widget-toggle message-widget-toggle-expanded"
+          type="button"
+          onClick={onToggle}
+          title="Collapse message panel"
+        >
+          <span className="message-widget-chevron">{'\u2039'}</span>
+        </button>
+      </div>
+      <div
+        className="message-widget-content"
+        dangerouslySetInnerHTML={{ __html: template }}
+      />
+    </div>
   );
 }
