@@ -227,7 +227,7 @@
                     "type": "json",
                     "source": "url",
                     "format": "table",
-                    "hide": true,
+                    "hide": false,
                     "url": "http://localhost:3000/public/sample-data/flood_inundation.geojson",
                     "url_options": {
                         "method": "GET",
@@ -698,7 +698,7 @@
                                     "id": "A",
                                     "refId": "A",
                                     "join": {
-                                        "type": "keyed-asof",
+                                        "type": "asof",
                                         "localKey": {
                                             "source": "main",
                                             "field": "deployment_id"
@@ -975,7 +975,7 @@
                                     "id": "A",
                                     "refId": "A",
                                     "join": {
-                                        "type": "keyed-asof",
+                                        "type": "asof",
                                         "localKey": {
                                             "source": "main",
                                             "field": "deployment_id"

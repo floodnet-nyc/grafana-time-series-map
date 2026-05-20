@@ -681,7 +681,7 @@
                                     "id": "A",
                                     "refId": "A",
                                     "join": {
-                                        "type": "keyed-asof",
+                                        "type": "asof",
                                         "localKey": {
                                             "source": "main",
                                             "field": "deployment_id"

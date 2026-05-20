@@ -58,7 +58,7 @@ interface LayerSecondarySourceConfig {
   id: string;
   queryRefId: string;
   join: {
-    type: 'keyed-asof';
+    type: 'asof';
     localKeyField: string;
     remoteKeyField: string;
     timeField: string;
@@ -176,7 +176,7 @@ That would look like:
       id: 'sensor',
       queryRefId: 'readings',
       join: {
-        type: 'keyed-asof',
+        type: 'asof',
         localKeyField: 'deployment_id',
         remoteKeyField: 'deployment_id',
         timeField: 'time',
@@ -273,7 +273,7 @@ That makes it a real layer dataflow feature rather than a flood-specific escape 
 The first implementation should be:
 
 - one primary source
-- zero or more `keyed-asof` secondary sources
+- zero or more `asof` secondary sources
 - small derived expression language
 - prepared per-feature value scopes in the render context
 
