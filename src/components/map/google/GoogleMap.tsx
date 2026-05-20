@@ -3,7 +3,7 @@ import { APIProvider, Map, limitTiltRange, useMap } from '@vis.gl/react-google-m
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
 import type { Widget, WidgetPlacement } from '@deck.gl/core';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
-import type { MapProviderProps, ViewportSnapshot, WidgetViewStateChange } from '../types';
+import type { MapProviderProps, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { MapFitBounds } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
@@ -126,7 +126,7 @@ function GoogleMapInner(props: MapProviderProps) {
     mergedCallbacks,
   } = useMapProviderState(props, {
     applyViewState: applyGoogleViewState,
-    limitViewState: limitTiltRange as (vs: ViewportSnapshot) => ViewportSnapshot,
+    limitViewState: limitTiltRange,
   });
 
   // Sync Google map to the hook's ref so widget callbacks can access it.

@@ -5,7 +5,10 @@ import type { MapThemeMode } from 'types';
 interface MapProviderAdapter {
   applyViewState: (map: unknown, change: WidgetViewStateChange) => void;
   captureScreenshot?: (map: unknown) => Promise<string | undefined>;
-  limitViewState?: (vs: ViewportSnapshot) => ViewportSnapshot;
+  /** Transform the raw DeckGL viewState change event before extracting the viewport.
+   *  When defined, receives the full DeckGL event `{ viewState, ... }` and must
+   *  return a functionally-equivalent object with the same shape. */
+  limitViewState?: (event: any) => any;
 }
 
 export function useMapProviderState(
@@ -23,10 +26,8 @@ export function useMapProviderState(
 
   const handleViewStateChange = useCallback(
     (e: any) => {
-      let vs: ViewportSnapshot = e.viewState ?? e;
-      if (adapter.limitViewState) {
-        vs = adapter.limitViewState(vs);
-      }
+      const event = adapter.limitViewState ? adapter.limitViewState(e) : e;
+      const vs: ViewportSnapshot = event.viewState ?? event;
       setViewState(vs);
       onViewportChange?.(vs);
     },
