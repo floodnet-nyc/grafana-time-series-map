@@ -8,7 +8,7 @@ import {
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
 import { NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
-import { getCameraControlPosition, getControlPosition } from 'components/map/google/controlMappings';
+import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 import { GeolocateWidget, type GeolocateWidgetProps } from '../custom/geolocate-widget';
 
@@ -56,7 +56,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
       return {
         rotateControl: true,
         rotateControlOptions: {
-          position: getControlPosition(getCameraControlPosition(pos ?? 'top-left'), 'INLINE_START_BLOCK_END'),
+          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-left'), 'INLINE_START_BLOCK_END'),
         },
       };
     },

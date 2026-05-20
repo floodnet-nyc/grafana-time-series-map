@@ -44,7 +44,7 @@ export function getControlPosition(position: GoogleControlPosition | undefined, 
   return googleControlPositionValues[position ?? fallback];
 }
 
-function mapControlToGooglePosition(position: MapControlPosition): GoogleControlPosition {
+export function mapControlToGooglePosition(position: MapControlPosition): GoogleControlPosition {
   switch (position) {
     case 'top-left':     return 'TOP_LEFT';
     case 'top-right':    return 'TOP_RIGHT';
@@ -54,14 +54,6 @@ function mapControlToGooglePosition(position: MapControlPosition): GoogleControl
   }
 }
 
-export function getCameraControlPosition(position: MapControlPosition): GoogleControlPosition {
-  return mapControlToGooglePosition(position);
-}
-
-export function getFullscreenControlPosition(position: MapControlPosition): GoogleControlPosition {
-  return mapControlToGooglePosition(position);
-}
-
 export function getGoogleColorScheme(colorScheme: MapThemeMode | undefined) {
-  return googleColorSchemeValues[colorScheme ?? 'light'];
+  return googleColorSchemeValues[colorScheme ?? 'auto'];
 }

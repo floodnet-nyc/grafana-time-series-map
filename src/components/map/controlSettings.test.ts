@@ -4,8 +4,7 @@ import {
   resolveMapControlSettings,
 } from './controlSettings';
 import {
-  getCameraControlPosition,
-  getFullscreenControlPosition,
+  mapControlToGooglePosition,
 } from './google/controlMappings';
 
 function createOptions(overrides: { basemap?: Partial<MapPanelOptions['basemap']> } = {}): MapPanelOptions {
@@ -87,8 +86,8 @@ describe('controlSettings', () => {
 
   it('maps shared positions back to provider-specific positions', () => {
     expect(getMaplibreControlPosition('bottom-right')).toBe('bottom-right');
-    expect(getCameraControlPosition('top-left')).toBe('TOP_LEFT');
-    expect(getCameraControlPosition('top-right')).toBe('TOP_RIGHT');
-    expect(getFullscreenControlPosition('bottom-left')).toBe('BOTTOM_LEFT');
+    expect(mapControlToGooglePosition('top-left')).toBe('TOP_LEFT');
+    expect(mapControlToGooglePosition('top-right')).toBe('TOP_RIGHT');
+    expect(mapControlToGooglePosition('bottom-left')).toBe('BOTTOM_LEFT');
   });
 });

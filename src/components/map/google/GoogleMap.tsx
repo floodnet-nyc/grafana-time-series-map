@@ -150,9 +150,6 @@ function GoogleMapInner(props: MapProviderProps) {
     mapRef.current = googleMap;
   });
 
-  const colorScheme = getGoogleColorScheme(themeMode);
-  const googleMapOptions = options.basemap.google;
-  const controlSettings = resolveMapControlSettings(options);
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 
@@ -171,16 +168,9 @@ function GoogleMapInner(props: MapProviderProps) {
     [options.widgets],
   );
 
+  const controlSettings = resolveMapControlSettings(options);
   const googleControlProps = useMemo<GoogleMapControlProps>(() => ({
-    zoomControl: googleNativeProps.zoomControl ?? false,
-    zoomControlOptions: googleNativeProps.zoomControlOptions,
-    cameraControl: googleNativeProps.cameraControl ?? false,
-    cameraControlOptions: googleNativeProps.cameraControlOptions,
-    fullscreenControl: googleNativeProps.fullscreenControl ?? false,
-    fullscreenControlOptions: googleNativeProps.fullscreenControlOptions,
-    scaleControl: googleNativeProps.scaleControl ?? false,
-    rotateControl: googleNativeProps.rotateControl ?? false,
-    rotateControlOptions: googleNativeProps.rotateControlOptions,
+    ...googleNativeProps,
     mapTypeControl: controlSettings.google.mapTypeControl ?? false,
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
@@ -189,8 +179,8 @@ function GoogleMapInner(props: MapProviderProps) {
   }), [googleNativeProps, controlSettings]);
 
   const sharedMapProps = {
-    mapId: googleMapOptions.mapId || undefined,
-    colorScheme,
+    mapId: options.basemap.google.mapId || undefined,
+    colorScheme: getGoogleColorScheme(themeMode),
     defaultCenter: { lat: props.initialViewState?.latitude ?? 0, lng: props.initialViewState?.longitude ?? 0 },
     defaultZoom: props.initialViewState?.zoom ?? 2,
     defaultHeading: props.initialViewState?.bearing ?? 0,

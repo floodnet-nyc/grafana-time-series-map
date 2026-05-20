@@ -7,7 +7,7 @@ import {
 } from '@deck.gl/widgets';
 import { MapView } from '@deck.gl/core';
 import { FullscreenControl } from 'react-map-gl/maplibre';
-import { getControlPosition, getFullscreenControlPosition } from 'components/map/google/controlMappings';
+import { getControlPosition, mapControlToGooglePosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 
 type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
@@ -41,7 +41,7 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
       return {
         fullscreenControl: true,
         fullscreenControlOptions: {
-          position: getControlPosition(getFullscreenControlPosition(pos ?? 'top-right'), 'TOP_RIGHT'),
+          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-right'), 'TOP_RIGHT'),
         },
       };
     },

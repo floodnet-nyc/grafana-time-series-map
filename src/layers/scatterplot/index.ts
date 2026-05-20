@@ -126,7 +126,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           ...commonProps.updateTriggers,
           getLineColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
           getLineWidth: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
-          getRadius: [...updateRadius],
+          getRadius: updateRadius,
           getFillColor: updateColorValue,
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
         },

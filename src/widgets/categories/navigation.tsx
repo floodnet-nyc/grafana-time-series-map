@@ -10,7 +10,7 @@ import {
   type ScrollbarWidgetProps,
 } from '@deck.gl/widgets';
 import { NavigationControl } from 'react-map-gl/maplibre';
-import { getCameraControlPosition, getControlPosition } from 'components/map/google/controlMappings';
+import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 
 type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
@@ -67,7 +67,7 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
       return {
         zoomControl: true,
         zoomControlOptions: {
-          position: getControlPosition(getCameraControlPosition(pos ?? 'top-left'), 'TOP_LEFT'),
+          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-left'), 'TOP_LEFT'),
         },
       };
     },

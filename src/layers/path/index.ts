@@ -62,7 +62,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     const options = config.settings;
 
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updatesColor] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
     const [getWidth, updatesWidth] = getNumericAccessor(options.width, options.widthScale);
     
@@ -78,6 +78,8 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         getColor,
         getWidth: getWidth ?? 1,
         updateTriggers: {
+          ...commonProps.updateTriggers,
+          getColor: updatesColor,
           getWidth: updatesWidth,
         },
       }),
