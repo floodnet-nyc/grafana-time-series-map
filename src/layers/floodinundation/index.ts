@@ -79,6 +79,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     const commonProps = createCommonLayerProps(context);
     const [getElevation, updatesElevation] = getAccessors.number(options.depthDiff, 0);
     const [getPolygon] = getAccessors.polygon();
+
     return [
       new SolidPolygonLayer({
         ...commonProps,
@@ -104,6 +105,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
         updateTriggers: {
           ...commonProps.updateTriggers,
           getDepthDiff: updatesElevation,
+          getElevation: updatesElevation,
         },
       }),
     ];
