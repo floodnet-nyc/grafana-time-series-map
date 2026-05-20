@@ -1,5 +1,6 @@
+import React from 'react';
 import { Widget, type WidgetPlacement, type WidgetProps } from '@deck.gl/core';
-import { computePosition, offset, flip, shift } from '@floating-ui/dom';
+import { computePosition, offset, flip, shift, AlignedPlacement } from '@floating-ui/dom';
 import { renderLiquidTemplate } from 'utils/liquid';
 
 export type WelcomeWidgetProps = WidgetProps & {
@@ -16,6 +17,18 @@ export const DEFAULT_WELCOME_TEMPLATE = `\
 <h2>Welcome to the map</h2>
 <p>Use <strong>drag</strong> to pan, <strong>scroll</strong> to zoom, and <strong>click</strong> on features for details.</p>
 `;
+
+// type AlignedPlacement = "bottom-start" | "top-start" | "top-end" | "right-start" | "right-end" | "bottom-end" | "left-start" | "left-end"
+
+const convertPlacementToAligned = (placement: WidgetPlacement): AlignedPlacement => {
+  switch (placement) {
+    case 'top-left': return 'top-start';
+    case 'top-right': return 'top-end';
+    case 'bottom-left': return 'bottom-start';
+    case 'bottom-right': return 'bottom-end';
+    default: return 'top-start';
+  }
+};
 
 export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
   static defaultProps: Required<WelcomeWidgetProps> = {
@@ -91,11 +104,11 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
     if (!trigger || !panel) return;
 
     computePosition(trigger, panel, {
-      placement: 'bottom-start',
+      placement: convertPlacementToAligned(this.placement),
       middleware: [
-        offset(6),
-        flip({ padding: 12 }),
-        shift({ padding: 8 }),
+        // offset(6),
+        // flip({ padding: 12 }),
+        // shift({ padding: 8 }),
       ],
     }).then(({ x, y }) => {
       Object.assign(panel.style, {

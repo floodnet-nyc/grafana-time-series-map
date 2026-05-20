@@ -156,7 +156,7 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
             { label: 'Dark', value: 'dark' },
           ],
         },
-        category: ['Theme'],
+        category: ['Basemap'],
       })
       .addCustomEditor({
         id: 'initialView',
