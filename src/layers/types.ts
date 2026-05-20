@@ -60,7 +60,7 @@ export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string,
 export interface LayerOptionField {
   key: string;
   label: string;
-  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker' | 'sourceRef';
+  type: 'number' | 'string' | 'boolean' | 'select' | 'color' | 'fieldPicker' | 'sourceRef' | 'html';
   defaultValue?: unknown;
   section?: string;
   min?: number;
