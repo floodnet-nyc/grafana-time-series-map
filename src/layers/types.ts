@@ -42,10 +42,10 @@ export interface BaseLayerConfig<TType extends string, TSettings extends LayerSe
 }
 
 export type AccessorDependencyKey = readonly unknown[];
-export type GetAccessorFunction = <O = unknown, T extends Feature = Feature>(
+export type GetAccessorFunction = <O = unknown | undefined, T extends Feature = Feature>(
   fieldRef?: SourceRef,
   defaultValue?: O
-) => [AccessorFunction<T, O | undefined> | undefined, AccessorDependencyKey];
+) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
 export type GetNumericAccessorFunction = <T extends Feature = Feature>(
   fieldRef?: SourceRef,
   defaultValue?: number
