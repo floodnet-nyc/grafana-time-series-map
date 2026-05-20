@@ -9,8 +9,6 @@ import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import CollisionFilterExtension from '../../utils/deckgl/extensions/CollisionFilterExtension';
 import {
   createCommonLayerProps,
-  createLineSelectionAccessors,
-  createSelectionState,
   getFeaturePosition,
 } from '../utils';
 import { autoDecimalsText } from 'layers/text';
@@ -99,11 +97,14 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const commonProps = createCommonLayerProps(context);
     const [getColorValue, updateColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
-    const lineAccessors = createLineSelectionAccessors(selectionState.isSelected, config.selectionColor);
+
+    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getLineColor = (feature: Feature, ctx: AccessorContext<Feature>) => (selectedKey != null && getSelection?.(feature, ctx) ? config.selectionColor ?? [200, 200, 240, 200] : [0, 0, 0, 0]) as [number, number, number, number];
+    const getLineWidth = (feature: Feature, ctx: AccessorContext<Feature>) => selectedKey != null ? (getSelection?.(feature, ctx) ? 3 : 1) : 2;
 
     const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
+    const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -115,17 +116,18 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         stroked: options.stroked,
         filled: true,
         lineWidthMinPixels: 0,
-        getPosition: (f: Feature) => getFeaturePosition(f, config),
-        getLineColor: lineAccessors.getLineColor ?? [0, 0, 0, 0],
-        getLineWidth: lineAccessors.getLineWidth ?? 0,
+        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
+        getLineColor: getLineColor ?? [0, 0, 0, 0],
+        getLineWidth: getLineWidth ?? 0,
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
         getRadius: getRadius ?? options.radiusMinPixels,
         ...(useShader ? { getValue } : {}),
         extensions: [...commonProps.extensions, ...(shaderExtensions as any[])],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getLineColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
-          getLineWidth: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
+          getPosition: updateElevation,
+          getLineColor: updateSelection,
+          getLineWidth: updateSelection,
           getRadius: updateRadius,
           getFillColor: updateColorValue,
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
@@ -144,7 +146,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           data: features,
           visible: config.visible,
           pickable: false,
-          getPosition: (f: Feature) => getFeaturePosition(f, config, 2),
+          getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx), 2),
           getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), true) : undefined,
           getSize: getRadius ? (f: Feature, ctx: AccessorContext<Feature>) => {
             const v = getRadius(f, ctx);
@@ -168,6 +170,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
           updateTriggers: { 
             ...commonProps.updateTriggers,
+            getPosition: updateElevation,
             getText: updateText,
             getCollisionPriority: updateCollisionPriority,
           },

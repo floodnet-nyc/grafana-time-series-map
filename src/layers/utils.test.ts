@@ -4,9 +4,6 @@ import { createSourceRef } from './defaults';
 import type { ScatterplotLayerConfig } from './scatterplot';
 import {
   createCommonLayerProps,
-  createLineSelectionAccessors,
-  createSelectionColorAccessor,
-  createSelectionState,
   getFeaturePosition,
 } from './utils';
 import type { GetAccessorFunction, GetAccessorFunctions } from './types';
@@ -108,24 +105,6 @@ describe('layer utils', () => {
     } as any);
 
     expect(getFeaturePosition(createPointFeature({ depth: 3 }), config)).toEqual([-73.9, 40.7, 6]);
-  });
-
-  it('builds selection-aware color and line accessors', () => {
-    const selected = createPointFeature({ sensor_id: 'a' });
-    const unselected = createPointFeature({ sensor_id: 'b' });
-    const selectionState = createSelectionState('a', createSourceRef('sensor_id'));
-    const baseColor = () => [10, 20, 30, 255] as [number, number, number, number];
-    const ctx = { index: 0, data: [selected, unselected], target: [] };
-
-    const colorAccessor = createSelectionColorAccessor(baseColor, selectionState.isSelected);
-    const lineAccessors = createLineSelectionAccessors(selectionState.isSelected);
-
-    expect(colorAccessor(selected, ctx)).toEqual([255, 230, 60, 255]);
-    expect(colorAccessor(unselected, ctx)).toEqual([10, 20, 30, 255]);
-    expect(lineAccessors.getLineColor(selected, ctx)).toEqual([255, 230, 60, 255]);
-    expect(lineAccessors.getLineColor(unselected, ctx)).toEqual([200, 200, 240, 200]);
-    expect(lineAccessors.getLineWidth(selected, ctx)).toBe(3);
-    expect(lineAccessors.getLineWidth(unselected, ctx)).toBe(1);
   });
 
   it('builds common layer props with click and filter wiring', () => {

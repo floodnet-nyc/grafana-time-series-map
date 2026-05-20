@@ -1,4 +1,4 @@
-import type { AccessorContext, LayerExtension } from '@deck.gl/core';
+import type { AccessorContext, AccessorFunction, LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext, LayerSettingsObject } from './types';
@@ -18,11 +18,6 @@ export function getProperty<F extends Feature>(feature: F, field: string): any {
 }
 
 
-
-export function getNumericProperty(feature: Feature, field: string, defaultValue = 0): number {
-  const value = Number(getProperty(feature, field) ?? defaultValue);
-  return isNaN(value) ? defaultValue : value;
-}
 
 export function getLayerElevation(config: BaseLayerConfig<string, LayerSettingsObject>) {
   const settings = (config.settings ?? {}) as ElevationSettings;
@@ -80,45 +75,7 @@ export function getFeatureLngLat(feature: Feature): [number, number] {
   return coords ? [coords[0] ?? 0, coords[1] ?? 0] : [0, 0];
 }
 
-export function getFeaturePosition(feature: Feature, config: LayerRenderContext['config'], offset=0): [number, number, number] {
+export function getFeaturePosition(feature: Feature, z?: number, offset=0): [number, number, number] {
   const [lng, lat] = getFeatureLngLat(feature);
-  const elevation = getLayerElevation(config);
-  const z = elevation.field?.field && elevation.field.source === config.data.featureSource.id
-    ? Number(getProperty(feature, elevation.field.field) ?? 0) * elevation.scale
-    : 0;
-  return [lng, lat, z + offset];
-}
-
-export function createSelectionState(
-  selectedKey: string | null | undefined,
-  keyField: SourceRef | undefined,
-  featureSourceId = 'main'
-) {
-  const hasSelection = selectedKey != null && Boolean(keyField?.field) && keyField?.source === featureSourceId;
-  const isSelected = hasSelection
-    ? (feature: Feature, ctx: AccessorContext<Feature>) => hasSelection && String(getProperty(feature, keyField?.field ?? '')) === selectedKey
-    : undefined;
-
-  return { hasSelection, isSelected };
-}
-
-export function createSelectionColorAccessor(
-  baseColor: (feature: Feature, ctx: AccessorContext<Feature>) => [number, number, number, number],
-  isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean,
-  selectedColor: [number, number, number, number] = DEFAULT_SELECTED_COLOR,
-) {
-  return isSelected ? (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected?.(feature, ctx) ? selectedColor : baseColor(feature, ctx)) : baseColor;
-}
-
-export function createLineSelectionAccessors(
-  isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean,
-  selectedColor: [number, number, number, number] = DEFAULT_SELECTED_COLOR,
-) {
-  return {
-    getLineColor: (feature: Feature, ctx: AccessorContext<Feature>): [number, number, number, number] =>
-      isSelected?.(feature, ctx)
-          ? selectedColor
-        : ([200, 200, 240, 200] as [number, number, number, number]),
-    getLineWidth: (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected ? (isSelected?.(feature, ctx) ? 3 : 1) : 2),
-  };
+  return [lng, lat, (z ?? 0) + offset];
 }

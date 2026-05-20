@@ -60,8 +60,8 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
   renderLayers(context: LayerRenderContext<PathLayerConfig>) {
     const { config, getAccessors } = context;
     const options = config.settings;
-
     const commonProps = createCommonLayerProps(context);
+
     const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, options.widthScale);

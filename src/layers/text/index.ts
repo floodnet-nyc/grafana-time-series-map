@@ -27,7 +27,7 @@ export interface TextLayerSettings {
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, getFeaturePosition } from '../utils';
 import { AccessorContext } from '@deck.gl/core';
 
 const defaultSettings: TextLayerSettings = {
@@ -117,13 +117,20 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
     const { config, getAccessor, getAccessors, selectedKey } = context;
     const options = config.settings;
+    const commonProps = createCommonLayerProps(context);
+
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220], getColorValue);
-    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
-    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected, config.selectionColor);
-    const commonProps = createCommonLayerProps(context);
+    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getColor = (
+      selectedKey != null && getSelection ? 
+        (feature: Feature, ctx: AccessorContext<Feature>) => (getSelection(feature, ctx) && config.selectionColor ? config.selectionColor : baseColor(feature, ctx))
+        : baseColor
+    );
+
     const [getText, updatesText] = getAccessor(options.text, '');
     const [getSize, updatesSize] = getAccessors.number(options.size, options.fontSize);
+    const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
 
     // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 
@@ -139,7 +146,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (f: Feature) => getFeaturePosition(f, config),
+        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
         getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), options.autoDecimals) : undefined,
         getSize: getSize ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsSize(getSize(f, ctx), options.autoDecimals) : options.fontSize,
         getColor,
@@ -149,7 +156,8 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         polygonOffset: 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
+          getPosition: updateElevation,
+          getColor: updateSelection,
           getText: updatesText,
           getSize: updatesSize,
         },

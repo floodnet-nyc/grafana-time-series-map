@@ -22,7 +22,8 @@ export interface IconLayerSettings {
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, getFeaturePosition } from '../utils';
+import { AccessorContext } from '@deck.gl/core';
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -114,13 +115,19 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
     const { config, features, getAccessor, getAccessors, selectedKey } = context;
     const options = config.settings;
+    const commonProps = createCommonLayerProps(context);
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
-    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected, config.selectionColor);
+    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getColor = (
+      selectedKey != null && getSelection && config.selectionColor ? 
+        (feature: Feature, ctx: AccessorContext<Feature>) => (getSelection(feature, ctx) && config.selectionColor ? config.selectionColor : baseColor(feature, ctx))
+        : baseColor
+    );
 
-    const commonProps = createCommonLayerProps(context);
+    const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
+
     const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);
     const [getSize, updatesSize] = getAccessors.number(options.size, options.sizeScale);
     const iconAtlas = options.iconAtlasUrl.trim();
@@ -138,7 +145,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (f: Feature) => getFeaturePosition(f, config),
+        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
         getIcon: getIcon
           ? (f: Feature, ctx) => {
               const iconName = getIcon(f, ctx) as string;
@@ -149,7 +156,8 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         getColor: getColor ?? [255, 255, 255, 255],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
+          getPosition: updateElevation,
+          getColor: updateSelection,
           getIcon: updatesIcon,
           getSize: updatesSize,
         },

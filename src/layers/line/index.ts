@@ -55,10 +55,11 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
   renderLayers(context: LayerRenderContext<LineLayerConfig>) {
     const { config, features, getAccessors } = context;
     const options = config.settings;
+    const commonProps = createCommonLayerProps(context);
+
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
 
-    const commonProps = createCommonLayerProps(context);
     const [srcLngAccessor, updatesSrcLng] = getAccessors.number(options.srcLng);
     const [srcLatAccessor, updatesSrcLat] = getAccessors.number(options.srcLat);
     const [tgtLngAccessor, updatesTgtLng] = getAccessors.number(options.tgtLng);
