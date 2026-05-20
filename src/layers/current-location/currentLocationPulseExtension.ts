@@ -1,4 +1,4 @@
-import { MathExtension } from '../../utils/deckgl/MathExtension';
+import { MathExtension } from '../../utils/deckgl/extensions/MathExtension';
 
 export const CURRENT_LOCATION_EFFECT_RADIUS = 31;
 

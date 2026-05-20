@@ -2,7 +2,7 @@ import { SolidPolygonLayer } from '@deck.gl/layers';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { ColorScaleConfig, SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
-import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';

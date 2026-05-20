@@ -3,7 +3,7 @@ import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
-import { CreateMathExtensionSubclass } from '../../utils/deckgl/MathExtension';
+import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';
