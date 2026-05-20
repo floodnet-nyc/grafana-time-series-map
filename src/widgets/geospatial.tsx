@@ -33,7 +33,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
       title: 'Compass',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
         { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 200 },
       ],
     },
@@ -123,7 +123,7 @@ export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> 
       title: 'Geolocate',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Find my location' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Find my location' },
         { key: 'zoom', label: 'Target zoom', type: 'number', defaultValue: 14 },
         { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 800 },
         { key: 'enableHighAccuracy', label: 'High accuracy', type: 'boolean', defaultValue: true },
@@ -162,7 +162,7 @@ export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = 
       title: 'Geocoder',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Search location' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Search location' },
         {
           key: 'geocoder',
           label: 'Geocoder',

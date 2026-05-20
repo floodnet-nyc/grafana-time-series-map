@@ -41,8 +41,8 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         { key: 'orientation', label: 'Orientation', type: 'select', selectOptions: ORIENTATIONS, defaultValue: 'vertical' },
         { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 200 },
-        { key: 'zoomInLabel', label: 'Zoom in tooltip', type: 'string', defaultValue: 'Zoom in' },
-        { key: 'zoomOutLabel', label: 'Zoom out tooltip', type: 'string', defaultValue: 'Zoom out' },
+        // { key: 'zoomInLabel', label: 'Zoom in tooltip', type: 'string', defaultValue: 'Zoom in' },
+        // { key: 'zoomOutLabel', label: 'Zoom out tooltip', type: 'string', defaultValue: 'Zoom out' },
       ],
     },
   ],
@@ -99,7 +99,7 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
       title: 'Reset View',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset view' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset view' },
       ],
     },
   ],
@@ -131,7 +131,7 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
       title: 'Gimbal',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
         { key: 'strokeWidth', label: 'Stroke width', type: 'number', defaultValue: 2 },
         { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 200 },
       ],
