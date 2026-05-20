@@ -1,6 +1,5 @@
 import {
   LoadingWidget,
-  ScreenshotWidget,
   _StatsWidget as StatsWidget,
   ThemeWidget,
   type LoadingWidgetProps,
@@ -9,6 +8,7 @@ import {
   type ThemeWidgetProps,
 } from '@deck.gl/widgets';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
+import { CustomScreenshotWidget } from '../custom/screenshot-widget';
 
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
@@ -39,7 +39,6 @@ export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   createWidget: (config) => new LoadingWidget({ id: config.id, ...config.settings }),
 };
 
-// TODO: html2canvas
 export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig> = {
   type: 'screenshot',
   label: 'Screenshot',
@@ -68,7 +67,8 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
       ],
     },
   ],
-  createWidget: (config) => new ScreenshotWidget({ id: config.id, ...config.settings }),
+  createWidget: (config, callbacks?: WidgetCallbacks) =>
+    new CustomScreenshotWidget({ id: config.id, ...config.settings, onCapture: callbacks?.screenshot?.onCapture }),
 };
 
 export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {

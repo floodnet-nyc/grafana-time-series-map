@@ -4,6 +4,7 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
 import type { Map as MapLibreMap } from 'maplibre-gl';
+import type { ScreenshotWidget } from '@deck.gl/widgets';
 import type { MapProviderProps, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
@@ -32,6 +33,15 @@ function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
   }
 
   map.easeTo(camera);
+}
+
+async function captureMaplibreScreenshot(map: MapLibreMap): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    map.once('render', () => {
+      resolve(map.getCanvas().toDataURL());
+    });
+    map.triggerRepaint();
+  });
 }
 
 export default function MaplibreMap({
@@ -79,6 +89,18 @@ export default function MaplibreMap({
     applyMaplibreViewState(map, next);
   }, [controller]);
 
+  const handleScreenshotCapture = useCallback(async (widget: ScreenshotWidget) => {
+    const map = mapRef.current?.getMap();
+    if (!map) {
+      return;
+    }
+
+    const dataUrl = await captureMaplibreScreenshot(map);
+    if (dataUrl) {
+      widget.downloadDataURL(dataUrl, widget.props.filename);
+    }
+  }, []);
+
   // ThemeWidget local state — provider owns this since it's a map UI concern.
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
 
@@ -90,9 +112,12 @@ export default function MaplibreMap({
     ...widgetCallbacks,
     onViewStateChange: handleWidgetViewStateChange,
     resetViewState: initialViewState,
+    screenshot: {
+      onCapture: handleScreenshotCapture,
+    },
     themeMode,
     onThemeModeChange: setThemeMode,
-  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
+  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, handleScreenshotCapture, themeMode]);
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 

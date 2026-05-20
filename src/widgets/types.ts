@@ -1,4 +1,5 @@
 import type { Widget, WidgetProps } from '@deck.gl/core';
+import type { ScreenshotWidget } from '@deck.gl/widgets';
 import type { LayerEditorSection } from '../layers/types';
 
 export type WidgetEditorSection = LayerEditorSection;
@@ -38,6 +39,9 @@ export interface WidgetCallbacks {
   onViewStateChange?: (next: WidgetViewStateChange) => void;
   /** The view state to reset to (used by ResetViewWidget in controlled mode). */
   resetViewState?: WidgetViewStateChange;
+  screenshot?: {
+    onCapture: (widget: ScreenshotWidget) => void | Promise<void>;
+  };
   playback?: {
     cursorTimeMs: number;
     timeRange: [number, number];
