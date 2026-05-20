@@ -1,10 +1,12 @@
 import { FieldType, DataFrame, Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
 import type { GeometrySource } from '../../types';
+import type { FeatureSourceConfig } from '../../types';
 import { DEFAULT_FEATURE_SOURCE_ID } from '../../layers/defaults';
 import { parseGeometry } from './geometry';
 
 export type GeoFeature = Feature & { __idx: number };
+export type { GeometrySource, FeatureSourceConfig };
 
 function resolveField(frame: DataFrame, name: string): Field | undefined {
   return frame.fields.find((f) => f.name === name);

@@ -5,7 +5,7 @@ import {
   type FullscreenWidgetProps,
   type SplitterWidgetProps,
 } from '@deck.gl/widgets';
-import { MapView } from '@deck.gl/core';
+import { MapView, type Widget } from '@deck.gl/core';
 import { FullscreenControl } from 'react-map-gl/maplibre';
 import { getControlPosition, mapControlToGooglePosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
@@ -84,5 +84,5 @@ export const splitterWidgetDefinition: WidgetDefinition<SplitterWidgetConfig> = 
       ],
     },
   ],
-  createWidget: (config) => new SplitterWidget({ id: config.id, ...config.settings }),
+  createWidget: (config) => new SplitterWidget({ id: config.id, ...config.settings }) as unknown as Widget,
 };

@@ -2,7 +2,7 @@ import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { getExtensionDefinition } from '../../../extensions';
 import { getLayerDefinition as resolveLayerDefinition, type LayerConfig } from '../../../layers';
-import type { LayerDefinition, LayerRenderContext } from '../../../layers/types';
+import type { FeaturePickingInfo, LayerDefinition, LayerRenderContext } from '../../../layers/types';
 import type { MapPanelOptions } from '../../../types';
 import type { PreparedLayerState } from './preparedLayerSelectors';
 
@@ -13,7 +13,7 @@ interface RenderPreparedLayersArgs {
   fromTimeMs: number;
   toTimeMs: number;
   selectedKey: string | null;
-  onFeatureClick?: (feature: Feature, info: any) => void;
+  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void;
   getRenderer?: (type: string) => LayerDefinition<any> | undefined;
   applyExtensions?: (layers: Layer[], config: LayerConfig) => Layer[];
 }
@@ -80,7 +80,7 @@ function createLayerRenderContext({
   fromTimeMs: number;
   toTimeMs: number;
   selectedKey: string | null;
-  onFeatureClick?: (feature: Feature, info: any) => void;
+  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void;
 }): LayerRenderContext {
   return {
     config: preparedLayerState.config,

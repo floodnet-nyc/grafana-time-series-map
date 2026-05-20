@@ -1,4 +1,4 @@
-import type { Widget, WidgetProps } from '@deck.gl/core';
+import type { FlyToInterpolator, Widget } from '@deck.gl/core';
 import type { ScreenshotWidget } from '@deck.gl/widgets';
 import type { Feature } from 'geojson';
 import type { LayerEditorSection } from '../layers/types';
@@ -33,14 +33,23 @@ export interface WidgetViewStateChange {
   zoomY?: number;
   rotationOrbit?: number;
   rotationX?: number;
-  transitionDuration?: number;
+  transitionDuration?: number | 'auto';
+  transitionInterpolator?: FlyToInterpolator;
+}
+
+export interface ResetViewState {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+  bearing: number;
+  pitch: number;
 }
 
 export interface WidgetCallbacks {
   provider?: 'google' | 'maplibre';
   onViewStateChange?: (next: WidgetViewStateChange) => void;
   /** The view state to reset to (used by ResetViewWidget in controlled mode). */
-  resetViewState?: WidgetViewStateChange;
+  resetViewState?: ResetViewState;
   geolocate?: {
     onLocation: (next: { latitude: number; longitude: number; zoom: number; accuracy?: number }) => void;
   };
@@ -80,14 +89,16 @@ export type GoogleNativeControlProps = Pick<
   | 'streetViewControlOptions'
 >;
 
-export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> = BaseWidgetConfig<string, any>> {
+export interface WidgetDefinition<
+  TConfig extends BaseWidgetConfig<string, Record<string, unknown>> = BaseWidgetConfig<string, Record<string, unknown>>
+> {
   type: string;
   label: string;
   description: string;
   supportedMapProviders?: Array<('google' | 'maplibre' | 'deck')>;
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
-  createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget<WidgetProps, any>;
+  createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget;
   /** Provider-specific native control configuration used when config.native is true. */
   nativeControls?: {
     /** Returns props to spread onto the Google Maps <Map> component. */

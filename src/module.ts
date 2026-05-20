@@ -1,43 +1,15 @@
 import { PanelPlugin } from '@grafana/data';
-// import { FieldColorModeId, FieldConfigProperty } from '@grafana/data';
 import type { MapPanelOptions } from './types';
 import { MapPanel } from './components/MapPanel';
-// import { LightingEditor } from './editor/LightingEditor';
 import { InitialViewEditor } from './editor/sections/InitialViewEditor';
 import { MapPanelEditor } from './editor/MapPanelEditor';
 import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
-// import { DeckBlendingEditor } from './editor/DeckBlendingEditor';
 import { TooltipTemplateEditor } from './editor/sections/TooltipTemplateEditor';
 import { PopupTemplateEditor } from './editor/sections/PopupTemplateEditor';
 import { VariableSelectEditor } from './editor/utils/VariableSelectEditor';
-// import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
-// import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
-// import { commonOptionsBuilder } from '@grafana/ui';
 
 export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
   .setNoPadding()
-  // .useFieldConfig({
-  //   disableStandardOptions: [FieldConfigProperty.Thresholds],
-  //   standardOptions: {
-  //     [FieldConfigProperty.Color]: {
-  //       settings: {
-  //         byValueSupport: false,
-  //         bySeriesSupport: true,
-  //         preferThresholdsMode: false,
-  //         gradientSupport: true,
-  //       },
-  //       defaultValue: {
-  //         mode: FieldColorModeId.PaletteClassic,
-  //         // Seed fixedColor so switching to Single color, Shades, or Gradient
-  //         // on a fresh panel shows a meaningful color instead of an empty picker.
-  //         fixedColor: '#73BF69',
-  //       },
-  //     },
-  //   },
-  //   useCustomConfig: (builder) => {
-  //     commonOptionsBuilder.addHideFrom(builder);
-  //   },
-  // })
   .setPanelOptions((builder) => {
     builder
       .addCustomEditor({
@@ -291,151 +263,5 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         defaultValue: [],
         category: ['Widgets'],
       })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controls.navigationControl',
-      //   name: 'Navigation control',
-      //   description: 'MapLibre zoom/compass control or Google camera control.',
-      //   defaultValue: true,
-      //   category: ['Map controls'],
-      // })
-      // .addSelect({
-      //   path: 'basemap.controlSettings.navigation.position',
-      //   name: 'Navigation control position',
-      //   defaultValue: 'top-right',
-      //   settings: {
-      //     options: [
-      //       { label: 'Top left', value: 'top-left' },
-      //       { label: 'Top right', value: 'top-right' },
-      //       { label: 'Bottom left', value: 'bottom-left' },
-      //       { label: 'Bottom right', value: 'bottom-right' },
-      //     ],
-      //   },
-      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controlSettings.navigation.showZoom',
-      //   name: 'Show zoom buttons',
-      //   defaultValue: true,
-      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controlSettings.navigation.showCompass',
-      //   name: 'Show compass button',
-      //   defaultValue: true,
-      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false,
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controlSettings.navigation.visualizePitch',
-      //   name: 'Visualize pitch',
-      //   defaultValue: false,
-      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controlSettings.navigation.visualizeRoll',
-      //   name: 'Visualize roll',
-      //   defaultValue: false,
-      //   showIf: (cfg) => cfg.basemap?.controls?.navigationControl !== false && cfg.basemap?.provider !== 'google',
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controls.fullscreenControl',
-      //   name: 'Fullscreen control',
-      //   defaultValue: false,
-      //   category: ['Map controls'],
-      // })
-      // .addSelect({
-      //   path: 'basemap.controlSettings.fullscreen.position',
-      //   name: 'Fullscreen control position',
-      //   defaultValue: 'top-right',
-      //   settings: {
-      //     options: [
-      //       { label: 'Top left', value: 'top-left' },
-      //       { label: 'Top right', value: 'top-right' },
-      //       { label: 'Bottom left', value: 'bottom-left' },
-      //       { label: 'Bottom right', value: 'bottom-right' },
-      //     ],
-      //   },
-      //   showIf: (cfg) => cfg.basemap?.controls?.fullscreenControl === true,
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.controls.scaleControl',
-      //   name: 'Scale control',
-      //   defaultValue: false,
-      //   category: ['Map controls'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'basemap.google.mapTypeControl',
-      //   name: 'Map type control',
-      //   defaultValue: false,
-      //   showIf: (cfg) => cfg.basemap?.provider === 'google',
-      //   category: ['Map controls', 'Google Maps controls'],
-      // })
-      // .addSelect({
-      //   path: 'basemap.google.mapTypeControlPosition',
-      //   name: 'Map type control position',
-      //   defaultValue: 'TOP_LEFT',
-      //   settings: { options: googleControlPositions },
-      //   showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
-      //   category: ['Map controls', 'Google Maps placement'],
-      // })
-      // .addSelect({
-      //   path: 'basemap.google.mapTypeControlStyle',
-      //   name: 'Map type control style',
-      //   defaultValue: 'DEFAULT',
-      //   settings: {
-      //     options: [
-      //       { label: 'Default', value: 'DEFAULT' },
-      //       { label: 'Dropdown menu', value: 'DROPDOWN_MENU' },
-      //       { label: 'Horizontal bar', value: 'HORIZONTAL_BAR' },
-      //     ],
-      //   },
-      //   showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
-      //   category: ['Map controls', 'Google Maps placement'],
-      // })
-      // .addCustomEditor({
-      //   id: 'deckLighting',
-      //   path: 'deck.lighting',
-      //   name: 'Custom Lighting',
-      //   description: 'Configure deck.gl LightingEffect light sources.',
-      //   editor: LightingEditor,
-      //   defaultValue: DEFAULT_DECK_LIGHTING,
-      //   category: ['Rendering', 'Lighting'],
-      // })
-      // .addCustomEditor({
-      //   id: 'deckBlending',
-      //   path: 'deck.parameters',
-      //   name: 'Blending',
-      //   description: 'Enable GPU blending for deck.gl rendering. Layer parameters can still override this.',
-      //   editor: DeckBlendingEditor,
-      //   defaultValue: DEFAULT_DECK_PARAMETERS,
-      //   category: ['Rendering'],
-      // })
-      // .addBooleanSwitch({
-      //   path: 'deck.parameters.polygonOffsetFill',
-      //   name: 'Polygon offset fill',
-      //   defaultValue: DEFAULT_DECK_PARAMETERS.polygonOffsetFill,
-      //   category: ['Rendering', 'Depth'],
-      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      // })
-      // .addBooleanSwitch({
-      //   path: 'deck.parameters.depthWriteEnabled',
-      //   name: 'Depth write enabled',
-      //   defaultValue: DEFAULT_DECK_PARAMETERS.depthWriteEnabled,
-      //   category: ['Rendering', 'Depth'],
-      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      // })
-      // .addSelect({
-      //   path: 'deck.parameters.depthCompare',
-      //   name: 'Depth compare',
-      //   defaultValue: DEFAULT_DECK_PARAMETERS.depthCompare,
-      //   settings: { options: deckDepthCompareOptions },
-      //   category: ['Rendering', 'Depth'],
-      //   showIf: (cfg) => cfg.deck?.parameters?.blend === true,
-      // })
       ;
   });

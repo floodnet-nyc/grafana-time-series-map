@@ -1,12 +1,9 @@
-import { 
-  // useEffect, 
-  useMemo, 
-  // useRef, useState 
-} from 'react';
+import { useMemo } from 'react';
 import type { PanelData } from '@grafana/data';
 import type { Layer } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
+import type { FeaturePickingInfo } from '../layers/types';
 import {
   buildJoinedSourcePackedByLayerId,
   buildJoinedSourceValuesByLayerId,
@@ -16,10 +13,7 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from '../utils/dataframe/pipeline';
-import { 
-  type GeoFeature, dataFramesToFeatures, 
-  // geojsonToFeatures 
-} from '../utils/dataframe/toGeoJsonFeatures';
+import { type GeoFeature, dataFramesToFeatures, type GeometrySource, type FeatureSourceConfig } from '../utils/dataframe/toGeoJsonFeatures';
 
 export interface UsePanelLayersResult {
   layers: Layer[];
@@ -34,7 +28,7 @@ export function usePanelLayers(
   fromTimeMs: number,
   toTimeMs: number,
   selectedKey: string | null,
-  onFeatureClick?: (feature: Feature, info: any) => void,
+  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void,
 ): UsePanelLayersResult {
   // Feature rows are the stable upstream substrate for all selector stages below.
   const timePackedByLayerId = useMemo(() => {
@@ -80,23 +74,46 @@ export function usePanelLayers(
 
 export type PanelFeaturesByLayerId = Map<string, GeoFeature[]>;
 
+function buildFeatureSourceCacheKey(
+  featureSource: FeatureSourceConfig,
+  geometry: GeometrySource,
+  elevationField: string | undefined,
+) {
+  return JSON.stringify([featureSource.refId ?? '', featureSource.id, geometry, elevationField ?? '']);
+}
+
 export function usePanelFeatures(data: PanelData, options: MapPanelOptions): PanelFeaturesByLayerId {
-  
   const featuresByLayerId = useMemo(() => {
-    const featuresByLayerId = new Map<string, GeoFeature[]>();
+    const featuresByLayer = new Map<string, GeoFeature[]>();
+    const featuresBySourceKey = new Map<string, GeoFeature[]>();
 
     for (const layerConfig of options.layers) {
-      const features = dataFramesToFeatures(
-        data.series,
-        layerConfig.data.featureSource.refId,
-        layerConfig.geometry,
-        (layerConfig.settings as any)?.field?.field,
-        layerConfig.data.featureSource.id,
-      );
-      featuresByLayerId.set(layerConfig.id, features);
+      const elevationField =
+        typeof layerConfig.settings === 'object' &&
+        layerConfig.settings !== null &&
+        'field' in layerConfig.settings &&
+        typeof layerConfig.settings.field === 'object' &&
+        layerConfig.settings.field !== null &&
+        'field' in layerConfig.settings.field &&
+        typeof layerConfig.settings.field.field === 'string'
+          ? layerConfig.settings.field.field
+          : undefined;
+      const cacheKey = buildFeatureSourceCacheKey(layerConfig.data.featureSource, layerConfig.geometry, elevationField);
+      const cachedFeatures = featuresBySourceKey.get(cacheKey);
+      const features =
+        cachedFeatures ??
+        dataFramesToFeatures(
+          data.series,
+          layerConfig.data.featureSource.refId,
+          layerConfig.geometry,
+          elevationField,
+          layerConfig.data.featureSource.id,
+        );
+      featuresBySourceKey.set(cacheKey, features);
+      featuresByLayer.set(layerConfig.id, features);
     }
 
-    return featuresByLayerId;
+    return featuresByLayer;
   }, [data.series, options.layers]);
 
   return featuresByLayerId;

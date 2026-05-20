@@ -14,8 +14,18 @@ function getJoinedSources(layerConfig: LayerConfig): JoinedSourceConfig[] {
   return layerConfig.data.joinedSources ?? [];
 }
 
+function buildJoinedSourcePackedCacheKey(joinedSource: JoinedSourceConfig) {
+  return JSON.stringify([
+    joinedSource.refId,
+    joinedSource.join.type,
+    joinedSource.join.remoteKey,
+    joinedSource.join.time,
+  ]);
+}
+
 export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], series: DataFrame[]) {
   const packedByLayerId = new Map<string, Map<string, PackedLookupEntry>>();
+  const packedBySourceKey = new Map<string, PackedLookupEntry>();
 
   for (const layerConfig of layerConfigs) {
     const joinedSources = getJoinedSources(layerConfig);
@@ -30,18 +40,27 @@ export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], se
         continue;
       }
 
-      const features = dataFramesToFeatures(series, joinedSource.refId, { type: 'none' }, undefined);
-      packedBySourceId.set(joinedSource.id, {
-        features,
-        packed: buildPackedFromAccessors(
-          features.length,
-          (index) => features[index].properties?.[joinedSource.join.remoteKey] ?? '',
-          (index) => {
-            const raw = features[index].properties?.[joinedSource.join.time];
-            return raw instanceof Date ? raw.getTime() : Number(raw);
-          },
-        ),
-      });
+      const cacheKey = buildJoinedSourcePackedCacheKey(joinedSource);
+      const cachedEntry = packedBySourceKey.get(cacheKey);
+      const packedEntry =
+        cachedEntry ??
+        (() => {
+          const features = dataFramesToFeatures(series, joinedSource.refId, { type: 'none' }, undefined);
+          return {
+            features,
+            packed: buildPackedFromAccessors(
+              features.length,
+              (index) => features[index].properties?.[joinedSource.join.remoteKey] ?? '',
+              (index) => {
+                const raw = features[index].properties?.[joinedSource.join.time];
+                return raw instanceof Date ? raw.getTime() : Number(raw);
+              },
+            ),
+          };
+        })();
+
+      packedBySourceKey.set(cacheKey, packedEntry);
+      packedBySourceId.set(joinedSource.id, packedEntry);
     }
 
     if (packedBySourceId.size > 0) {

@@ -1,19 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ScreenshotWidget } from '@deck.gl/widgets';
 import type { MapProviderProps, ViewportSnapshot, WidgetCallbacks, WidgetViewStateChange } from './types';
+import { resolveMapInstance, type ControlledViewportChangeEvent, type MapRefLike } from './types';
+import type { ResetViewState } from '../../widgets/types';
 import type { MapThemeMode } from 'types';
 
-interface MapProviderAdapter {
-  applyViewState: (map: unknown, change: WidgetViewStateChange) => void;
-  captureScreenshot?: (map: unknown) => Promise<string | undefined>;
-  /** Transform the raw DeckGL viewState change event before extracting the viewport.
-   *  When defined, receives the full DeckGL event `{ viewState, ... }` and must
-   *  return a functionally-equivalent object with the same shape. */
-  limitViewState?: (event: any) => any;
+export interface MapProviderAdapter<TMap, TControlledEvent = ControlledViewportChangeEvent, TMoveEndEvent = ControlledViewportChangeEvent> {
+  applyViewState: (map: TMap, change: WidgetViewStateChange) => void;
+  captureScreenshot?: (map: TMap) => Promise<string | undefined>;
+  limitViewState?: (event: TControlledEvent) => TControlledEvent;
+  getViewport: (event: TControlledEvent | TMoveEndEvent | ViewportSnapshot) => ViewportSnapshot;
 }
 
-export function useMapProviderState(
+export function useMapProviderState<TMap, TControlledEvent = ControlledViewportChangeEvent, TMoveEndEvent = TControlledEvent>(
   props: MapProviderProps,
-  adapter: MapProviderAdapter,
+  adapter: MapProviderAdapter<TMap, TControlledEvent, TMoveEndEvent>,
 ) {
   const { options, widgetCallbacks, initialViewState, onViewportChange } = props;
   const interactions = options.basemap.interactions ?? {};
@@ -25,20 +26,20 @@ export function useMapProviderState(
   );
 
   const handleViewStateChange = useCallback(
-    (e: any) => {
+    (e: TControlledEvent) => {
       const event = adapter.limitViewState ? adapter.limitViewState(e) : e;
-      const vs: ViewportSnapshot = event.viewState ?? event;
+      const vs = adapter.getViewport(event);
       setViewState(vs);
       onViewportChange?.(vs);
     },
     [onViewportChange, adapter],
   );
 
-  const handleFitViewState = useCallback((next: object) => {
-    setViewState((prev: any) => ({ ...prev, ...next }));
+  const handleFitViewState = useCallback((next: WidgetViewStateChange) => {
+    setViewState((prev) => ({ ...prev, ...next }));
   }, []);
 
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRefLike<TMap> | null>(null);
 
   const handleWidgetViewStateChange = useCallback(
     (next: WidgetViewStateChange) => {
@@ -46,7 +47,7 @@ export function useMapProviderState(
         setViewState((prev) => applyWidgetViewStateChange(prev, next));
         return;
       }
-      const map = mapRef.current?.getMap?.() ?? mapRef.current;
+      const map = resolveMapInstance(mapRef.current);
       if (!map) {
         return;
       }
@@ -56,18 +57,18 @@ export function useMapProviderState(
   );
 
   const handleMoveEnd = useCallback(
-    (e: any) => {
-      onViewportChange?.(e.viewState ?? e.detail ?? e);
+    (e: TMoveEndEvent) => {
+      onViewportChange?.(adapter.getViewport(e));
     },
-    [onViewportChange],
+    [adapter, onViewportChange],
   );
 
   const handleScreenshotCapture = useCallback(
-    async (widget: any) => {
+    async (widget: ScreenshotWidget) => {
       if (!adapter.captureScreenshot) {
         return;
       }
-      const map = mapRef.current?.getMap?.() ?? mapRef.current;
+      const map = resolveMapInstance(mapRef.current);
       if (!map) {
         return;
       }
@@ -151,7 +152,7 @@ export function useProviderWidgetCallbacks({
 }: {
   widgetCallbacks?: WidgetCallbacks;
   onViewStateChange: (next: WidgetViewStateChange) => void;
-  resetViewState?: WidgetViewStateChange;
+  resetViewState?: ResetViewState;
   themeMode: 'light' | 'dark';
   onThemeModeChange: (mode: 'light' | 'dark') => void;
   screenshot?: WidgetCallbacks['screenshot'];
@@ -180,4 +181,3 @@ export function resolveInitialThemeMode(mode: MapThemeMode | undefined): 'light'
 
   return 'light';
 }
-

@@ -1,7 +1,7 @@
 import type { LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import type { BaseLayerConfig, LayerRenderContext, LayerSettingsObject } from './types';
+import type { BaseLayerConfig, FeaturePickingInfo, LayerRenderContext, LayerSettingsObject } from './types';
 import type { SourceRef } from '../types';
 
 type LayerFeature = Feature & { __idx: number };
@@ -17,7 +17,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
   onFeatureClick,
 }: LayerRenderContext<TLayerConfig>) {
   return {
-    config: config,
+    config,
     id: `${config.type}/${config.id}`,
     data: features,
     visible: config.visible,
@@ -29,7 +29,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
     // Feature Click Handler
     onClick: (
       onFeatureClick && (config.pickable ?? true) ? 
-        (info: { object?: Feature }) => info.object && onFeatureClick(info.object, info) 
+        (info: FeaturePickingInfo<TLayerConfig>, _event: unknown) => info.object && onFeatureClick(info.object, info) 
         : undefined
     ),
 

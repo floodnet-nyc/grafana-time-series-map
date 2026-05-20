@@ -1,20 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import Map, { type ControlPosition } from 'react-map-gl/maplibre';
+import Map, { type ControlPosition, type MapRef, type ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox';
-import type { Widget, WidgetPlacement } from '@deck.gl/core';
-import type { MapProviderProps, WidgetViewStateChange } from '../types';
+import type { MapViewState, ViewStateChangeParameters, Widget, WidgetPlacement } from '@deck.gl/core';
+import type { FitBounds, MapProviderProps, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
-import { MapFitBounds } from '../MapFitBounds';
+import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getMaplibreStyleUrl } from './style';
 import { resolveMaplibreNativeControls } from '../../../widgets/_all';
-import { useMapProviderState } from '../useMapProviderState';
+import { useMapProviderState, type MapProviderAdapter } from '../useMapProviderState';
+import { resolveMapInstance } from '../types';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-function applyMaplibreViewState(map: unknown, next: WidgetViewStateChange) {
-  const m = map as MapLibreMap;
+function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
+  const m = map;
   const camera: Parameters<MapLibreMap['easeTo']>[0] = {
     duration: typeof next.transitionDuration === 'number' ? next.transitionDuration : 300,
   };
@@ -33,8 +34,8 @@ function applyMaplibreViewState(map: unknown, next: WidgetViewStateChange) {
   m.easeTo(camera);
 }
 
-async function captureMaplibreScreenshot(map: unknown): Promise<string | undefined> {
-  const m = map as MapLibreMap;
+async function captureMaplibreScreenshot(map: MapLibreMap): Promise<string | undefined> {
+  const m = map;
   return new Promise((resolve) => {
     m.once('render', () => {
       resolve(m.getCanvas().toDataURL());
@@ -79,6 +80,20 @@ function createDeckWidgetControl(widget: Widget) {
 
 export default function MaplibreMap(props: MapProviderProps) {
   const { width, height, options, layers } = props;
+  const viewportAdapter: MapProviderAdapter<MapLibreMap, ViewStateChangeParameters<MapViewState>, ViewStateChangeEvent> = useMemo(() => ({
+    applyViewState: applyMaplibreViewState,
+    captureScreenshot: captureMaplibreScreenshot,
+    getViewport: (event) => {
+      const viewState = 'viewState' in event ? event.viewState : event;
+      return {
+        latitude: viewState.latitude,
+        longitude: viewState.longitude,
+        zoom: viewState.zoom,
+        bearing: viewState.bearing ?? 0,
+        pitch: viewState.pitch ?? 0,
+      };
+    },
+  }), []);
 
   const {
     controller,
@@ -89,18 +104,18 @@ export default function MaplibreMap(props: MapProviderProps) {
     handleMoveEnd,
     mapRef,
     mergedCallbacks,
-  } = useMapProviderState(props, {
-    applyViewState: applyMaplibreViewState,
-    captureScreenshot: captureMaplibreScreenshot,
-  });
+  } = useMapProviderState(props, viewportAdapter);
 
   // Sync ref-based map instance into state for reactive hooks.
   // Re-syncs after each render — safe because setState with the
   // same value is a no-op.
   const [maplibreMap, setMaplibreMap] = useState<MapLibreMap | undefined>();
+  const mapElementRef = React.useRef<MapRef | null>(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    setMaplibreMap(mapRef.current?.getMap?.());
+    const map = mapElementRef.current?.getMap();
+    mapRef.current = mapElementRef.current;
+    setMaplibreMap(map);
   });
 
   const styleUrl = useMemo(
@@ -115,11 +130,11 @@ export default function MaplibreMap(props: MapProviderProps) {
   const widgetAdapter: WidgetControlAdapter<Widget, DeckWidgetControl> = useMemo(() => ({
     createControl: (widget) => createDeckWidgetControl(widget),
     mountControl: (control) => {
-      const m = mapRef.current?.getMap?.();
+      const m = resolveMapInstance(mapRef.current);
       m?.addControl(control as any, maplibrePlacement(control.widgetRef.placement));
     },
     unmountControl: (control) => {
-      const m = mapRef.current?.getMap?.();
+      const m = resolveMapInstance(mapRef.current);
       m?.removeControl(control as any);
     },
     matches: (control, widget) => control.matches(widget),
@@ -130,15 +145,15 @@ export default function MaplibreMap(props: MapProviderProps) {
   useWidgetControls(maplibreMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
   const nativeMaplibreControls = useMemo(() => resolveMaplibreNativeControls(options.widgets ?? []), [options.widgets]);
 
-  const fitBoundsProps = useMemo(() => ({
+  const fitBoundsProps = useMemo<Omit<MapFitBoundsProps<MapLibreMap>, 'onViewState' | 'map'>>(() => ({
     disabled: Boolean(props.initialViewFromHash),
     fitBounds: props.fitBounds,
     fitRequestId: props.fitRequestId,
     options,
-    fitBoundsToMap: (map: unknown, bounds: any, fitOpts: any) =>
-      (map as MapLibreMap).fitBounds(bounds, { ...fitOpts, duration: 800 }),
-    getContainerSize: (map: unknown) => {
-      const c = (map as MapLibreMap).getContainer();
+    fitBoundsToMap: (map: MapLibreMap, bounds: FitBounds, fitOpts) =>
+      map.fitBounds(bounds, { ...fitOpts, duration: 800 }),
+    getContainerSize: (map: MapLibreMap) => {
+      const c = map.getContainer();
       return { width: c.clientWidth, height: c.clientHeight };
     },
   }), [props.initialViewFromHash, props.fitBounds, props.fitRequestId, options]);
@@ -164,7 +179,7 @@ export default function MaplibreMap(props: MapProviderProps) {
     return (
       <div style={{ width, height }}>
         <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
-          <Map {...mapProps} ref={mapRef}>
+          <Map {...mapProps} ref={mapElementRef}>
             {children}
           </Map>
         </DeckGL>
@@ -173,7 +188,7 @@ export default function MaplibreMap(props: MapProviderProps) {
   }
 
   return (
-    <Map ref={mapRef} {...mapProps} initialViewState={props.initialViewState} onMoveEnd={handleMoveEnd}>
+    <Map ref={mapElementRef} {...mapProps} initialViewState={props.initialViewState} onMoveEnd={handleMoveEnd}>
       <DeckOverlay deckProps={deckProps as DeckGLProps} maplibreMap={maplibreMap} />
       {children}
     </Map>

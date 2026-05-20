@@ -10,7 +10,7 @@ import type { Feature } from 'geojson';
 import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 import { MessageWidget, MessageWidgetProps } from '../custom/message-widget';
-import { StreetViewWidget, StreetViewWidgetProps } from '../custom/street-view-widget';
+import { StreetViewWidget, type StreetViewWidgetProps } from '../../modules/street-view';
 
 type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
 type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;

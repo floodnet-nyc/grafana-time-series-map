@@ -14,6 +14,22 @@ export interface ViewportSnapshot {
 
 export type FitBounds = [[number, number], [number, number]];
 
+export type MapRefLike<TMap> = TMap | { getMap?: () => TMap | undefined };
+
+export interface ControlledViewportChangeEvent {
+  viewState: ViewportSnapshot;
+}
+
+export function resolveMapInstance<TMap>(mapRef: MapRefLike<TMap> | null | undefined): TMap | null {
+  if (!mapRef) {
+    return null;
+  }
+  if (typeof mapRef === 'object' && 'getMap' in mapRef && typeof mapRef.getMap === 'function') {
+    return mapRef.getMap() ?? null;
+  }
+  return mapRef as TMap;
+}
+
 export type DeckTooltipContent =
   | string
   | {

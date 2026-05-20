@@ -1,4 +1,4 @@
-import type { AccessorFunction, Layer } from '@deck.gl/core';
+import type { AccessorFunction, Layer, PickingInfo } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type {
   ColorScaleConfig,
@@ -52,6 +52,15 @@ export type TypedGetAccessorFunction<O> = <T extends Feature = Feature>(
   defaultValue?: O
 ) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
 
+export type LayerWithConfig<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Layer & {
+  props: Layer['props'] & { config?: TLayerConfig };
+};
+
+export type FeaturePickingInfo<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Partial<PickingInfo<Feature>> & {
+  object?: Feature;
+  layer?: LayerWithConfig<TLayerConfig> | null;
+};
+
 export interface GetAccessorFunctions {
   number: TypedGetAccessorFunction<number>;
   array: TypedGetAccessorFunction<unknown[]>;
@@ -71,8 +80,8 @@ export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = Layer
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;
   selectedKey?: string | null;
-  onFeatureClick?: (feature: Feature, info: unknown) => void;
-  onFeatureHover?: (feature: Feature | null, info: unknown) => void;
+  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo<TLayerConfig>) => void;
+  onFeatureHover?: (feature: Feature | null, info: FeaturePickingInfo<TLayerConfig>) => void;
   getAccessor: GetAccessorFunction;
   getAccessors: GetAccessorFunctions;
 }

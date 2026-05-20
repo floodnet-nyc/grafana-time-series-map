@@ -119,7 +119,7 @@ describe('layer utils', () => {
     expect(commonProps.pickable).toBe(true);
     expect(commonProps.getFilterValue?.(feature as Feature & { __idx: number })).toBe(1);
 
-    commonProps.onClick?.({ object: feature });
+    commonProps.onClick?.({ object: feature }, undefined);
 
     expect(clicked).toEqual([feature]);
   });

@@ -15,6 +15,7 @@ import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
 import { buildCurrentLocationLayers, type CurrentLocationState } from '../layers/current-location/currentLocationLayers';
+import type { FeaturePickingInfo } from '../layers/types';
 import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
@@ -64,9 +65,9 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const [currentLocation, setCurrentLocation] = useState<CurrentLocationState | null>(null);
 
   const onFeatureClick = useCallback(
-    (feature: Feature, info: any) => {
-      const keyField = info.layer.props.config?.selectionKey;
-      const featureSourceId = info.layer.props.config?.data?.featureSource?.id;
+    (feature: Feature, info: FeaturePickingInfo) => {
+      const keyField = info.layer?.props.config?.selectionKey;
+      const featureSourceId = info.layer?.props.config?.data?.featureSource?.id;
       if (!keyField?.field || keyField.source !== featureSourceId) { return; }
       const key = String(feature.properties?.[keyField.field] ?? '');
       if (!key) { return; }

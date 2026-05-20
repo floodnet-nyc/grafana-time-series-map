@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { WebMercatorViewport, FlyToInterpolator } from '@deck.gl/core';
 import type { MapPanelOptions } from '../../types';
 import type { FitBounds, ViewportSnapshot } from './types';
+import type { WidgetViewStateChange } from '../../widgets/types';
 
 import type { MapHashView } from 'hooks/useMapHashRoute';
 
@@ -38,7 +39,7 @@ export function getInitialViewport(options: MapPanelOptions, hashView?: MapHashV
   return getManualViewport(options);
 }
 
-export interface MapFitBoundsProps {
+export interface MapFitBoundsProps<TMap> {
   disabled: boolean;
   fitBounds?: FitBounds;
   fitRequestId?: number;
@@ -46,16 +47,16 @@ export interface MapFitBoundsProps {
   /** Provided in DeckGL controller mode. Computes the target viewport and
    *  calls this callback instead of calling map.fitBounds() directly (which would
    *  conflict with DeckGL's viewport ownership). */
-  onViewState?: (viewState: object) => void;
+  onViewState?: (viewState: WidgetViewStateChange) => void;
   /** The map instance, may be null until mount. */
-  map?: unknown;
+  map?: TMap | null;
   /** Provider-specific: fit bounds on the map. */
-  fitBoundsToMap: (map: unknown, bounds: FitBounds, fitBoundsOptions: { padding: number; maxZoom?: number }) => void;
+  fitBoundsToMap: (map: TMap, bounds: FitBounds, fitBoundsOptions: { padding: number; maxZoom?: number }) => void;
   /** Provider-specific: get the container dimensions for deck viewport calc. */
-  getContainerSize: (map: unknown) => { width: number; height: number } | null;
+  getContainerSize: (map: TMap) => { width: number; height: number } | null;
 }
 
-export function MapFitBounds({
+export function MapFitBounds<TMap>({
   disabled,
   fitBounds,
   fitRequestId,
@@ -64,7 +65,7 @@ export function MapFitBounds({
   map,
   fitBoundsToMap,
   getContainerSize,
-}: MapFitBoundsProps) {
+}: MapFitBoundsProps<TMap>) {
   const prevFitBoundsRef = useRef<string | null>(null);
   const prevFitRequestRef = useRef<number>(0);
   const fitBoundsOptions = getFitBoundsOptions(options);

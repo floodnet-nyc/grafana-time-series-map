@@ -1,18 +1,29 @@
 import React, { useEffect, useMemo } from 'react';
 import { APIProvider, Map, limitTiltRange, useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
-import type { Widget, WidgetPlacement } from '@deck.gl/core';
+import type { MapViewState, ViewStateChangeParameters, Widget, WidgetPlacement } from '@deck.gl/core';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
+import type { FitBounds } from '../types';
+import type { MapFitBoundsProps } from '../MapFitBounds';
 import type { MapProviderProps, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
 import { MapFitBounds } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getGoogleColorScheme } from './controlMappings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
-import { useMapProviderState } from '../useMapProviderState';
+import { useMapProviderState, type MapProviderAdapter } from '../useMapProviderState';
 
-function applyGoogleViewState(map: unknown, next: WidgetViewStateChange) {
-  const m = map as google.maps.Map;
+interface GoogleCameraChangedEvent {
+  detail: {
+    center: google.maps.LatLngLiteral;
+    zoom: number;
+    heading: number;
+    tilt: number;
+  };
+}
+
+function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange) {
+  const m = map;
   const cameraOptions: google.maps.CameraOptions = {};
   const currentCenter = m.getCenter();
   const currentZoom = m.getZoom();
@@ -114,6 +125,29 @@ export default function GoogleMap(props: MapProviderProps) {
 function GoogleMapInner(props: MapProviderProps) {
   const { width, height, options, layers } = props;
   const googleMap = useMap();
+  const viewportAdapter: MapProviderAdapter<google.maps.Map, ViewStateChangeParameters<MapViewState>, GoogleCameraChangedEvent> = useMemo(() => ({
+    applyViewState: applyGoogleViewState,
+    limitViewState: limitTiltRange,
+    getViewport: (event) => {
+      if ('detail' in event) {
+        return {
+          latitude: event.detail.center.lat,
+          longitude: event.detail.center.lng,
+          zoom: event.detail.zoom,
+          bearing: event.detail.heading,
+          pitch: event.detail.tilt,
+        };
+      }
+      const viewState = 'viewState' in event ? event.viewState : event;
+      return {
+        latitude: viewState.latitude,
+        longitude: viewState.longitude,
+        zoom: viewState.zoom,
+        bearing: viewState.bearing ?? 0,
+        pitch: viewState.pitch ?? 0,
+      };
+    },
+  }), []);
 
   const {
     controller,
@@ -124,10 +158,7 @@ function GoogleMapInner(props: MapProviderProps) {
     mapRef,
     themeMode,
     mergedCallbacks,
-  } = useMapProviderState(props, {
-    applyViewState: applyGoogleViewState,
-    limitViewState: limitTiltRange,
-  });
+  } = useMapProviderState(props, viewportAdapter);
 
   // Sync Google map to the hook's ref so widget callbacks can access it.
   useEffect(() => { mapRef.current = googleMap; });
@@ -159,13 +190,13 @@ function GoogleMapInner(props: MapProviderProps) {
     defaultTilt: props.initialViewState?.pitch ?? 0,
   };
 
-  const fitBoundsProps = {
+  const fitBoundsProps: Omit<MapFitBoundsProps<google.maps.Map>, 'onViewState' | 'map'> = {
     disabled: Boolean(props.initialViewFromHash),
     fitBounds: props.fitBounds,
     fitRequestId: props.fitRequestId,
     options,
-    fitBoundsToMap: (map: unknown, bounds: any, fitOpts: any) => {
-      const m = map as google.maps.Map;
+    fitBoundsToMap: (map: google.maps.Map, bounds: FitBounds, fitOpts) => {
+      const m = map;
       const lb = new google.maps.LatLngBounds(
         { lat: bounds[0][1], lng: bounds[0][0] },
         { lat: bounds[1][1], lng: bounds[1][0] },
@@ -176,8 +207,8 @@ function GoogleMapInner(props: MapProviderProps) {
         m.setZoom(fitOpts.maxZoom);
       }
     },
-    getContainerSize: (map: unknown) => {
-      const div = (map as google.maps.Map).getDiv();
+    getContainerSize: (map: google.maps.Map) => {
+      const div = map.getDiv();
       return { width: div.clientWidth, height: div.clientHeight };
     },
   };
@@ -221,15 +252,7 @@ function GoogleMapInner(props: MapProviderProps) {
       controlSize={25}
       {...googleControlProps}
       tiltInteractionEnabled={options.basemap.interactions?.rollEnabled}
-      onCameraChanged={(event: any) => {
-        props.onViewportChange?.({
-          latitude: event.detail.center.lat,
-          longitude: event.detail.center.lng,
-          zoom: event.detail.zoom,
-          bearing: event.detail.heading,
-          pitch: event.detail.tilt,
-        });
-      }}
+      onCameraChanged={(event: GoogleCameraChangedEvent) => props.onViewportChange?.(viewportAdapter.getViewport(event))}
     >
       <DeckOverlay deckProps={deckProps as DeckGLProps} googleMap={googleMap ?? undefined} />
       {children}
