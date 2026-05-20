@@ -86,7 +86,7 @@
     "@floating-ui/dom": "^1.7.6",
     "@floodnet/deck.gl-time-cog-layer": "^0.2.10",
     "@grafana/data": "12.4.2",
-    "@grafana/i18n": "12.4.2",
+    "@grafana/i18n": "13.0.1",
     "@grafana/runtime": "12.4.2",
     "@grafana/schema": "12.4.2",
     "@grafana/ui": "12.4.2",
