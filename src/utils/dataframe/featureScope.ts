@@ -1,7 +1,6 @@
 import type { LayerConfig } from 'layers';
 import type { SourceRef } from '../../types';
-import type { LayerTable } from './layerTable';
-import { getRowProperties, getRowValue } from './layerTable';
+import { getRowProperties, getRowValue, type LayerTable } from './layerTable';
 
 function getSourceRefValue(table: LayerTable, index: number, ref: SourceRef | undefined, derived?: Record<string, unknown>) {
   if (!ref?.field) {
