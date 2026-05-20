@@ -198,7 +198,7 @@ function FeatureSourceEditor({
         <>
           <Field label="Time field">
             <SourceRefEditor
-              value={timeFilter.time}
+              value={timeFilter.time?.field}
               onChange={(value) => patchTimeFilter({ time: value })}
               sourceOptions={sourceOptions}
               fieldsBySource={{ [featureSource.id]: featureSourceFields }}
@@ -207,10 +207,11 @@ function FeatureSourceEditor({
           </Field>
           <Field label="Group-by field">
             <SourceRefEditor
-              value={timeFilter.groupBy}
+              value={timeFilter.groupBy?.field}
               onChange={(value) => patchTimeFilter({ groupBy: value })}
               sourceOptions={sourceOptions}
               fieldsBySource={{ [featureSource.id]: featureSourceFields }}
+              sourceId={featureSource.id}
             />
           </Field>
           <Field label="Max lag (ms)">

@@ -16,7 +16,7 @@ import {
   // splitterWidgetDefinition 
 } from './view';
 import { 
-  contextMenuWidgetDefinition, 
+  // contextMenuWidgetDefinition, 
   infoWidgetDefinition, 
   popupWidgetDefinition, 
   welcomeWidgetDefinition
@@ -33,7 +33,7 @@ import {
   statsWidgetDefinition, 
   themeWidgetDefinition 
 } from './utility';
-import type { BlankWidgetConfig, WidgetCallbacks } from './types';
+import type { BlankWidgetConfig, GoogleNativeControlProps, WidgetCallbacks } from './types';
 import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
 import './deckgl-widgets-stylesheet-do-not-edit.css';
 import './styles.css';
@@ -54,7 +54,7 @@ export const widgetDefinitions = [
   fullscreenWidgetDefinition,
   // splitterWidgetDefinition,
   // Information
-  contextMenuWidgetDefinition,
+  // contextMenuWidgetDefinition,
   infoWidgetDefinition,
   popupWidgetDefinition,
   // Control
@@ -86,8 +86,8 @@ export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbac
   });
 }
 
-export function resolveGoogleNativeProps(configs: WidgetConfig[]): Record<string, unknown> {
-  const props: Record<string, unknown> = {};
+export function resolveGoogleNativeProps(configs: WidgetConfig[]): Partial<GoogleNativeControlProps> {
+  const props: Partial<GoogleNativeControlProps> = {};
   for (const config of configs) {
     if (!config.visible || !config.native) continue;
     const def = widgetDefinitions.find((d) => d.type === config.type);
