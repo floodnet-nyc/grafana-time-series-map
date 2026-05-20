@@ -33,6 +33,7 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   maxZoom?: number;
   pickable?: boolean;
   selectionKey?: SourceRef;
+  selectionColor?: [number, number, number, number];
   shader?: ShaderConfig;
   extensions?: LayerExtensionInstance[];
 }

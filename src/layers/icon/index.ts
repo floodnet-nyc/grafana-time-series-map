@@ -118,7 +118,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
     const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
-    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected);
+    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected, config.selectionColor);
 
     const commonProps = createCommonLayerProps(context);
     const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);

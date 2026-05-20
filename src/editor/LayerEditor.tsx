@@ -22,6 +22,7 @@ import { DataEditor } from './DataEditor';
 import { SelectableListEditor } from './utils/SelectableListEditor';
 import { useSelectableListState } from './utils/useSelectableListState';
 import { SourceRefEditor } from './utils/SourceRefEditor';
+import { DEFAULT_SELECTED_COLOR } from '../layers/utils';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 24;
@@ -240,6 +241,12 @@ export function LayerEditor({
         </div>
         <Field label="Opacity">
           <Slider value={layer.opacity} min={0} max={1} step={0.01} onChange={(value) => patch({ opacity: Number(value) })} inputId="opacity" />
+        </Field>
+        <Field label="Selection color">
+          <ColorPicker
+            color={rgbaToHex(layer.selectionColor ?? DEFAULT_SELECTED_COLOR)}
+            onChange={(hex) => patch({ selectionColor: hexToRgba(hex) })}
+          />
         </Field>
 
         <Field label="Zoom range">

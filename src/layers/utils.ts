@@ -7,7 +7,7 @@ import type { SourceRef } from '../types';
 type LayerFeature = Feature & { __idx: number };
 type ElevationSettings = { elevation?: SourceRef; elevationScale?: number; depthTest?: boolean };
 
-const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
+export const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
 
 
 
@@ -110,11 +110,14 @@ export function createSelectionColorAccessor(
   return isSelected ? (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected?.(feature, ctx) ? selectedColor : baseColor(feature, ctx)) : baseColor;
 }
 
-export function createLineSelectionAccessors(isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean) {
+export function createLineSelectionAccessors(
+  isSelected?: (feature: Feature, ctx: AccessorContext<Feature>) => boolean,
+  selectedColor: [number, number, number, number] = DEFAULT_SELECTED_COLOR,
+) {
   return {
     getLineColor: (feature: Feature, ctx: AccessorContext<Feature>): [number, number, number, number] =>
       isSelected?.(feature, ctx)
-          ? DEFAULT_SELECTED_COLOR
+          ? selectedColor
         : ([200, 200, 240, 200] as [number, number, number, number]),
     getLineWidth: (feature: Feature, ctx: AccessorContext<Feature>) => (isSelected ? (isSelected?.(feature, ctx) ? 3 : 1) : 2),
   };
