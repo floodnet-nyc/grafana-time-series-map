@@ -140,7 +140,7 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
       {/* TODO: customize options e.g. cameraControlOptions */}
       {currentDefinition?.editorSections.map((section, index) => (
         <React.Fragment key={section.title ?? index}>
-          <h6>{section.title}</h6>
+          {section.title && <h6>{section.title}</h6>}
         {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
         </React.Fragment>
         // <CollapsableSection key={section.title ?? index} label={section.title ?? ''} isOpen>

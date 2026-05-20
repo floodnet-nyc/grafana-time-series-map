@@ -71,7 +71,7 @@ export interface LayerOptionField {
 }
 
 export interface LayerEditorSection {
-  title: string;
+  title?: string;
   fields: LayerOptionField[];
 }
 

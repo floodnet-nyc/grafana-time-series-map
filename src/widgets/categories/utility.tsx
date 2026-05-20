@@ -29,7 +29,6 @@ export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Loading',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Loading' },
@@ -52,7 +51,6 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
   }),
   editorSections: [
     {
-      title: 'Screenshot',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Screenshot' },
@@ -84,7 +82,6 @@ export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Stats',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
         {
@@ -120,7 +117,6 @@ export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Theme',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
         // { key: 'lightModeLabel', label: 'Light mode tooltip', type: 'string', defaultValue: 'Light mode' },

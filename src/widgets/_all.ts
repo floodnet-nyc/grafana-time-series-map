@@ -19,7 +19,7 @@ import {
   // contextMenuWidgetDefinition, 
   infoWidgetDefinition, 
   popupWidgetDefinition, 
-  welcomeWidgetDefinition
+  messageWidgetDefinition,
 } from './categories/information';
 import { 
   // iconWidgetDefinition, 
@@ -67,7 +67,7 @@ export const widgetDefinitions = [
   screenshotWidgetDefinition,
   statsWidgetDefinition,
   themeWidgetDefinition,
-  welcomeWidgetDefinition,
+  messageWidgetDefinition,
 ] as const;
 
 export type WidgetType = (typeof widgetDefinitions)[number]['type'] | '';
