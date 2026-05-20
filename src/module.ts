@@ -14,33 +14,6 @@ import { VariableSelectEditor } from './editor/utils/VariableSelectEditor';
 // import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';
 
-const googleControlPositions = [
-  { label: 'Start top', value: 'INLINE_START_BLOCK_START' },
-  { label: 'Start center', value: 'INLINE_START_BLOCK_CENTER' },
-  { label: 'Start bottom', value: 'INLINE_START_BLOCK_END' },
-  { label: 'End top', value: 'INLINE_END_BLOCK_START' },
-  { label: 'End center', value: 'INLINE_END_BLOCK_CENTER' },
-  { label: 'End bottom', value: 'INLINE_END_BLOCK_END' },
-  { label: 'Top start', value: 'BLOCK_START_INLINE_START' },
-  { label: 'Top center (logical)', value: 'BLOCK_START_INLINE_CENTER' },
-  { label: 'Top end', value: 'BLOCK_START_INLINE_END' },
-  { label: 'Bottom start', value: 'BLOCK_END_INLINE_START' },
-  { label: 'Bottom center (logical)', value: 'BLOCK_END_INLINE_CENTER' },
-  { label: 'Bottom end', value: 'BLOCK_END_INLINE_END' },
-  { label: 'Top left', value: 'TOP_LEFT' },
-  { label: 'Top center', value: 'TOP_CENTER' },
-  { label: 'Top right', value: 'TOP_RIGHT' },
-  { label: 'Left top', value: 'LEFT_TOP' },
-  { label: 'Left center', value: 'LEFT_CENTER' },
-  { label: 'Left bottom', value: 'LEFT_BOTTOM' },
-  { label: 'Right top', value: 'RIGHT_TOP' },
-  { label: 'Right center', value: 'RIGHT_CENTER' },
-  { label: 'Right bottom', value: 'RIGHT_BOTTOM' },
-  { label: 'Bottom left', value: 'BOTTOM_LEFT' },
-  { label: 'Bottom center', value: 'BOTTOM_CENTER' },
-  { label: 'Bottom right', value: 'BOTTOM_RIGHT' },
-];
-
 export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
   .setNoPadding()
   // .useFieldConfig({
@@ -424,21 +397,6 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
       //   showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.mapTypeControl === true,
       //   category: ['Map controls', 'Google Maps placement'],
       // })
-      .addBooleanSwitch({
-        path: 'basemap.google.streetViewControl',
-        name: 'Street View control',
-        defaultValue: false,
-        showIf: (cfg) => cfg.basemap?.provider === 'google',
-        category: ['Map controls', 'Google Maps controls'],
-      })
-      .addSelect({
-        path: 'basemap.google.streetViewControlPosition',
-        name: 'Street View control position',
-        defaultValue: 'RIGHT_BOTTOM',
-        settings: { options: googleControlPositions },
-        showIf: (cfg) => cfg.basemap?.provider === 'google' && cfg.basemap?.google?.streetViewControl === true,
-        category: ['Map controls', 'Google Maps placement'],
-      })
       // .addCustomEditor({
       //   id: 'deckLighting',
       //   path: 'deck.lighting',

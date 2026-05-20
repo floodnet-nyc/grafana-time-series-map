@@ -28,8 +28,6 @@ type GoogleMapControlProps = Pick<
   | 'rotateControlOptions'
   | 'mapTypeControl'
   | 'mapTypeControlOptions'
-  | 'streetViewControl'
-  | 'streetViewControlOptions'
 >;
 
 function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange) {
@@ -149,10 +147,6 @@ function GoogleMapInner({
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
       style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-    },
-    streetViewControl: controlSettings.google.streetViewControl ?? false,
-    streetViewControlOptions: {
-      position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM'),
     },
   }), [googleNativeProps, controlSettings]);
 

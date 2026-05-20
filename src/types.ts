@@ -206,10 +206,8 @@ export interface GoogleMapOptions {
   apiKey?: string;
   mapId?: string;
   mapTypeControl?: boolean;
-  streetViewControl?: boolean;
   mapTypeControlPosition?: GoogleControlPosition;
   mapTypeControlStyle?: GoogleMapTypeControlStyle;
-  streetViewControlPosition?: GoogleControlPosition;
 }
 
 export interface DeckRenderParametersOptions {

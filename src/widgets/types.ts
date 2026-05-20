@@ -76,6 +76,8 @@ export type GoogleNativeControlProps = Pick<
   | 'scaleControlOptions'
   | 'rotateControl'
   | 'rotateControlOptions'
+  | 'streetViewControl'
+  | 'streetViewControlOptions'
 >;
 
 export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> = BaseWidgetConfig<string, any>> {

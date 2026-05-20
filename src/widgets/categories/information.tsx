@@ -7,6 +7,7 @@ import {
   type PopupWidgetProps,
 } from '@deck.gl/widgets';
 import type { Feature } from 'geojson';
+import { getCameraControlPosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 import { MessageWidget, MessageWidgetProps } from '../custom/message-widget';
 import { StreetViewWidget, StreetViewWidgetProps } from '../custom/street-view-widget';
@@ -162,4 +163,15 @@ export const streetViewWidgetDefinition: WidgetDefinition<StreetViewWidgetConfig
       selectedKey: callbacks?.selection?.key,
       provider: callbacks?.provider,
     }),
+  nativeControls: {
+    google: (config) => {
+      const pos = config.settings.placement === 'fill' ? 'bottom-right' : config.settings.placement;
+      return {
+        streetViewControl: true,
+        streetViewControlOptions: {
+          position: getControlPosition(getCameraControlPosition(pos ?? 'bottom-right'), 'BOTTOM_RIGHT'),
+        },
+      };
+    },
+  },
 };

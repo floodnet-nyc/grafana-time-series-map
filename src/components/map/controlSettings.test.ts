@@ -51,10 +51,8 @@ describe('controlSettings', () => {
     expect(resolved.scale).toEqual({ enabled: true });
     expect(resolved.google).toEqual({
       mapTypeControl: false,
-      streetViewControl: false,
       mapTypeControlPosition: 'TOP_LEFT',
       mapTypeControlStyle: 'DEFAULT',
-      streetViewControlPosition: 'RIGHT_BOTTOM',
     });
   });
 
