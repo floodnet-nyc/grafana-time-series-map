@@ -5,6 +5,7 @@ import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField } from '../layers/types';
 import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
 import { MapPanelOptions } from 'types';
+import { HtmlCodeEditor } from './utils/HtmlCodeEditor';
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
   const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
@@ -101,6 +102,13 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
               value={String(value ?? field.defaultValue ?? '')}
               onChange={(e) => onFieldChange(field.key, Number(e.currentTarget.value))}
             />
+          </Field>
+        );
+      }
+      if (field.type === 'html') {
+        return (
+          <Field key={field.key} label={field.label}>
+            <HtmlCodeEditor value={String(value ?? '')} onChange={(next) => onFieldChange(field.key, next)} />
           </Field>
         );
       }
