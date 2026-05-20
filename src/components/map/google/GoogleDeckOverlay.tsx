@@ -17,17 +17,17 @@ export function GoogleDeckOverlay({ options, ...props }: GoogleDeckOverlayProps)
     const instance = new GoogleMapsOverlay({
       interleaved: overlayProps.interleaved ?? true,
       ...overlayProps,
-      onResize: (size: { width: number; height: number }) => {
-        const deck = (instance as any)._deck;
-        if (!deck) {
-          return;
-        }
+      // onResize: (size: { width: number; height: number }) => {
+      //   const deck = (instance as any)._deck;
+      //   if (!deck) {
+      //     return;
+      //   }
 
-        const ctx = deck.animationLoop.animationProps.canvasContext;
-        const dpr = resizeState.dpr ?? ctx.devicePixelRatio;
-        resizeState.dpr = dpr;
-        ctx.setDrawingBufferSize(size.width * dpr, size.height * dpr);
-      },
+      //   const ctx = deck.animationLoop.animationProps.canvasContext;
+      //   const dpr = resizeState.dpr ?? ctx.devicePixelRatio;
+      //   resizeState.dpr = dpr;
+      //   ctx.setDrawingBufferSize(size.width * dpr, size.height * dpr);
+      // },
     });
 
     return instance;
