@@ -10,6 +10,7 @@ import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
 import { getMaplibreStyleUrl } from './style';
 import { resolveMaplibreNativeControls } from '../../../widgets/_all';
+import { resolveInitialThemeMode } from '../theme';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
@@ -44,6 +45,7 @@ export default function MaplibreMap({
 
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
+  const initialThemeMode = useMemo(() => resolveInitialThemeMode(options.theme?.mode), [options.theme?.mode]);
 
   // Whether DeckGL owns the viewport (controller mode) or MapLibre does (overlay/interleaved mode).
   const controller = options.deck.interleaved !== true;
@@ -78,7 +80,11 @@ export default function MaplibreMap({
   }, [controller]);
 
   // ThemeWidget local state — provider owns this since it's a map UI concern.
-  const [themeMode, setThemeMode] = useState<'light' | 'dark' | undefined>(undefined);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
+
+  useEffect(() => {
+    setThemeMode(initialThemeMode);
+  }, [initialThemeMode]);
 
   const mergedCallbacks = useMemo(() => ({
     ...widgetCallbacks,

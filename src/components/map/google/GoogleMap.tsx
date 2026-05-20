@@ -10,11 +10,10 @@ import {
   getControlPosition,
   mapTypeControlStyleValues,
 } from './controlMappings';
+import { resolveInitialThemeMode } from '../theme';
 import { resolveMapControlSettings } from '../controlSettings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
-import type { GoogleMapColorScheme } from '../../../types';
-import type { WidgetConfig } from '../../../widgets/_all';
 
 type GoogleMapControlProps = Pick<
   google.maps.MapOptions,
@@ -65,37 +64,6 @@ function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange)
   map.moveCamera(cameraOptions);
 }
 
-function getInitialThemeMode(widgets: WidgetConfig[]): 'light' | 'dark' | undefined {
-  const themeWidget = widgets.find((widget) => widget.visible && widget.type === 'theme');
-  if (!themeWidget) {
-    return undefined;
-  }
-
-  const initialThemeMode = (themeWidget.settings as { initialThemeMode?: 'auto' | 'light' | 'dark' }).initialThemeMode ?? 'auto';
-  if (initialThemeMode === 'light' || initialThemeMode === 'dark') {
-    return initialThemeMode;
-  }
-
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-
-  return 'light';
-}
-
-function getEffectiveGoogleColorScheme(
-  configuredColorScheme: GoogleMapColorScheme | undefined,
-  themeMode: 'light' | 'dark' | undefined
-) {
-  if (themeMode === 'dark') {
-    return getGoogleColorScheme('DARK');
-  }
-  if (themeMode === 'light') {
-    return getGoogleColorScheme('LIGHT');
-  }
-  return getGoogleColorScheme(configuredColorScheme);
-}
-
 export default function GoogleMap(props: MapProviderProps) {
   return (
     <APIProvider apiKey={props.options.basemap.google.apiKey ?? ''}>
@@ -116,6 +84,7 @@ function GoogleMapInner({
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
   const interactive = interactions.interactive ?? true;
+  const initialThemeMode = useMemo(() => resolveInitialThemeMode(options.theme?.mode), [options.theme?.mode]);
 
   // Whether DeckGL owns the viewport (controller mode) or Google Maps does (overlay mode).
   const controller = options.deck.interleaved !== true;
@@ -140,9 +109,12 @@ function GoogleMapInner({
     applyGoogleViewState(map, next);
   }, [controller, map]);
 
-  const [themeMode, setThemeMode] = useState<'light' | 'dark' | undefined>(undefined);
-  const effectiveThemeMode = themeMode ?? getInitialThemeMode(options.widgets ?? []);
-  const colorScheme = getEffectiveGoogleColorScheme(googleMapOptions.colorScheme, effectiveThemeMode);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
+  const colorScheme = getGoogleColorScheme(themeMode);
+
+  useEffect(() => {
+    setThemeMode(initialThemeMode);
+  }, [initialThemeMode]);
 
   const mergedCallbacks = useMemo(() => ({
     ...widgetCallbacks,

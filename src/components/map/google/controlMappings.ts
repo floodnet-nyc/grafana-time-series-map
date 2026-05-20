@@ -1,5 +1,5 @@
 import { ColorScheme, ControlPosition } from '@vis.gl/react-google-maps';
-import type { GoogleControlPosition, GoogleMapColorScheme, GoogleMapTypeControlStyle, MapControlPosition } from '../../../types';
+import type { GoogleControlPosition, GoogleMapTypeControlStyle, MapControlPosition, MapThemeMode } from '../../../types';
 
 const googleControlPositionValues: Record<GoogleControlPosition, google.maps.ControlPosition> = {
   BLOCK_START_INLINE_START: ControlPosition.BLOCK_START_INLINE_START,
@@ -28,10 +28,10 @@ const googleControlPositionValues: Record<GoogleControlPosition, google.maps.Con
   BOTTOM_RIGHT: ControlPosition.BOTTOM_RIGHT,
 };
 
-const googleColorSchemeValues: Record<GoogleMapColorScheme, typeof ColorScheme[keyof typeof ColorScheme]> = {
-  LIGHT: ColorScheme.LIGHT,
-  DARK: ColorScheme.DARK,
-  FOLLOW_SYSTEM: ColorScheme.FOLLOW_SYSTEM,
+const googleColorSchemeValues: Record<MapThemeMode, typeof ColorScheme[keyof typeof ColorScheme]> = {
+  light: ColorScheme.LIGHT,
+  dark: ColorScheme.DARK,
+  auto: ColorScheme.FOLLOW_SYSTEM,
 };
 
 export const mapTypeControlStyleValues: Record<GoogleMapTypeControlStyle, google.maps.MapTypeControlStyle> = {
@@ -62,6 +62,6 @@ export function getFullscreenControlPosition(position: MapControlPosition): Goog
   return mapControlToGooglePosition(position);
 }
 
-export function getGoogleColorScheme(colorScheme: GoogleMapColorScheme | undefined) {
-  return googleColorSchemeValues[colorScheme ?? 'LIGHT'];
+export function getGoogleColorScheme(colorScheme: MapThemeMode | undefined) {
+  return googleColorSchemeValues[colorScheme ?? 'light'];
 }
