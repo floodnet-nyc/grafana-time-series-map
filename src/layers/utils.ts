@@ -1,7 +1,7 @@
 import type { AccessorContext, LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
-import type { BaseLayerConfig, LayerRenderContext } from './types';
+import type { BaseLayerConfig, LayerRenderContext, LayerSettingsObject } from './types';
 import type { SourceRef } from '../types';
 
 type LayerFeature = Feature & { __idx: number };
@@ -24,7 +24,7 @@ export function getNumericProperty(feature: Feature, field: string, defaultValue
   return isNaN(value) ? defaultValue : value;
 }
 
-export function getLayerElevation(config: BaseLayerConfig<string, any>) {
+export function getLayerElevation(config: BaseLayerConfig<string, LayerSettingsObject>) {
   const settings = (config.settings ?? {}) as ElevationSettings;
 
   return {
@@ -35,7 +35,7 @@ export function getLayerElevation(config: BaseLayerConfig<string, any>) {
 }
 
 
-export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, any>>({
+export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, LayerSettingsObject>>({
   config,
   features,
   timeFilterFlags,

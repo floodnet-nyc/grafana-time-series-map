@@ -1,5 +1,5 @@
 import type { GeometrySource, SourceRef } from '../types';
-import type { BaseLayerConfig, LayerEditorSection, LayerOptionField } from './types';
+import type { BaseLayerConfig, LayerEditorSection, LayerOptionField, LayerSettingsObject } from './types';
 
 export const DEFAULT_FEATURE_SOURCE_ID = 'main';
 
@@ -7,7 +7,7 @@ export function createSourceRef(field = '', source = DEFAULT_FEATURE_SOURCE_ID):
   return { source, field };
 }
 
-export function createBaseLayerConfig<TType extends string, TSettings>(
+export function createBaseLayerConfig<TType extends string, TSettings extends LayerSettingsObject>(
   type: TType,
   label: string,
   index: number,

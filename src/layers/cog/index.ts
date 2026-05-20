@@ -171,16 +171,16 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     }
     const renderTile = getStableRenderTile(options.colorMaxValue, colorScale);
 
-    const [getUrl, updatesUrl] = getAccessor(options.url);
-    const [getTime, updatesTime] = getAccessor(options.timestamp);
+    const [getUrl, updatesUrl] = getAccessor<string>(options.url);
+    const [getTime, updatesTime] = getAccessor<number>(options.timestamp);
 
     return [
       new TimeCOGLayer({
         id: `cog/${config.id}`,
         frames: features,
         currentTime: cursorTimeMs,
-        getUrl,
-        getTime,
+        getUrl: getUrl ? (frame, context) => String(getUrl(frame, context) ?? '') : undefined,
+        getTime: getTime ? (frame, context) => Number(getTime(frame, context) ?? 0) : undefined,
         getTileData,
         renderTile,
         opacity: config.opacity,

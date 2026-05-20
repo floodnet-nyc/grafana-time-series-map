@@ -1,5 +1,6 @@
 import type { Widget, WidgetPlacement } from '@deck.gl/core';
 import { useEffect, useRef } from 'react';
+import { reconcileWidgetControls } from '../widgetControlReconciler';
 
 type NativeControlWidget = Widget & { viewId?: string | null };
 
@@ -83,33 +84,13 @@ export function useGoogleWidgetControls(map: google.maps.Map | null, widgets?: W
       return;
     }
 
-    const nextControls = new Map<string, GoogleWidgetControl>();
-
-    for (const widget of widgets ?? []) {
-      const nativeWidget = widget as NativeControlWidget;
-      const existingControl = controlsRef.current.get(widget.id);
-      if (existingControl?.matches(widget)) {
-        existingControl.setWidget(nativeWidget);
-        nextControls.set(widget.id, existingControl);
-        continue;
-      }
-
-      if (existingControl) {
-        existingControl.remove();
-      }
-
-      const control = new GoogleWidgetControl(nativeWidget);
-      control.addToMap(map);
-      nextControls.set(widget.id, control);
-    }
-
-    for (const [widgetId, control] of controlsRef.current) {
-      if (!nextControls.has(widgetId)) {
-        control.remove();
-      }
-    }
-
-    controlsRef.current = nextControls;
+    controlsRef.current = reconcileWidgetControls(widgets as NativeControlWidget[] | undefined, controlsRef.current, {
+      createControl: (widget) => new GoogleWidgetControl(widget),
+      mountControl: (control) => control.addToMap(map),
+      unmountControl: (control) => control.remove(),
+      matches: (control, widget) => control.matches(widget),
+      updateControl: (control, widget) => control.setWidget(widget),
+    });
   }, [map, widgets]);
 
   useEffect(() => {

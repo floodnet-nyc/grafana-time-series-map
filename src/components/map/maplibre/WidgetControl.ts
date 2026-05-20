@@ -1,6 +1,7 @@
 import type { Widget, WidgetPlacement } from '@deck.gl/core';
 import { useEffect, useRef } from 'react';
 import { useMap, type ControlPosition, type IControl } from 'react-map-gl/maplibre';
+import { reconcileWidgetControls } from '../widgetControlReconciler';
 
 function getControlPosition(placement: WidgetPlacement): ControlPosition {
   if (placement === 'fill') {
@@ -59,32 +60,13 @@ export function useMaplibreWidgetControls(widgets?: Widget[]) {
       return;
     }
 
-    const nextControls = new Map<string, DeckWidgetControl>();
-
-    for (const widget of widgets ?? []) {
-      const existingControl = controlsRef.current.get(widget.id);
-      if (existingControl?.matches(widget)) {
-        existingControl.setWidget(widget);
-        nextControls.set(widget.id, existingControl);
-        continue;
-      }
-
-      if (existingControl) {
-        map.removeControl(existingControl);
-      }
-
-      const control = new DeckWidgetControl(widget);
-      map.addControl(control, control.getDefaultPosition());
-      nextControls.set(widget.id, control);
-    }
-
-    for (const [widgetId, control] of controlsRef.current) {
-      if (!nextControls.has(widgetId)) {
-        map.removeControl(control);
-      }
-    }
-
-    controlsRef.current = nextControls;
+    controlsRef.current = reconcileWidgetControls(widgets, controlsRef.current, {
+      createControl: (widget) => new DeckWidgetControl(widget),
+      mountControl: (control) => map.addControl(control, control.getDefaultPosition()),
+      unmountControl: (control) => map.removeControl(control),
+      matches: (control, widget) => control.matches(widget),
+      updateControl: (control, widget) => control.setWidget(widget),
+    });
   }, [map, widgets]);
 
   useEffect(() => {

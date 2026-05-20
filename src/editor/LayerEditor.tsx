@@ -14,7 +14,8 @@ import {
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import type { SourceRef } from '../types';
-import { layerDefinitions, type LayerConfig } from '../layers/_all';
+import * as layerRegistry from '../layers/_all';
+import type { LayerConfig, LayerType } from '../layers/_all';
 import { layerExtensionDefinitions } from '../extensions';
 import { GeometryEditor } from './GeometryEditor';
 import { ColorScaleEditor } from './utils/ColorScaleEditor';
@@ -77,17 +78,20 @@ export function LayerEditor({
   featureFieldsBySource = {},
 }: Props) {
   const styles = useStyles2(getStyles);
-  const layerTypes = useMemo(() => layerDefinitions.map((r) => ({ label: r.label, value: r.type })), []);
+  const layerTypes = useMemo(() => layerRegistry.layerDefinitions.map((r) => ({ label: r.label, value: r.type })), []);
   const extensionDefs = useMemo(() => layerExtensionDefinitions, []);
   const addExtensionOptions = useMemo(
     () => extensionDefs.map((d) => ({ label: d.label, value: d.id })),
     [extensionDefs]
   );
-  const currentRenderer = useMemo(() => layerDefinitions.find((definition) => definition.type === layer.type), [layer.type]);
+  const currentRenderer = useMemo(
+    () => layerRegistry.getLayerDefinition?.(layer.type) ?? layerRegistry.layerDefinitions.find((definition) => definition.type === layer.type),
+    [layer.type]
+  );
   const settingsRecord = layer.settings as unknown as Record<string, unknown>;
 
   const patch = useCallback(
-    (updates: Partial<LayerConfig>) => onChange({ ...(layer as any), ...updates } as LayerConfig),
+    (updates: Partial<LayerConfig>) => onChange({ ...layer, ...updates } as LayerConfig),
     [layer, onChange],
   );
   const {
@@ -115,13 +119,13 @@ export function LayerEditor({
 
   const patchSettings = useCallback(
     (key: string, value: unknown) =>
-      patch({ settings: { ...(layer.settings as any), [key]: value } } as Partial<LayerConfig>),
-    [layer.settings, patch],
+      patch({ settings: { ...settingsRecord, [key]: value } as unknown as LayerConfig['settings'] } as Partial<LayerConfig>),
+    [patch, settingsRecord],
   );
 
   const handleTypeChange = useCallback(
-    (type: string) => {
-      const definition = layerDefinitions.find((item) => item.type === type);
+    (type: LayerType) => {
+      const definition = layerRegistry.getLayerDefinition?.(type) ?? layerRegistry.layerDefinitions.find((item) => item.type === type);
       if (!definition) {
         return;
       }
@@ -142,6 +146,7 @@ export function LayerEditor({
         maxZoom: layer.maxZoom,
         pickable: layer.pickable,
         selectionKey: layer.selectionKey,
+        selectionColor: layer.selectionColor,
         shader: layer.shader,
         extensions: layer.extensions ?? next.extensions,
       });
@@ -222,7 +227,7 @@ export function LayerEditor({
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
         <Field label="Layer type">
-          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value))} />
+          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value) as LayerType)} />
         </Field>
         <Field label="Description">
           <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />

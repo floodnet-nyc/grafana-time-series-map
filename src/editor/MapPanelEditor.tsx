@@ -2,15 +2,17 @@ import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/css';
 import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/data';
-import { layerDefinitions, type LayerConfig } from '../layers/_all';
+import * as layerRegistry from '../layers/_all';
+import type { LayerConfig, LayerType } from '../layers/_all';
 import { DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
 import { LayerEditor } from './LayerEditor';
 import { SelectableListEditor } from './utils/SelectableListEditor';
 import { useSelectableListState } from './utils/useSelectableListState';
 
-function makeDefaultLayer(type: string, index: number): LayerConfig {
-  const renderer = layerDefinitions.find((definition) => definition.type === type);
-  return renderer ? renderer.createDefaultConfig(index) : layerDefinitions[0].createDefaultConfig(index);
+function makeDefaultLayer(type: LayerType, index: number): LayerConfig {
+  return layerRegistry.createLayerConfig?.(type, index)
+    ?? layerRegistry.layerDefinitions.find((definition) => definition.type === type)?.createDefaultConfig(index)
+    ?? layerRegistry.layerDefinitions[0].createDefaultConfig(index);
 }
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}
@@ -133,7 +135,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const sourceContext = useMemo(() => getSourceContext(selectedLayer, fieldIndex), [selectedLayer, fieldIndex]);
 
   const addLayer = useCallback(() => {
-    const firstType = layerDefinitions[0]?.type ?? 'scatterplot';
+    const firstType = layerRegistry.layerDefinitions[0]?.type ?? 'scatterplot';
     addLayerItem(makeDefaultLayer(firstType, layerList.length));
   }, [addLayerItem, layerList.length]);
 

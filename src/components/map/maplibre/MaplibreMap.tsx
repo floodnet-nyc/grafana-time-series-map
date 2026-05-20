@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Map, {
   type MapRef,
 } from 'react-map-gl/maplibre';
@@ -11,8 +11,13 @@ import { MaplibreDeckOverlay } from './MaplibreDeckOverlay';
 import { MaplibreFitBounds } from './MaplibreFitBounds';
 import { getMaplibreStyleUrl } from './style';
 import { resolveMaplibreNativeControls } from '../../../widgets/_all';
-import { resolveInitialThemeMode } from '../theme';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import {
+  applyWidgetViewStateChange,
+  useInitialViewportReport,
+  useProviderThemeMode,
+  useProviderWidgetCallbacks,
+} from '../providerState';
 
 function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
   const camera: Parameters<MapLibreMap['easeTo']>[0] = {
@@ -55,7 +60,6 @@ export default function MaplibreMap({
 
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
-  const initialThemeMode = useMemo(() => resolveInitialThemeMode(options.theme?.mode), [options.theme?.mode]);
 
   // Whether DeckGL owns the viewport (controller mode) or MapLibre does (overlay/interleaved mode).
   const controller = options.deck.interleaved !== true;
@@ -77,7 +81,7 @@ export default function MaplibreMap({
 
   const handleWidgetViewStateChange = useCallback((next: WidgetViewStateChange) => {
     if (controller) {
-      setViewState((prev) => ({ ...prev, ...next }));
+      setViewState((prev) => applyWidgetViewStateChange(prev, next));
       return;
     }
 
@@ -101,15 +105,9 @@ export default function MaplibreMap({
     }
   }, []);
 
-  // ThemeWidget local state — provider owns this since it's a map UI concern.
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
-
-  useEffect(() => {
-    setThemeMode(initialThemeMode);
-  }, [initialThemeMode]);
-
-  const mergedCallbacks = useMemo(() => ({
-    ...widgetCallbacks,
+  const { themeMode, setThemeMode } = useProviderThemeMode(options.theme?.mode);
+  const mergedCallbacks = useProviderWidgetCallbacks({
+    widgetCallbacks,
     onViewStateChange: handleWidgetViewStateChange,
     resetViewState: initialViewState,
     screenshot: {
@@ -117,7 +115,7 @@ export default function MaplibreMap({
     },
     themeMode,
     onThemeModeChange: setThemeMode,
-  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, handleScreenshotCapture, themeMode]);
+  });
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 
@@ -125,11 +123,7 @@ export default function MaplibreMap({
     onViewportChange?.(e.viewState);
   }, [onViewportChange]);
 
-  useEffect(() => {
-    onViewportChange?.(initialViewState ?? viewState);
-    // Report initial viewport once on mount only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useInitialViewportReport(initialViewState, viewState, onViewportChange);
 
   const mapProps = {
     style: { width, height },

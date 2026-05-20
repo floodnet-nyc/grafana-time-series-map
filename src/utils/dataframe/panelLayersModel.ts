@@ -2,7 +2,7 @@ import type { DataFrame } from '@grafana/data';
 import type { Layer, AccessorContext } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { getExtensionDefinition } from '../../extensions';
-import { layerDefinitions, type LayerConfig } from '../../layers/_all';
+import { getLayerDefinition as resolveLayerDefinition, type LayerConfig } from '../../layers/_all';
 import type { GetAccessorFunction, GetNumericAccessorFunction, LayerDefinition, LayerRenderContext } from '../../layers/types';
 import type { JoinedSourceConfig, MapPanelOptions, SourceRef } from '../../types';
 import { compileExpression } from './derivedFields/expressionEngine';
@@ -307,7 +307,7 @@ export function renderPreparedLayers({
   toTimeMs,
   selectedKey,
   onFeatureClick,
-  getRenderer = getLayerDefinition,
+  getRenderer = resolveConfiguredLayerDefinition,
   applyExtensions = applyConfiguredLayerExtensions,
 }: RenderPreparedLayersArgs): Layer[] {
   const renderedLayers: Layer[] = [];
@@ -345,8 +345,8 @@ export function renderPreparedLayers({
   return renderedLayers;
 }
 
-function getLayerDefinition(type: string) {
-  return layerDefinitions.find((definition) => definition.type === type);
+function resolveConfiguredLayerDefinition(type: string) {
+  return resolveLayerDefinition(type);
 }
 
 function applyConfiguredLayerExtensions(layers: Layer[], config: LayerConfig) {

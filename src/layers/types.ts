@@ -14,7 +14,10 @@ import type { LayerExtensionInstance } from '../extensions/types';
 
 export type { LayerExtensionInstance };
 
-export interface BaseLayerConfig<TType extends string, TSettings> {
+export type LayerSettingsObject = object;
+export type LayerConfigBase<TType extends string = string, TSettings extends LayerSettingsObject = LayerSettingsObject> = BaseLayerConfig<TType, TSettings>;
+
+export interface BaseLayerConfig<TType extends string, TSettings extends LayerSettingsObject> {
   id: string;
   type: TType;
   settings: TSettings;
@@ -38,10 +41,17 @@ export interface BaseLayerConfig<TType extends string, TSettings> {
   extensions?: LayerExtensionInstance[];
 }
 
-export type GetAccessorFunction = <O = any, T extends Feature = Feature>(fieldRef?: SourceRef, defaultValue?: O) => [AccessorFunction<T, O | undefined> | undefined, any[]];
-export type GetNumericAccessorFunction = <T extends Feature = Feature>(fieldRef?: SourceRef, defaultValue?: number) => [AccessorFunction<T, number> | undefined, any[]];
+export type AccessorDependencyKey = readonly unknown[];
+export type GetAccessorFunction = <O = unknown, T extends Feature = Feature>(
+  fieldRef?: SourceRef,
+  defaultValue?: O
+) => [AccessorFunction<T, O | undefined> | undefined, AccessorDependencyKey];
+export type GetNumericAccessorFunction = <T extends Feature = Feature>(
+  fieldRef?: SourceRef,
+  defaultValue?: number
+) => [AccessorFunction<T, number> | undefined, AccessorDependencyKey];
 
-export interface LayerRenderContext<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
+export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = LayerConfigBase> {
   config: TLayerConfig;
   panelOptions: unknown;
   features: Feature[];
@@ -76,8 +86,8 @@ export interface LayerEditorSection {
   fields: LayerOptionField[];
 }
 
-export interface LayerDefinition<TLayerConfig extends BaseLayerConfig<string, any> = BaseLayerConfig<string, any>> {
-  type: string;
+export interface LayerDefinition<TLayerConfig extends LayerConfigBase = LayerConfigBase> {
+  type: TLayerConfig['type'];
   label: string;
   createDefaultConfig: (index: number) => TLayerConfig;
   editorSections: LayerEditorSection[];

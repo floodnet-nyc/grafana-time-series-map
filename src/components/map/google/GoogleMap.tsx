@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { APIProvider, Map, limitTiltRange, useMap } from '@vis.gl/react-google-maps';
 import type { MapProviderProps, ViewportSnapshot, WidgetViewStateChange } from '../types';
 import { useDeckGLProps } from '../DeckGLMap';
@@ -10,10 +10,15 @@ import {
   getControlPosition,
   mapTypeControlStyleValues,
 } from './controlMappings';
-import { resolveInitialThemeMode } from '../theme';
 import { resolveMapControlSettings } from '../controlSettings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
+import {
+  applyWidgetViewStateChange,
+  useInitialViewportReport,
+  useProviderThemeMode,
+  useProviderWidgetCallbacks,
+} from '../providerState';
 
 type GoogleMapControlProps = Pick<
   google.maps.MapOptions,
@@ -82,7 +87,6 @@ function GoogleMapInner({
   const googleMapOptions = options.basemap.google;
   const controlSettings = resolveMapControlSettings(options);
   const interactive = interactions.interactive ?? true;
-  const initialThemeMode = useMemo(() => resolveInitialThemeMode(options.theme?.mode), [options.theme?.mode]);
 
   // Whether DeckGL owns the viewport (controller mode) or Google Maps does (overlay mode).
   const controller = options.deck.interleaved !== true;
@@ -98,7 +102,7 @@ function GoogleMapInner({
 
   const handleWidgetViewStateChange = useCallback((next: WidgetViewStateChange) => {
     if (controller) {
-      setViewState((prev) => ({ ...prev, ...next }));
+      setViewState((prev) => applyWidgetViewStateChange(prev, next));
       return;
     }
     if (!map) {
@@ -107,20 +111,15 @@ function GoogleMapInner({
     applyGoogleViewState(map, next);
   }, [controller, map]);
 
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
+  const { themeMode, setThemeMode } = useProviderThemeMode(options.theme?.mode);
   const colorScheme = getGoogleColorScheme(themeMode);
-
-  useEffect(() => {
-    setThemeMode(initialThemeMode);
-  }, [initialThemeMode]);
-
-  const mergedCallbacks = useMemo(() => ({
-    ...widgetCallbacks,
+  const mergedCallbacks = useProviderWidgetCallbacks({
+    widgetCallbacks,
     onViewStateChange: handleWidgetViewStateChange,
     resetViewState: initialViewState,
     themeMode,
     onThemeModeChange: setThemeMode,
-  }), [widgetCallbacks, handleWidgetViewStateChange, initialViewState, themeMode]);
+  });
 
   const deckProps = useDeckGLProps({
     options,
@@ -156,11 +155,7 @@ function GoogleMapInner({
   const bearing = initialViewState?.bearing ?? 0;
   const pitch = initialViewState?.pitch ?? 0;
 
-  useEffect(() => {
-    onViewportChange?.({ latitude, longitude, zoom, bearing, pitch });
-    // Report initial viewport once on mount only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useInitialViewportReport(initialViewState, { latitude, longitude, zoom, bearing, pitch }, onViewportChange);
 
   const sharedMapProps = {
     mapId: googleMapOptions.mapId || undefined,
