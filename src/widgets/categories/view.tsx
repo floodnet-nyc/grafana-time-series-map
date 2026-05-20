@@ -7,8 +7,8 @@ import {
 } from '@deck.gl/widgets';
 import { MapView } from '@deck.gl/core';
 import { FullscreenControl } from 'react-map-gl/maplibre';
-import { getControlPosition, getFullscreenControlPosition } from '../components/map/google/controlMappings';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
+import { getControlPosition, getFullscreenControlPosition } from 'components/map/google/controlMappings';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 
 type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
 type SplitterWidgetConfig = BaseWidgetConfig<'splitter', Omit<SplitterWidgetProps, 'id'>>;

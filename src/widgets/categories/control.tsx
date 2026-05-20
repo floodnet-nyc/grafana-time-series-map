@@ -8,7 +8,7 @@ import {
   type SelectorWidgetProps,
   type TimelineWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 
 type IconWidgetConfig = BaseWidgetConfig<'icon', Omit<IconWidgetProps, 'id'>>;
 type ToggleWidgetConfig = BaseWidgetConfig<'toggle', Omit<ToggleWidgetProps, 'id'>>;

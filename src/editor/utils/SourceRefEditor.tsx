@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Combobox, type ComboboxOption } from '@grafana/ui';
-import type { SourceRef } from '../types';
-import { DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
+import type { SourceRef } from 'types';
+import { DEFAULT_FEATURE_SOURCE_ID } from 'layers/defaults';
 
 interface SourceOption {
   id: string;

@@ -8,7 +8,7 @@ import {
   type StatsWidgetProps,
   type ThemeWidgetProps,
 } from '@deck.gl/widgets';
-import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from './types';
+import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
