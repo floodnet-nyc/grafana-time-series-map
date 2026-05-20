@@ -13,7 +13,7 @@ import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDef
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
 type StatsWidgetConfig = BaseWidgetConfig<'stats', Omit<StatsWidgetProps, 'id'>>;
-type ThemeWidgetConfig = BaseWidgetConfig<'theme', Omit<ThemeWidgetProps, 'id'>>;
+type ThemeWidgetConfig = BaseWidgetConfig<'theme', Omit<ThemeWidgetProps, 'id' | 'initialThemeMode' | 'themeMode' | 'onThemeModeChange'>>;
 
 // Not sure if grafana provides this state
 export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
@@ -32,7 +32,7 @@ export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
       title: 'Loading',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Loading' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Loading' },
       ],
     },
   ],
@@ -56,7 +56,7 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
       title: 'Screenshot',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Screenshot' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Screenshot' },
         { key: 'filename', label: 'Filename', type: 'string', defaultValue: 'screenshot.png' },
         {
           key: 'imageFormat',
@@ -116,26 +116,15 @@ export const themeWidgetDefinition: WidgetDefinition<ThemeWidgetConfig> = {
     type: 'theme',
     label: `Theme ${i + 1}`,
     visible: true,
-    settings: { placement: 'top-right', initialThemeMode: 'auto' },
+    settings: { placement: 'top-right' },
   }),
   editorSections: [
     {
       title: 'Theme',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
-        {
-          key: 'initialThemeMode',
-          label: 'Initial theme',
-          type: 'select',
-          defaultValue: 'auto',
-          selectOptions: [
-            { label: 'Auto (browser)', value: 'auto' },
-            { label: 'Light', value: 'light' },
-            { label: 'Dark', value: 'dark' },
-          ],
-        },
-        { key: 'lightModeLabel', label: 'Light mode tooltip', type: 'string', defaultValue: 'Light mode' },
-        { key: 'darkModeLabel', label: 'Dark mode tooltip', type: 'string', defaultValue: 'Dark mode' },
+        // { key: 'lightModeLabel', label: 'Light mode tooltip', type: 'string', defaultValue: 'Light mode' },
+        // { key: 'darkModeLabel', label: 'Dark mode tooltip', type: 'string', defaultValue: 'Dark mode' },
       ],
     },
   ],

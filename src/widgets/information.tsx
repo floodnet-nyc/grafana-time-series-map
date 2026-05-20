@@ -98,7 +98,7 @@ export const welcomeWidgetDefinition: WidgetDefinition<WelcomeWidgetConfig> = {
       title: 'Welcome',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Help' },
+        // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Help' },
         { key: 'title', label: 'Panel title', type: 'string', defaultValue: '' },
         { key: 'templateHtml', label: 'HTML content', type: 'string', defaultValue: '' },
       ],
