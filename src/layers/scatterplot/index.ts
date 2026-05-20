@@ -10,6 +10,7 @@ import CollisionFilterExtension from '../../utils/deckgl/CollisionFilterExtensio
 import {
   createCommonLayerProps,
   createLineSelectionAccessors,
+  createSelectionState,
   getFeaturePosition,
 } from '../utils';
 import { autoDecimalsText } from 'layers/text';
@@ -98,8 +99,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const commonProps = createCommonLayerProps(context);
     const [getColorValue, updateColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
-    const lineAccessors = createLineSelectionAccessors(isSelected);
+    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
+    const lineAccessors = createLineSelectionAccessors(selectionState.isSelected);
 
     const [getRadius, updateRadius] = getNumericAccessor(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
@@ -123,8 +124,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
         extensions: [...commonProps.extensions, ...(shaderExtensions as any[])],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getLineColor: updatesSelected,
-          getLineWidth: updatesSelected,
+          getLineColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
+          getLineWidth: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
           getRadius: [...updateRadius],
           getFillColor: updateColorValue,
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),

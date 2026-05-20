@@ -27,7 +27,7 @@ export interface TextLayerSettings {
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, createSelectionColorAccessor, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, createSelectionColorAccessor, createSelectionState, getFeaturePosition } from '../utils';
 import { AccessorContext } from '@deck.gl/core';
 
 const defaultSettings: TextLayerSettings = {
@@ -115,12 +115,12 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
-    const { config, getAccessor, getNumericAccessor } = context;
+    const { config, getAccessor, getNumericAccessor, selectedKey } = context;
     const options = config.settings;
     const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220], getColorValue);
-    const [isSelected, updatesSelected] = getAccessor(config.selectionKey);
-    const getColor = createSelectionColorAccessor(baseColor, isSelected);
+    const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
+    const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected);
     const commonProps = createCommonLayerProps(context);
     const [getText, updatesText] = getAccessor(options.text, '');
     const [getSize, updatesSize] = getNumericAccessor(options.size, options.fontSize);
@@ -149,7 +149,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         polygonOffset: 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getColor: updatesSelected,
+          getColor: [selectedKey, config.selectionKey?.source, config.selectionKey?.field, config.data.featureSource.id],
           getText: updatesText,
           getSize: updatesSize,
         },
