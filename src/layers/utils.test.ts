@@ -1,5 +1,5 @@
 import type { Feature } from 'geojson';
-import type { LayerConfig } from './_all';
+import type { LayerConfig } from '.';
 import { createSourceRef } from './defaults';
 import type { ScatterplotLayerConfig } from './scatterplot';
 import {

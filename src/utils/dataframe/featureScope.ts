@@ -1,5 +1,5 @@
 import type { Feature } from 'geojson';
-import type { LayerConfig } from 'layers/_all';
+import type { LayerConfig } from 'layers';
 import type { SourceRef } from '../../types';
 
 function getSourceRefValue(feature: Feature, ref: SourceRef | undefined, derived?: Record<string, unknown>) {

@@ -14,7 +14,7 @@ import {
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { ColorScaleConfig, ShaderConfig } from '../../types';
-import type { LayerConfig } from '../../layers/_all';
+import type { LayerConfig } from '../../layers';
 import { COLOR_SCHEMES, schemeToGradientCss } from '../../utils/deckgl/colorSchemes';
 import { DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import {

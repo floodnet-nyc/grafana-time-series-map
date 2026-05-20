@@ -2,7 +2,7 @@ import type { DataFrame } from '@grafana/data';
 import type { Layer, AccessorContext } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import { getExtensionDefinition } from '../../extensions';
-import { getLayerDefinition as resolveLayerDefinition, type LayerConfig } from '../../layers/_all';
+import { getLayerDefinition as resolveLayerDefinition, type LayerConfig } from '../../layers';
 import type { GetAccessorFunction, GetNumericAccessorFunction, LayerDefinition, LayerRenderContext } from '../../layers/types';
 import type { JoinedSourceConfig, MapPanelOptions, SourceRef } from '../../types';
 import { compileExpression } from './derivedFields/expressionEngine';

@@ -1,5 +1,5 @@
 import type { Layer } from '@deck.gl/core';
-jest.mock('../../layers/_all', () => ({
+jest.mock('../../layers', () => ({
   layerDefinitions: [],
 }));
 jest.mock('../../extensions', () => ({
@@ -14,7 +14,7 @@ import {
 } from './panelLayersModel';
 import { buildPacked } from './closestTimeFiltering';
 import type { MapPanelOptions } from '../../types';
-import type { LayerConfig } from '../../layers/_all';
+import type { LayerConfig } from '../../layers';
 import { createSourceRef } from '../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
 import type { GeoFeature } from './toGeoJsonFeatures';

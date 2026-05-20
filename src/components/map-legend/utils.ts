@@ -1,5 +1,5 @@
 import type { ColorScaleConfig, ColorStep } from '../../types';
-import type { LayerConfig } from '../../layers/_all';
+import type { LayerConfig } from '../../layers';
 
 export const SMALL_PANEL_THRESHOLD = 400;
 

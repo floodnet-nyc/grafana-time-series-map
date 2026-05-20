@@ -1,6 +1,6 @@
 import type { LayerOptionField } from '../layers/types';
 import { createSourceRef } from '../layers/defaults';
-import type { LayerConfig } from '../layers/_all';
+import type { LayerConfig } from '../layers';
 import type { ColorScaleConfig, ColorStep, ShaderConfig } from '../types';
 
 export const ADVANCED_COLOR_SECTIONS = new Set(['Blending', 'Material']);

@@ -1,4 +1,4 @@
-import type { LayerConfig } from '../layers/_all';
+import type { LayerConfig } from '../layers';
 import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 import {

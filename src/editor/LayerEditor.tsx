@@ -14,8 +14,8 @@ import {
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import type { SourceRef } from '../types';
-import * as layerRegistry from '../layers/_all';
-import type { LayerConfig, LayerType } from '../layers/_all';
+import * as layerRegistry from '../layers';
+import type { LayerConfig, LayerType } from '../layers';
 import { layerExtensionDefinitions } from '../extensions';
 import { GeometryEditor } from './GeometryEditor';
 import { ColorScaleEditor } from './utils/ColorScaleEditor';

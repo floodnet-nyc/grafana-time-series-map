@@ -1,11 +1,11 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import type { LayerConfig } from '../layers/_all';
+import type { LayerConfig } from '../layers';
 import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 import { LayerEditor } from './LayerEditor';
 
-jest.mock('../layers/_all', () => ({
+jest.mock('../layers', () => ({
   layerDefinitions: [
     {
       type: 'scatterplot',

@@ -1,12 +1,13 @@
-import type { Widget } from '@deck.gl/core';
+import { useEffect, useRef } from 'react';
+import type { Widget, WidgetPlacement } from '@deck.gl/core';
 
-type WidgetControlAdapter<TWidget extends Widget, TControl> = {
+export interface WidgetControlAdapter<TWidget extends Widget, TControl> {
   createControl: (widget: TWidget) => TControl;
   mountControl: (control: TControl) => void;
   unmountControl: (control: TControl) => void;
   matches: (control: TControl, widget: TWidget) => boolean;
   updateControl: (control: TControl, widget: TWidget) => void;
-};
+}
 
 export function reconcileWidgetControls<TWidget extends Widget, TControl>(
   widgets: TWidget[] | undefined,
@@ -40,3 +41,47 @@ export function reconcileWidgetControls<TWidget extends Widget, TControl>(
 
   return nextControls;
 }
+
+/** Shared hook for reconciling deck.gl widgets into map-native controls. */
+export function useWidgetControls<TControl>(
+  map: unknown | null,
+  widgets: Widget[] | undefined,
+  adapter: WidgetControlAdapter<Widget, TControl>,
+): Widget[] {
+  const controlsRef = useRef(new Map<string, TControl>());
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+
+    controlsRef.current = reconcileWidgetControls(
+      widgets,
+      controlsRef.current,
+      adapter,
+    );
+  }, [map, widgets, adapter]);
+
+  useEffect(() => {
+    return () => {
+      const controls = controlsRef.current;
+      for (const control of controls.values()) {
+        adapter.unmountControl(control);
+      }
+      controls.clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return widgets ?? [];
+}
+
+/** Resolve deck.gl WidgetPlacement to a standard placement string. */
+export function resolvePlacement<TPosition>(
+  placement: WidgetPlacement,
+  fallback: TPosition,
+  positionMap: Partial<Record<WidgetPlacement, TPosition>>,
+): TPosition {
+  return positionMap[placement] ?? fallback;
+}
+
