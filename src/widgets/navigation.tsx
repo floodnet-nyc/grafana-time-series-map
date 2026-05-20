@@ -66,9 +66,9 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
     google: (config) => {
       const pos = config.settings.placement === 'fill' ? 'top-left' : config.settings.placement;
       return {
-        cameraControl: true,
-        cameraControlOptions: {
-          position: getControlPosition(getCameraControlPosition(pos ?? 'top-left'), 'INLINE_START_BLOCK_END'),
+        zoomControl: true,
+        zoomControlOptions: {
+          position: getControlPosition(getCameraControlPosition(pos ?? 'top-left'), 'TOP_LEFT'),
         },
       };
     },

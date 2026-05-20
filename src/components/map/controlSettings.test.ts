@@ -90,7 +90,7 @@ describe('controlSettings', () => {
   it('maps shared positions back to provider-specific positions', () => {
     expect(getMaplibreControlPosition('bottom-right')).toBe('bottom-right');
     expect(getCameraControlPosition('top-left')).toBe('TOP_LEFT');
-    expect(getCameraControlPosition('top-right')).toBe('INLINE_START_BLOCK_END');
+    expect(getCameraControlPosition('top-right')).toBe('TOP_RIGHT');
     expect(getFullscreenControlPosition('bottom-left')).toBe('BOTTOM_LEFT');
   });
 });

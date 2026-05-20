@@ -34,7 +34,6 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
   );
   const currentDefinition = useMemo(() => widgetDefinitions.find((d) => d.type === widget.type), [widget.type]);
   const settingsRecord = widget.settings as unknown as Record<string, unknown>;
-  const mapProvider = options.basemap.provider;
   const supportsNative = currentDefinition?.nativeControls?.[options.basemap.provider] && options.deck.interleaved;
 
   const patch = useCallback(

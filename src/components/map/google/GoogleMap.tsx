@@ -14,6 +14,23 @@ import { resolveMapControlSettings } from '../controlSettings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import DeckGL, { DeckGLProps } from '@deck.gl/react';
 
+type GoogleMapControlProps = Pick<
+  google.maps.MapOptions,
+  | 'zoomControl'
+  | 'zoomControlOptions'
+  | 'cameraControl'
+  | 'cameraControlOptions'
+  | 'fullscreenControl'
+  | 'fullscreenControlOptions'
+  | 'scaleControl'
+  | 'rotateControl'
+  | 'rotateControlOptions'
+  | 'mapTypeControl'
+  | 'mapTypeControlOptions'
+  | 'streetViewControl'
+  | 'streetViewControlOptions'
+>;
+
 function applyGoogleViewState(map: google.maps.Map, next: WidgetViewStateChange) {
   const cameraOptions: google.maps.CameraOptions = {};
 
@@ -112,14 +129,16 @@ function GoogleMapInner({
     [options.widgets]
   );
 
-  const googleControlProps = useMemo(() => ({
-    cameraControl: googleNativeProps.cameraControl ?? false as boolean | undefined,
-    cameraControlOptions: googleNativeProps.cameraControlOptions as { position: number } | undefined,
-    fullscreenControl: googleNativeProps.fullscreenControl ?? false as boolean | undefined,
-    fullscreenControlOptions: googleNativeProps.fullscreenControlOptions as { position: number } | undefined,
-    scaleControl: googleNativeProps.scaleControl ?? false as boolean | undefined,
-    rotateControl: googleNativeProps.rotateControl ?? false as boolean | undefined,
-    rotateControlOptions: googleNativeProps.rotateControlOptions as { position: number } | undefined,
+  const googleControlProps = useMemo<GoogleMapControlProps>(() => ({
+    zoomControl: googleNativeProps.zoomControl ?? false,
+    zoomControlOptions: googleNativeProps.zoomControlOptions,
+    cameraControl: googleNativeProps.cameraControl ?? false,
+    cameraControlOptions: googleNativeProps.cameraControlOptions,
+    fullscreenControl: googleNativeProps.fullscreenControl ?? false,
+    fullscreenControlOptions: googleNativeProps.fullscreenControlOptions,
+    scaleControl: googleNativeProps.scaleControl ?? false,
+    rotateControl: googleNativeProps.rotateControl ?? false,
+    rotateControlOptions: googleNativeProps.rotateControlOptions,
     mapTypeControl: controlSettings.google.mapTypeControl ?? false,
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
@@ -130,8 +149,6 @@ function GoogleMapInner({
       position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM'),
     },
   }), [googleNativeProps, controlSettings]);
-
-  console.log(googleControlProps, googleNativeProps, controlSettings);
 
   const latitude = initialViewState?.latitude ?? 0;
   const longitude = initialViewState?.longitude ?? 0;
@@ -144,6 +161,7 @@ function GoogleMapInner({
     // Report initial viewport once on mount only
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  console.log(googleControlProps)
 
   const sharedMapProps = {
     mapId: googleMapOptions.mapId || undefined,
@@ -164,6 +182,7 @@ function GoogleMapInner({
           gestureHandling="none"
           keyboardShortcuts={false}
           clickableIcons={false}
+          zoomControl={false}
           cameraControl={false}
           fullscreenControl={false}
           scaleControl={controlSettings.scale.enabled}
@@ -192,6 +211,8 @@ function GoogleMapInner({
       keyboardShortcuts={interactive}
       clickableIcons={interactive}
       {...googleControlProps}
+      // cameraControl={true}
+      // cameraControlOptions={{position: getControlPosition('TOP_RIGHT', 'TOP_RIGHT')}}
       tiltInteractionEnabled={interactions.rollEnabled}
       onCameraChanged={(event: any) => {
         onViewportChange?.({

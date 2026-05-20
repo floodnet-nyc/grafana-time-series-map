@@ -44,22 +44,22 @@ export function getControlPosition(position: GoogleControlPosition | undefined, 
   return googleControlPositionValues[position ?? fallback];
 }
 
-function mapControlToGooglePosition(position: MapControlPosition, fallback: GoogleControlPosition): GoogleControlPosition {
+function mapControlToGooglePosition(position: MapControlPosition): GoogleControlPosition {
   switch (position) {
     case 'top-left':     return 'TOP_LEFT';
+    case 'top-right':    return 'TOP_RIGHT';
     case 'bottom-left':  return 'BOTTOM_LEFT';
     case 'bottom-right': return 'BOTTOM_RIGHT';
-    case 'top-right':
-    default:             return fallback;
+    default:             return 'TOP_RIGHT';
   }
 }
 
 export function getCameraControlPosition(position: MapControlPosition): GoogleControlPosition {
-  return mapControlToGooglePosition(position, 'INLINE_START_BLOCK_END');
+  return mapControlToGooglePosition(position);
 }
 
 export function getFullscreenControlPosition(position: MapControlPosition): GoogleControlPosition {
-  return mapControlToGooglePosition(position, 'TOP_RIGHT');
+  return mapControlToGooglePosition(position);
 }
 
 export function getGoogleColorScheme(colorScheme: GoogleMapColorScheme | undefined) {

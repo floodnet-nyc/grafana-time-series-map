@@ -51,6 +51,20 @@ export interface WidgetCallbacks {
   onThemeModeChange?: (mode: 'light' | 'dark') => void;
 }
 
+export type GoogleNativeControlProps = Pick<
+  google.maps.MapOptions,
+  | 'zoomControl'
+  | 'zoomControlOptions'
+  | 'cameraControl'
+  | 'cameraControlOptions'
+  | 'fullscreenControl'
+  | 'fullscreenControlOptions'
+  | 'scaleControl'
+  | 'scaleControlOptions'
+  | 'rotateControl'
+  | 'rotateControlOptions'
+>;
+
 export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> = BaseWidgetConfig<string, any>> {
   type: string;
   label: string;
@@ -61,7 +75,7 @@ export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> 
   /** Provider-specific native control configuration used when config.native is true. */
   nativeControls?: {
     /** Returns props to spread onto the Google Maps <Map> component. */
-    google?: (config: TConfig) => Record<string, unknown>;
+    google?: (config: TConfig) => Partial<GoogleNativeControlProps>;
     /** Returns a React element rendered as a native child of the MapLibre <Map> component. */
     maplibre?: (config: TConfig) => React.ReactNode;
   };
