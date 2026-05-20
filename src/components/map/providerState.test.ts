@@ -1,4 +1,4 @@
-import { applyWidgetViewStateChange } from './providerState';
+import { applyWidgetViewStateChange } from './useMapProviderState';
 
 describe('providerState', () => {
   it('applies delta-based zoom changes without losing the existing viewport', () => {

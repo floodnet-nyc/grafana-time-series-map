@@ -14,7 +14,7 @@ import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
-import { buildCurrentLocationLayers, type CurrentLocationState } from './map/currentLocationLayers';
+import { buildCurrentLocationLayers, type CurrentLocationState } from '../layers/current-location/currentLocationLayers';
 import 'style.css';
 
 const CONTROLS_HEIGHT = 48;

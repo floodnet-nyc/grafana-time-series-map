@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import { CollapsableSection, Combobox, Field, Switch } from '@grafana/ui';
 import type { StandardEditorProps } from '@grafana/data';
-import type { DeckBlendFactor, DeckBlendOperation, DeckRenderParametersOptions } from '../types';
-import { DEFAULT_DECK_PARAMETERS } from '../utils/deckgl/parameters';
+import type { DeckBlendFactor, DeckBlendOperation, DeckRenderParametersOptions } from 'types';
+import { DEFAULT_DECK_PARAMETERS } from 'utils/deckgl/parameters';
 
 const deckBlendOperations: Array<{ label: string; value: DeckBlendOperation }> = [
   { label: 'Add', value: 'add' },
