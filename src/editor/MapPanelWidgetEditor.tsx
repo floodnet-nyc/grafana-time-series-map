@@ -45,9 +45,12 @@ export function MapPanelWidgetEditor({ value: widgets, onChange, context: { opti
     [widgetList, updateWidget],
   );
 
-  const widgetTypes = useMemo(
-    () => widgetDefinitions.map((d) => ({ label: d.label, value: d.type, description: d.description })),
-    []
+  const mapProvider = options.deck.interleaved ? options.basemap.provider : 'deck';
+  const widgetTypes = useMemo(() => 
+      widgetDefinitions
+      .filter(d => !d.supportedMapProviders || d.supportedMapProviders.includes(mapProvider))
+      .map((d) => ({ label: d.label, value: d.type, description: d.description })),
+    [mapProvider]
   );
 
   return (

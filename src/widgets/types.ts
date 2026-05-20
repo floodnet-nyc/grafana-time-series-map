@@ -84,6 +84,7 @@ export interface WidgetDefinition<TConfig extends BaseWidgetConfig<string, any> 
   type: string;
   label: string;
   description: string;
+  supportedMapProviders?: Array<('google' | 'maplibre' | 'deck')>;
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
   createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget<WidgetProps, any>;
