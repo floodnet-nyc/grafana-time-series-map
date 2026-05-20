@@ -48,6 +48,7 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
   private collapsed_ = true;
   private rootEl_: HTMLElement | null = null;
   private panoContainerEl_: HTMLDivElement | null = null;
+  private panoHostEl_: HTMLDivElement | null = null;
   private pano_: google.maps.StreetViewPanorama | null = null;
   private marker_: google.maps.Marker | null = null;
   private status_: StreetViewStatus = 'idle';
@@ -63,7 +64,7 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
   setProps(props: Partial<StreetViewWidgetProps>) {
     this.placement = props.placement ?? this.placement;
     this.viewId = props.viewId ?? this.viewId;
-    if (props.defaultCollapsed !== undefined && !this.rootEl_) {
+    if (props.defaultCollapsed !== undefined && props.defaultCollapsed !== this.props.defaultCollapsed) {
       this.collapsed_ = props.defaultCollapsed;
     }
     super.setProps(props);
@@ -77,7 +78,7 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
 
   onRenderHTML(rootElement: HTMLElement): void {
     this.rootEl_ = rootElement;
-    rootElement.className = 'street-view-widget-root';
+    rootElement.classList.add('street-view-widget-root');
     this.renderView_();
     if (!this.collapsed_) {
       void this.syncStreetView_();
@@ -92,6 +93,7 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
     }
     this.rootEl_ = null;
     this.panoContainerEl_ = null;
+    this.panoHostEl_ = null;
   }
 
   private renderView_() {
@@ -163,8 +165,17 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
       return;
     }
 
+    if (this.pano_ && this.panoHostEl_ !== this.panoContainerEl_) {
+      this.clearPanorama_();
+    }
+
     const requestKey = `${coords.lat.toFixed(6)},${coords.lng.toFixed(6)}`;
     if (this.status_ === 'ready' && this.lastRequestKey_ === requestKey && this.pano_) {
+      requestAnimationFrame(() => {
+        if (this.pano_) {
+          maps.event.trigger(this.pano_, 'resize');
+        }
+      });
       return;
     }
 
@@ -198,11 +209,18 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
           linksControl: true,
           fullscreenControl: true,
         });
+        this.panoHostEl_ = this.panoContainerEl_;
       } else {
         this.pano_.setPano(data.location.pano);
         this.pano_.setPov(pov);
         this.pano_.setVisible(true);
       }
+
+      requestAnimationFrame(() => {
+        if (this.pano_) {
+          maps.event.trigger(this.pano_, 'resize');
+        }
+      });
 
       try {
         if (this.marker_) {
@@ -246,6 +264,7 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
       this.pano_.setVisible(false);
       this.pano_ = null;
     }
+    this.panoHostEl_ = null;
     if (this.panoContainerEl_) {
       this.panoContainerEl_.innerHTML = '';
     }
@@ -279,7 +298,7 @@ function StreetViewWidgetView({
 }) {
   if (collapsed) {
     return (
-      <div className="map-card legend-box street-view-widget-card street-view-widget-card-collapsed">
+      <div className="street-view-widget-card street-view-widget-card-collapsed">
         <button
           className="street-view-widget-toggle street-view-widget-toggle-collapsed"
           type="button"
@@ -295,7 +314,7 @@ function StreetViewWidgetView({
   }
 
   return (
-    <div className="map-card legend-box street-view-widget-card street-view-widget-card-expanded">
+    <div className="street-view-widget-card street-view-widget-card-expanded">
       <div className="street-view-widget-header">
         <div className="street-view-widget-header-main">
           {icon ? <span className="street-view-widget-icon">{icon}</span> : null}
