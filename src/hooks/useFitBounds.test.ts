@@ -3,7 +3,7 @@ import type { Feature } from 'geojson';
 import type { InitialViewFitDataSource, MapPanelOptions } from '../types';
 import { createSourceRef } from '../layers/defaults';
 import { useFitBounds } from './useFitBounds';
-import type { PreparedLayerState } from '../utils/dataframe/panelLayersModel';
+import type { PreparedLayerState } from '../utils/dataframe/pipeline';
 import type { GetAccessorFunction, GetNumericAccessorFunction } from '../layers/types';
 
 function createOptions(): MapPanelOptions {

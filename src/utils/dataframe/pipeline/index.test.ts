@@ -16,14 +16,14 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
   compileDerivedFields,
-} from './panelLayersModel';
-import { buildPacked } from './closestTimeFiltering';
-import type { MapPanelOptions } from '../../types';
-import type { LayerConfig } from '../../layers';
-import { createSourceRef } from '../../layers/defaults';
-import type { ScatterplotLayerConfig } from '../../layers/scatterplot';
-import type { GeoFeature } from './toGeoJsonFeatures';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../layers/types';
+} from '.';
+import { buildPacked } from '../closestTimeFiltering';
+import type { MapPanelOptions } from '../../../types';
+import type { LayerConfig } from '../../../layers';
+import { createSourceRef } from '../../../layers/defaults';
+import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
+import type { GeoFeature } from '../toGeoJsonFeatures';
+import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../../layers/types';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {

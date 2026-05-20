@@ -15,7 +15,7 @@ import {
   buildTimePackedByLayerId,
   renderPreparedLayers,
   type PreparedLayerState,
-} from '../utils/dataframe/panelLayersModel';
+} from '../utils/dataframe/pipeline';
 import { getLayerElevation } from '../layers/utils';
 import { 
   type GeoFeature, dataFramesToFeatures, 

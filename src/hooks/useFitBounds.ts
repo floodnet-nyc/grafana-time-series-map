@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Geometry } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import type { FitBounds } from '../components/map/types';
-import type { PreparedLayerState } from '../utils/dataframe/panelLayersModel';
+import type { PreparedLayerState } from '../utils/dataframe/pipeline';
 
 function collectCoords(geom: Geometry | null | undefined): Array<[number, number]> {
   if (!geom) {
