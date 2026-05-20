@@ -62,7 +62,7 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
 
     rootElement.className = 'welcome-widget-root';
     rootElement.innerHTML = `
-      <button class="deck-widget-button welcome-widget-trigger" type="button" title="${escapeAttr(label)}">
+      <button class="deck-widget deck-widget-button welcome-widget-trigger" type="button" title="${escapeAttr(label)}">
         <span class="welcome-widget-icon">?</span>
       </button>
       ${panelHtml}
