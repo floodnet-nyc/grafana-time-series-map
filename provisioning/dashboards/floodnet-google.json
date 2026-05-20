@@ -266,8 +266,10 @@
                     },
                     "google": {
                         "apiKey": "API-KEY",
-                        "mapId": "bc24713045eceb6d78171160",
-                        "colorScheme": "DARK"
+                        "mapId": "bc24713045eceb6d78171160"
+                    },
+                    "theme": {
+                        "mode": "dark"
                     },
                     "interactions": {
                         "syncViewToUrl": true

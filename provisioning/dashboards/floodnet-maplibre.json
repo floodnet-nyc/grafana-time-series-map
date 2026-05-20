@@ -245,8 +245,9 @@
                         "mapStyleUrl": "",
                         "projection": "mercator"
                     },
-                    "google": {
-                        "colorScheme": "DARK"
+                    "google": {},
+                    "theme": {
+                        "mode": "dark"
                     },
                     "interactions": {
                         "syncViewToUrl": true

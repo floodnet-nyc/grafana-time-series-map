@@ -142,8 +142,8 @@ export type MaplibreStyle =
 export type MaplibreProjection = 'mercator' | 'globe';
 export type InitialViewMode = 'manual' | 'fitData';
 export type InitialViewFitDataSource = 'allLayers' | 'layer';
-export type GoogleMapColorScheme = 'LIGHT' | 'DARK' | 'FOLLOW_SYSTEM';
 export type GoogleMapTypeControlStyle = 'DEFAULT' | 'DROPDOWN_MENU' | 'HORIZONTAL_BAR';
+export type MapThemeMode = 'auto' | 'light' | 'dark';
 export type GoogleControlPosition =
   | 'BLOCK_START_INLINE_START'
   | 'BLOCK_START_INLINE_CENTER'
@@ -205,7 +205,6 @@ export interface SharedMapControlSettings {
 export interface GoogleMapOptions {
   apiKey?: string;
   mapId?: string;
-  colorScheme?: GoogleMapColorScheme;
   mapTypeControl?: boolean;
   streetViewControl?: boolean;
   mapTypeControlPosition?: GoogleControlPosition;
@@ -267,6 +266,9 @@ export interface InitialViewOptions {
 }
 
 export interface MapPanelOptions {
+  theme?: {
+    mode?: MapThemeMode;
+  };
   basemap: {
     provider: BasemapProvider;
     maplibre: {

@@ -146,18 +146,17 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel)
         category: ['Basemap', 'Google Maps'],
       })
       .addSelect({
-        path: 'basemap.google.colorScheme',
-        name: 'Color Mode',
-        defaultValue: 'LIGHT',
+        path: 'theme.mode',
+        name: 'Theme mode',
+        defaultValue: 'auto',
         settings: {
           options: [
-            { label: 'Light', value: 'LIGHT' },
-            { label: 'Dark', value: 'DARK' },
-            { label: 'Auto', value: 'FOLLOW_SYSTEM' },
+            { label: 'Auto', value: 'auto' },
+            { label: 'Light', value: 'light' },
+            { label: 'Dark', value: 'dark' },
           ],
         },
-        showIf: (cfg) => cfg.basemap?.provider === 'google',
-        category: ['Basemap', 'Google Maps'],
+        category: ['Theme'],
       })
       .addCustomEditor({
         id: 'initialView',
