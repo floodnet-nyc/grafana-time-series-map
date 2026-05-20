@@ -7,7 +7,7 @@ import {
   type PopupWidgetProps,
 } from '@deck.gl/widgets';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from './types';
-import { WelcomeWidget, WelcomeWidgetProps } from './welcome-widget';
+import { WelcomeWidget, WelcomeWidgetProps } from './custom/welcome-widget';
 
 type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
 type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;

@@ -13,10 +13,10 @@ import {
   type ComboboxOption,
 } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
-import type { ColorScaleConfig, ShaderConfig } from '../types';
-import type { LayerConfig } from '../layers/_all';
-import { COLOR_SCHEMES, schemeToGradientCss } from '../utils/deckgl/colorSchemes';
-import { DEFAULT_VS_FILTER_COLOR } from '../utils/deckgl/colorScales';
+import type { ColorScaleConfig, ShaderConfig } from '../../types';
+import type { LayerConfig } from '../../layers/_all';
+import { COLOR_SCHEMES, schemeToGradientCss } from '../../utils/deckgl/colorSchemes';
+import { DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import {
   appendThresholdStep,
   createColorModePatch,
@@ -26,8 +26,8 @@ import {
   getColorMode,
   patchThresholdStep,
   removeThresholdStep,
-} from './layerEditorModel';
-import { SourceRefEditor } from './SourceRefEditor';
+} from '../layerEditorModel';
+import { SourceRefEditor } from '../SourceRefEditor';
 
 const COLOR_MODES: Array<ComboboxOption<string>> = [
   { label: 'Fixed color', value: 'fixed' },

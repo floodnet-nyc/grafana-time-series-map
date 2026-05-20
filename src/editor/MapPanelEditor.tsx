@@ -5,8 +5,8 @@ import type { GrafanaTheme2, DataFrame, StandardEditorProps } from '@grafana/dat
 import { layerDefinitions, type LayerConfig } from '../layers/_all';
 import { DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
 import { LayerEditor } from './LayerEditor';
-import { SelectableListEditor } from './SelectableListEditor';
-import { useSelectableListState } from './useSelectableListState';
+import { SelectableListEditor } from './utils/SelectableListEditor';
+import { useSelectableListState } from './utils/useSelectableListState';
 
 function makeDefaultLayer(type: string, index: number): LayerConfig {
   const renderer = layerDefinitions.find((definition) => definition.type === type);

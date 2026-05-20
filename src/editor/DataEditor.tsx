@@ -3,8 +3,8 @@ import { Field, Combobox, MultiCombobox, Input, TextArea, Switch, type ComboboxO
 import type { FeatureSourceConfig, JoinedSourceConfig, LayerDataConfig, LayerDerivedFieldConfig, TimeFilterConfig } from '../types';
 import { createSourceRef, DEFAULT_FEATURE_SOURCE_ID } from '../layers/defaults';
 import { SourceRefEditor } from './SourceRefEditor';
-import { SelectableListEditor } from './SelectableListEditor';
-import { useSelectableListState } from './useSelectableListState';
+import { SelectableListEditor } from './utils/SelectableListEditor';
+import { useSelectableListState } from './utils/useSelectableListState';
 
 const DERIVED_FIELD_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Number', value: 'number' },

@@ -4,8 +4,8 @@ import { useStyles2 } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
 import { WidgetEditor } from './WidgetEditor';
-import { SelectableListEditor } from './SelectableListEditor';
-import { useSelectableListState } from './useSelectableListState';
+import { SelectableListEditor } from './utils/SelectableListEditor';
+import { useSelectableListState } from './utils/useSelectableListState';
 
 interface Props extends StandardEditorProps<WidgetConfig[]> {}
 
