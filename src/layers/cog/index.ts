@@ -2,7 +2,7 @@ import { texture as geotiffTexture, type GetTileDataOptions, type MinimalTileDat
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
 import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu-modules';
 import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
-import { TimeCOGLayer, type TimeCOGFrame } from '@floodnet/deck.gl-time-cog-layer';
+import { TimeCOGLayer } from '@floodnet/deck.gl-time-cog-layer';
 import type { Texture } from '@luma.gl/core';
 import type { ColorScaleConfig, SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
@@ -27,7 +27,7 @@ const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
 };
 
 const mainThreadPool = new DecoderPool();
-const renderTileCache = new Map<string, (data: CogTileData) => RenderTileResult>();
+// const renderTileCache = new Map<string, (data: CogTileData) => RenderTileResult>();
 
 type CogTileData = MinimalTileData & {
   texture: Texture;
@@ -45,31 +45,31 @@ float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
 color = vec4(c.rgb, alpha);`;
 }
 
-function cogCacheKey(colorMaxValue: number, cs: ColorScaleConfig): string {
-  if (cs.type === 'threshold') {
-    return `${colorMaxValue}:threshold:${JSON.stringify(cs.steps ?? [])}`;
-  }
-  return `${colorMaxValue}:${cs.schemeName ?? ''}:${cs.invert ?? false}:${cs.scaleMin ?? 0}:${cs.scaleMax ?? 1}`;
-}
+// function cogCacheKey(colorMaxValue: number, cs: ColorScaleConfig): string {
+//   if (cs.type === 'threshold') {
+//     return `${colorMaxValue}:threshold:${JSON.stringify(cs.steps ?? [])}`;
+//   }
+//   return `${colorMaxValue}:${cs.schemeName ?? ''}:${cs.invert ?? false}:${cs.scaleMin ?? 0}:${cs.scaleMax ?? 1}`;
+// }
 
-function getStableRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (data: CogTileData) => RenderTileResult {
-  const key = cogCacheKey(colorMaxValue, colorScale);
-  if (!renderTileCache.has(key)) {
-    const colorDecl = buildInterpolateColorGlsl(colorScale);
-    const colorModule = {
-      name: `cog-color-${key}`,
-      inject: {
-        'fs:#decl': colorDecl,
-        'fs:DECKGL_FILTER_COLOR': buildFsFilterColor(),
-      },
-    };
-    renderTileCache.set(key, (data: CogTileData): RenderTileResult => ({
-      image: data.texture as any,
-      renderPipeline: [{ module: colorModule as any }],
-    }));
-  }
-  return renderTileCache.get(key)!;
-}
+// function getStableRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (data: CogTileData) => RenderTileResult {
+//   const key = cogCacheKey(colorMaxValue, colorScale);
+//   if (!renderTileCache.has(key)) {
+//     const colorDecl = buildInterpolateColorGlsl(colorScale);
+//     const colorModule = {
+//       name: `cog-color-${key}`,
+//       inject: {
+//         'fs:#decl': colorDecl,
+//         'fs:DECKGL_FILTER_COLOR': buildFsFilterColor(),
+//       },
+//     };
+//     renderTileCache.set(key, (data: CogTileData): RenderTileResult => ({
+//       image: data.texture as any,
+//       renderPipeline: [{ module: colorModule as any }],
+//     }));
+//   }
+//   return renderTileCache.get(key)!;
+// }
 
 function getRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (data: CogTileData) => RenderTileResult {
   const colorDecl = buildInterpolateColorGlsl(colorScale);
@@ -173,8 +173,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     const { config, features, cursorTimeMs, getAccessor } = context;
     const options = config.settings;
 
-    const [getUrl, updatesUrl] = getAccessor<string>(options.url);
-    const [getTime, updatesTime] = getAccessor<number>(options.timestamp);
+    const [getUrl, updatesUrl] = getAccessor<string>(options.url, '');
+    const [getTime, updatesTime] = getAccessor<number>(options.timestamp, 0);
 
     return [
       new TimeCOGLayer({
@@ -182,7 +182,7 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
         data: features,
         currentTime: cursorTimeMs,
         getUrl,
-        getTime: getTime ? (frame, context) => Number(getTime(frame, context) ?? 0) : undefined,
+        getTime,
         getTileData,
         renderTile: getRenderTile(options.colorMaxValue, config.colorScale ?? DEFAULT_COG_COLOR_SCALE),
         opacity: config.opacity,
