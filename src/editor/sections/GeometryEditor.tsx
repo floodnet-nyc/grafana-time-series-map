@@ -1,8 +1,8 @@
 import React from 'react';
 import { Field, Combobox, type ComboboxOption } from '@grafana/ui';
-import type { GeometrySource } from '../types';
-import { createSourceRef } from '../layers/defaults';
-import { SourceRefEditor } from './utils/SourceRefEditor';
+import type { GeometrySource } from '../../types';
+import { createSourceRef } from '../../layers/defaults';
+import { SourceRefEditor } from '../utils/SourceRefEditor';
 
 const GEOMETRY_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Lat / Lng columns', value: 'latlng' },

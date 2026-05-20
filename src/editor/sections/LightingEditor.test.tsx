@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { LightingEditor } from './LightingEditor';
-import type { DeckLightingOptions } from '../types';
+import type { DeckLightingOptions } from '../../types';
 
 jest.mock('@grafana/ui', () => {
   const React = require('react');
