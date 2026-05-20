@@ -7,8 +7,7 @@ import type { MapProviderProps, ViewportSnapshot, WidgetViewStateChange } from '
 import { useDeckGLProps } from '../DeckGLMap';
 import { MapFitBounds } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
-import { getGoogleColorScheme, getControlPosition } from './controlMappings';
-import { resolveMapControlSettings } from '../controlSettings';
+import { getGoogleColorScheme } from './controlMappings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import { useMapProviderState } from '../useMapProviderState';
 
@@ -102,21 +101,6 @@ function getGoogleWidgetPlacement(placement: WidgetPlacement): google.maps.Contr
   }
 }
 
-const mapTypeControlStyleValues: Record<string, google.maps.MapTypeControlStyle> = {
-  DEFAULT: 0 as google.maps.MapTypeControlStyle,
-  DROPDOWN_MENU: 2 as google.maps.MapTypeControlStyle,
-  HORIZONTAL_BAR: 1 as google.maps.MapTypeControlStyle,
-};
-
-type GoogleMapControlProps = Pick<
-  google.maps.MapOptions,
-  | 'zoomControl' | 'zoomControlOptions'
-  | 'cameraControl' | 'cameraControlOptions'
-  | 'fullscreenControl' | 'fullscreenControlOptions'
-  | 'scaleControl' | 'rotateControl' | 'rotateControlOptions'
-  | 'mapTypeControl' | 'mapTypeControlOptions'
->;
-
 // ── Map provider component ────────────────────────────────────────────────────
 
 export default function GoogleMap(props: MapProviderProps) {
@@ -163,20 +147,10 @@ function GoogleMapInner(props: MapProviderProps) {
 
   useWidgetControls(googleMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
 
-  const googleNativeProps = useMemo(
+  const googleControlProps = useMemo(
     () => resolveGoogleNativeProps(options.widgets ?? []),
     [options.widgets],
   );
-
-  const controlSettings = resolveMapControlSettings(options);
-  const googleControlProps = useMemo<GoogleMapControlProps>(() => ({
-    ...googleNativeProps,
-    mapTypeControl: controlSettings.google.mapTypeControl ?? false,
-    mapTypeControlOptions: {
-      position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
-      style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
-    },
-  }), [googleNativeProps, controlSettings]);
 
   const sharedMapProps = {
     mapId: options.basemap.google.mapId || undefined,
@@ -255,7 +229,7 @@ function GoogleMapInner(props: MapProviderProps) {
             zoomControl={false}
             cameraControl={false}
             fullscreenControl={false}
-            scaleControl={controlSettings.scale.enabled}
+            scaleControl={false}
             mapTypeControl={false}
             rotateControl={false}
             streetViewControl={false}

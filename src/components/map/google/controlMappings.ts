@@ -1,5 +1,5 @@
 import { ColorScheme, ControlPosition } from '@vis.gl/react-google-maps';
-import type { GoogleControlPosition, GoogleMapTypeControlStyle, MapControlPosition, MapThemeMode } from '../../../types';
+import type { GoogleControlPosition, MapControlPosition, MapThemeMode } from '../../../types';
 
 const googleControlPositionValues: Record<GoogleControlPosition, google.maps.ControlPosition> = {
   BLOCK_START_INLINE_START: ControlPosition.BLOCK_START_INLINE_START,
@@ -32,12 +32,6 @@ const googleColorSchemeValues: Record<MapThemeMode, typeof ColorScheme[keyof typ
   light: ColorScheme.LIGHT,
   dark: ColorScheme.DARK,
   auto: ColorScheme.FOLLOW_SYSTEM,
-};
-
-export const mapTypeControlStyleValues: Record<GoogleMapTypeControlStyle, google.maps.MapTypeControlStyle> = {
-  DEFAULT: 0 as google.maps.MapTypeControlStyle,
-  DROPDOWN_MENU: 2 as google.maps.MapTypeControlStyle,
-  HORIZONTAL_BAR: 1 as google.maps.MapTypeControlStyle,
 };
 
 export function getControlPosition(position: GoogleControlPosition | undefined, fallback: GoogleControlPosition) {
