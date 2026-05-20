@@ -184,67 +184,81 @@ export class StreetViewWidget extends Widget<StreetViewWidgetProps> {
     const token = ++this.requestToken_;
 
     const service = new maps.StreetViewService();
-    service.getPanorama({ location: coords, radius: 75 }, (data, status) => {
-      if (token !== this.requestToken_ || this.collapsed_) {
-        return;
-      }
+    void this.loadPanorama_(service, maps, coords, token);
+  }
 
-      if (status !== maps.StreetViewStatus.OK || !data?.location?.pano) {
-        this.clearPanorama_();
-        this.setStatus_('no-coverage');
-        return;
-      }
+  private async loadPanorama_(
+    service: google.maps.StreetViewService,
+    maps: typeof google.maps,
+    coords: google.maps.LatLngLiteral,
+    token: number
+  ) {
+    const result = await findMarkerFriendlyPanorama(service, maps, coords);
+    if (token !== this.requestToken_ || this.collapsed_) {
+      return;
+    }
 
-      const heading = data.location.latLng ? computeHeading(data.location.latLng, coords) : 0;
-      const pov: google.maps.StreetViewPov = { heading, pitch: -10 };
+    if (!result) {
+      this.clearPanorama_();
+      this.setStatus_('no-coverage');
+      return;
+    }
 
-      if (!this.pano_) {
-        this.pano_ = new maps.StreetViewPanorama(this.panoContainerEl_!, {
-          pano: data.location.pano,
-          pov,
-          visible: true,
-          addressControl: false,
-          motionTracking: false,
-          clickToGo: true,
-          linksControl: true,
-          fullscreenControl: true,
-        });
-        this.panoHostEl_ = this.panoContainerEl_;
-      } else {
-        this.pano_.setPano(data.location.pano);
-        this.pano_.setPov(pov);
-        this.pano_.setVisible(true);
-      }
+    const location = result.location;
+    if (!location?.pano) {
+      this.clearPanorama_();
+      this.setStatus_('no-coverage');
+      return;
+    }
+    const heading = location.latLng ? computeHeading(location.latLng, coords) : 0;
+    const pov: google.maps.StreetViewPov = { heading, pitch: -10 };
 
-      requestAnimationFrame(() => {
-        if (this.pano_) {
-          maps.event.trigger(this.pano_, 'resize');
-        }
+    if (!this.pano_) {
+      this.pano_ = new maps.StreetViewPanorama(this.panoContainerEl_!, {
+        pano: location.pano,
+        pov,
+        visible: true,
+        addressControl: false,
+        motionTracking: false,
+        clickToGo: true,
+        linksControl: true,
+        fullscreenControl: true,
       });
+      this.panoHostEl_ = this.panoContainerEl_;
+    } else {
+      this.pano_.setPano(location.pano);
+      this.pano_.setPov(pov);
+      this.pano_.setVisible(true);
+    }
 
-      try {
-        if (this.marker_) {
-          this.marker_.setMap(null);
-        }
-        this.marker_ = new maps.Marker({
-          position: coords,
-          map: this.pano_,
-          title: this.props.selectedKey ?? 'Selected feature',
-          icon: {
-            path: maps.SymbolPath.CIRCLE,
-            scale: 5,
-            strokeColor: '#ffffff',
-            strokeWeight: 2,
-            fillColor: '#3388ff',
-            fillOpacity: 1,
-          },
-        });
-      } catch {
-        this.marker_ = null;
+    requestAnimationFrame(() => {
+      if (this.pano_) {
+        maps.event.trigger(this.pano_, 'resize');
       }
-
-      this.setStatus_('ready');
     });
+
+    try {
+      if (this.marker_) {
+        this.marker_.setMap(null);
+      }
+      this.marker_ = new maps.Marker({
+        position: coords,
+        map: this.pano_,
+        title: this.props.selectedKey ?? 'Selected feature',
+        icon: {
+          path: maps.SymbolPath.CIRCLE,
+          scale: 5,
+          strokeColor: '#ffffff',
+          strokeWeight: 2,
+          fillColor: '#3388ff',
+          fillOpacity: 1,
+        },
+      });
+    } catch {
+      this.marker_ = null;
+    }
+
+    this.setStatus_('ready');
   }
 
   private setStatus_(next: StreetViewStatus) {
@@ -401,4 +415,100 @@ function toRad(value: number) {
 
 function toDeg(value: number) {
   return (value * 180) / Math.PI;
+}
+
+const MIN_MARKER_VISIBILITY_DISTANCE_METERS = 12;
+const OFFSET_SEARCH_DISTANCE_METERS = 20;
+const OFFSET_SEARCH_BEARINGS = [0, 90, 180, 270, 45, 135, 225, 315];
+
+async function findMarkerFriendlyPanorama(
+  service: google.maps.StreetViewService,
+  maps: typeof google.maps,
+  target: google.maps.LatLngLiteral
+): Promise<google.maps.StreetViewPanoramaData | null> {
+  const primary = await getPanorama(service, maps, target, 75);
+  if (!primary) {
+    return null;
+  }
+
+  const primaryDistance = primary.location?.latLng ? distanceMeters(primary.location.latLng, target) : Infinity;
+  if (primaryDistance >= MIN_MARKER_VISIBILITY_DISTANCE_METERS) {
+    return primary;
+  }
+
+  for (const bearing of OFFSET_SEARCH_BEARINGS) {
+    const offsetTarget = offsetLatLng(target, OFFSET_SEARCH_DISTANCE_METERS, bearing);
+    const candidate = await getPanorama(service, maps, offsetTarget, 75);
+    if (!candidate?.location?.latLng) {
+      continue;
+    }
+    const candidateDistance = distanceMeters(candidate.location.latLng, target);
+    if (candidateDistance >= MIN_MARKER_VISIBILITY_DISTANCE_METERS) {
+      return candidate;
+    }
+  }
+
+  return primary;
+}
+
+function getPanorama(
+  service: google.maps.StreetViewService,
+  maps: typeof google.maps,
+  location: google.maps.LatLngLiteral,
+  radius: number
+): Promise<google.maps.StreetViewPanoramaData | null> {
+  return new Promise((resolve) => {
+    service.getPanorama({ location, radius }, (data, status) => {
+      if (status !== maps.StreetViewStatus.OK || !data?.location?.pano) {
+        resolve(null);
+        return;
+      }
+      resolve(data);
+    });
+  });
+}
+
+function distanceMeters(
+  from: google.maps.LatLng | google.maps.LatLngLiteral,
+  to: google.maps.LatLngLiteral
+): number {
+  const fromLat = typeof from.lat === 'function' ? from.lat() : from.lat;
+  const fromLng = typeof from.lng === 'function' ? from.lng() : from.lng;
+  const lat1 = toRad(fromLat);
+  const lat2 = toRad(to.lat);
+  const deltaLat = toRad(to.lat - fromLat);
+  const deltaLng = toRad(to.lng - fromLng);
+  const a =
+    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function offsetLatLng(
+  origin: google.maps.LatLngLiteral,
+  distanceMetersValue: number,
+  bearingDegrees: number
+): google.maps.LatLngLiteral {
+  const angularDistance = distanceMetersValue / 6371000;
+  const bearing = toRad(bearingDegrees);
+  const lat1 = toRad(origin.lat);
+  const lng1 = toRad(origin.lng);
+
+  const sinLat1 = Math.sin(lat1);
+  const cosLat1 = Math.cos(lat1);
+  const sinAngular = Math.sin(angularDistance);
+  const cosAngular = Math.cos(angularDistance);
+
+  const lat2 = Math.asin(sinLat1 * cosAngular + cosLat1 * sinAngular * Math.cos(bearing));
+  const lng2 =
+    lng1 +
+    Math.atan2(
+      Math.sin(bearing) * sinAngular * cosLat1,
+      cosAngular - sinLat1 * Math.sin(lat2)
+    );
+
+  return {
+    lat: toDeg(lat2),
+    lng: ((toDeg(lng2) + 540) % 360) - 180,
+  };
 }

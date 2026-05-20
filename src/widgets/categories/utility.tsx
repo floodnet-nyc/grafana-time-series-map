@@ -1,6 +1,7 @@
 import {
   LoadingWidget,
   _StatsWidget as StatsWidget,
+  ScreenshotWidget,
   ThemeWidget,
   type LoadingWidgetProps,
   type ScreenshotWidgetProps,
@@ -8,7 +9,6 @@ import {
   type ThemeWidgetProps,
 } from '@deck.gl/widgets';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
-import { CustomScreenshotWidget } from '../custom/screenshot-widget';
 
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
@@ -66,7 +66,7 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
     },
   ],
   createWidget: (config, callbacks?: WidgetCallbacks) =>
-    new CustomScreenshotWidget({ id: config.id, ...config.settings, onCapture: callbacks?.screenshot?.onCapture }),
+    new ScreenshotWidget({ id: config.id, ...config.settings, onCapture: callbacks?.screenshot?.onCapture }),
 };
 
 export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
