@@ -75,7 +75,7 @@ export interface JoinedSourceField {
 }
 
 export interface JoinedSourceJoinConfig {
-  type: 'keyed-asof';
+  type: 'asof';
   localKey: SourceRef;
   remoteKey: string;
   time: string;

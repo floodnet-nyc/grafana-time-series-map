@@ -139,7 +139,7 @@ describe('panelLayersModel', () => {
           id: 'A',
           refId: 'A',
           join: {
-            type: 'keyed-asof',
+            type: 'asof',
             localKey: createSourceRef('deployment_id'),
             remoteKey: 'deployment_id',
             time: 'time',
@@ -183,7 +183,7 @@ describe('panelLayersModel', () => {
           id: 'B',
           refId: 'B',
           join: {
-            type: 'keyed-asof',
+            type: 'asof',
             localKey: createSourceRef('deployment_id'),
             remoteKey: 'deployment_id',
             time: 'time',

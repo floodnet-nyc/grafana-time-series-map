@@ -4,6 +4,7 @@ import { useStyles2, Input, Switch, Combobox, Field, ColorPicker } from '@grafan
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { LayerOptionField } from '../layers/types';
 import { widgetDefinitions, type WidgetConfig } from '../widgets/_all';
+import { MapPanelOptions } from 'types';
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
   const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
@@ -22,9 +23,10 @@ function hexToRgba(hex: string): [number, number, number, number] {
 interface Props {
   widget: WidgetConfig;
   onChange: (widget: WidgetConfig) => void;
+  options: MapPanelOptions;
 }
 
-export function WidgetEditor({ widget, onChange }: Props) {
+export function WidgetEditor({ widget, onChange, options }: Props) {
   const styles = useStyles2(getStyles);
   const widgetTypes = useMemo(
     () => widgetDefinitions.map((d) => ({ label: d.label, value: d.type, description: d.description })),
@@ -32,6 +34,8 @@ export function WidgetEditor({ widget, onChange }: Props) {
   );
   const currentDefinition = useMemo(() => widgetDefinitions.find((d) => d.type === widget.type), [widget.type]);
   const settingsRecord = widget.settings as unknown as Record<string, unknown>;
+  const mapProvider = options.basemap.provider;
+  const supportsNative = currentDefinition?.nativeControls?.[options.basemap.provider] && options.deck.interleaved;
 
   const patch = useCallback(
     (updates: Partial<WidgetConfig>) => onChange({ ...(widget as any), ...updates } as WidgetConfig),
@@ -126,7 +130,7 @@ export function WidgetEditor({ widget, onChange }: Props) {
       {/* </CollapsableSection> */}
 
       
-
+      {/* TODO: customize options e.g. cameraControlOptions */}
       {currentDefinition?.editorSections.map((section, index) => (
         <React.Fragment key={section.title ?? index}>
           <h6>{section.title}</h6>
@@ -135,6 +139,13 @@ export function WidgetEditor({ widget, onChange }: Props) {
         // <CollapsableSection key={section.title ?? index} label={section.title ?? ''} isOpen>
         // </CollapsableSection>
       ))}
+
+      {supportsNative ? (
+        <Field label="Use native control">
+          <Switch value={widget.native} onChange={(e) => patch({ native: e.currentTarget.checked })} />
+        </Field>
+      ) : null}
+
     </div>
   );
 }

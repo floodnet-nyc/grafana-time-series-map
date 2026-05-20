@@ -92,7 +92,7 @@ export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], se
     const packedBySourceId = new Map<string, PackedLookupEntry>();
 
     for (const joinedSource of joinedSources) {
-      if (joinedSource.join.type !== 'keyed-asof') {
+      if (joinedSource.join.type !== 'asof') {
         continue;
       }
 
@@ -140,7 +140,7 @@ export function buildJoinedSourceValuesByLayerId(
 
     for (const joinedSource of joinedSources) {
       const entry = packedBySourceId.get(joinedSource.id);
-      if (!entry || joinedSource.join.type !== 'keyed-asof') {
+      if (!entry || joinedSource.join.type !== 'asof') {
         continue;
       }
 
@@ -222,16 +222,23 @@ export function buildPreparedLayerStates(
     const joinedSourceValues = joinedSourceValuesByLayerId.get(config.id);
     const derivedFields = compileDerivedFields(config);
     const derivedValues = buildDerivedValues(derivedFields, config, features, joinedSourceValues);
+    const derivedFieldNames = new Set((config.derivedFields ?? []).map((field) => field.as).filter(Boolean));
 
     const getAccessor = ((fieldRef?: SourceRef, defaultValue?: unknown) => {
       if (!fieldRef?.field) {
         return [undefined, []];
       }
 
+      if (fieldRef.source === config.data.featureSource.id && derivedFieldNames.has(fieldRef.field)) {
+        return [
+          (_feature: Feature, { index }: AccessorContext<Feature>) => derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
+          dependencyKey(fieldRef, defaultValue),
+        ];
+      }
+
       if (fieldRef.source === config.data.featureSource.id) {
         return [
-          (feature: Feature, { index }: AccessorContext<Feature>) =>
-            derivedValues?.[index]?.[fieldRef.field] ?? feature.properties?.[fieldRef.field] ?? defaultValue,
+          (feature: Feature) => feature.properties?.[fieldRef.field] ?? defaultValue,
           dependencyKey(fieldRef, defaultValue),
         ];
       }
