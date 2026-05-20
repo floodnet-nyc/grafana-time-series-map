@@ -1,4 +1,5 @@
-import type { Layer } from '@deck.gl/core';
+import type { AccessorContext, Layer } from '@deck.gl/core';
+import type { Feature } from 'geojson';
 jest.mock('../../layers', () => ({
   layerDefinitions: [],
 }));
@@ -8,9 +9,13 @@ jest.mock('../../extensions', () => ({
 import {
   buildJoinedSourceValuesByLayerId,
   buildPreparedLayerStates,
+  selectAccessorFactories,
+  selectDerivedValues,
+  selectPreparedLayerState,
   buildTimeFilterFlagsByLayerId,
   renderPreparedLayers,
   type PreparedLayerState,
+  compileDerivedFields,
 } from './panelLayersModel';
 import { buildPacked } from './closestTimeFiltering';
 import type { MapPanelOptions } from '../../types';
@@ -172,6 +177,91 @@ describe('panelLayersModel', () => {
     expect(state.derivedValues).toEqual([{ depthDiff: 3 }]);
     expect(state.getAccessor).toEqual(expect.any(Function));
     expect(state.getNumericAccessor).toEqual(expect.any(Function));
+  });
+
+  it('builds derived values without mutating the feature objects', () => {
+    const config = createLayerConfig({
+      derivedFields: [
+        {
+          as: 'depthDouble',
+          expression: 'this.depth * 2',
+          type: 'number',
+        },
+      ],
+    });
+    const features = [createFeature({ depth: 4 }, undefined, 0)];
+
+    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, features);
+
+    expect(derivedValues).toEqual([{ depthDouble: 8 }]);
+    expect((features[0] as GeoFeature & { __derived?: Record<string, unknown> }).__derived).toBeUndefined();
+  });
+
+  it('builds accessor factories against local, derived, and joined values', () => {
+    const config = createLayerConfig({
+      data: {
+        featureSource: { id: 'main', refId: '' },
+        joinedSources: [
+          {
+            id: 'A',
+            refId: 'A',
+            join: {
+              type: 'asof',
+              localKey: createSourceRef('deployment_id'),
+              remoteKey: 'deployment_id',
+              time: 'time',
+            },
+            fields: [{ field: 'depth' }],
+          },
+        ],
+      },
+      derivedFields: [
+        {
+          as: 'depthDiff',
+          expression: 'A.depth - this.contour_depth_inches',
+          type: 'number',
+        },
+      ],
+    });
+    const features = [createFeature({ deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
+    const joinedSourceValues = new Map([
+      ['A', new Map([['sensor-1', { depth: 5 }]])],
+    ]);
+    const derivedValues = [{ depthDiff: 3 }];
+    const { getAccessor, getNumericAccessor } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
+
+    const [getDerived] = getAccessor(createSourceRef('depthDiff'));
+    const [getJoined] = getAccessor({ source: 'A', field: 'depth' });
+    const [getLocal] = getAccessor(createSourceRef('contour_depth_inches'));
+    const [getMissingNumeric] = getNumericAccessor({ source: 'A', field: 'missing' }, 7);
+
+    expect(getDerived?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(3);
+    expect(getJoined?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(5);
+    expect(getLocal?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(2);
+    expect(getMissingNumeric?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(7);
+  });
+
+  it('composes a prepared layer state from selector inputs', () => {
+    const config = createLayerConfig({
+      derivedFields: [
+        {
+          as: 'depthDouble',
+          expression: 'this.depth * 2',
+          type: 'number',
+        },
+      ],
+    });
+    const features = [createFeature({ depth: 4 }, undefined, 0)];
+
+    const state = selectPreparedLayerState({
+      config,
+      features,
+      timeFilterFlags: new Uint8Array([1]),
+    });
+
+    expect(state.features).toBe(features);
+    expect(state.timeFilterFlags).toEqual(new Uint8Array([1]));
+    expect(state.derivedValues).toEqual([{ depthDouble: 8 }]);
   });
 
   it('resolves keyed as-of joined source values at the current cursor time', () => {
