@@ -39,6 +39,9 @@ export interface WidgetCallbacks {
   onViewStateChange?: (next: WidgetViewStateChange) => void;
   /** The view state to reset to (used by ResetViewWidget in controlled mode). */
   resetViewState?: WidgetViewStateChange;
+  geolocate?: {
+    onLocation: (next: { latitude: number; longitude: number; zoom: number; accuracy?: number }) => void;
+  };
   screenshot?: {
     onCapture: (widget: ScreenshotWidget) => void | Promise<void>;
   };
