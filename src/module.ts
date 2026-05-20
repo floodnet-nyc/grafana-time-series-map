@@ -9,7 +9,7 @@ import { MapPanelWidgetEditor } from './editor/MapPanelWidgetEditor';
 // import { DeckBlendingEditor } from './editor/DeckBlendingEditor';
 import { TooltipTemplateEditor } from './editor/TooltipTemplateEditor';
 import { PopupTemplateEditor } from './editor/PopupTemplateEditor';
-import { VariableSelectEditor } from './editor/VariableSelectEditor';
+import { VariableSelectEditor } from './editor/utils/VariableSelectEditor';
 // import { DEFAULT_DECK_LIGHTING } from './utils/deckgl/lighting';
 // import { DEFAULT_DECK_PARAMETERS } from './utils/deckgl/parameters';
 // import { commonOptionsBuilder } from '@grafana/ui';

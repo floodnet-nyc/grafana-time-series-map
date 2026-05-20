@@ -17,10 +17,10 @@ import type { SourceRef } from '../types';
 import { layerDefinitions, type LayerConfig } from '../layers/_all';
 import { layerExtensionDefinitions } from '../extensions';
 import { GeometryEditor } from './GeometryEditor';
-import { ColorScaleEditor } from './ColorScaleEditor';
+import { ColorScaleEditor } from './utils/ColorScaleEditor';
 import { DataEditor } from './DataEditor';
-import { SelectableListEditor } from './SelectableListEditor';
-import { useSelectableListState } from './useSelectableListState';
+import { SelectableListEditor } from './utils/SelectableListEditor';
+import { useSelectableListState } from './utils/useSelectableListState';
 import { SourceRefEditor } from './SourceRefEditor';
 
 const DEFAULT_MIN_ZOOM = 0;

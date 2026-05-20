@@ -13,8 +13,8 @@ import {
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { DeckLightColor, DeckLightConfig, DeckLightingOptions, DeckLightType } from '../types';
 import { DEFAULT_DECK_LIGHTING } from '../utils/deckgl/lighting';
-import { SelectableListEditor } from './SelectableListEditor';
-import { useSelectableListState } from './useSelectableListState';
+import { SelectableListEditor } from './utils/SelectableListEditor';
+import { useSelectableListState } from './utils/useSelectableListState';
 
 const lightTypes: Array<ComboboxOption<DeckLightType>> = [
   { label: 'Ambient', value: 'ambient' },
