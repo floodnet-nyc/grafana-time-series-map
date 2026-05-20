@@ -1,4 +1,5 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
+import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
@@ -21,12 +22,6 @@ export interface TripsLayerSettings {
 
 export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
 
-interface TripDatum {
-  feature: Feature;
-  path: number[][];
-  timestamps: number[];
-}
-
 function getPath(feature: Feature): number[][] | null {
   const geometry = feature.geometry as LineString | MultiLineString | null;
   if (!geometry) {
@@ -41,55 +36,9 @@ function getPath(feature: Feature): number[][] | null {
   return null;
 }
 
-function parseTimestamps(raw: unknown): number[] {
-  if (Array.isArray(raw)) {
-    return raw.map(Number).filter(Number.isFinite);
-  }
-  if (typeof raw === 'string') {
-    const trimmed = raw.trim();
-    if (!trimmed) {
-      return [];
-    }
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) {
-        return parsed.map(Number).filter(Number.isFinite);
-      }
-    } catch {
-      return trimmed.split(',').map((value) => Number(value.trim())).filter(Number.isFinite);
-    }
-    return trimmed.split(',').map((value) => Number(value.trim())).filter(Number.isFinite);
-  }
-  return [];
-}
-
-function getTimestamps(feature: Feature, path: number[][], field: string, unit: 'ms' | 's') {
-  const timestamps = field
-    ? parseTimestamps(feature.properties?.[field])
-    : path.map((coordinate) => Number(coordinate[2])).filter(Number.isFinite);
-  if (timestamps.length !== path.length) {
-    return null;
-  }
-  return unit === 's' ? timestamps.map((value) => value * 1000) : timestamps;
-}
-
-function getTripData(features: Feature[], timeFilterFlags: Uint8Array, options: TripsLayerSettings) {
-  const data: TripDatum[] = [];
-  for (const feature of features as Array<Feature & { __idx?: number }>) {
-    if (!timeFilterFlags[feature.__idx ?? -1]) {
-      continue;
-    }
-    const path = getPath(feature);
-    if (!path || path.length < 2) {
-      continue;
-    }
-    const timestamps = getTimestamps(feature, path, options.timestamps.field, options.timestampUnit);
-    if (!timestamps) {
-      continue;
-    }
-    data.push({ feature, path, timestamps });
-  }
-  return data;
+function getValidTripPath(feature: Feature) {
+  const path = getPath(feature);
+  return path && path.length >= 2 ? path : [];
 }
 
 const defaultSettings: TripsLayerSettings = {
@@ -114,16 +63,16 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
   editorSections: [
     section('Trip time', [
       { key: 'timestamps', label: 'Timestamps field', type: 'fieldPicker', defaultValue: createSourceRef() },
-      {
-        key: 'timestampUnit',
-        label: 'Timestamp unit',
-        type: 'select',
-        defaultValue: 'ms',
-        selectOptions: [
-          { label: 'Milliseconds', value: 'ms' },
-          { label: 'Seconds', value: 's' },
-        ],
-      },
+      // {
+      //   key: 'timestampUnit',
+      //   label: 'Timestamp unit',
+      //   type: 'select',
+      //   defaultValue: 'ms',
+      //   selectOptions: [
+      //     { label: 'Milliseconds', value: 'ms' },
+      //     { label: 'Seconds', value: 's' },
+      //   ],
+      // },
       { key: 'trailLengthMs', label: 'Trail length (ms)', type: 'number', defaultValue: 300000 },
       { key: 'fadeTrail', label: 'Fade trail', type: 'boolean', defaultValue: true },
     ]),
@@ -137,17 +86,21 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TripsLayerConfig>) {
-    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick, getAccessors } = context;
+    const { config, features, cursorTimeMs, getAccessors } = context;
     const options = config.settings;
-    const data = getTripData(features, timeFilterFlags, options);
-    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
-    const [getWidth] = getAccessors.number(options.width, 1);
     const commonProps = createCommonLayerProps(context);
+    const [getColorValue, updatesColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
+    const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
+    const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
+    const [getTimestamps, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
+
+    // Panel time filtering and joined-source lookups stay feature-oriented:
+    // each trip row is selected once by the shared pipeline, while the per-vertex
+    // timestamp array remains layer-local metadata that only drives trail animation.
     return [
-      new TripsLayer<TripDatum>({
+      new TripsLayer<Feature>({
         ...commonProps,
-        data,
+        data: features,
         currentTime: cursorTimeMs,
         trailLength: options.trailLengthMs,
         fadeTrail: options.fadeTrail,
@@ -156,11 +109,16 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: (datum: TripDatum) => datum.path as any,
-        getTimestamps: (datum: TripDatum) => datum.timestamps,
-        getColor: (datum: TripDatum, ctx: any) => getColor(datum.feature, ctx) as [number, number, number, number],
-        getWidth: getWidth ? (datum: TripDatum, ctx: any) => getWidth(datum.feature, ctx) : 1,
-        onClick: onFeatureClick ? (info: any) => info.object && onFeatureClick(info.object.feature, info) : undefined,
+        getPath: getValidTripPath,
+        getTimestamps,
+        getColor,
+        getWidth: getWidth ?? 1,
+        updateTriggers: {
+          ...commonProps.updateTriggers,
+          getTimestamps: updatesTimestamps,
+          getColor: updatesColorValue,
+          getWidth: updatesWidth,
+        },
       } as any),
     ];
   },

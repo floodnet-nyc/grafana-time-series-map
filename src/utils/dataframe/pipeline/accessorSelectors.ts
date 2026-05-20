@@ -54,6 +54,33 @@ function toNumber(raw: unknown, defaultValue: number): number {
   return Number.isFinite(n) ? n : defaultValue;
 }
 
+function toArray(raw: unknown, defaultValue: unknown[]): unknown[] {
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      return trimmed.split(',').map((item) => item.trim());
+    }
+    return trimmed.split(',').map((item) => item.trim());
+  }
+  return defaultValue;
+}
+
+function toNumericArray(raw: unknown, defaultValue: number[]): number[] {
+  const arr = toArray(raw, defaultValue);
+  return arr.map((item) => toNumber(item, NaN));
+}
+
 function toDate(raw: unknown, defaultValue: Date): Date {
   if (raw instanceof Date) {
     return raw;
@@ -133,6 +160,8 @@ export function selectAccessorFactories({
       number: makeTypedGetAccessor(rawGetAccessor, toNumber, 0),
       date: makeTypedGetAccessor(rawGetAccessor, toDate, new Date(NaN)),
       dateMs: makeTypedGetAccessor(rawGetAccessor, toDateMs, 0),
+      array: makeTypedGetAccessor(rawGetAccessor, toArray, []),
+      numericArray: makeTypedGetAccessor(rawGetAccessor, toNumericArray, []),
     },
   };
 }

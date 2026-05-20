@@ -54,6 +54,8 @@ export type TypedGetAccessorFunction<O> = <T extends Feature = Feature>(
 
 export interface GetAccessorFunctions {
   number: TypedGetAccessorFunction<number>;
+  array: TypedGetAccessorFunction<unknown[]>;
+  numericArray: TypedGetAccessorFunction<number[]>;
   date: TypedGetAccessorFunction<Date>;
   dateMs: TypedGetAccessorFunction<number>;
 }
