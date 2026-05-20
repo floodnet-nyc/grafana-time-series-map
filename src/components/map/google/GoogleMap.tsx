@@ -130,12 +130,12 @@ function GoogleMapInner(props: MapProviderProps) {
   });
 
   // Sync Google map to the hook's ref so widget callbacks can access it.
-  useEffect(() => {
-    mapRef.current = googleMap;
-  });
+  useEffect(() => { mapRef.current = googleMap; });
 
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
+
+  /* --------------------------------- Widgets -------------------------------- */
 
   const widgetAdapter: WidgetControlAdapter<Widget, GoogleWidgetControl> = useMemo(() => ({
     createControl: (widget) => new GoogleWidgetControl(widget),
@@ -146,11 +146,9 @@ function GoogleMapInner(props: MapProviderProps) {
   }), [googleMap]);
 
   useWidgetControls(googleMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
+  const googleControlProps = useMemo(() => resolveGoogleNativeProps(options.widgets ?? []), [options.widgets]);
 
-  const googleControlProps = useMemo(
-    () => resolveGoogleNativeProps(options.widgets ?? []),
-    [options.widgets],
-  );
+  /* ----------------------------------- Map ---------------------------------- */
 
   const sharedMapProps = {
     mapId: options.basemap.google.mapId || undefined,
@@ -183,34 +181,6 @@ function GoogleMapInner(props: MapProviderProps) {
       return { width: div.clientWidth, height: div.clientHeight };
     },
   };
-
-  const overlay = useMemo(() => {
-    if (controller) { return null; }
-    const resizeState: { dpr?: number } = {};
-    const instance = new GoogleMapsOverlay({
-      interleaved: deckProps.interleaved ?? true,
-      ...deckProps,
-      widgets: deckProps.widgets,
-      onResize: (size: { width: number; height: number }) => {
-        const deck = (instance as any)._deck;
-        if (!deck) { return; }
-        const ctx = deck.animationLoop.animationProps.canvasContext;
-        const dpr = resizeState.dpr ?? ctx.devicePixelRatio;
-        resizeState.dpr = dpr;
-        ctx.setDrawingBufferSize(size.width * dpr, size.height * dpr);
-      },
-    });
-    return instance;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [controller]);
-
-  useEffect(() => {
-    if (controller || !googleMap) { return; }
-    overlay?.setMap(googleMap);
-    return () => overlay?.setMap(null);
-  }, [controller, googleMap, overlay]);
-
-  useEffect(() => { overlay?.setProps(deckProps); }, [overlay, deckProps]);
 
   const children = (
     <MapFitBounds {...fitBoundsProps} onViewState={controller ? handleFitViewState : undefined} map={googleMap} />
@@ -261,7 +231,25 @@ function GoogleMapInner(props: MapProviderProps) {
         });
       }}
     >
+      <DeckOverlay deckProps={deckProps as DeckGLProps} googleMap={googleMap ?? undefined} />
       {children}
     </Map>
   );
+}
+
+function DeckOverlay({ deckProps, googleMap }: { deckProps: DeckGLProps; googleMap?: google.maps.Map }) {
+  const overlay = useMemo(
+    () => new GoogleMapsOverlay({ ...deckProps } as any),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  useEffect(() => {
+    if (!googleMap || !overlay) { return; }
+    overlay.setMap(googleMap);
+    return () => overlay.setMap(null);
+  }, [googleMap, overlay]);
+
+  useEffect(() => { overlay?.setProps(deckProps); }, [overlay, deckProps]);
+  return null;
 }

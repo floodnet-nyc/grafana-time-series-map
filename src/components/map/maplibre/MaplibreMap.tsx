@@ -110,6 +110,8 @@ export default function MaplibreMap(props: MapProviderProps) {
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 
+  /* --------------------------------- Widgets -------------------------------- */
+
   const widgetAdapter: WidgetControlAdapter<Widget, DeckWidgetControl> = useMemo(() => ({
     createControl: (widget) => createDeckWidgetControl(widget),
     mountControl: (control) => {
@@ -126,11 +128,7 @@ export default function MaplibreMap(props: MapProviderProps) {
   }), []);
 
   useWidgetControls(maplibreMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
-
-  const nativeMaplibreControls = useMemo(
-    () => resolveMaplibreNativeControls(options.widgets ?? []),
-    [options.widgets],
-  );
+  const nativeMaplibreControls = useMemo(() => resolveMaplibreNativeControls(options.widgets ?? []), [options.widgets]);
 
   const fitBoundsProps = useMemo(() => ({
     disabled: Boolean(props.initialViewFromHash),
@@ -144,20 +142,6 @@ export default function MaplibreMap(props: MapProviderProps) {
       return { width: c.clientWidth, height: c.clientHeight };
     },
   }), [props.initialViewFromHash, props.fitBounds, props.fitRequestId, options]);
-
-  const overlay = useMemo(
-    () => controller ? null : new MapboxOverlay({ ...deckProps, widgets: deckProps.widgets } as MapboxOverlayProps),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [controller],
-  );
-
-  useEffect(() => {
-    if (controller || !maplibreMap || !overlay) { return; }
-    maplibreMap.addControl(overlay as any);
-    return () => { maplibreMap.removeControl(overlay as any); };
-  }, [controller, maplibreMap, overlay]);
-
-  useEffect(() => { overlay?.setProps(deckProps); }, [overlay, deckProps]);
 
   const children = (
     <>
@@ -190,7 +174,25 @@ export default function MaplibreMap(props: MapProviderProps) {
 
   return (
     <Map ref={mapRef} {...mapProps} initialViewState={props.initialViewState} onMoveEnd={handleMoveEnd}>
+      <DeckOverlay deckProps={deckProps as DeckGLProps} maplibreMap={maplibreMap} />
       {children}
     </Map>
   );
+}
+
+function DeckOverlay({ deckProps, maplibreMap }: { deckProps: DeckGLProps; maplibreMap?: MapLibreMap }) {
+    const overlay = useMemo(
+    () => new MapboxOverlay({ ...deckProps } as MapboxOverlayProps),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  useEffect(() => {
+    if (!maplibreMap || !overlay) { return; }
+    maplibreMap.addControl(overlay as any);
+    return () => { maplibreMap.removeControl(overlay as any); };
+  }, [maplibreMap, overlay]);
+
+  useEffect(() => { overlay?.setProps(deckProps); }, [overlay, deckProps]);
+  return null;
 }
