@@ -91,7 +91,7 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
         data.series,
         layerConfig.data.featureSource.refId,
         layerConfig.geometry,
-        getLayerElevation(layerConfig).field?.field,
+        (layerConfig.settings as any)?.field?.field,
         layerConfig.data.featureSource.id,
       );
       featuresByLayerId.set(layerConfig.id, features);

@@ -1,4 +1,4 @@
-import type { AccessorContext, AccessorFunction, LayerExtension } from '@deck.gl/core';
+import type { LayerExtension } from '@deck.gl/core';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerRenderContext, LayerSettingsObject } from './types';
@@ -8,26 +8,6 @@ type LayerFeature = Feature & { __idx: number };
 type ElevationSettings = { elevation?: SourceRef; elevationScale?: number; depthTest?: boolean };
 
 export const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
-
-
-
-export function getProperty<F extends Feature>(feature: F, field: string): any {
-  const derived = (feature as Feature & { __derived?: Record<string, any> }).__derived;
-  const properties = feature.properties;
-  return derived && field in derived ? derived[field] : properties?.[field];
-}
-
-
-
-export function getLayerElevation(config: BaseLayerConfig<string, LayerSettingsObject>) {
-  const settings = (config.settings ?? {}) as ElevationSettings;
-
-  return {
-    field: settings.elevation,
-    scale: settings.elevationScale ?? 1,
-    depthTest: settings.depthTest ?? false,
-  };
-}
 
 
 export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, LayerSettingsObject>>({
@@ -64,7 +44,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
     ].filter(Boolean) as LayerExtension[],
     
     parameters: { 
-      depthTest: getLayerElevation(config).depthTest
+      depthTest: (config?.settings as ElevationSettings)?.depthTest ?? false,
     },
   };
 }
