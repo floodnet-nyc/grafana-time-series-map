@@ -23,7 +23,7 @@ import type { LayerConfig } from '../../../layers';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import type { GeoFeature } from '../toGeoJsonFeatures';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../../layers/types';
+import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -76,25 +76,39 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
   };
 }
 
-function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getNumericAccessor'> {
+function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
     fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
-  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
-    const [accessor, deps] = getAccessor(fieldName, defaultValue);
-    return [
-      accessor
-        ? (feature, ctx) => {
-            const value = accessor(feature, ctx);
-            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-          }
-        : undefined,
-      deps,
-    ];
+  const getAccessors: GetAccessorFunctions = {
+    number: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
+    date: getAccessor as any,
+    dateMs: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
   };
-
-  return { getAccessor, getNumericAccessor };
+  return { getAccessor, getAccessors };
 }
 
 describe('panelLayersModel', () => {
@@ -176,7 +190,8 @@ describe('panelLayersModel', () => {
     expect(state.joinedSourceValues).toEqual(new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]));
     expect(state.derivedValues).toEqual([{ depthDiff: 3 }]);
     expect(state.getAccessor).toEqual(expect.any(Function));
-    expect(state.getNumericAccessor).toEqual(expect.any(Function));
+    expect(state.getAccessors.number).toEqual(expect.any(Function));
+    expect(state.getAccessors.date).toEqual(expect.any(Function));
   });
 
   it('builds derived values without mutating the feature objects', () => {
@@ -228,12 +243,12 @@ describe('panelLayersModel', () => {
       ['A', new Map([['sensor-1', { depth: 5 }]])],
     ]);
     const derivedValues = [{ depthDiff: 3 }];
-    const { getAccessor, getNumericAccessor } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
+    const { getAccessor, getAccessors } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
 
     const [getDerived] = getAccessor(createSourceRef('depthDiff'));
     const [getJoined] = getAccessor({ source: 'A', field: 'depth' });
     const [getLocal] = getAccessor(createSourceRef('contour_depth_inches'));
-    const [getMissingNumeric] = getNumericAccessor({ source: 'A', field: 'missing' }, 7);
+    const [getMissingNumeric] = getAccessors.number({ source: 'A', field: 'missing' }, 7);
 
     expect(getDerived?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(3);
     expect(getJoined?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(5);

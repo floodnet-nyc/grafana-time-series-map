@@ -170,11 +170,11 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<CogLayerConfig>) {
-    const { config, features, cursorTimeMs, getAccessor } = context;
+    const { config, features, cursorTimeMs, getAccessor, getAccessors } = context;
     const options = config.settings;
 
     const [getUrl, updatesUrl] = getAccessor<string>(options.url, '');
-    const [getTime, updatesTime] = getAccessor<number>(options.timestamp, 0);
+    const [getTime, updatesTime] = getAccessors.number(options.timestamp, 0);
 
     return [
       new TimeCOGLayer({

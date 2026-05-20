@@ -61,7 +61,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<PolygonLayerConfig>) {
-    const { config, features, getNumericAccessor } = context;
+    const { config, features, getAccessors } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
@@ -84,8 +84,8 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     }
 
     const commonProps = createCommonLayerProps(context);
-    const [getElevation, updatesElevation] = getNumericAccessor(options.elevation, options.elevationScale);
-    const [getValue, updatesValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
+    const [getElevation, updatesElevation] = getAccessors.number(options.elevation, options.elevationScale);
+    const [getValue, updatesValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getValue);
     const fillOpacity = options.fillOpacity;
     return [

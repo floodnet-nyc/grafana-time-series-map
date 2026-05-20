@@ -46,10 +46,17 @@ export type GetAccessorFunction = <O = unknown | undefined, T extends Feature = 
   fieldRef?: SourceRef,
   defaultValue?: O
 ) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
-export type GetNumericAccessorFunction = <T extends Feature = Feature>(
+
+export type TypedGetAccessorFunction<O> = <T extends Feature = Feature>(
   fieldRef?: SourceRef,
-  defaultValue?: number
-) => [AccessorFunction<T, number> | undefined, AccessorDependencyKey];
+  defaultValue?: O
+) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
+
+export interface GetAccessorFunctions {
+  number: TypedGetAccessorFunction<number>;
+  date: TypedGetAccessorFunction<Date>;
+  dateMs: TypedGetAccessorFunction<number>;
+}
 
 export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = LayerConfigBase> {
   config: TLayerConfig;
@@ -65,7 +72,7 @@ export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = Layer
   onFeatureClick?: (feature: Feature, info: unknown) => void;
   onFeatureHover?: (feature: Feature | null, info: unknown) => void;
   getAccessor: GetAccessorFunction;
-  getNumericAccessor: GetNumericAccessorFunction;
+  getAccessors: GetAccessorFunctions;
 }
 
 export interface LayerOptionField {

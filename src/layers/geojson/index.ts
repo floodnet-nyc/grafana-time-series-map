@@ -60,10 +60,10 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<GeoJsonLayerConfig>) {
-    const { config, features, getAccessor, getNumericAccessor } = context;
+    const { config, features, getAccessor, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue, updatesColor] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getFillColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
     const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200], getColorValue);
     const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidth, 0);

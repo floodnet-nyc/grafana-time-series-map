@@ -66,12 +66,12 @@ describe('accessorSelectors', () => {
     ]);
     const derivedValues = [{ depthDiff: 3 }];
     const context = { index: 0 } as AccessorContext<Feature>;
-    const { getAccessor, getNumericAccessor } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
+    const { getAccessor, getAccessors } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
 
     const [getDerived] = getAccessor(createSourceRef('depthDiff'));
     const [getJoined] = getAccessor({ source: 'A', field: 'depth' });
     const [getLocal] = getAccessor(createSourceRef('contour_depth_inches'));
-    const [getMissingNumeric] = getNumericAccessor({ source: 'A', field: 'missing' }, 7);
+    const [getMissingNumeric] = getAccessors.number({ source: 'A', field: 'missing' }, 7);
 
     expect(getDerived?.(feature, context)).toBe(3);
     expect(getJoined?.(feature, context)).toBe(5);

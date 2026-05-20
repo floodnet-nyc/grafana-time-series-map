@@ -1,7 +1,11 @@
-import type { AccessorContext } from '@deck.gl/core';
+import type { AccessorContext, AccessorFunction } from '@deck.gl/core';
 import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../../layers/types';
+import type {
+  GetAccessorFunction,
+  GetAccessorFunctions,
+  TypedGetAccessorFunction,
+} from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
 
@@ -24,6 +28,48 @@ function getFeatureFieldValue(
   return derived?.[fieldRef.field] ?? feature.properties?.[fieldRef.field];
 }
 
+function makeTypedGetAccessor<O>(
+  raw: GetAccessorFunction,
+  toTyped: (raw: unknown, defaultValue: O) => O,
+  defaultValue: O,
+) {
+  return ((fieldRef, defaultVal) => {
+    const resolvedDefault = (defaultVal ?? defaultValue) as O;
+    const [accessor, updates] = raw(fieldRef, resolvedDefault);
+    return [
+      accessor
+        ? (feature: Feature, ctx: AccessorContext<Feature>) => toTyped(accessor(feature, ctx), resolvedDefault)
+        : undefined,
+      updates,
+    ] as [AccessorFunction<Feature, O> | undefined, readonly unknown[]];
+  }) as TypedGetAccessorFunction<O>;
+}
+
+
+function toNumber(raw: unknown, defaultValue: number): number {
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) ? raw : defaultValue;
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : defaultValue;
+}
+
+function toDate(raw: unknown, defaultValue: Date): Date {
+  if (raw instanceof Date) {
+    return raw;
+  }
+  const d = new Date(raw as any);
+  return isNaN(d.getTime()) ? defaultValue : d;
+}
+
+function toDateMs(raw: unknown, defaultValue: number): number {
+  if (raw instanceof Date) {
+    return raw.getTime();
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : defaultValue;
+}
+
 export function selectAccessorFactories({
   config,
   derivedValues,
@@ -32,17 +78,18 @@ export function selectAccessorFactories({
   config: LayerConfig;
   derivedValues?: DerivedValueTable;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
-}): { getAccessor: GetAccessorFunction; getNumericAccessor: GetNumericAccessorFunction } {
-  const derivedFieldNames = new Set((config.derivedFields ?? []).map((field) => field.as).filter(Boolean));
+}): { getAccessor: GetAccessorFunction; getAccessors: GetAccessorFunctions } {
+  const derivedFieldNames = new Set((config.derivedFields ?? []).map((f) => f.as).filter(Boolean));
 
-  const getAccessor = ((fieldRef?: SourceRef, defaultValue?: unknown) => {
+  const rawGetAccessor = ((fieldRef?: SourceRef, defaultValue?: unknown) => {
     if (!fieldRef?.field) {
       return [undefined, []];
     }
 
     if (fieldRef.source === config.data.featureSource.id && derivedFieldNames.has(fieldRef.field)) {
       return [
-        (_feature: Feature, { index }: AccessorContext<Feature>) => derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
+        (_feature: Feature, { index }: AccessorContext<Feature>) =>
+          derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
         dependencyKey(fieldRef, defaultValue),
       ];
     }
@@ -55,7 +102,7 @@ export function selectAccessorFactories({
     }
 
     if (joinedSourceValues?.has(fieldRef.source)) {
-      const joinedSource = config.data.joinedSources?.find((source) => source.id === fieldRef.source);
+      const joinedSource = config.data.joinedSources?.find((s) => s.id === fieldRef.source);
       const sourceValues = joinedSourceValues.get(fieldRef.source);
       if (!joinedSource || !sourceValues) {
         return [undefined, dependencyKey(fieldRef, defaultValue)];
@@ -64,7 +111,12 @@ export function selectAccessorFactories({
       return [
         (feature: Feature, { index }: AccessorContext<Feature>) => {
           const localKey = String(
-            getFeatureFieldValue(feature, joinedSource.join.localKey, config.data.featureSource.id, derivedValues?.[index]) ?? '',
+            getFeatureFieldValue(
+              feature,
+              joinedSource.join.localKey,
+              config.data.featureSource.id,
+              derivedValues?.[index],
+            ) ?? '',
           );
           return sourceValues.get(localKey)?.[fieldRef.field] ?? defaultValue;
         },
@@ -76,18 +128,11 @@ export function selectAccessorFactories({
   }) as GetAccessorFunction;
 
   return {
-    getAccessor,
-    getNumericAccessor: (fieldRef, defaultValue = 0) => {
-      const [accessor, updates] = getAccessor(fieldRef, defaultValue);
-      return [
-        accessor
-          ? (feature: Feature, ctx: AccessorContext<Feature>) => {
-              const value = accessor(feature, ctx);
-              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-            }
-          : undefined,
-        updates,
-      ];
+    getAccessor: rawGetAccessor,
+    getAccessors: {
+      number: makeTypedGetAccessor(rawGetAccessor, toNumber, 0),
+      date: makeTypedGetAccessor(rawGetAccessor, toDate, new Date(NaN)),
+      dateMs: makeTypedGetAccessor(rawGetAccessor, toDateMs, 0),
     },
   };
 }

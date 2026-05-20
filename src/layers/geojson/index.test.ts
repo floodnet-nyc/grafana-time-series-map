@@ -10,7 +10,7 @@ jest.mock('@deck.gl/layers', () => ({
 }));
 
 import { geoJsonLayerDefinition } from './index';
-import type { GetAccessorFunction, GetNumericAccessorFunction, LayerRenderContext } from '../types';
+import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
 import type { GeoJsonLayerConfig } from './index';
 
 function createFeature(properties: Record<string, unknown> = {}): Feature {
@@ -57,17 +57,32 @@ function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRe
     fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
-  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
-    const [accessor, deps] = getAccessor(fieldName, defaultValue);
-    return [
-      accessor
-        ? (feature, ctx) => {
-            const value = accessor(feature, ctx);
-            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-          }
-        : undefined,
-      deps,
-    ];
+  const getAccessors: GetAccessorFunctions = {
+    number: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
+    date: getAccessor as any,
+    dateMs: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
   };
 
   return {
@@ -79,7 +94,7 @@ function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRe
     toTimeMs: 0,
     timeFilterFlags: new Uint8Array(features.map(() => 1)),
     getAccessor,
-    getNumericAccessor,
+    getAccessors,
   };
 }
 

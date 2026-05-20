@@ -9,7 +9,7 @@ import {
   createSelectionState,
   getFeaturePosition,
 } from './utils';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from './types';
+import type { GetAccessorFunction, GetAccessorFunctions } from './types';
 
 function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -53,17 +53,32 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
     fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
-  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
-    const [accessor, deps] = getAccessor(fieldName, defaultValue);
-    return [
-      accessor
-        ? (feature, ctx) => {
-            const value = accessor(feature, ctx);
-            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-          }
-        : undefined,
-      deps,
-    ];
+  const getAccessors: GetAccessorFunctions = {
+    number: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
+    date: getAccessor as any,
+    dateMs: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
   };
 
   return {
@@ -76,7 +91,7 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
     timeFilterFlags: new Uint8Array([1]),
     selectedKey: null,
     getAccessor,
-    getNumericAccessor,
+    getAccessors,
     ...overrides,
   };
 }

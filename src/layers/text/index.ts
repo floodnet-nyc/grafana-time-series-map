@@ -115,15 +115,15 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TextLayerConfig>) {
-    const { config, getAccessor, getNumericAccessor, selectedKey } = context;
+    const { config, getAccessor, getAccessors, selectedKey } = context;
     const options = config.settings;
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220], getColorValue);
     const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
     const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected, config.selectionColor);
     const commonProps = createCommonLayerProps(context);
     const [getText, updatesText] = getAccessor(options.text, '');
-    const [getSize, updatesSize] = getNumericAccessor(options.size, options.fontSize);
+    const [getSize, updatesSize] = getAccessors.number(options.size, options.fontSize);
 
     // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 

@@ -53,17 +53,17 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<LineLayerConfig>) {
-    const { config, features, getNumericAccessor } = context;
+    const { config, features, getAccessors } = context;
     const options = config.settings;
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
 
     const commonProps = createCommonLayerProps(context);
-    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLng);
-    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLat);
-    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLng);
-    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLat);
-    const [getWidth, updatesWidth] = getNumericAccessor(options.width, options.widthScale);
+    const [srcLngAccessor, updatesSrcLng] = getAccessors.number(options.srcLng);
+    const [srcLatAccessor, updatesSrcLat] = getAccessors.number(options.srcLat);
+    const [tgtLngAccessor, updatesTgtLng] = getAccessors.number(options.tgtLng);
+    const [tgtLatAccessor, updatesTgtLat] = getAccessors.number(options.tgtLat);
+    const [getWidth, updatesWidth] = getAccessors.number(options.width, options.widthScale);
 
     return [
       new LineLayer({

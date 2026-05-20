@@ -1,6 +1,6 @@
 import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../../layers/types';
+import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
 import type { PanelFeaturesByLayerId } from '../../../hooks/usePanelLayers';
 import { compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
 import { selectAccessorFactories } from './accessorSelectors';
@@ -12,7 +12,7 @@ export interface PreparedLayerState {
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;
   getAccessor: GetAccessorFunction;
-  getNumericAccessor: GetNumericAccessorFunction;
+  getAccessors: GetAccessorFunctions;
 }
 
 export function selectPreparedLayerState({

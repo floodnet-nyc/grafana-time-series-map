@@ -112,17 +112,17 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
-    const { config, features, getAccessor, getNumericAccessor, selectedKey } = context;
+    const { config, features, getAccessor, getAccessors, selectedKey } = context;
     const options = config.settings;
 
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
     const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
     const getColor = createSelectionColorAccessor(baseColor, selectionState.isSelected, config.selectionColor);
 
     const commonProps = createCommonLayerProps(context);
     const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);
-    const [getSize, updatesSize] = getNumericAccessor(options.size, options.sizeScale);
+    const [getSize, updatesSize] = getAccessors.number(options.size, options.sizeScale);
     const iconAtlas = options.iconAtlasUrl.trim();
     const iconMapping = options.iconMappingUrl.trim();
     const useCustomAtlas = Boolean(iconAtlas && iconMapping);

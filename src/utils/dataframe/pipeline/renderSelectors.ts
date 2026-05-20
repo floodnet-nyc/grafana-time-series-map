@@ -93,7 +93,7 @@ function createLayerRenderContext({
     joinedSourceValues: preparedLayerState.joinedSourceValues,
     derivedValues: preparedLayerState.derivedValues,
     getAccessor: preparedLayerState.getAccessor,
-    getNumericAccessor: preparedLayerState.getNumericAccessor,
+    getAccessors: preparedLayerState.getAccessors,
     selectedKey,
     onFeatureClick,
   };

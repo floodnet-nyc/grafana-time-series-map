@@ -4,7 +4,7 @@ import type { InitialViewFitDataSource, MapPanelOptions } from '../types';
 import { createSourceRef } from '../layers/defaults';
 import { useFitBounds } from './useFitBounds';
 import type { PreparedLayerState } from '../utils/dataframe/pipeline';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../layers/types';
+import type { GetAccessorFunction, GetAccessorFunctions } from '../layers/types';
 
 function createOptions(): MapPanelOptions {
   return {
@@ -37,17 +37,32 @@ const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
   [fieldName?.source, fieldName?.field, defaultValue],
 ];
 
-const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
-  const [accessor, deps] = getAccessor(fieldName, defaultValue);
-  return [
-    accessor
-      ? (feature, ctx) => {
-          const value = accessor(feature, ctx);
-          return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-        }
-      : undefined,
-    deps,
-  ];
+const getAccessors: GetAccessorFunctions = {
+  number: (fieldRef, defaultValue = 0) => {
+    const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+    return [
+      accessor
+        ? (feature, ctx) => {
+            const value = accessor(feature, ctx);
+            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+          }
+        : undefined,
+      deps,
+    ];
+  },
+  date: getAccessor as any,
+  dateMs: (fieldRef, defaultValue = 0) => {
+    const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+    return [
+      accessor
+        ? (feature, ctx) => {
+            const value = accessor(feature, ctx);
+            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+          }
+        : undefined,
+      deps,
+    ];
+  },
 };
 
 function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): PreparedLayerState {
@@ -66,7 +81,7 @@ function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): 
     features: [pointFeature(-122, 37), pointFeature(-74, 40)],
     timeFilterFlags: new Uint8Array([0, 1]),
     getAccessor,
-    getNumericAccessor,
+    getAccessors,
     ...overrides,
   };
 }

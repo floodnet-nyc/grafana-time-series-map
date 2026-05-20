@@ -74,7 +74,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
-    const { config, features, selectedKey, getAccessor, getNumericAccessor } = context;
+    const { config, features, selectedKey, getAccessor, getAccessors } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
 
@@ -97,13 +97,13 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     }
 
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue, updateColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updateColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
     const selectionState = createSelectionState(selectedKey, config.selectionKey, config.data.featureSource.id);
     const lineAccessors = createLineSelectionAccessors(selectionState.isSelected, config.selectionColor);
 
-    const [getRadius, updateRadius] = getNumericAccessor(options.radius, options.radiusScale);
-    const [getValue, updateValue] = useShader ? getNumericAccessor(valueField) : [undefined, []];
+    const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
+    const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -136,7 +136,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     if (options.showLabels) {
       const [getText, updateText] = getAccessor(options.label?.field ? options.label : valueField, '');
-      const [getCollisionPriority, updateCollisionPriority] = getNumericAccessor(options.elevation, options.elevationScale);
+      const [getCollisionPriority, updateCollisionPriority] = getAccessors.number(options.elevation, options.elevationScale);
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({

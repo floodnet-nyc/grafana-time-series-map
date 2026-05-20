@@ -88,11 +88,11 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     ]),
   ],
   renderLayers(context: LayerRenderContext<FloodInundationLayerConfig>) {
-    const { config, features, getNumericAccessor } = context;
+    const { config, features, getAccessors } = context;
     const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
     const commonProps = createCommonLayerProps(context);
-    const [getElevation, updatesElevation] = getNumericAccessor(options.depthDiff, 0);
+    const [getElevation, updatesElevation] = getAccessors.number(options.depthDiff, 0);
     return [
       new SolidPolygonLayer({
         ...commonProps,

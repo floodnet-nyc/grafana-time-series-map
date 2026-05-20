@@ -11,7 +11,8 @@ import type { LayerConfig } from '../../../layers';
 import type { MapPanelOptions } from '../../../types';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
-import type { GetAccessorFunction, GetNumericAccessorFunction } from '../../../layers/types';
+import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
+
 import type { GeoFeature } from '../toGeoJsonFeatures';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
@@ -65,25 +66,39 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
   };
 }
 
-function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getNumericAccessor'> {
+function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
     fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
-  const getNumericAccessor: GetNumericAccessorFunction = (fieldName, defaultValue = 0) => {
-    const [accessor, deps] = getAccessor(fieldName, defaultValue);
-    return [
-      accessor
-        ? (feature, ctx) => {
-            const value = accessor(feature, ctx);
-            return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
-          }
-        : undefined,
-      deps,
-    ];
+  const getAccessors: GetAccessorFunctions = {
+    number: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
+    date: getAccessor as any,
+    dateMs: (fieldRef, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
   };
-
-  return { getAccessor, getNumericAccessor };
+  return { getAccessor, getAccessors };
 }
 
 describe('renderSelectors', () => {

@@ -137,12 +137,12 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TripsLayerConfig>) {
-    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick, getNumericAccessor } = context;
+    const { config, features, cursorTimeMs, timeFilterFlags, onFeatureClick, getAccessors } = context;
     const options = config.settings;
     const data = getTripData(features, timeFilterFlags, options);
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
-    const [getWidth] = getNumericAccessor(options.width, 1);
+    const [getWidth] = getAccessors.number(options.width, 1);
     const commonProps = createCommonLayerProps(context);
     return [
       new TripsLayer<TripDatum>({

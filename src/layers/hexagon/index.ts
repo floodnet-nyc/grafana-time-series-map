@@ -103,12 +103,12 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     ]),
   ],
   renderLayers(ctx: LayerRenderContext<HexagonLayerConfig>) {
-    const { features, getNumericAccessor } = ctx;
+    const { features, getAccessors } = ctx;
     const options = ctx.config.settings;
     const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
-    const [getColorWeight, updatesColorWeight] = getNumericAccessor(options.colorWeight, 1);
-    const [getElevationWeight, updatesElevationWeight] = getNumericAccessor(options.elevationWeight, 1);
+    const [getColorWeight, updatesColorWeight] = getAccessors.number(options.colorWeight, 1);
+    const [getElevationWeight, updatesElevationWeight] = getAccessors.number(options.elevationWeight, 1);
 
     return [
       new HexagonLayer({

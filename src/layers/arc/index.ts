@@ -43,15 +43,15 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<ArcLayerConfig>) {
-    const { config, features, getNumericAccessor } = context;
+    const { config, features, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue] = config.colorScale?.field ? getNumericAccessor(config.colorScale.field) : [undefined, []];
+    const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
-    const [srcLngAccessor, updatesSrcLng] = getNumericAccessor(options.srcLng);
-    const [srcLatAccessor, updatesSrcLat] = getNumericAccessor(options.srcLat);
-    const [tgtLngAccessor, updatesTgtLng] = getNumericAccessor(options.tgtLng);
-    const [tgtLatAccessor, updatesTgtLat] = getNumericAccessor(options.tgtLat);
+    const [srcLngAccessor, updatesSrcLng] = getAccessors.number(options.srcLng);
+    const [srcLatAccessor, updatesSrcLat] = getAccessors.number(options.srcLat);
+    const [tgtLngAccessor, updatesTgtLng] = getAccessors.number(options.tgtLng);
+    const [tgtLatAccessor, updatesTgtLat] = getAccessors.number(options.tgtLat);
 
     return [
       new ArcLayer({
