@@ -36,11 +36,11 @@ export class GoogleWidgetControl {
     const position = getControlPosition(this.widget.placement);
     map.controls[position].push(container);
 
-    this.widget.props._container = container;
-    this.widget.viewId = null;
     this.container = container;
     this.map = map;
     this.position = position;
+    this.widget.props._container = container;
+    this.widget.viewId = null;
   }
 
   remove() {
@@ -68,10 +68,10 @@ export class GoogleWidgetControl {
 
   setWidget(widget: NativeControlWidget) {
     this.widget = widget;
-    widget.viewId = null;
     if (this.container) {
-      widget.props._container = this.container;
+      this.widget.props._container = this.container;
     }
+    this.widget.viewId = null;
   }
 }
 

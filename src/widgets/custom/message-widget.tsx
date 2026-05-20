@@ -49,7 +49,7 @@ export class MessageWidget extends Widget<MessageWidgetProps> {
   setProps(props: Partial<MessageWidgetProps>) {
     this.placement = props.placement ?? this.placement;
     this.viewId = props.viewId ?? this.viewId;
-    if (props.defaultCollapsed !== undefined) {
+    if (props.defaultCollapsed !== undefined && props.defaultCollapsed !== this.props.defaultCollapsed) {
       this.collapsed_ = props.defaultCollapsed;
     }
     const raw = props.template || DEFAULT_WELCOME_TEMPLATE;
@@ -111,7 +111,7 @@ function MessageWidgetView({
 
   if (collapsed) {
     return (
-      <div className="map-card legend-box message-widget-card message-widget-card-collapsed">
+      <div className="message-widget-card message-widget-card-collapsed">
         <button
           className="message-widget-toggle message-widget-toggle-collapsed"
           type="button"
@@ -129,7 +129,7 @@ function MessageWidgetView({
   }
 
   return (
-    <div className="map-card legend-box message-widget-card message-widget-card-expanded">
+    <div className="message-widget-card message-widget-card-expanded">
       <div className="message-widget-header">
         <div className="message-widget-header-main">
           {imageUrl ? <img className="message-widget-image" src={imageUrl} alt="" /> : null}
