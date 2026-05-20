@@ -29,7 +29,6 @@ export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Icon',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
         { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
@@ -55,7 +54,6 @@ export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Toggle',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
         { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
@@ -85,7 +83,6 @@ export const selectorWidgetDefinition: WidgetDefinition<SelectorWidgetConfig> = 
   }),
   editorSections: [
     {
-      title: 'Selector',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
       ],
@@ -107,7 +104,6 @@ export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = 
   }),
   editorSections: [
     {
-      title: 'Timeline',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
         { key: 'autoPlay', label: 'Auto play', type: 'boolean', defaultValue: false },

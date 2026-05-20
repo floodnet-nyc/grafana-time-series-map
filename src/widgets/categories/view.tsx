@@ -27,7 +27,6 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
   }),
   editorSections: [
     {
-      title: 'Fullscreen',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
         { key: 'enterLabel', label: 'Enter label', type: 'string', defaultValue: 'Enter fullscreen' },
@@ -74,7 +73,6 @@ export const splitterWidgetDefinition: WidgetDefinition<SplitterWidgetConfig> = 
   }),
   editorSections: [
     {
-      title: 'Splitter',
       fields: [
         {
           key: 'viewLayout.orientation',

@@ -36,7 +36,6 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Zoom',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         { key: 'orientation', label: 'Orientation', type: 'select', selectOptions: ORIENTATIONS, defaultValue: 'vertical' },
@@ -96,7 +95,6 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
   }),
   editorSections: [
     {
-      title: 'Reset View',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset view' },
@@ -128,7 +126,6 @@ export const gimbalWidgetDefinition: WidgetDefinition<GimbalWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Gimbal',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
@@ -166,7 +163,6 @@ export const scrollbarWidgetDefinition: WidgetDefinition<ScrollbarWidgetConfig> 
   }),
   editorSections: [
     {
-      title: 'Scrollbar',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
         { key: 'orientation', label: 'Orientation', type: 'select', selectOptions: ORIENTATIONS, defaultValue: 'horizontal' },

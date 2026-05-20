@@ -7,12 +7,12 @@ import {
   type PopupWidgetProps,
 } from '@deck.gl/widgets';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
-import { WelcomeWidget, WelcomeWidgetProps } from '../custom/welcome-widget';
+import { MessageWidget, MessageWidgetProps } from '../custom/message-widget';
 
 type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
 type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;
 type PopupWidgetConfig = BaseWidgetConfig<'popup', Omit<PopupWidgetProps, 'id'>>;
-type WelcomeWidgetConfig = BaseWidgetConfig<'welcome', Omit<WelcomeWidgetProps, 'id' | 'template'> & { templateHtml: string }>;
+type MessageWidgetConfig = BaseWidgetConfig<'message', Omit<MessageWidgetProps, 'id' | 'template'> & { templateHtml: string }>;
 
 export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConfig> = {
   type: 'context-menu',
@@ -42,7 +42,6 @@ export const infoWidgetDefinition: WidgetDefinition<InfoWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Info',
       fields: [
         {
           key: 'mode',
@@ -70,7 +69,6 @@ export const popupWidgetDefinition: WidgetDefinition<PopupWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Popup',
       fields: [
         { key: 'closeButton', label: 'Close button', type: 'boolean', defaultValue: true },
         { key: 'closeOnClickOutside', label: 'Close on click outside', type: 'boolean', defaultValue: false },
@@ -82,14 +80,14 @@ export const popupWidgetDefinition: WidgetDefinition<PopupWidgetConfig> = {
 };
 
 
-export const welcomeWidgetDefinition: WidgetDefinition<WelcomeWidgetConfig> = {
-  type: 'welcome',
-  label: 'Welcome',
-  description: 'Show a welcome panel with help text to orient users.',
+export const messageWidgetDefinition: WidgetDefinition<MessageWidgetConfig> = {
+  type: 'message',
+  label: 'Message',
+  description: 'Show a message panel with help text to orient users.',
   createDefaultConfig: (i) => ({
-    id: `widget-welcome-${i + 1}`,
-    type: 'welcome',
-    label: `Welcome ${i + 1}`,
+    id: `widget-message-${i + 1}`,
+    type: 'message',
+    label: `Message ${i + 1}`,
     visible: true,
     settings: {
       placement: 'top-left',
@@ -103,7 +101,6 @@ export const welcomeWidgetDefinition: WidgetDefinition<WelcomeWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Welcome',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         { key: 'label', label: 'Label', type: 'string', defaultValue: 'Help' },
@@ -116,7 +113,7 @@ export const welcomeWidgetDefinition: WidgetDefinition<WelcomeWidgetConfig> = {
     },
   ],
   createWidget: (config) => {
-    return new WelcomeWidget({
+    return new MessageWidget({
       id: config.id,
       ...config.settings,
       template: config.settings.templateHtml,

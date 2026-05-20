@@ -2,7 +2,7 @@ import { Widget, type WidgetPlacement, type WidgetProps } from '@deck.gl/core';
 import { h, render } from 'preact';
 import { renderLiquidTemplate } from 'utils/liquid';
 
-export type WelcomeWidgetProps = WidgetProps & {
+export type MessageWidgetProps = WidgetProps & {
   placement?: WidgetPlacement;
   viewId?: string | null;
   label?: string;
@@ -18,10 +18,10 @@ export const DEFAULT_WELCOME_TEMPLATE = `\
 <p>Use <strong>drag</strong> to pan, <strong>scroll</strong> to zoom, and <strong>click</strong> on features for details.</p>
 `;
 
-export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
-  static defaultProps: Required<WelcomeWidgetProps> = {
+export class MessageWidget extends Widget<MessageWidgetProps> {
+  static defaultProps: Required<MessageWidgetProps> = {
     ...Widget.defaultProps,
-    id: 'welcome',
+    id: 'message',
     placement: 'top-left' as WidgetPlacement,
     viewId: null,
     label: 'Help',
@@ -32,19 +32,19 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
     title: '',
   };
 
-  className = 'deck-widget-welcome';
+  className = 'deck-widget-message';
   placement: WidgetPlacement = 'top-left';
 
   private collapsed_ = false;
   private rootEl_: HTMLElement | null = null;
 
-  constructor(props: WelcomeWidgetProps = {} as WelcomeWidgetProps) {
+  constructor(props: MessageWidgetProps = {} as MessageWidgetProps) {
     super(props);
-    this.collapsed_ = props.defaultCollapsed ?? WelcomeWidget.defaultProps.defaultCollapsed;
+    this.collapsed_ = props.defaultCollapsed ?? MessageWidget.defaultProps.defaultCollapsed;
     this.setProps(this.props);
   }
 
-  setProps(props: Partial<WelcomeWidgetProps>) {
+  setProps(props: Partial<MessageWidgetProps>) {
     this.placement = props.placement ?? this.placement;
     this.viewId = props.viewId ?? this.viewId;
     if (props.defaultCollapsed !== undefined) {
@@ -57,10 +57,10 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
 
   onRenderHTML(rootElement: HTMLElement): void {
     this.rootEl_ = rootElement;
-    rootElement.className = 'welcome-widget-root';
+    rootElement.className = 'message-widget-root';
 
     render(
-      h(WelcomeWidgetView, {
+      h(MessageWidgetView, {
         collapsed: this.collapsed_,
         label: this.props.label,
         icon: this.props.icon,
@@ -88,7 +88,7 @@ export class WelcomeWidget extends Widget<WelcomeWidgetProps> {
   }
 }
 
-function WelcomeWidgetView({
+function MessageWidgetView({
   collapsed,
   label,
   icon,
@@ -110,51 +110,51 @@ function WelcomeWidgetView({
   if (collapsed) {
     return h(
       'div',
-      { className: 'map-card legend-box welcome-widget-card welcome-widget-card-collapsed' },
+      { className: 'map-card legend-box message-widget-card message-widget-card-collapsed' },
       h(
         'button',
         {
-          className: 'welcome-widget-toggle welcome-widget-toggle-collapsed',
+          className: 'message-widget-toggle message-widget-toggle-collapsed',
           type: 'button',
           onClick: onToggle,
-          title: 'Expand welcome panel',
+          title: 'Expand message panel',
         },
-        h('span', { className: 'welcome-widget-chevron' }, '\u203A'),
-        imageUrl ? h('img', { className: 'welcome-widget-image', src: imageUrl, alt: '' }) : null,
-        icon ? h('span', { className: 'welcome-widget-icon' }, icon) : null,
-        label ? h('span', { className: 'welcome-widget-label' }, label) : null,
-        !hasTriggerContent ? h('span', { className: 'welcome-widget-label' }, 'Welcome') : null,
+        h('span', { className: 'message-widget-chevron' }, '\u203A'),
+        imageUrl ? h('img', { className: 'message-widget-image', src: imageUrl, alt: '' }) : null,
+        icon ? h('span', { className: 'message-widget-icon' }, icon) : null,
+        label ? h('span', { className: 'message-widget-label' }, label) : null,
+        !hasTriggerContent ? h('span', { className: 'message-widget-label' }, 'Welcome') : null,
       )
     );
   }
 
   return h(
     'div',
-    { className: 'map-card legend-box welcome-widget-card welcome-widget-card-expanded' },
+    { className: 'map-card legend-box message-widget-card message-widget-card-expanded' },
     h(
       'div',
-      { className: 'welcome-widget-header' },
+      { className: 'message-widget-header' },
       h(
         'div',
-        { className: 'welcome-widget-header-main' },
-        imageUrl ? h('img', { className: 'welcome-widget-image', src: imageUrl, alt: '' }) : null,
-        icon ? h('span', { className: 'welcome-widget-icon' }, icon) : null,
-        label ? h('span', { className: 'welcome-widget-label' }, label) : null,
-        title ? h('span', { className: 'welcome-widget-title' }, title) : null,
+        { className: 'message-widget-header-main' },
+        imageUrl ? h('img', { className: 'message-widget-image', src: imageUrl, alt: '' }) : null,
+        icon ? h('span', { className: 'message-widget-icon' }, icon) : null,
+        label ? h('span', { className: 'message-widget-label' }, label) : null,
+        title ? h('span', { className: 'message-widget-title' }, title) : null,
       ),
       h(
         'button',
         {
-          className: 'welcome-widget-toggle welcome-widget-toggle-expanded',
+          className: 'message-widget-toggle message-widget-toggle-expanded',
           type: 'button',
           onClick: onToggle,
-          title: 'Collapse welcome panel',
+          title: 'Collapse message panel',
         },
-        h('span', { className: 'welcome-widget-chevron' }, '\u2039')
+        h('span', { className: 'message-widget-chevron' }, '\u2039')
       )
     ),
     h('div', {
-      className: 'welcome-widget-content',
+      className: 'message-widget-content',
       dangerouslySetInnerHTML: { __html: template },
     })
   );

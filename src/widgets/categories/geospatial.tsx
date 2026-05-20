@@ -30,7 +30,6 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Compass',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Reset bearing' },
@@ -87,7 +86,6 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   }),
   editorSections: [
     {
-      title: 'Scale',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
         { key: 'label', label: 'Label', type: 'string', defaultValue: '' },
@@ -120,7 +118,6 @@ export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> 
   }),
   editorSections: [
     {
-      title: 'Geolocate',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-right' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Find my location' },
@@ -159,7 +156,6 @@ export const geocoderWidgetDefinition: WidgetDefinition<GeocoderWidgetConfig> = 
   }),
   editorSections: [
     {
-      title: 'Geocoder',
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: 'Search location' },
