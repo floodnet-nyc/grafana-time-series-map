@@ -14,6 +14,7 @@ import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
+import { buildCurrentLocationLayers, type CurrentLocationState } from './map/currentLocationLayers';
 import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
@@ -60,6 +61,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   // Track the last clicked feature so the popup can show its properties.
   // External DataSelectEvent (from time series panel) sets selectedKey without a feature.
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<CurrentLocationState | null>(null);
 
   const popupFeature =
     selectedFeature && selectedKey
@@ -127,9 +129,15 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   );
   const fitBounds = useFitBounds(options, preparedLayerStates);
   const fitRequestId = options.initialView.fitRequestId ?? 0;
+  const currentLocationLayers = useMemo(() => buildCurrentLocationLayers(currentLocation), [currentLocation]);
+  const deckLayers = useMemo(() => [...layers, ...currentLocationLayers], [layers, currentLocationLayers]);
 
   // Widget callbacks sourced from panel-level state (viewport callbacks are added by each provider).
   const widgetCallbacks = useMemo(() => ({
+    geolocate: {
+      onLocation: ({ latitude, longitude, accuracy }: CurrentLocationState & { zoom: number }) =>
+        setCurrentLocation({ latitude, longitude, accuracy }),
+    },
     playback: {
       cursorTimeMs: playback.cursorTimeMs,
       timeRange: [fromTimeMs, toTimeMs] as [number, number],
@@ -156,7 +164,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         width={width}
         height={mapHeight}
         options={options}
-        layers={layers}
+        layers={deckLayers}
         widgetCallbacks={widgetCallbacks}
         initialViewState={initialViewState}
         initialViewFromHash={initialViewFromHash}

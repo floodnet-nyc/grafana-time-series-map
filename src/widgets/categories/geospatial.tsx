@@ -131,14 +131,17 @@ export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> 
     new GeolocateWidget({
       id: config.id,
       ...config.settings,
-      onGeolocate: callbacks?.onViewStateChange
-        ? ({ latitude, longitude, zoom }: { latitude: number; longitude: number; zoom: number }) =>
-            callbacks.onViewStateChange!({
-              latitude,
-              longitude,
-              zoom,
-              transitionDuration: config.settings.transitionDuration,
-            })
+      onGeolocate:
+        callbacks?.onViewStateChange || callbacks?.geolocate?.onLocation
+          ? ({ latitude, longitude, zoom, accuracy }: { latitude: number; longitude: number; zoom: number; accuracy?: number }) => {
+              callbacks.geolocate?.onLocation({ latitude, longitude, zoom, accuracy });
+              callbacks.onViewStateChange?.({
+                latitude,
+                longitude,
+                zoom,
+                transitionDuration: config.settings.transitionDuration,
+              });
+            }
         : undefined,
     }),
 };

@@ -8,7 +8,7 @@ export type GeolocateWidgetProps = WidgetProps & {
   zoom?: number;
   transitionDuration?: number;
   enableHighAccuracy?: boolean;
-  onGeolocate?: (params: { latitude: number; longitude: number; zoom: number }) => void;
+  onGeolocate?: (params: { latitude: number; longitude: number; zoom: number; accuracy?: number }) => void;
   onError?: (message: string) => void;
 };
 
@@ -77,6 +77,7 @@ export class GeolocateWidget extends Widget<GeolocateWidgetProps> {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           zoom: this.props.zoom,
+          accuracy: position.coords.accuracy,
         });
       },
       () => {

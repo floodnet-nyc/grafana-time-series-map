@@ -215,6 +215,7 @@ function GoogleMapInner({
       gestureHandling={!interactive ? 'none' : interactions.cooperativeGestures ? 'cooperative' : 'auto'}
       keyboardShortcuts={interactive}
       clickableIcons={interactive}
+      controlSize={25}
       {...googleControlProps}
       // cameraControl={true}
       // cameraControlOptions={{position: getControlPosition('TOP_RIGHT', 'TOP_RIGHT')}}
