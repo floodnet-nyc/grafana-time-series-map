@@ -71,6 +71,21 @@ function getStableRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig
   return renderTileCache.get(key)!;
 }
 
+function getRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (data: CogTileData) => RenderTileResult {
+  const colorDecl = buildInterpolateColorGlsl(colorScale);
+  const colorModule = {
+    name: `cog-color`,
+    inject: {
+      'fs:#decl': colorDecl,
+      'fs:DECKGL_FILTER_COLOR': buildFsFilterColor(),
+    },
+  };
+  return (data: CogTileData): RenderTileResult => ({
+    image: data.texture as any,
+    renderPipeline: [{ module: colorModule as any }],
+  })
+}
+
 function padRowsToAlignment(
   data: Uint8Array | Uint16Array,
   width: number,
@@ -157,19 +172,6 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
   renderLayers(context: LayerRenderContext<CogLayerConfig>) {
     const { config, features, cursorTimeMs, getAccessor } = context;
     const options = config.settings;
-    const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COG_COLOR_SCALE;
-    const frames: TimeCOGFrame[] = [];
-    for (const f of features) {
-      const url = options.url.field ? f.properties?.[options.url.field] : undefined;
-      const ts = options.timestamp.field ? f.properties?.[options.timestamp.field] : undefined;
-      if (url && ts != null) {
-        frames.push({ time: Number(ts), url: String(url) });
-      }
-    }
-    if (frames.length === 0) {
-      return [];
-    }
-    const renderTile = getStableRenderTile(options.colorMaxValue, colorScale);
 
     const [getUrl, updatesUrl] = getAccessor<string>(options.url);
     const [getTime, updatesTime] = getAccessor<number>(options.timestamp);
@@ -177,12 +179,12 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     return [
       new TimeCOGLayer({
         id: `cog/${config.id}`,
-        frames: features,
+        data: features,
         currentTime: cursorTimeMs,
-        getUrl: getUrl ? (frame, context) => String(getUrl(frame, context) ?? '') : undefined,
+        getUrl,
         getTime: getTime ? (frame, context) => Number(getTime(frame, context) ?? 0) : undefined,
         getTileData,
-        renderTile,
+        renderTile: getRenderTile(options.colorMaxValue, config.colorScale ?? DEFAULT_COG_COLOR_SCALE),
         opacity: config.opacity,
         visible: config.visible,
         maxRequests: options.maxRequests,
