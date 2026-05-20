@@ -1,18 +1,18 @@
 /* Welcome widget */
-.welcome-widget-root {
+.message-widget-root {
   position: relative;
   pointer-events: all;
 }
 
-.welcome-widget-card {
+.message-widget-card {
   position: relative;
 }
 
-.welcome-widget-card-collapsed {
+.message-widget-card-collapsed {
   padding: 5px 8px;
 }
 
-.welcome-widget-card-expanded {
+.message-widget-card-expanded {
   padding: 10px 14px 8px;
   min-width: 220px;
   max-width: 360px;
@@ -20,7 +20,7 @@
   overflow-y: auto;
 }
 
-.welcome-widget-toggle {
+.message-widget-toggle {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -35,11 +35,11 @@
   font-family: inherit;
 }
 
-.welcome-widget-toggle-collapsed {
+.message-widget-toggle-collapsed {
   color: #aaa;
 }
 
-.welcome-widget-toggle-expanded {
+.message-widget-toggle-expanded {
   position: absolute;
   bottom: 4px;
   right: 6px;
@@ -47,11 +47,11 @@
   padding: 2px 0;
 }
 
-.welcome-widget-toggle:hover {
+.message-widget-toggle:hover {
   color: var(--button-icon-hover, rgb(24, 24, 26));
 }
 
-.welcome-widget-header {
+.message-widget-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -59,52 +59,52 @@
   margin-bottom: 6px;
 }
 
-.welcome-widget-header-main {
+.message-widget-header-main {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
 
-.welcome-widget-image {
+.message-widget-image {
   width: 18px;
   height: 18px;
   object-fit: contain;
   flex: 0 0 auto;
 }
 
-.welcome-widget-icon {
+.message-widget-icon {
   flex: 0 0 auto;
 }
 
-.welcome-widget-label,
-.welcome-widget-title {
+.message-widget-label,
+.message-widget-title {
   font-weight: 600;
   font-size: 14px;
 }
 
-.welcome-widget-content {
+.message-widget-content {
   color: var(--menu-text, rgb(24, 24, 26));
   font-size: 13px;
   line-height: 1.5;
 }
 
-.welcome-widget-content h2 {
+.message-widget-content h2 {
   margin: 0 0 8px;
   font-size: 15px;
   font-weight: 600;
 }
 
-.welcome-widget-content p {
+.message-widget-content p {
   margin: 0 0 6px;
 }
 
-.welcome-widget-content ul,
-.welcome-widget-content ol {
+.message-widget-content ul,
+.message-widget-content ol {
   margin: 0 0 6px;
   padding-left: 18px;
 }
 
-.welcome-widget-chevron {
+.message-widget-chevron {
   font-size: 12px;
 }
