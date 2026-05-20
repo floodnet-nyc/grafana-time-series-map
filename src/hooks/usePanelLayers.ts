@@ -37,7 +37,8 @@ export function usePanelLayers(
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: any) => void,
 ): UsePanelLayersResult {
-  const packedByLayerId = useMemo(() => {
+  // Feature rows are the stable upstream substrate for all selector stages below.
+  const timePackedByLayerId = useMemo(() => {
     return buildTimePackedByLayerId(options.layers, featuresByLayerId);
   }, [featuresByLayerId, options.layers]);
 
@@ -49,13 +50,13 @@ export function usePanelLayers(
     return buildJoinedSourceValuesByLayerId(options.layers, joinedSourcePackedByLayerId, cursorTimeMs);
   }, [cursorTimeMs, options.layers, joinedSourcePackedByLayerId]);
 
-  const flagsByLayerId = useMemo(() => {
-    return buildTimeFilterFlagsByLayerId(options.layers, featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
-  }, [featuresByLayerId, packedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
+  const timeFlagsByLayerId = useMemo(() => {
+    return buildTimeFilterFlagsByLayerId(options.layers, featuresByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
+  }, [featuresByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
-    return buildPreparedLayerStates(options.layers, featuresByLayerId, flagsByLayerId, joinedSourceValuesByLayerId);
-  }, [featuresByLayerId, flagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
+    return buildPreparedLayerStates(options.layers, featuresByLayerId, timeFlagsByLayerId, joinedSourceValuesByLayerId);
+  }, [featuresByLayerId, timeFlagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
 
   const layers = useMemo(() => {
     return renderPreparedLayers({
