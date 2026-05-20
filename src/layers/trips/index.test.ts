@@ -2,6 +2,7 @@ import type { Feature } from 'geojson';
 import { createSourceRef } from '../defaults';
 import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
 import type { TripsLayerConfig } from './index';
+import { featureArrayToLayerTable } from '../../utils/dataframe/layerTable';
 
 jest.mock('@deck.gl/geo-layers', () => ({
   TripsLayer: class MockTripsLayer {
@@ -67,7 +68,7 @@ function createConfig(overrides: Partial<TripsLayerConfig> = {}): TripsLayerConf
 
 function createContext(config: TripsLayerConfig, features: Array<Feature & { __idx: number }>): LayerRenderContext<TripsLayerConfig> {
   const getAccessor: GetAccessorFunction = (fieldRef, defaultValue) => [
-    fieldRef?.field ? (feature) => feature.properties?.[fieldRef.field] ?? defaultValue : undefined,
+    fieldRef?.field ? ((feature: any) => feature.properties?.[fieldRef.field] ?? defaultValue) : undefined,
     [fieldRef?.source, fieldRef?.field, defaultValue],
   ];
 
@@ -130,11 +131,17 @@ function createContext(config: TripsLayerConfig, features: Array<Feature & { __i
         deps,
       ];
     },
+    geometry: () => [() => null, []],
+    pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+    path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+    polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
   };
 
   return {
     config,
     panelOptions: {} as any,
+    data: features.map((feature) => ({ __idx: feature.__idx })),
+    table: featureArrayToLayerTable(features as any),
     features,
     cursorTimeMs: 123456,
     fromTimeMs: 100000,
@@ -164,12 +171,12 @@ describe('tripsLayerDefinition', () => {
       onFeatureClick: (clickedFeature) => clicked.push(clickedFeature),
     }) as any[];
 
-    expect(layer.props.data).toBe(context.features);
+    expect(layer.props.data).toBe(context.data);
     expect(layer.props.getPath(feature)).toEqual([
       [-73.9, 40.7, 1000],
       [-73.8, 40.8, 2000],
     ]);
-    expect(layer.props.getTimestamps(feature)).toEqual([1000, 2000]);
+    expect(layer.props.getTimestamps(feature, { index: 0 })).toEqual([1000, 2000]);
     expect(layer.props.getWidth(feature, { index: 0, data: [feature], target: [] })).toBe(7);
 
     layer.props.onClick({ object: feature });
@@ -208,10 +215,9 @@ describe('tripsLayerDefinition', () => {
     }) as any[];
 
     expect(layer.props.data).toHaveLength(3);
-    // getFilterValue from createCommonLayerProps is index-based on timeFilterFlags
-    expect(layer.props.getFilterValue(valid)).toBe(1);
-    expect(layer.props.getFilterValue(tooShort)).toBe(1);
-    expect(layer.props.getFilterValue(mismatchedTimestamps)).toBe(1);
+    expect(layer.props.getFilterValue(valid, { index: 0 })).toBe(1);
+    expect(layer.props.getFilterValue(tooShort, { index: 1 })).toBe(-1);
+    expect(layer.props.getFilterValue(mismatchedTimestamps, { index: 2 })).toBe(-1);
     // getPath handles validity: >= 2 coords → path, otherwise []
     expect(layer.props.getPath(tooShort)).toEqual([]);
     expect(layer.props.getPath(mismatchedTimestamps)).toEqual([
@@ -254,9 +260,9 @@ describe('tripsLayerDefinition', () => {
 
     const [layer] = tripsLayerDefinition.renderLayers(createContext(config, [arrayFeature, jsonFeature, csvFeature])) as any[];
 
-    expect(layer.props.getTimestamps(arrayFeature)).toEqual([1, 2]);
-    expect(layer.props.getTimestamps(jsonFeature)).toEqual([3, 4]);
-    expect(layer.props.getTimestamps(csvFeature)).toEqual([5, 6]);
+    expect(layer.props.getTimestamps(arrayFeature, { index: 0 })).toEqual([1, 2]);
+    expect(layer.props.getTimestamps(jsonFeature, { index: 1 })).toEqual([3, 4]);
+    expect(layer.props.getTimestamps(csvFeature, { index: 2 })).toEqual([5, 6]);
   });
 
   it('uses row-level timeFilterFlags while keeping feature identity stable across cursor changes', () => {
@@ -270,23 +276,25 @@ describe('tripsLayerDefinition', () => {
     );
     const config = createConfig();
     const sharedFeatures = [feature];
+    const firstContext = createContext(config, sharedFeatures);
+    const secondContext = createContext(config, sharedFeatures);
 
     const [firstLayer] = tripsLayerDefinition.renderLayers({
-      ...createContext(config, sharedFeatures),
+      ...firstContext,
       cursorTimeMs: 1000,
       timeFilterFlags: new Uint8Array([1]),
     }) as any[];
     const [secondLayer] = tripsLayerDefinition.renderLayers({
-      ...createContext(config, sharedFeatures),
+      ...secondContext,
       cursorTimeMs: 2000,
       timeFilterFlags: new Uint8Array([0]),
     }) as any[];
 
-    expect(firstLayer.props.data).toBe(sharedFeatures);
-    expect(secondLayer.props.data).toBe(sharedFeatures);
+    expect(firstLayer.props.data).toBe(firstContext.data);
+    expect(secondLayer.props.data).toBe(secondContext.data);
     expect(firstLayer.props.currentTime).toBe(1000);
     expect(secondLayer.props.currentTime).toBe(2000);
-    expect(firstLayer.props.getFilterValue(feature)).toBe(1);
-    expect(secondLayer.props.getFilterValue(feature)).toBe(-1);
+    expect(firstLayer.props.getFilterValue(feature, { index: 0 })).toBe(1);
+    expect(secondLayer.props.getFilterValue(feature, { index: 0 })).toBe(-1);
   });
 });

@@ -3,6 +3,7 @@ import type { LayerConfig } from '../../../layers';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import { compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
+import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -63,8 +64,9 @@ describe('derivedFieldSelectors', () => {
     const joinedSourceValues = new Map([
       ['A', new Map([['sensor-1', { depth: 5 }]])],
     ]);
+    const table = featureArrayToLayerTable([{ ...feature, __idx: 0 }] as any, 'main');
 
-    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, [feature], joinedSourceValues);
+    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, table, joinedSourceValues);
 
     expect(derivedValues).toEqual([{ depthDiff: 3 }]);
     expect((feature as Feature & { __derived?: Record<string, unknown> }).__derived).toBeUndefined();
@@ -78,7 +80,11 @@ describe('derivedFieldSelectors', () => {
       ],
     });
 
-    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, [createFeature({ depth: 4 })]);
+    const derivedValues = selectDerivedValues(
+      compileDerivedFields(config),
+      config,
+      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main'),
+    );
 
     expect(derivedValues).toEqual([{ ok: 8 }]);
   });

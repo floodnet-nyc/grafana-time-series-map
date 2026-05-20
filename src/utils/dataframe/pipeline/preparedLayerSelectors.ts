@@ -1,13 +1,15 @@
 import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
-import type { PanelFeaturesByLayerId } from '../../../hooks/usePanelLayers';
+import type { LayerTable, LayerTableLike } from '../layerTable';
+import { buildFeatureCollection, coerceLayerTable } from '../layerTable';
 import { compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
 import { selectAccessorFactories } from './accessorSelectors';
 
 export interface PreparedLayerState {
   config: LayerConfig;
-  features: Feature[];
+  table: LayerTable;
+  features?: Array<ReturnType<typeof buildFeatureCollection>[number]> | Feature[];
   timeFilterFlags: Uint8Array;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;
@@ -17,22 +19,23 @@ export interface PreparedLayerState {
 
 export function selectPreparedLayerState({
   config,
-  features,
+  table,
   timeFilterFlags,
   joinedSourceValues,
 }: {
   config: LayerConfig;
-  features: Feature[];
+  table: LayerTable;
   timeFilterFlags: Uint8Array;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
 }): PreparedLayerState {
   const derivedFields = compileDerivedFields(config);
-  const derivedValues = selectDerivedValues(derivedFields, config, features, joinedSourceValues);
-  const accessors = selectAccessorFactories({ config, derivedValues, joinedSourceValues });
+  const derivedValues = selectDerivedValues(derivedFields, config, table, joinedSourceValues);
+  const accessors = selectAccessorFactories({ config, table, derivedValues, joinedSourceValues });
 
   return {
     config,
-    features,
+    table,
+    features: table.legacyFeatures ?? undefined,
     timeFilterFlags,
     joinedSourceValues,
     derivedValues,
@@ -42,16 +45,23 @@ export function selectPreparedLayerState({
 
 export function buildPreparedLayerStates(
   layerConfigs: LayerConfig[],
-  featuresByLayerId: PanelFeaturesByLayerId,
+  tablesByLayerId: Map<string, LayerTableLike>,
   flagsByLayerId: Map<string, Uint8Array>,
   joinedSourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, unknown>>>> = new Map(),
 ): PreparedLayerState[] {
-  return layerConfigs.map((config) =>
+  return layerConfigs.flatMap((config) => {
+    const tableLike = tablesByLayerId.get(config.id);
+    if (!tableLike) {
+      return [];
+    }
+    const table = coerceLayerTable(tableLike, config.data.featureSource.id);
+    return [
     selectPreparedLayerState({
       config,
-      features: featuresByLayerId.get(config.id) ?? [],
-      timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array((featuresByLayerId.get(config.id) ?? []).length),
+      table,
+      timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(table.data.length),
       joinedSourceValues: joinedSourceValuesByLayerId.get(config.id),
-    })
-  );
+    }),
+  ];
+  });
 }

@@ -7,6 +7,7 @@ import {
   getFeaturePosition,
 } from './utils';
 import type { GetAccessorFunction, GetAccessorFunctions } from './types';
+import { featureArrayToLayerTable } from '../utils/dataframe/layerTable';
 
 function createConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -47,7 +48,7 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -78,12 +79,20 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
     },
     array: getAccessor as any,
     numericArray: getAccessor as any,
+    geometry: () => [() => null, []],
+    pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+    path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+    polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
   };
+
+  const features = [{ ...createPointFeature(), __idx: 0 }] as any;
 
   return {
     config: createConfig(),
     panelOptions: {} as any,
-    features: [createPointFeature()],
+    data: [{ __idx: 0 }],
+    table: featureArrayToLayerTable(features),
+    features,
     cursorTimeMs: 0,
     fromTimeMs: 0,
     toTimeMs: 0,
@@ -107,17 +116,17 @@ describe('layer utils', () => {
 
   it('builds common layer props with click and filter wiring', () => {
     const clicked: Feature[] = [];
-    const feature = Object.assign(createPointFeature(), { __idx: 1 });
     const context = createContext({
-      timeFilterFlags: new Uint8Array([0, 1, 0]),
+      timeFilterFlags: new Uint8Array([1]),
       onFeatureClick: (clickedFeature) => clicked.push(clickedFeature),
     });
+    const feature = context.features?.[0] as Feature & { __idx: number };
 
     const commonProps = createCommonLayerProps(context);
 
     expect(commonProps.visible).toBe(true);
     expect(commonProps.pickable).toBe(true);
-    expect(commonProps.getFilterValue?.(feature as Feature & { __idx: number })).toBe(1);
+    expect(commonProps.getFilterValue?.(feature)).toBe(1);
 
     commonProps.onClick?.({ object: feature }, undefined);
 

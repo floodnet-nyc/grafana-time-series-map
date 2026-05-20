@@ -4,6 +4,7 @@ import type { LayerConfig } from '../../../layers';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import { selectAccessorFactories } from './accessorSelectors';
+import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -65,17 +66,19 @@ describe('accessorSelectors', () => {
       ['A', new Map([['sensor-1', { depth: 5 }]])],
     ]);
     const derivedValues = [{ depthDiff: 3 }];
-    const context = { index: 0 } as AccessorContext<Feature>;
-    const { getAccessor, getAccessors } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
+    const table = featureArrayToLayerTable([{ ...feature, __idx: 0 }] as any, 'main');
+    const context = { index: 0 } as AccessorContext<any>;
+    const datum = { __idx: 0 };
+    const { getAccessor, getAccessors } = selectAccessorFactories({ config, table, joinedSourceValues, derivedValues });
 
     const [getDerived] = getAccessor(createSourceRef('depthDiff'));
     const [getJoined] = getAccessor({ source: 'A', field: 'depth' });
     const [getLocal] = getAccessor(createSourceRef('contour_depth_inches'));
     const [getMissingNumeric] = getAccessors.number({ source: 'A', field: 'missing' }, 7);
 
-    expect(getDerived?.(feature, context)).toBe(3);
-    expect(getJoined?.(feature, context)).toBe(5);
-    expect(getLocal?.(feature, context)).toBe(2);
-    expect(getMissingNumeric?.(feature, context)).toBe(7);
+    expect(getDerived?.(datum, context)).toBe(3);
+    expect(getJoined?.(datum, context)).toBe(5);
+    expect(getLocal?.(datum, context)).toBe(2);
+    expect(getMissingNumeric?.(datum, context)).toBe(7);
   });
 });

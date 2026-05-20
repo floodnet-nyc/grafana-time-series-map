@@ -13,7 +13,8 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from '../utils/dataframe/pipeline';
-import { type GeoFeature, dataFramesToFeatures, type GeometrySource, type FeatureSourceConfig } from '../utils/dataframe/toGeoJsonFeatures';
+import { dataFramesToLayerTable, type LayerTablesByLayerId } from '../utils/dataframe/layerTable';
+import type { GeometrySource, FeatureSourceConfig } from '../utils/dataframe/toGeoJsonFeatures';
 
 export interface UsePanelLayersResult {
   layers: Layer[];
@@ -22,7 +23,7 @@ export interface UsePanelLayersResult {
 
 export function usePanelLayers(
   options: MapPanelOptions,
-  featuresByLayerId: PanelFeaturesByLayerId,
+  tablesByLayerId: LayerTablesByLayerId,
   data: PanelData,
   cursorTimeMs: number,
   fromTimeMs: number,
@@ -30,10 +31,10 @@ export function usePanelLayers(
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void,
 ): UsePanelLayersResult {
-  // Feature rows are the stable upstream substrate for all selector stages below.
+  // Layer tables are the stable upstream substrate for all selector stages below.
   const timePackedByLayerId = useMemo(() => {
-    return buildTimePackedByLayerId(options.layers, featuresByLayerId);
-  }, [featuresByLayerId, options.layers]);
+    return buildTimePackedByLayerId(options.layers, tablesByLayerId);
+  }, [tablesByLayerId, options.layers]);
 
   const joinedSourcePackedByLayerId = useMemo(() => {
     return buildJoinedSourcePackedByLayerId(options.layers, data.series);
@@ -44,12 +45,12 @@ export function usePanelLayers(
   }, [cursorTimeMs, options.layers, joinedSourcePackedByLayerId]);
 
   const timeFlagsByLayerId = useMemo(() => {
-    return buildTimeFilterFlagsByLayerId(options.layers, featuresByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
-  }, [featuresByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
+    return buildTimeFilterFlagsByLayerId(options.layers, tablesByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
+  }, [tablesByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
-    return buildPreparedLayerStates(options.layers, featuresByLayerId, timeFlagsByLayerId, joinedSourceValuesByLayerId);
-  }, [featuresByLayerId, timeFlagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
+    return buildPreparedLayerStates(options.layers, tablesByLayerId, timeFlagsByLayerId, joinedSourceValuesByLayerId);
+  }, [tablesByLayerId, timeFlagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
 
   const layers = useMemo(() => {
     return renderPreparedLayers({
@@ -72,7 +73,7 @@ export function usePanelLayers(
   );
 }
 
-export type PanelFeaturesByLayerId = Map<string, GeoFeature[]>;
+export type PanelFeaturesByLayerId = LayerTablesByLayerId;
 
 function buildFeatureSourceCacheKey(
   featureSource: FeatureSourceConfig,
@@ -84,8 +85,8 @@ function buildFeatureSourceCacheKey(
 
 export function usePanelFeatures(data: PanelData, options: MapPanelOptions): PanelFeaturesByLayerId {
   const featuresByLayerId = useMemo(() => {
-    const featuresByLayer = new Map<string, GeoFeature[]>();
-    const featuresBySourceKey = new Map<string, GeoFeature[]>();
+    const featuresByLayer = new Map<string, ReturnType<typeof dataFramesToLayerTable>>();
+    const featuresBySourceKey = new Map<string, ReturnType<typeof dataFramesToLayerTable>>();
 
     for (const layerConfig of options.layers) {
       const elevationField =
@@ -102,7 +103,7 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
       const cachedFeatures = featuresBySourceKey.get(cacheKey);
       const features =
         cachedFeatures ??
-        dataFramesToFeatures(
+        dataFramesToLayerTable(
           data.series,
           layerConfig.data.featureSource.refId,
           layerConfig.geometry,

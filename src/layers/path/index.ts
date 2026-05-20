@@ -1,5 +1,4 @@
 import { PathLayer } from '@deck.gl/layers';
-import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
@@ -17,20 +16,6 @@ export interface PathLayerSettings {
 
 export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
 
-
-function getPath(f: Feature): number[][] | null {
-  const g = f.geometry as LineString | MultiLineString;
-  if (!g) {
-    return null;
-  }
-  if (g.type === 'LineString') {
-    return g.coordinates as number[][];
-  }
-  if (g.type === 'MultiLineString') {
-    return g.coordinates[0] as number[][];
-  }
-  return null;
-}
 
 const defaultSettings: PathLayerSettings = {
   widthMinPixels: 2,
@@ -63,7 +48,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     const commonProps = createCommonLayerProps(context);
 
     const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue as any);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, options.widthScale);
     
     return [
@@ -74,7 +59,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: (f: Feature) => getPath(f)! as any,
+        getPath: getAccessors.path()[0] as any,
         getColor,
         getWidth: getWidth ?? 1,
         updateTriggers: {

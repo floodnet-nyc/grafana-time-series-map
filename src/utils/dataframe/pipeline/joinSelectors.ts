@@ -1,12 +1,11 @@
 import type { DataFrame } from '@grafana/data';
-import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import type { JoinedSourceConfig } from '../../../types';
 import { buildPackedFromAccessors, resolveAsofLookup } from '../closestTimeFiltering';
-import { dataFramesToFeatures } from '../toGeoJsonFeatures';
+import { buildFeatureCollection, dataFramesToLayerTable, getRowValue, type LayerTable } from '../layerTable';
 
 export type PackedLookupEntry = {
-  features: Feature[];
+  table: LayerTable;
   packed: ReturnType<typeof buildPackedFromAccessors>;
 };
 
@@ -45,14 +44,14 @@ export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], se
       const packedEntry =
         cachedEntry ??
         (() => {
-          const features = dataFramesToFeatures(series, joinedSource.refId, { type: 'none' }, undefined);
+          const table = dataFramesToLayerTable(series, joinedSource.refId, { type: 'none' }, undefined);
           return {
-            features,
+            table,
             packed: buildPackedFromAccessors(
-              features.length,
-              (index) => features[index].properties?.[joinedSource.join.remoteKey] ?? '',
+              table.data.length,
+              (index) => getRowValue(table, index, joinedSource.join.remoteKey) ?? '',
               (index) => {
-                const raw = features[index].properties?.[joinedSource.join.time];
+                const raw = getRowValue(table, index, joinedSource.join.time);
                 return raw instanceof Date ? raw.getTime() : Number(raw);
               },
             ),
@@ -98,7 +97,7 @@ export function buildJoinedSourceValuesByLayerId(
       }
 
       const resolved = resolveAsofLookup(
-        entry.features,
+        buildFeatureCollection(entry.table),
         entry.packed,
         joinedSource.fields.map((field) => ({ sourceField: field.field, targetField: field.as ?? field.field })),
         cursorTimeMs,

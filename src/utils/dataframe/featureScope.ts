@@ -1,35 +1,38 @@
-import type { Feature } from 'geojson';
 import type { LayerConfig } from 'layers';
 import type { SourceRef } from '../../types';
+import type { LayerTable } from './layerTable';
+import { getRowProperties, getRowValue } from './layerTable';
 
-function getSourceRefValue(feature: Feature, ref: SourceRef | undefined, derived?: Record<string, unknown>) {
+function getSourceRefValue(table: LayerTable, index: number, ref: SourceRef | undefined, derived?: Record<string, unknown>) {
   if (!ref?.field) {
     return '';
   }
   if (ref.source === 'derived') {
     return derived?.[ref.field] ?? '';
   }
-  return derived?.[ref.field] ?? feature.properties?.[ref.field] ?? '';
+  return derived?.[ref.field] ?? getRowValue(table, index, ref.field) ?? '';
 }
 
 interface BuildFeatureScopeArgs {
   config: LayerConfig;
-  feature: Feature;
+  table: LayerTable;
+  index: number;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedRow?: Record<string, unknown>;
 }
 
 export function buildFeatureScope({
   config,
-  feature,
+  table,
+  index,
   joinedSourceValues,
   derivedRow,
 }: BuildFeatureScopeArgs) {
-  const primary = { ...(feature.properties ?? {}) };
+  const primary = getRowProperties(table, index);
   const sources: Record<string, Record<string, unknown>> = {};
 
   for (const joinedSource of config.data.joinedSources ?? []) {
-    const localKey = String(getSourceRefValue(feature, joinedSource.join.localKey, derivedRow) ?? '');
+    const localKey = String(getSourceRefValue(table, index, joinedSource.join.localKey, derivedRow) ?? '');
     const values = joinedSourceValues?.get(joinedSource.id)?.get(localKey) ?? {};
     sources[joinedSource.id] = values;
   }

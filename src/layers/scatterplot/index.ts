@@ -1,6 +1,5 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
@@ -9,10 +8,11 @@ import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import CollisionFilterExtension from '../../utils/deckgl/extensions/CollisionFilterExtension';
 import {
   createCommonLayerProps,
-  getFeaturePosition,
+  getDatumPosition,
 } from '../utils';
 import { autoDecimalsText } from 'layers/text';
 import { AccessorContext } from '@deck.gl/core';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
   radiusMaxPixels: number;
@@ -49,7 +49,7 @@ const defaultSettings: ScatterplotLayerSettings = {
   label: createSourceRef(),
 };
 
-export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig> = {
+export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig, LayerDatum> = {
   type: 'scatterplot',
   label: 'Scatter Plot',
   createDefaultConfig(index) {
@@ -72,7 +72,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
-    const { config, features, selectedKey, getAccessor, getAccessors } = context;
+    const { config, data, selectedKey, getAccessor, getAccessors } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
 
@@ -96,11 +96,11 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
 
     const commonProps = createCommonLayerProps(context);
     const [getColorValue, updateColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
+    const getColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 104, 255], getColorValue);
 
     const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
-    const getLineColor = (feature: Feature, ctx: AccessorContext<Feature>) => (selectedKey != null && getSelection?.(feature, ctx) ? config.selectionColor ?? [200, 200, 240, 200] : [0, 0, 0, 0]) as [number, number, number, number];
-    const getLineWidth = (feature: Feature, ctx: AccessorContext<Feature>) => selectedKey != null ? (getSelection?.(feature, ctx) ? 3 : 1) : 2;
+    const getLineColor = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (selectedKey != null && getSelection?.(datum, ctx) ? config.selectionColor ?? [200, 200, 240, 200] : [0, 0, 0, 0]) as [number, number, number, number];
+    const getLineWidth = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => selectedKey != null ? (getSelection?.(datum, ctx) ? 3 : 1) : 2;
 
     const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
@@ -109,14 +109,14 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     const layers: any[] = [
       new ScatterplotLayer({
         ...commonProps,
-        data: features,
+        data,
         radiusMinPixels: options.radiusMinPixels,
         radiusMaxPixels: options.radiusMaxPixels,
         radiusUnits: 'pixels' as const,
         stroked: options.stroked,
         filled: true,
         lineWidthMinPixels: 0,
-        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
         getLineColor: getLineColor ?? [0, 0, 0, 0],
         getLineWidth: getLineWidth ?? 0,
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
@@ -143,13 +143,13 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
       layers.push(
         new TextLayer({
           id: `scatterplot-labels/${config.id}`,
-          data: features,
+          data,
           visible: config.visible,
           pickable: false,
-          getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx), 2),
-          getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), true) : undefined,
-          getSize: getRadius ? (f: Feature, ctx: AccessorContext<Feature>) => {
-            const v = getRadius(f, ctx);
+          getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 2),
+          getText: getText ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), true) : undefined,
+          getSize: getRadius ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
+            const v = getRadius(datum, ctx);
             const decs = getDecimals(v);
             const chars = String(v.toFixed(decs)).length;
             return options.radiusMinPixels + Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / chars;

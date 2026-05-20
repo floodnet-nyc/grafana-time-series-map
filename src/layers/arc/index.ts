@@ -1,10 +1,11 @@
 import { ArcLayer } from '@deck.gl/layers';
-import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from '../utils';
+import type { AccessorContext } from '@deck.gl/core';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 export interface ArcLayerSettings {
   widthMinPixels: number;
@@ -26,7 +27,7 @@ const defaultSettings: ArcLayerSettings = {
   tgtLat: createSourceRef(),
 };
 
-export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
+export const arcLayerDefinition: LayerDefinition<ArcLayerConfig, LayerDatum> = {
   type: 'arc',
   label: 'Arc (origin→destination)',
   createDefaultConfig(index) {
@@ -43,11 +44,11 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<ArcLayerConfig>) {
-    const { config, features, getAccessors } = context;
+    const { config, data, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
+    const getColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 200, 200], getColorValue);
     const [srcLngAccessor, updatesSrcLng] = getAccessors.number(options.srcLng);
     const [srcLatAccessor, updatesSrcLat] = getAccessors.number(options.srcLat);
     const [tgtLngAccessor, updatesTgtLng] = getAccessors.number(options.tgtLng);
@@ -57,19 +58,19 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig> = {
       new ArcLayer({
         ...commonProps,
         id: `arc/${config.id}`,
-        data: features,
+        data,
         greatCircle: options.greatCircle,
         widthMinPixels: options.widthMinPixels,
-        getSourcePosition: srcLatAccessor && srcLngAccessor ? (f: Feature, ctx) => [
-          srcLngAccessor(f, ctx),
-          srcLatAccessor(f, ctx),
+        getSourcePosition: srcLatAccessor && srcLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+          srcLngAccessor(datum, ctx),
+          srcLatAccessor(datum, ctx),
         ] : undefined,
-        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (f: Feature, ctx) => [
-          tgtLngAccessor(f, ctx),
-          tgtLatAccessor(f, ctx),
+        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+          tgtLngAccessor(datum, ctx),
+          tgtLatAccessor(datum, ctx),
         ] : undefined,
-        getSourceColor: getColor as any,
-        getTargetColor: getColor as any,
+        getSourceColor: getColor,
+        getTargetColor: getColor,
         updateTriggers: {
           getSourcePosition: [...updatesSrcLng, ...updatesSrcLat],
           getTargetPosition: [...updatesTgtLng, ...updatesTgtLat],

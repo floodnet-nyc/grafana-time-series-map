@@ -16,6 +16,7 @@ import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
 import { buildCurrentLocationLayers, type CurrentLocationState } from '../layers/current-location/currentLocationLayers';
 import type { FeaturePickingInfo } from '../layers/types';
+import { buildFeatureAt, getRowValue } from '../utils/dataframe/layerTable';
 import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
@@ -128,10 +129,14 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         continue;
       }
 
-      const features = featuresByLayerId.get(layer.id) ?? [];
-      const match = features.find((feature) => String(feature.properties?.[keyField.field] ?? '') === selectedKey);
-      if (match) {
-        return match;
+      const table = featuresByLayerId.get(layer.id);
+      if (!table) {
+        continue;
+      }
+      for (let index = 0; index < table.data.length; index += 1) {
+        if (String(getRowValue(table, index, keyField.field) ?? '') === selectedKey) {
+          return buildFeatureAt(table, index);
+        }
       }
     }
 

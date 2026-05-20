@@ -170,7 +170,7 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<CogLayerConfig>) {
-    const { config, features, cursorTimeMs, getAccessor, getAccessors } = context;
+    const { config, data, cursorTimeMs, getAccessor, getAccessors } = context;
     const options = config.settings;
 
     const [getUrl, updatesUrl] = getAccessor<string>(options.url, '');
@@ -179,7 +179,7 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
     return [
       new TimeCOGLayer({
         id: `cog/${config.id}`,
-        data: features,
+        data,
         currentTime: cursorTimeMs,
         getUrl,
         getTime,

@@ -1,7 +1,7 @@
-import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import { compileExpression } from '../derivedFields/expressionEngine';
 import { buildFeatureScope } from '../featureScope';
+import type { LayerTable } from '../layerTable';
 
 export type DerivedFieldSet = ReturnType<typeof compileDerivedFields>;
 export type DerivedValueRow = Record<string, unknown>;
@@ -25,21 +25,22 @@ export function compileDerivedFields(config: LayerConfig) {
 export function selectDerivedValues(
   compiledDerivedFields: DerivedFieldSet,
   config: LayerConfig,
-  features: Feature[],
+  table: LayerTable,
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>,
 ): DerivedValueTable {
   if (!compiledDerivedFields?.length) {
     return undefined;
   }
 
-  return features.map((feature, index) => {
+  return table.data.map((_, index) => {
     const derivedRow: DerivedValueRow = {};
 
     for (const derivedField of compiledDerivedFields) {
       try {
         const scope = buildFeatureScope({
           config,
-          feature,
+          table,
+          index,
           joinedSourceValues,
           derivedRow,
         });

@@ -12,8 +12,8 @@ import type { MapPanelOptions } from '../../../types';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
-
 import type { GeoFeature } from '../toGeoJsonFeatures';
+import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -68,7 +68,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
 
 function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -99,6 +99,10 @@ function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccesso
     },
     array: getAccessor as any,
     numericArray: getAccessor as any,
+    geometry: () => [() => null, []],
+    pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+    path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+    polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
   };
   return { getAccessor, getAccessors };
 }
@@ -109,10 +113,13 @@ describe('renderSelectors', () => {
     const hiddenConfig = createLayerConfig({ id: 'hidden', type: 'scatterplot', visible: false });
     const missingConfig = createLayerConfig({ id: 'missing', type: 'line' });
     const accessors = createAccessors();
+    const visibleFeatures = [createFeature({ value: 1 }, undefined, 0)];
+    const hiddenFeatures = [createFeature({ value: 2 }, undefined, 0)];
+    const missingFeatures = [createFeature({ value: 3 }, undefined, 0)];
     const preparedLayerStates: PreparedLayerState[] = [
-      { config: visibleConfig, features: [createFeature({ value: 1 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: hiddenConfig, features: [createFeature({ value: 2 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: missingConfig, features: [createFeature({ value: 3 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: visibleConfig, table: featureArrayToLayerTable(visibleFeatures as any, 'main'), features: visibleFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: hiddenConfig, table: featureArrayToLayerTable(hiddenFeatures as any, 'main'), features: hiddenFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: missingConfig, table: featureArrayToLayerTable(missingFeatures as any, 'main'), features: missingFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
     ];
 
     const renderer = {

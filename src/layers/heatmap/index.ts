@@ -1,5 +1,4 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
-import type { Feature, Point } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
@@ -43,7 +42,7 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<HeatmapLayerConfig>) {
-    const { config, features, getAccessors } = context;
+    const { config, data, getAccessors } = context;
     const options = config.settings;
     
     const { onClick: _, ...commonProps } = createCommonLayerProps(context);
@@ -53,12 +52,12 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
     return [
       new HeatmapLayer({
         ...commonProps,
-        data: features,
+        data,
         radiusPixels: options.radiusPixels,
         intensity: options.intensity,
         threshold: options.threshold,
         colorRange,
-        getPosition: (f: Feature) => (f.geometry as Point).coordinates as [number, number],
+        getPosition: getAccessors.pointPosition()[0],
         getWeight: getWeight ?? 1,
         updateTriggers: {
           getWeight: updatesWeight,

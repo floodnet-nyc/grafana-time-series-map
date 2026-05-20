@@ -1,5 +1,4 @@
 import { IconLayer } from '@deck.gl/layers';
-import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 
@@ -22,8 +21,9 @@ export interface IconLayerSettings {
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, getDatumPosition } from '../utils';
 import { AccessorContext } from '@deck.gl/core';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -85,7 +85,7 @@ const defaultSettings: IconLayerSettings = {
   alphaCutoff: 0.05,
 };
 
-export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
+export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> = {
   type: 'icon',
   label: 'Icon',
   createDefaultConfig(index) {
@@ -113,16 +113,16 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
-    const { config, features, getAccessor, getAccessors, selectedKey } = context;
+    const { config, data, getAccessor, getAccessors, selectedKey } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const baseColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
+    const baseColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 104, 255], getColorValue);
     const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
     const getColor = (
       selectedKey != null && getSelection && config.selectionColor ? 
-        (feature: Feature, ctx: AccessorContext<Feature>) => (getSelection(feature, ctx) && config.selectionColor ? config.selectionColor : baseColor(feature, ctx))
+        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (getSelection(datum, ctx) && config.selectionColor ? config.selectionColor : baseColor(datum, ctx))
         : baseColor
     );
 
@@ -137,7 +137,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
       new IconLayer({
         ...commonProps,
         id: `icon/${config.id}`,
-        data: features,
+        data,
         iconAtlas: useCustomAtlas ? iconAtlas : BUILT_IN_ICON_ATLAS,
         iconMapping: useCustomAtlas ? iconMapping : BUILT_IN_ICON_MAPPING,
         billboard: options.billboard,
@@ -145,10 +145,10 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig> = {
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
         getIcon: getIcon
-          ? (f: Feature, ctx) => {
-              const iconName = getIcon(f, ctx) as string;
+          ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
+              const iconName = getIcon(datum, ctx) as string;
               return useCustomAtlas ? iconName : getBuiltInIconName(iconName);
             }
           : () => (useCustomAtlas ? options.fixedIcon : getBuiltInIconName(options.fixedIcon)),

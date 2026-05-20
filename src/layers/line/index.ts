@@ -1,10 +1,11 @@
 import { LineLayer } from '@deck.gl/layers';
-import type { Feature } from 'geojson';
 import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from '../utils';
+import type { AccessorContext } from '@deck.gl/core';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 export interface LineLayerSettings {
   srcLng: SourceRef;
@@ -30,7 +31,7 @@ const defaultSettings: LineLayerSettings = {
   widthScale: 1,
 };
 
-export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
+export const lineLayerDefinition: LayerDefinition<LineLayerConfig, LayerDatum> = {
   type: 'line',
   label: 'Line (origin→destination)',
   createDefaultConfig(index) {
@@ -53,12 +54,12 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<LineLayerConfig>) {
-    const { config, features, getAccessors } = context;
+    const { config, data, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue);
+    const getColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 200, 200], getColorValue);
 
     const [srcLngAccessor, updatesSrcLng] = getAccessors.number(options.srcLng);
     const [srcLatAccessor, updatesSrcLat] = getAccessors.number(options.srcLat);
@@ -70,19 +71,19 @@ export const lineLayerDefinition: LayerDefinition<LineLayerConfig> = {
       new LineLayer({
         ...commonProps,
         id: `line/${config.id}`,
-        data: features,
+        data,
         widthUnits: 'pixels' as const,
         widthMinPixels: options.widthMinPixels,
         widthMaxPixels: options.widthMaxPixels,
-        getSourcePosition: srcLatAccessor && srcLngAccessor ? (f: Feature, ctx) => [
-          srcLngAccessor(f, ctx),
-          srcLatAccessor(f, ctx),
+        getSourcePosition: srcLatAccessor && srcLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+          srcLngAccessor(datum, ctx),
+          srcLatAccessor(datum, ctx),
         ] : undefined,
-        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (f: Feature, ctx) => [
-          tgtLngAccessor(f, ctx),
-          tgtLatAccessor(f, ctx),
+        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+          tgtLngAccessor(datum, ctx),
+          tgtLatAccessor(datum, ctx),
         ] : undefined,
-        getColor: getColor as any,
+        getColor,
         getWidth: getWidth ?? 0,
         updateTriggers: {
           ...commonProps.updateTriggers,

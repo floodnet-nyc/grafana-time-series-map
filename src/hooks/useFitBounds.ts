@@ -3,6 +3,7 @@ import type { Geometry } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import type { FitBounds } from '../components/map/types';
 import type { PreparedLayerState } from '../utils/dataframe/pipeline';
+import { getRowGeometry } from '../utils/dataframe/layerTable';
 
 function collectCoords(geom: Geometry | null | undefined): Array<[number, number]> {
   if (!geom) {
@@ -42,7 +43,7 @@ export function useFitBounds(options: MapPanelOptions, preparedLayerStates: Prep
     let maxLat = -Infinity;
 
     for (const preparedLayerState of preparedLayerStates) {
-      const { config: layerConfig, features } = preparedLayerState;
+      const { config: layerConfig, table } = preparedLayerState;
 
       if (!layerConfig.visible || layerConfig.geometry.type === 'none') {
         continue;
@@ -52,8 +53,8 @@ export function useFitBounds(options: MapPanelOptions, preparedLayerStates: Prep
         continue;
       }
 
-      for (const [, feature] of features.entries()) {
-        for (const [lng, lat] of collectCoords(feature.geometry)) {
+      for (let index = 0; index < table.data.length; index += 1) {
+        for (const [lng, lat] of collectCoords(getRowGeometry(table, index))) {
           if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
             continue;
           }

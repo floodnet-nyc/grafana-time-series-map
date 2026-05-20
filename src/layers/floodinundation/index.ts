@@ -1,5 +1,4 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
-import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { ColorScaleConfig, SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
@@ -44,20 +43,6 @@ const InundationExtension = CreateMathExtensionSubclass({
   inject: {},
 });
 
-function getPolygonCoords(f: Feature): number[][][] | null {
-  const g = f.geometry as Polygon | MultiPolygon;
-  if (!g) {
-    return null;
-  }
-  if (g.type === 'Polygon') {
-    return g.coordinates as number[][][];
-  }
-  if (g.type === 'MultiPolygon') {
-    return g.coordinates[0] as number[][][];
-  }
-  return null;
-}
-
 // function getDerivedNumber(feature: Feature, derivedValues: Array<Record<string, unknown>> | undefined, field: string): number {
 //   const index = (feature as Feature & { __idx?: number }).__idx;
 //   return Number(derivedValues?.[index ?? -1]?.[field] ?? 0);
@@ -88,18 +73,19 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     ]),
   ],
   renderLayers(context: LayerRenderContext<FloodInundationLayerConfig>) {
-    const { config, features, getAccessors } = context;
+    const { config, data, getAccessors } = context;
     const options = config.settings;
     const colorScale: ColorScaleConfig = config.colorScale ?? DEFAULT_COLOR_SCALE;
     const commonProps = createCommonLayerProps(context);
     const [getElevation, updatesElevation] = getAccessors.number(options.depthDiff, 0);
+    const [getPolygon] = getAccessors.polygon();
     return [
       new SolidPolygonLayer({
         ...commonProps,
-        data: features,
+        data,
         filled: true,
         stroked: false,
-        getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
+        getPolygon: ((datum: any, ctx: any) => getPolygon(datum, ctx)[0] ?? []) as any,
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: options.fillOpacity,
         getDepthDiff: getElevation ?? 0,

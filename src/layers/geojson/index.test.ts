@@ -12,6 +12,7 @@ jest.mock('@deck.gl/layers', () => ({
 import { geoJsonLayerDefinition } from './index';
 import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
 import type { GeoJsonLayerConfig } from './index';
+import { featureArrayToLayerTable } from '../../utils/dataframe/layerTable';
 
 function createFeature(properties: Record<string, unknown> = {}): Feature {
   return {
@@ -54,7 +55,7 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
 
 function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRenderContext<GeoJsonLayerConfig> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -85,12 +86,21 @@ function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRe
     },
     array: getAccessor as any,
     numericArray: getAccessor as any,
+    geometry: () => [() => null, []],
+    pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+    path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+    polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
   };
+
+  const indexedFeatures = features.map((feature, index) => ({ ...feature, __idx: index })) as any;
 
   return {
     config,
     panelOptions: {} as any,
-    features,
+    data: indexedFeatures.map((feature: any) => ({ __idx: feature.__idx })),
+    table: featureArrayToLayerTable(indexedFeatures),
+    features: indexedFeatures,
+    featureCollection: indexedFeatures,
     cursorTimeMs: 0,
     fromTimeMs: 0,
     toTimeMs: 0,

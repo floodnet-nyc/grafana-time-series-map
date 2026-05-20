@@ -1,6 +1,6 @@
 import type { ColorScaleConfig, ColorStep } from '../../types';
 import type { Feature } from 'geojson';
-import type { AccessorContext } from '@deck.gl/core';
+import type { AccessorContext, AccessorFunction } from '@deck.gl/core';
 import { interpolateScheme } from './colorSchemes';
 
 export type RGBA = [number, number, number, number];
@@ -18,17 +18,27 @@ function thresholdToColor(steps: ColorStep[], value: number): RGBA {
 
 export function buildColorAccessor(
   colorScale: ColorScaleConfig | undefined,
-  defaultColor: RGBA = [0, 155, 104, 255],
+  defaultColor?: RGBA,
   getValue?: (feature: Feature, ctx: AccessorContext<Feature>) => number,
-): (feature: Feature, ctx: AccessorContext<Feature>) => RGBA {
+): (feature: Feature, ctx: AccessorContext<Feature>) => RGBA;
+export function buildColorAccessor<TDatum>(
+  colorScale: ColorScaleConfig | undefined,
+  defaultColor?: RGBA,
+  getValue?: AccessorFunction<TDatum, number>,
+): AccessorFunction<TDatum, RGBA>;
+export function buildColorAccessor<TDatum>(
+  colorScale: ColorScaleConfig | undefined,
+  defaultColor: RGBA = [0, 155, 104, 255],
+  getValue?: AccessorFunction<TDatum, number>,
+): AccessorFunction<TDatum, RGBA> {
   if (!colorScale) { return () => defaultColor; }
   if (colorScale.type === 'fixed') { return () => colorScale.fixedColor ?? defaultColor; }
 
   if (colorScale.type === 'threshold' && colorScale.steps?.length && colorScale.field) {
     const steps = [...colorScale.steps].sort((a, b) => a.value - b.value);
     const field = colorScale.field.field;
-    return (f: Feature, ctx: AccessorContext<Feature>) => {
-      const raw = getValue ? getValue(f, ctx) : Number(f.properties?.[field]);
+    return (datum: TDatum, ctx: AccessorContext<TDatum>) => {
+      const raw = getValue ? getValue(datum, ctx) : Number((datum as Feature).properties?.[field]);
       return thresholdToColor(steps, Number.isFinite(raw) ? raw : 0);
     };
   }
@@ -37,8 +47,8 @@ export function buildColorAccessor(
     const { schemeName, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
     const field = colorScale.field.field;
     const range = scaleMax - scaleMin || 1;
-    return (f: Feature, ctx: AccessorContext<Feature>) => {
-      const raw = getValue ? getValue(f, ctx) : Number(f.properties?.[field]);
+    return (datum: TDatum, ctx: AccessorContext<TDatum>) => {
+      const raw = getValue ? getValue(datum, ctx) : Number((datum as Feature).properties?.[field]);
       const v = Number.isFinite(raw) ? raw : scaleMin;
       const t = Math.max(0, Math.min(1, (v - scaleMin) / range));
       return interpolateScheme(schemeName, t, invert);

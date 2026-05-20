@@ -1,5 +1,5 @@
 import type { AccessorFunction, Layer, PickingInfo } from '@deck.gl/core';
-import type { Feature } from 'geojson';
+import type { Feature, Geometry } from 'geojson';
 import type {
   ColorScaleConfig,
   DataSource,
@@ -11,6 +11,7 @@ import type {
   TimeFilterConfig,
 } from '../types';
 import type { LayerExtensionInstance } from '../extensions/types';
+import type { LayerDatum, LayerTable } from '../utils/dataframe/layerTable';
 
 export type { LayerExtensionInstance };
 
@@ -42,15 +43,19 @@ export interface BaseLayerConfig<TType extends string, TSettings extends LayerSe
 }
 
 export type AccessorDependencyKey = readonly unknown[];
-export type GetAccessorFunction = <O = unknown | undefined, T extends Feature = Feature>(
+export type GetAccessorFunction = <O = unknown | undefined, T = any>(
   fieldRef?: SourceRef,
   defaultValue?: O
 ) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
 
-export type TypedGetAccessorFunction<O> = <T extends Feature = Feature>(
+export type TypedGetAccessorFunction<O> = <T = any>(
   fieldRef?: SourceRef,
   defaultValue?: O
 ) => [AccessorFunction<T, O> | undefined, AccessorDependencyKey];
+
+export type GeometryAccessorFunction<O, T = any> = (
+  defaultValue?: O
+) => [AccessorFunction<T, O>, AccessorDependencyKey];
 
 export type LayerWithConfig<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Layer & {
   props: Layer['props'] & { config?: TLayerConfig };
@@ -67,12 +72,19 @@ export interface GetAccessorFunctions {
   numericArray: TypedGetAccessorFunction<number[]>;
   date: TypedGetAccessorFunction<Date>;
   dateMs: TypedGetAccessorFunction<number>;
+  geometry: GeometryAccessorFunction<Geometry | null>;
+  pointPosition: GeometryAccessorFunction<[number, number]>;
+  path: GeometryAccessorFunction<number[][]>;
+  polygon: GeometryAccessorFunction<number[][][]>;
 }
 
 export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = LayerConfigBase> {
   config: TLayerConfig;
   panelOptions: unknown;
-  features: Feature[];
+  data: LayerDatum[];
+  table: LayerTable;
+  features?: Feature[];
+  featureCollection?: Feature[];
   cursorTimeMs: number;
   fromTimeMs: number;
   toTimeMs: number;
@@ -104,10 +116,13 @@ export interface LayerEditorSection {
   fields: LayerOptionField[];
 }
 
-export interface LayerDefinition<TLayerConfig extends LayerConfigBase = LayerConfigBase> {
+export interface LayerDefinition<
+  TLayerConfig extends LayerConfigBase = LayerConfigBase,
+  TDatum extends LayerDatum = LayerDatum,
+> {
   type: TLayerConfig['type'];
   label: string;
   createDefaultConfig: (index: number) => TLayerConfig;
   editorSections: LayerEditorSection[];
-  renderLayers: (ctx: LayerRenderContext<TLayerConfig>) => Layer[];
+  renderLayers: (ctx: LayerRenderContext<TLayerConfig> & { data: TDatum[] }) => Layer[];
 }

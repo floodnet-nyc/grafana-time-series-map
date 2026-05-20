@@ -5,6 +5,7 @@ import { createSourceRef } from '../layers/defaults';
 import { useFitBounds } from './useFitBounds';
 import type { PreparedLayerState } from '../utils/dataframe/pipeline';
 import type { GetAccessorFunction, GetAccessorFunctions } from '../layers/types';
+import { featureArrayToLayerTable } from '../utils/dataframe/layerTable';
 
 function createOptions(): MapPanelOptions {
   return {
@@ -33,7 +34,7 @@ function pointFeature(longitude: number, latitude: number): Feature {
 }
 
 const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-  fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+  fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
   [fieldName?.source, fieldName?.field, defaultValue],
 ];
 
@@ -65,9 +66,14 @@ const getAccessors: GetAccessorFunctions = {
   },
   array: getAccessor as any,
   numericArray: getAccessor as any,
+  geometry: () => [() => null, []],
+  pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+  path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+  polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
 };
 
 function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): PreparedLayerState {
+  const features = [pointFeature(-122, 37), pointFeature(-74, 40)].map((feature, index) => ({ ...feature, __idx: index }));
   return {
     config: {
       id: 'layer-1',
@@ -80,7 +86,8 @@ function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): 
       timeFilter: { mode: 'window', time: createSourceRef('time') },
         opacity: 1,
     } as any,
-    features: [pointFeature(-122, 37), pointFeature(-74, 40)],
+    table: featureArrayToLayerTable(features as any),
+    features,
     timeFilterFlags: new Uint8Array([0, 1]),
     getAccessor,
     getAccessors,
@@ -117,7 +124,14 @@ describe('useFitBounds', () => {
           id: 'layer-2',
           label: 'Layer 2',
         },
-        features: [pointFeature(10, 20), pointFeature(30, 40)],
+        table: featureArrayToLayerTable([
+          { ...pointFeature(10, 20), __idx: 0 },
+          { ...pointFeature(30, 40), __idx: 1 },
+        ] as any),
+        features: [
+          { ...pointFeature(10, 20), __idx: 0 },
+          { ...pointFeature(30, 40), __idx: 1 },
+        ] as any,
         timeFilterFlags: new Uint8Array([0, 0]),
       }),
     ];
@@ -134,6 +148,7 @@ describe('useFitBounds', () => {
     const options = createOptions();
     const preparedLayerStates = [
       createPreparedLayerState({
+        table: featureArrayToLayerTable([] as any),
         features: [],
       }),
     ];

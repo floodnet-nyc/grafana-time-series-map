@@ -60,18 +60,18 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<GeoJsonLayerConfig>) {
-    const { config, features, getAccessor, getAccessors } = context;
+    const { config, featureCollection = [], getAccessor, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
     const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getFillColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200], getColorValue);
+    const getFillColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue as any);
+    const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200], getColorValue as any);
     const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidth, 0);
     return [
       new GeoJsonLayer({
         ...commonProps,
         id: `geojson/${config.id}`,
-        data: { type: 'FeatureCollection', features },
+        data: { type: 'FeatureCollection', features: featureCollection },
         filled: options.filled,
         stroked: options.stroked,
         extruded: options.extruded,

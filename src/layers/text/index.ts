@@ -1,5 +1,4 @@
 import { TextLayer } from '@deck.gl/layers';
-import type { Feature } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 
@@ -27,8 +26,9 @@ export interface TextLayerSettings {
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, getFeaturePosition } from '../utils';
+import { createCommonLayerProps, getDatumPosition } from '../utils';
 import { AccessorContext } from '@deck.gl/core';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 const defaultSettings: TextLayerSettings = {
   text: createSourceRef(),
@@ -51,7 +51,7 @@ const defaultSettings: TextLayerSettings = {
   autoDecimals: false,
 };
 
-export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
+export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> = {
   type: 'text',
   label: 'Text',
   createDefaultConfig(index) {
@@ -120,11 +120,11 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     const commonProps = createCommonLayerProps(context);
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const baseColor = buildColorAccessor(config.colorScale, [255, 255, 255, 220], getColorValue);
+    const baseColor = buildColorAccessor<LayerDatum>(config.colorScale, [255, 255, 255, 220], getColorValue);
     const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
     const getColor = (
       selectedKey != null && getSelection ? 
-        (feature: Feature, ctx: AccessorContext<Feature>) => (getSelection(feature, ctx) && config.selectionColor ? config.selectionColor : baseColor(feature, ctx))
+        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (getSelection(datum, ctx) && config.selectionColor ? config.selectionColor : baseColor(datum, ctx))
         : baseColor
     );
 
@@ -137,7 +137,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
     return [
       new TextLayer({
         ...commonProps,
-        data: context.features,
+        data: context.data,
         billboard: options.billboard,
         background: options.background,
         backgroundPadding: [4, 2, 4, 2],
@@ -146,9 +146,9 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig> = {
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (f: Feature, ctx: AccessorContext<Feature>) => getFeaturePosition(f, getElevation?.(f, ctx)),
-        getText: getText ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsText(getText(f, ctx), options.autoDecimals) : undefined,
-        getSize: getSize ? (f: Feature, ctx: AccessorContext<Feature>) => autoDecimalsSize(getSize(f, ctx), options.autoDecimals) : options.fontSize,
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getText: getText ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), options.autoDecimals) : undefined,
+        getSize: getSize ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsSize(getSize(datum, ctx), options.autoDecimals) : options.fontSize,
         getColor,
         getTextAnchor: options.anchor,
         getAlignmentBaseline: options.baseline,

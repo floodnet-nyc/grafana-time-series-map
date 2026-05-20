@@ -1,10 +1,12 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
-import type { Feature, LineString, MultiLineString } from 'geojson';
+import type { LineString, MultiLineString } from 'geojson';
 import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import { createCommonLayerProps } from 'layers/utils';
+import { getRowGeometry, type LayerDatum } from '../../utils/dataframe/layerTable';
+import type { AccessorContext } from '@deck.gl/core';
 
 export interface TripsLayerSettings {
   timestamps: SourceRef;
@@ -20,24 +22,20 @@ export interface TripsLayerSettings {
 }
 
 export type TripsLayerConfig = BaseLayerConfig<'trips', TripsLayerSettings>;
+type TripDatum = LayerDatum;
 
-function getPath(feature: Feature): number[][] | null {
-  const geometry = feature.geometry as LineString | MultiLineString | null;
-  if (!geometry) {
-    return null;
+function getPath(geometry: unknown): number[][] {
+  const pathGeometry = geometry as LineString | MultiLineString | null;
+  if (!pathGeometry) {
+    return [];
   }
-  if (geometry.type === 'LineString') {
-    return geometry.coordinates as number[][];
+  if (pathGeometry.type === 'LineString') {
+    return pathGeometry.coordinates as number[][];
   }
-  if (geometry.type === 'MultiLineString') {
-    return geometry.coordinates[0] as number[][];
+  if (pathGeometry.type === 'MultiLineString') {
+    return (pathGeometry.coordinates[0] ?? []) as number[][];
   }
-  return null;
-}
-
-function getValidTripPath(feature: Feature) {
-  const path = getPath(feature);
-  return path && path.length >= 2 ? path : [];
+  return [];
 }
 
 const defaultSettings: TripsLayerSettings = {
@@ -53,7 +51,7 @@ const defaultSettings: TripsLayerSettings = {
   jointRounded: true,
 };
 
-export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
+export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> = {
   type: 'trips',
   label: 'Trips',
   createDefaultConfig(index) {
@@ -62,16 +60,6 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
   editorSections: [
     section('Trip time', [
       { key: 'timestamps', label: 'Timestamps field', type: 'fieldPicker', defaultValue: createSourceRef() },
-      // {
-      //   key: 'timestampUnit',
-      //   label: 'Timestamp unit',
-      //   type: 'select',
-      //   defaultValue: 'ms',
-      //   selectOptions: [
-      //     { label: 'Milliseconds', value: 'ms' },
-      //     { label: 'Seconds', value: 's' },
-      //   ],
-      // },
       { key: 'trailLengthMs', label: 'Trail length (ms)', type: 'number', defaultValue: 300000 },
       { key: 'fadeTrail', label: 'Fade trail', type: 'boolean', defaultValue: true },
     ]),
@@ -85,25 +73,46 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<TripsLayerConfig>) {
-    const { config, features, cursorTimeMs, getAccessors } = context;
+    const { config, data, cursorTimeMs, timeFilterFlags, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
     const [getColorValue, updatesColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
+    const getColor = buildColorAccessor<TripDatum>(config.colorScale, [0, 200, 180, 220], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
     const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
-    const getTimestamps = getTimestampsRaw ?? (options.timestamps?.field ? undefined : (f: Feature) => {
-      const path = getPath(f);
-      return path ? path.map((coord) => Number(coord[2])).filter(Number.isFinite) : [];
-    });
+    const getIndex = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx?.index ?? datum.__idx ?? -1;
+    const getContext = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx ?? ({ index: getIndex(datum, ctx) } as AccessorContext<TripDatum>);
+    const getPathAccessor = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
+      const path = getPath(getRowGeometry(context.table, getIndex(datum, ctx)));
+      return path.length >= 2 ? path : [];
+    };
+    const getTimestamps = getTimestampsRaw
+      ? (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
+          const timestamps = getTimestampsRaw(datum, ctx);
+          const path = getPathAccessor(datum, ctx);
+          return timestamps.length === path.length ? timestamps : [];
+        }
+      : (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
+          const path = getPathAccessor(datum, ctx);
+          return path.map((coord) => Number(coord[2])).filter(Number.isFinite);
+        };
+    const getFilterValue = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
+      const index = getIndex(datum, ctx);
+      if (index < 0 || !timeFilterFlags[index]) {
+        return -1;
+      }
+      const path = getPathAccessor(datum, ctx);
+      const timestamps = getTimestamps(datum, getContext(datum, ctx));
+      return path.length >= 2 && timestamps.length === path.length ? 1 : -1;
+    };
 
     // Panel time filtering and joined-source lookups stay feature-oriented:
     // each trip row is selected once by the shared pipeline, while the per-vertex
     // timestamp array remains layer-local metadata that only drives trail animation.
     return [
-      new TripsLayer<Feature>({
+      new TripsLayer<TripDatum>({
         ...commonProps,
-        data: features,
+        data,
         currentTime: cursorTimeMs,
         trailLength: options.trailLengthMs,
         fadeTrail: options.fadeTrail,
@@ -112,15 +121,18 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: getValidTripPath,
+        getPath: getPathAccessor as any,
         getTimestamps,
         getColor,
         getWidth: getWidth ?? 1,
+        getFilterValue,
+        filterRange: [1, 1],
         updateTriggers: {
           ...commonProps.updateTriggers,
           getTimestamps: updatesTimestamps,
           getColor: updatesColorValue,
           getWidth: updatesWidth,
+          getFilterValue: [timeFilterFlags, options.timestamps.field],
         },
       } as any),
     ];

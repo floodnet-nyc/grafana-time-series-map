@@ -1,5 +1,5 @@
 import type { AccessorContext, AccessorFunction } from '@deck.gl/core';
-import type { Feature } from 'geojson';
+import type { Geometry, LineString, MultiLineString, MultiPolygon, Point, Polygon } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import type {
   GetAccessorFunction,
@@ -8,13 +8,16 @@ import type {
 } from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
+import type { LayerDatum, LayerTable } from '../layerTable';
+import { getRowGeometry, getRowValue } from '../layerTable';
 
 function dependencyKey(fieldRef?: SourceRef, defaultValue?: unknown) {
   return [fieldRef?.source ?? '', fieldRef?.field ?? '', defaultValue];
 }
 
 function getFeatureFieldValue(
-  feature: Feature,
+  table: LayerTable,
+  index: number,
   fieldRef: SourceRef | undefined,
   featureSourceId: string,
   derived?: Record<string, unknown>,
@@ -25,7 +28,7 @@ function getFeatureFieldValue(
   if (fieldRef.source !== featureSourceId) {
     return undefined;
   }
-  return derived?.[fieldRef.field] ?? feature.properties?.[fieldRef.field];
+  return derived?.[fieldRef.field] ?? getRowValue(table, index, fieldRef.field);
 }
 
 function makeTypedGetAccessor<O>(
@@ -38,10 +41,10 @@ function makeTypedGetAccessor<O>(
     const [accessor, updates] = raw(fieldRef, resolvedDefault);
     return [
       accessor
-        ? (feature: Feature, ctx: AccessorContext<Feature>) => toTyped(accessor(feature, ctx), resolvedDefault)
+        ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => toTyped(accessor(datum, ctx), resolvedDefault)
         : undefined,
       updates,
-    ] as [AccessorFunction<Feature, O> | undefined, readonly unknown[]];
+    ] as [AccessorFunction<LayerDatum, O> | undefined, readonly unknown[]];
   }) as TypedGetAccessorFunction<O>;
 }
 
@@ -97,12 +100,42 @@ function toDateMs(raw: unknown, defaultValue: number): number {
   return Number.isFinite(n) ? n : defaultValue;
 }
 
+function getPointPositionFromGeometry(geometry: Geometry | null, defaultValue: [number, number]): [number, number] {
+  if (geometry?.type === 'Point') {
+    const [lng = defaultValue[0], lat = defaultValue[1]] = geometry.coordinates as Point['coordinates'];
+    return [lng, lat];
+  }
+  return defaultValue;
+}
+
+function getPathFromGeometry(geometry: Geometry | null, defaultValue: number[][]): number[][] {
+  if (geometry?.type === 'LineString') {
+    return geometry.coordinates as LineString['coordinates'];
+  }
+  if (geometry?.type === 'MultiLineString') {
+    return (geometry.coordinates[0] ?? defaultValue) as MultiLineString['coordinates'][number];
+  }
+  return defaultValue;
+}
+
+function getPolygonFromGeometry(geometry: Geometry | null, defaultValue: number[][][]): number[][][] {
+  if (geometry?.type === 'Polygon') {
+    return geometry.coordinates as Polygon['coordinates'];
+  }
+  if (geometry?.type === 'MultiPolygon') {
+    return (geometry.coordinates[0] ?? defaultValue) as MultiPolygon['coordinates'][number];
+  }
+  return defaultValue;
+}
+
 export function selectAccessorFactories({
   config,
+  table,
   derivedValues,
   joinedSourceValues,
 }: {
   config: LayerConfig;
+  table: LayerTable;
   derivedValues?: DerivedValueTable;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
 }): { getAccessor: GetAccessorFunction; getAccessors: GetAccessorFunctions } {
@@ -115,7 +148,7 @@ export function selectAccessorFactories({
 
     if (fieldRef.source === config.data.featureSource.id && derivedFieldNames.has(fieldRef.field)) {
       return [
-        (_feature: Feature, { index }: AccessorContext<Feature>) =>
+        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) =>
           derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
         dependencyKey(fieldRef, defaultValue),
       ];
@@ -123,7 +156,7 @@ export function selectAccessorFactories({
 
     if (fieldRef.source === config.data.featureSource.id) {
       return [
-        (feature: Feature) => feature.properties?.[fieldRef.field] ?? defaultValue,
+        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) => getRowValue(table, index, fieldRef.field) ?? defaultValue,
         dependencyKey(fieldRef, defaultValue),
       ];
     }
@@ -136,10 +169,11 @@ export function selectAccessorFactories({
       }
 
       return [
-        (feature: Feature, { index }: AccessorContext<Feature>) => {
+        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) => {
           const localKey = String(
             getFeatureFieldValue(
-              feature,
+              table,
+              index,
               joinedSource.join.localKey,
               config.data.featureSource.id,
               derivedValues?.[index],
@@ -162,6 +196,22 @@ export function selectAccessorFactories({
       dateMs: makeTypedGetAccessor(rawGetAccessor, toDateMs, 0),
       array: makeTypedGetAccessor(rawGetAccessor, toArray, []),
       numericArray: makeTypedGetAccessor(rawGetAccessor, toNumericArray, []),
+      geometry: (defaultValue = null) => [
+        (_datum, { index }) => getRowGeometry(table, index) ?? defaultValue,
+        [table.geometry],
+      ],
+      pointPosition: (defaultValue: [number, number] = [0, 0]) => [
+        (_datum, { index }) => getPointPositionFromGeometry(getRowGeometry(table, index), defaultValue),
+        [table.geometry],
+      ],
+      path: (defaultValue: number[][] = []) => [
+        (_datum, { index }) => getPathFromGeometry(getRowGeometry(table, index), defaultValue),
+        [table.geometry],
+      ],
+      polygon: (defaultValue: number[][][] = []) => [
+        (_datum, { index }) => getPolygonFromGeometry(getRowGeometry(table, index), defaultValue),
+        [table.geometry],
+      ],
     },
   };
 }

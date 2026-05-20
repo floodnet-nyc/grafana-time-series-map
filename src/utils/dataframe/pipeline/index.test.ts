@@ -1,9 +1,8 @@
 import type { AccessorContext, Layer } from '@deck.gl/core';
-import type { Feature } from 'geojson';
-jest.mock('../../layers', () => ({
+jest.mock('../../../layers', () => ({
   layerDefinitions: [],
 }));
-jest.mock('../../extensions', () => ({
+jest.mock('../../../extensions', () => ({
   layerExtensionDefinitions: [],
 }));
 import {
@@ -24,6 +23,7 @@ import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import type { GeoFeature } from '../toGeoJsonFeatures';
 import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
+import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -78,7 +78,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
 
 function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? (feature) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
+    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -109,6 +109,10 @@ function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccesso
     },
     array: getAccessor as any,
     numericArray: getAccessor as any,
+    geometry: () => [() => null, []],
+    pointPosition: (defaultValue = [0, 0] as [number, number]) => [() => defaultValue, []],
+    path: (defaultValue = [] as number[][]) => [() => defaultValue, []],
+    polygon: (defaultValue = [] as number[][][]) => [() => defaultValue, []],
   };
   return { getAccessor, getAccessors };
 }
@@ -121,11 +125,11 @@ describe('panelLayersModel', () => {
     const featuresByLayerId = new Map([
       [
         config.id,
-        [
+        featureArrayToLayerTable([
           createFeature({ time: 900 }, undefined, 0),
           createFeature({ time: 1500 }, undefined, 1),
           createFeature({ time: 2201 }, undefined, 2),
-        ],
+        ] as any, 'main'),
       ],
     ]);
 
@@ -142,7 +146,7 @@ describe('panelLayersModel', () => {
       createFeature({ deployment_id: 'a', time: 2000 }, 'a-2', 1),
       createFeature({ deployment_id: 'b', time: 1200 }, 'b-1', 2),
     ];
-    const featuresByLayerId = new Map([[config.id, features]]);
+    const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable(features as any, 'main')]]);
     const packedByLayerId = new Map([
       [config.id, buildPacked('geojson', features, 'deployment_id', 'time')],
     ]);
@@ -178,7 +182,7 @@ describe('panelLayersModel', () => {
       ],
     });
     const features = [createFeature({ time: 1000, deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
-    const featuresByLayerId = new Map([[config.id, features]]);
+    const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable(features as any, 'main')]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
     const joinedSourceValues = new Map([
       [config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])],
@@ -208,7 +212,7 @@ describe('panelLayersModel', () => {
     });
     const features = [createFeature({ depth: 4 }, undefined, 0)];
 
-    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, features);
+    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, featureArrayToLayerTable(features as any, 'main'));
 
     expect(derivedValues).toEqual([{ depthDouble: 8 }]);
     expect((features[0] as GeoFeature & { __derived?: Record<string, unknown> }).__derived).toBeUndefined();
@@ -245,17 +249,18 @@ describe('panelLayersModel', () => {
       ['A', new Map([['sensor-1', { depth: 5 }]])],
     ]);
     const derivedValues = [{ depthDiff: 3 }];
-    const { getAccessor, getAccessors } = selectAccessorFactories({ config, joinedSourceValues, derivedValues });
+    const table = featureArrayToLayerTable(features as any, 'main');
+    const { getAccessor, getAccessors } = selectAccessorFactories({ config, table, joinedSourceValues, derivedValues });
 
     const [getDerived] = getAccessor(createSourceRef('depthDiff'));
     const [getJoined] = getAccessor({ source: 'A', field: 'depth' });
     const [getLocal] = getAccessor(createSourceRef('contour_depth_inches'));
     const [getMissingNumeric] = getAccessors.number({ source: 'A', field: 'missing' }, 7);
 
-    expect(getDerived?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(3);
-    expect(getJoined?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(5);
-    expect(getLocal?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(2);
-    expect(getMissingNumeric?.(features[0], { index: 0 } as AccessorContext<Feature>)).toBe(7);
+    expect(getDerived?.({ __idx: 0 }, { index: 0 } as AccessorContext<any>)).toBe(3);
+    expect(getJoined?.({ __idx: 0 }, { index: 0 } as AccessorContext<any>)).toBe(5);
+    expect(getLocal?.({ __idx: 0 }, { index: 0 } as AccessorContext<any>)).toBe(2);
+    expect(getMissingNumeric?.({ __idx: 0 }, { index: 0 } as AccessorContext<any>)).toBe(7);
   });
 
   it('composes a prepared layer state from selector inputs', () => {
@@ -272,7 +277,7 @@ describe('panelLayersModel', () => {
 
     const state = selectPreparedLayerState({
       config,
-      features,
+      table: featureArrayToLayerTable(features as any, 'main'),
       timeFilterFlags: new Uint8Array([1]),
     });
 
@@ -314,7 +319,7 @@ describe('panelLayersModel', () => {
           [
             'B',
             {
-              features: sourceFeatures,
+              table: featureArrayToLayerTable(sourceFeatures as any, 'main'),
               packed: buildPacked('geojson', sourceFeatures, 'deployment_id', 'time'),
             },
           ],
@@ -342,10 +347,13 @@ describe('panelLayersModel', () => {
     const hiddenConfig = createLayerConfig({ id: 'hidden', type: 'scatterplot', visible: false });
     const missingConfig = createLayerConfig({ id: 'missing', type: 'line' });
     const accessors = createAccessors();
+    const visibleFeatures = [createFeature({ value: 1 }, undefined, 0)];
+    const hiddenFeatures = [createFeature({ value: 2 }, undefined, 0)];
+    const missingFeatures = [createFeature({ value: 3 }, undefined, 0)];
     const preparedLayerStates: PreparedLayerState[] = [
-      { config: visibleConfig, features: [createFeature({ value: 1 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: hiddenConfig, features: [createFeature({ value: 2 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: missingConfig, features: [createFeature({ value: 3 }, undefined, 0)], timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: visibleConfig, table: featureArrayToLayerTable(visibleFeatures as any, 'main'), features: visibleFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: hiddenConfig, table: featureArrayToLayerTable(hiddenFeatures as any, 'main'), features: hiddenFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      { config: missingConfig, table: featureArrayToLayerTable(missingFeatures as any, 'main'), features: missingFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
     ];
 
     const renderer = {

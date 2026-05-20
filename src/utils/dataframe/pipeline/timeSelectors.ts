@@ -1,10 +1,11 @@
 import type { LayerConfig } from '../../../layers';
 import { buildPackedFromAccessors, computeClosestFlags } from '../closestTimeFiltering';
-import type { PanelFeaturesByLayerId } from '../../../hooks/usePanelLayers';
+import type { LayerTableLike } from '../layerTable';
+import { coerceLayerTable, getRowValue } from '../layerTable';
 
 export type TimePackedByLayerId = Map<string, ReturnType<typeof buildPackedFromAccessors>>;
 
-export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresByLayerId: PanelFeaturesByLayerId): TimePackedByLayerId {
+export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], tablesByLayerId: Map<string, LayerTableLike>): TimePackedByLayerId {
   const packedByLayerId = new Map<string, ReturnType<typeof buildPackedFromAccessors>>();
 
   for (const layerConfig of layerConfigs) {
@@ -17,15 +18,16 @@ export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresBy
       continue;
     }
 
-    const features = featuresByLayerId.get(layerConfig.id) ?? [];
+    const tableLike = tablesByLayerId.get(layerConfig.id);
+    const table = tableLike ? coerceLayerTable(tableLike, layerConfig.data.featureSource.id) : undefined;
     const groupByRef = layerConfig.timeFilter.groupBy;
     packedByLayerId.set(
       layerConfig.id,
       buildPackedFromAccessors(
-        features.length,
-        (index) => groupByRef?.field ? features[index].properties?.[groupByRef.field] ?? '' : '',
+        table?.data.length ?? 0,
+        (index) => groupByRef?.field ? getRowValue(table!, index, groupByRef.field) ?? '' : '',
         (index) => {
-          const raw = features[index].properties?.[timeRef.field];
+          const raw = getRowValue(table!, index, timeRef.field);
           return raw instanceof Date ? raw.getTime() : Number(raw);
         },
       ),
@@ -37,7 +39,7 @@ export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], featuresBy
 
 export function buildTimeFilterFlagsByLayerId(
   layerConfigs: LayerConfig[],
-  featuresByLayerId: PanelFeaturesByLayerId,
+  tablesByLayerId: Map<string, LayerTableLike>,
   packedByLayerId: TimePackedByLayerId,
   cursorTimeMs: number,
   fromTimeMs: number,
@@ -46,20 +48,22 @@ export function buildTimeFilterFlagsByLayerId(
   const flagsByLayerId = new Map<string, Uint8Array>();
 
   for (const layerConfig of layerConfigs) {
-    const features = featuresByLayerId.get(layerConfig.id) ?? [];
+    const tableLike = tablesByLayerId.get(layerConfig.id);
+    const table = tableLike ? coerceLayerTable(tableLike, layerConfig.data.featureSource.id) : undefined;
+    const rowCount = table?.data.length ?? 0;
     const { mode, time, maxLagMs } = layerConfig.timeFilter;
 
     if (mode === 'none' || !time?.field || time.source !== layerConfig.data.featureSource.id) {
-      flagsByLayerId.set(layerConfig.id, new Uint8Array(features.length).fill(1));
+      flagsByLayerId.set(layerConfig.id, new Uint8Array(rowCount).fill(1));
       continue;
     }
 
     if (mode === 'window') {
       const tolerance = layerConfig.timeFilter.windowToleranceMs ?? 0;
-      const flags = new Uint8Array(features.length);
+      const flags = new Uint8Array(rowCount);
 
-      features.forEach((feature, index) => {
-        const raw = feature.properties?.[time.field];
+      table?.data.forEach((_row, index) => {
+        const raw = getRowValue(table, index, time.field);
         const timeMs = raw instanceof Date ? raw.getTime() : Number(raw);
         flags[index] = Number.isFinite(timeMs) && timeMs >= fromTimeMs - tolerance && timeMs <= toTimeMs + tolerance ? 1 : 0;
       });
@@ -72,12 +76,12 @@ export function buildTimeFilterFlagsByLayerId(
       const packed = packedByLayerId.get(layerConfig.id);
       flagsByLayerId.set(
         layerConfig.id,
-        packed ? computeClosestFlags(packed.buckets, cursorTimeMs, maxLagMs) : new Uint8Array(features.length),
+        packed ? computeClosestFlags(packed.buckets, cursorTimeMs, maxLagMs) : new Uint8Array(rowCount),
       );
       continue;
     }
 
-    flagsByLayerId.set(layerConfig.id, new Uint8Array(features.length));
+    flagsByLayerId.set(layerConfig.id, new Uint8Array(rowCount));
   }
 
   return flagsByLayerId;

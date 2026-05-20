@@ -5,6 +5,7 @@ import { getLayerDefinition as resolveLayerDefinition, type LayerConfig } from '
 import type { FeaturePickingInfo, LayerDefinition, LayerRenderContext } from '../../../layers/types';
 import type { MapPanelOptions } from '../../../types';
 import type { PreparedLayerState } from './preparedLayerSelectors';
+import { buildFeatureCollection } from '../layerTable';
 
 interface RenderPreparedLayersArgs {
   preparedLayerStates: PreparedLayerState[];
@@ -85,7 +86,10 @@ function createLayerRenderContext({
   return {
     config: preparedLayerState.config,
     panelOptions: options,
+    data: preparedLayerState.table.data,
+    table: preparedLayerState.table,
     features: preparedLayerState.features,
+    featureCollection: preparedLayerState.config.type === 'geojson' ? buildFeatureCollection(preparedLayerState.table) : undefined,
     cursorTimeMs,
     fromTimeMs,
     toTimeMs,

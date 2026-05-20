@@ -1,6 +1,5 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import type { Feature, MultiPolygon, Polygon } from 'geojson';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
@@ -25,20 +24,6 @@ const PolygonColorExtension = CreateMathExtensionSubclass({
   inject: {},
 });
 
-function getPolygonCoords(f: Feature): number[][][] | null {
-  const g = f.geometry as Polygon | MultiPolygon;
-  if (!g) {
-    return null;
-  }
-  if (g.type === 'Polygon') {
-    return g.coordinates as number[][][];
-  }
-  if (g.type === 'MultiPolygon') {
-    return g.coordinates[0] as number[][][];
-  }
-  return null;
-}
-
 const defaultSettings: PolygonLayerSettings = {
   fillOpacity: 180,
   extruded: false,
@@ -61,7 +46,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<PolygonLayerConfig>) {
-    const { config, features, getAccessors } = context;
+    const { config, data, getAccessors } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
@@ -86,20 +71,21 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     const commonProps = createCommonLayerProps(context);
     const [getElevation, updatesElevation] = getAccessors.number(options.elevation, options.elevationScale);
     const [getValue, updatesValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
-    const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getValue);
+    const [getPolygon] = getAccessors.polygon();
+    const getColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getValue as any);
     const fillOpacity = options.fillOpacity;
     return [
       new SolidPolygonLayer({
         ...commonProps,
-        data: features,
+        data,
         filled: true,
         extruded: options.extruded,
-        getPolygon: (f: Feature) => (getPolygonCoords(f)?.[0] ?? []) as any,
+        getPolygon: ((datum: any, ctx: any) => getPolygon(datum, ctx)[0] ?? []) as any,
         getElevation,
         getFillColor: useShader
           ? [0, 0, 0, fillOpacity]
-          : (f: Feature) => {
-              const c = (getColor as (feature: Feature) => [number, number, number, number])(f);
+          : (datum: any, ctx: any) => {
+              const c = (getColor as (value: any, context: any) => [number, number, number, number])(datum, ctx);
               return [c[0], c[1], c[2], fillOpacity] as [number, number, number, number];
             },
         ...(useShader ? { getValue } : {}),

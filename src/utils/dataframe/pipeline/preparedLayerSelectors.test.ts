@@ -3,6 +3,7 @@ import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
 import type { GeoFeature } from '../toGeoJsonFeatures';
 import { buildPreparedLayerStates, selectPreparedLayerState } from './preparedLayerSelectors';
+import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
@@ -45,10 +46,11 @@ describe('preparedLayerSelectors', () => {
       derivedFields: [{ as: 'depthDouble', expression: 'this.depth * 2', type: 'number' }],
     });
     const features = [createFeature({ depth: 4 }, 0)];
+    const table = featureArrayToLayerTable(features as any, 'main');
 
     const state = selectPreparedLayerState({
       config,
-      features,
+      table,
       timeFilterFlags: new Uint8Array([1]),
     });
 
@@ -59,7 +61,7 @@ describe('preparedLayerSelectors', () => {
 
   it('builds prepared states for each layer config', () => {
     const config = createLayerConfig({ id: 'layer-a' });
-    const featuresByLayerId = new Map([[config.id, [createFeature({ depth: 1 }, 0)]]]);
+    const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable([createFeature({ depth: 1 }, 0)] as any, 'main')]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
 
     const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId);

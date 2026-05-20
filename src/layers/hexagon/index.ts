@@ -1,5 +1,4 @@
 import { HexagonLayer } from '@deck.gl/aggregation-layers';
-import type { Feature, Point } from 'geojson';
 import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
@@ -103,7 +102,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     ]),
   ],
   renderLayers(ctx: LayerRenderContext<HexagonLayerConfig>) {
-    const { features, getAccessors } = ctx;
+    const { data, getAccessors } = ctx;
     const options = ctx.config.settings;
     const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
@@ -113,7 +112,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     return [
       new HexagonLayer({
         ...commonProps,
-        data: features,
+        data,
         radius: options.radius,
         coverage: options.coverage,
         extruded: options.extruded,
@@ -123,7 +122,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         colorRange,
         lowerPercentile: options.lowerPercentile,
         upperPercentile: options.upperPercentile,
-        getPosition: (feature: Feature) => (feature.geometry as Point).coordinates as [number, number],
+        getPosition: getAccessors.pointPosition()[0],
         getColorWeight: getColorWeight ?? 1,
         getElevationWeight: getElevationWeight ?? 1,
         updateTriggers: {
