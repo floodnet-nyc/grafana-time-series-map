@@ -62,7 +62,7 @@ jest.mock('../layers/_all', () => ({
   ],
 }));
 
-jest.mock('../layers/extensions', () => ({
+jest.mock('../extensions', () => ({
   layerExtensionDefinitions: [],
 }));
 
@@ -74,6 +74,8 @@ jest.mock('@grafana/ui', () => {
         spacing: () => '0px',
         shape: { radius: { default: 0 } },
         colors: {
+          background: { secondary: '#222' },
+          action: { hover: '#333', selected: '#444' },
           text: { secondary: '#666', primary: '#000' },
           border: { weak: '#ccc', medium: '#ccc', strong: '#999' },
           error: { text: '#f00' },
@@ -94,6 +96,11 @@ jest.mock('@grafana/ui', () => {
     CollapsableSection: ({ label, children }: { label: string; children: React.ReactNode }) => <section><h2>{label}</h2>{children}</section>,
     ColorPicker: ({ color, onChange }: any) => <input value={color} onChange={(e) => onChange(e.currentTarget.value)} />,
     Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+    IconButton: ({ onClick, tooltip, name }: any) => (
+      <button onClick={onClick} aria-label={tooltip ?? name}>
+        {name}
+      </button>
+    ),
   };
 });
 
@@ -165,8 +172,10 @@ function currentLayer(): LayerConfig {
 describe('LayerEditor interactions', () => {
   it('updates feature source refId through the combobox', () => {
     render(<Harness />);
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[2], { target: { value: 'B' } });
+    fireEvent.click(screen.getByText('Feature source'));
+    const queryField = screen.getByText('Query').closest('label')?.querySelector('select');
+    expect(queryField).not.toBeNull();
+    fireEvent.change(queryField as HTMLSelectElement, { target: { value: 'B' } });
     expect(currentLayer().data.featureSource.refId).toBe('B');
   });
 

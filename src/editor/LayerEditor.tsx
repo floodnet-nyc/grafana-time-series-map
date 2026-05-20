@@ -17,7 +17,6 @@ import type { SourceRef } from '../types';
 import { layerDefinitions, type LayerConfig } from '../layers/_all';
 import { layerExtensionDefinitions } from '../extensions';
 import { GeometryEditor } from './GeometryEditor';
-import { TimeFilterEditor } from './TimeFilterEditor';
 import { ColorScaleEditor } from './ColorScaleEditor';
 import { DataEditor } from './DataEditor';
 import { SelectableListEditor } from './SelectableListEditor';
@@ -261,11 +260,13 @@ export function LayerEditor({
         <DataEditor
           data={layer.data}
           derivedFields={layer.derivedFields ?? []}
+          timeFilter={layer.timeFilter}
           availableRefIds={availableRefIds}
           queryFieldsByRefId={queryFieldsByRefId}
           featureSourceFields={featureFieldsBySource[layer.data.featureSource.id] ?? []}
           onDataChange={(data) => patch({ data })}
           onDerivedFieldsChange={(derivedFields) => patch({ derivedFields })}
+          onTimeFilterChange={(timeFilter) => patch({ timeFilter })}
         />
       </CollapsableSection>
 
@@ -275,15 +276,6 @@ export function LayerEditor({
           sourceOptions={featureSourceOptions}
           fieldsBySource={featureFieldsBySource}
           onGeometryChange={(geometry) => patch({ geometry })}
-        />
-      </CollapsableSection>
-
-      <CollapsableSection label="Time Filtering" isOpen>
-        <TimeFilterEditor
-          timeFilter={layer.timeFilter}
-          sourceOptions={featureSourceOptions}
-          fieldsBySource={featureFieldsBySource}
-          onChange={(timeFilter) => patch({ timeFilter })}
         />
       </CollapsableSection>
 

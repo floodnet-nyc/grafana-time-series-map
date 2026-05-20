@@ -10,7 +10,7 @@ interface Props<T> {
   getItemKey: (item: T, index: number) => string;
   getItemLabel: (item: T, index: number) => string;
   addButtonLabel: string;
-  onAdd: (type?: string) => void;
+  onAdd?: (type?: string) => void;
   renderEditor: (item: T, index: number) => React.ReactNode;
   onMove?: (index: number, direction: -1 | 1) => void;
   onRemove?: (index: number) => void;
@@ -19,6 +19,7 @@ interface Props<T> {
   getVisibilityTooltip?: (item: T, index: number) => string;
   addOptions?: Array<{ label: string; value: string; description?: string }>;
   maxLength?: number;
+  collapsedHint?: string;
 }
 
 export function SelectableListEditor<T>({
@@ -37,12 +38,21 @@ export function SelectableListEditor<T>({
   getVisibilityTooltip,
   addOptions,
   maxLength,
+  collapsedHint,
 }: Props<T>) {
   const styles = useStyles2(getStyles);
   const selectedItem = selectedIndex !== null ? items[selectedIndex] : undefined;
+  const canAdd = onAdd && (maxLength == null || items.length < maxLength);
 
   return (
     <div className={styles.root}>
+      {canAdd && addOptions ? (
+        <Combobox
+          options={addOptions}
+          onChange={(option) => option?.value && onAdd(option.value)}
+          placeholder={addButtonLabel}
+        />
+      ) : null}
       <div className={styles.list}>
         {items.map((item, index) => {
           const selected = selectedIndex === index;
@@ -70,27 +80,31 @@ export function SelectableListEditor<T>({
               <div className={styles.listActions}>
                 {onMove && (
                   <>
-                    <IconButton
-                      name="arrow-up"
-                      size="sm"
-                      tooltip="Move up"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onMove(index, -1);
-                      }}
-                    />
-                    <IconButton
-                      name="arrow-down"
-                      size="sm"
-                      tooltip="Move down"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onMove(index, 1);
-                      }}
-                    />
+                    {index > 0 && (
+                      <IconButton
+                        name="arrow-up"
+                        size="sm"
+                        tooltip="Move up"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onMove(index, -1);
+                        }}
+                      />
+                    )}
+                    {index < items.length - 1 && (
+                      <IconButton
+                        name="arrow-down"
+                        size="sm"
+                        tooltip="Move down"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onMove(index, 1);
+                        }}
+                      />
+                    )}
                   </>
                 )}
-                {onRemove && (
+                {onRemove ? (
                   <IconButton
                     name="trash-alt"
                     size="sm"
@@ -100,23 +114,17 @@ export function SelectableListEditor<T>({
                       onRemove(index);
                     }}
                   />
-                )}
+                ) : null}
               </div>
             </div>
           );
         })}
-        {maxLength !== undefined && items.length >= maxLength ? null : 
-        addOptions ? (
-          <Combobox
-            options={addOptions}
-            onChange={(option) => option?.value && onAdd(option.value)}
-            placeholder={addButtonLabel}
-          />
-        ) : (
-          <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
-            {addButtonLabel}
-          </Button>
-        )}
+        {canAdd && !addOptions ?  (
+            <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
+              {addButtonLabel}
+            </Button>
+        ) : null}
+        {collapsedHint && selectedItem === undefined ? <div className={styles.hint}>{collapsedHint}</div> : null}
       </div>
 
       {selectedItem !== undefined && selectedIndex !== null && <div className={styles.editor}>{renderEditor(selectedItem, selectedIndex)}</div>}
@@ -145,6 +153,11 @@ function getStyles(theme: GrafanaTheme2) {
       border: `1px solid ${theme.colors.border.weak}`,
       borderRadius: theme.shape.radius.default,
       background: theme.colors.background.secondary,
+    }),
+    hint: css({
+      color: theme.colors.text.secondary,
+      fontSize: '12px',
+      padding: `0 ${theme.spacing(0.5)}`,
     }),
   };
 }

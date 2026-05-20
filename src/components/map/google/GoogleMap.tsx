@@ -113,23 +113,25 @@ function GoogleMapInner({
   );
 
   const googleControlProps = useMemo(() => ({
-    cameraControl: googleNativeProps.cameraControl as boolean | undefined,
+    cameraControl: googleNativeProps.cameraControl ?? false as boolean | undefined,
     cameraControlOptions: googleNativeProps.cameraControlOptions as { position: number } | undefined,
-    fullscreenControl: googleNativeProps.fullscreenControl as boolean | undefined,
+    fullscreenControl: googleNativeProps.fullscreenControl ?? false as boolean | undefined,
     fullscreenControlOptions: googleNativeProps.fullscreenControlOptions as { position: number } | undefined,
-    scaleControl: googleNativeProps.scaleControl as boolean | undefined,
-    rotateControl: googleNativeProps.rotateControl as boolean | undefined,
+    scaleControl: googleNativeProps.scaleControl ?? false as boolean | undefined,
+    rotateControl: googleNativeProps.rotateControl ?? false as boolean | undefined,
     rotateControlOptions: googleNativeProps.rotateControlOptions as { position: number } | undefined,
-    mapTypeControl: controlSettings.google.mapTypeControl,
+    mapTypeControl: controlSettings.google.mapTypeControl ?? false,
     mapTypeControlOptions: {
       position: getControlPosition(controlSettings.google.mapTypeControlPosition, 'TOP_LEFT'),
       style: mapTypeControlStyleValues[controlSettings.google.mapTypeControlStyle],
     },
-    streetViewControl: controlSettings.google.streetViewControl,
+    streetViewControl: controlSettings.google.streetViewControl ?? false,
     streetViewControlOptions: {
       position: getControlPosition(controlSettings.google.streetViewControlPosition, 'RIGHT_BOTTOM'),
     },
   }), [googleNativeProps, controlSettings]);
+
+  console.log(googleControlProps, googleNativeProps, controlSettings);
 
   const latitude = initialViewState?.latitude ?? 0;
   const longitude = initialViewState?.longitude ?? 0;

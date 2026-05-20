@@ -61,6 +61,7 @@ const getAvailableFieldsForRefId = (refId: string | undefined, fieldIndex: Retur
 };
 
 function getSourceContext(layer: LayerConfig | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) {
+  // console.log(fieldIndex)
   if (!layer) {
     return {
       sourceOptions: [] as Array<{ id: string; label: string }>,
@@ -96,6 +97,8 @@ function getSourceContext(layer: LayerConfig | undefined, fieldIndex: ReturnType
       label: source.id,
     })),
   ];
+  // console.log('sourceOptions', sourceOptions);
+  // console.log(layer.data.joinedSources, fieldsBySource)
 
   return {
     sourceOptions,

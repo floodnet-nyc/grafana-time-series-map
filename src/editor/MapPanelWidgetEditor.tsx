@@ -9,7 +9,7 @@ import { useSelectableListState } from './useSelectableListState';
 
 interface Props extends StandardEditorProps<WidgetConfig[]> {}
 
-export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
+export function MapPanelWidgetEditor({ value: widgets, onChange, context: { options } }: Props) {
   const styles = useStyles2(getStyles);
   const widgetList = useMemo(() => widgets ?? [], [widgets]);
   const {
@@ -66,7 +66,7 @@ export function MapPanelWidgetEditor({ value: widgets, onChange }: Props) {
         onToggleVisibility={toggleVisibility}
         isVisible={(widget) => widget.visible}
         getVisibilityTooltip={(widget) => (widget.visible ? 'Hide widget' : 'Show widget')}
-        renderEditor={(widget, index) => <WidgetEditor widget={widget} onChange={(updated) => updateWidget(index, updated)} />}
+        renderEditor={(widget, index) => <WidgetEditor widget={widget} options={options} onChange={(updated) => updateWidget(index, updated)} />}
       />
     </div>
   );

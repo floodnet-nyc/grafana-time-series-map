@@ -73,7 +73,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
-    const { config, features, timeFilterFlags, selectedKey, getAccessor, getNumericAccessor } = context;
+    const { config, features, selectedKey, getAccessor, getNumericAccessor } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
 
@@ -159,14 +159,14 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig>
           fontFamily: 'Helvetica Neue, Verdana, Roboto, Helvetica, sans-serif',
           minZoom: config.minZoom,
           maxZoom: config.maxZoom,
-          getFilterValue: (f: any) => (timeFilterFlags[f.__idx] ? 1 : -1),
-          filterRange: [1, 1] as [number, number],
+          getFilterValue: commonProps.getFilterValue,
+          filterRange: commonProps.filterRange,
           collisionGroup: 'scatter-labels',
           collisionTestProps: { sizeScale: 2 },
           getCollisionPriority: getCollisionPriority ?? 0,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
           updateTriggers: { 
-            getFilterValue: [timeFilterFlags],
+            ...commonProps.updateTriggers,
             getText: updateText,
             getCollisionPriority: updateCollisionPriority,
           },

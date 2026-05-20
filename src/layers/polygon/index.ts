@@ -61,7 +61,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     ]),
   ],
   renderLayers(context: LayerRenderContext<PolygonLayerConfig>) {
-    const { config, features, timeFilterFlags, getNumericAccessor } = context;
+    const { config, features, getNumericAccessor } = context;
     const options = config.settings;
     const valueField = config.colorScale?.field || config.shader?.value;
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
@@ -106,7 +106,6 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
         extensions: [commonProps.extensions, ...extensions],
         updateTriggers: { 
           ...commonProps.updateTriggers,
-          getFilterValue: [timeFilterFlags],
           getFillColor: [config.colorScale, options.fillOpacity],
           getElevation: updatesElevation,
           ...(useShader ? { getValue: updatesValue } : {}),
