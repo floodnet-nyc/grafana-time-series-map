@@ -63,6 +63,8 @@ const getAccessors: GetAccessorFunctions = {
       deps,
     ];
   },
+  array: getAccessor as any,
+  numericArray: getAccessor as any,
 };
 
 function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): PreparedLayerState {

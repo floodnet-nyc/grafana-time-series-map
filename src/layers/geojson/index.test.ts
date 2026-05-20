@@ -83,6 +83,8 @@ function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRe
         deps,
       ];
     },
+    array: getAccessor as any,
+    numericArray: getAccessor as any,
   };
 
   return {

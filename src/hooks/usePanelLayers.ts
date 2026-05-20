@@ -16,7 +16,6 @@ import {
   renderPreparedLayers,
   type PreparedLayerState,
 } from '../utils/dataframe/pipeline';
-import { getLayerElevation } from '../layers/utils';
 import { 
   type GeoFeature, dataFramesToFeatures, 
   // geojsonToFeatures 

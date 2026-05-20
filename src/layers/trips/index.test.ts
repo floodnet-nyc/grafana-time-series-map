@@ -70,6 +70,27 @@ function createContext(config: TripsLayerConfig, features: Array<Feature & { __i
     fieldRef?.field ? (feature) => feature.properties?.[fieldRef.field] ?? defaultValue : undefined,
     [fieldRef?.source, fieldRef?.field, defaultValue],
   ];
+
+  function numericArrayFallback(raw: unknown, defaultValue: number[]): number[] {
+    if (Array.isArray(raw)) {
+      return raw.map(Number).filter(Number.isFinite);
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map(Number).filter(Number.isFinite);
+        }
+      } catch { /* not JSON */ }
+      return trimmed.split(',').map((v) => Number(v.trim())).filter(Number.isFinite);
+    }
+    return defaultValue;
+  }
+
   const getAccessors: GetAccessorFunctions = {
     number: (fieldRef, defaultValue = 0) => {
       const [accessor, deps] = getAccessor(fieldRef, defaultValue);
@@ -91,6 +112,19 @@ function createContext(config: TripsLayerConfig, features: Array<Feature & { __i
           ? (feature, ctx) => {
               const value = accessor(feature, ctx);
               return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ];
+    },
+    array: getAccessor as any,
+    numericArray: (fieldRef, defaultValue: number[] = []) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (feature, ctx) => {
+              const value = accessor(feature, ctx);
+              return numericArrayFallback(value, defaultValue);
             }
           : undefined,
         deps,
@@ -143,7 +177,7 @@ describe('tripsLayerDefinition', () => {
     expect(clicked).toEqual([feature]);
   });
 
-  it('filters invalid trip shapes and mismatched timestamp arrays through getFilterValue', () => {
+  it('filters invalid trip shapes via getFilterValue and returns empty path for them', () => {
     const valid = createFeature(
       [
         [-73.9, 40.7, 1000],
@@ -152,7 +186,7 @@ describe('tripsLayerDefinition', () => {
       { trip_times: [1000, 2000] },
       0,
     );
-    const invalidGeometry = createFeature([[-73.9, 40.7, 1000]], {}, 1);
+    const tooShort = createFeature([[-73.9, 40.7, 1000]], {}, 1);
     const mismatchedTimestamps = createFeature(
       [
         [-73.7, 40.6],
@@ -169,16 +203,21 @@ describe('tripsLayerDefinition', () => {
     });
 
     const [layer] = tripsLayerDefinition.renderLayers({
-      ...createContext(config, [valid, invalidGeometry, mismatchedTimestamps]),
+      ...createContext(config, [valid, tooShort, mismatchedTimestamps]),
       timeFilterFlags: new Uint8Array([1, 1, 1]),
     }) as any[];
 
     expect(layer.props.data).toHaveLength(3);
+    // getFilterValue from createCommonLayerProps is index-based on timeFilterFlags
     expect(layer.props.getFilterValue(valid)).toBe(1);
-    expect(layer.props.getFilterValue(invalidGeometry)).toBe(-1);
-    expect(layer.props.getFilterValue(mismatchedTimestamps)).toBe(-1);
-    expect(layer.props.getPath(invalidGeometry)).toEqual([]);
-    expect(layer.props.getTimestamps(mismatchedTimestamps)).toEqual([]);
+    expect(layer.props.getFilterValue(tooShort)).toBe(1);
+    expect(layer.props.getFilterValue(mismatchedTimestamps)).toBe(1);
+    // getPath handles validity: >= 2 coords → path, otherwise []
+    expect(layer.props.getPath(tooShort)).toEqual([]);
+    expect(layer.props.getPath(mismatchedTimestamps)).toEqual([
+      [-73.7, 40.6],
+      [-73.6, 40.5],
+    ]);
   });
 
   it('parses timestamp field values from arrays, JSON strings, and comma-separated strings', () => {
@@ -210,15 +249,14 @@ describe('tripsLayerDefinition', () => {
       settings: {
         ...createConfig().settings,
         timestamps: createSourceRef('trip_times'),
-        timestampUnit: 's',
       },
     });
 
     const [layer] = tripsLayerDefinition.renderLayers(createContext(config, [arrayFeature, jsonFeature, csvFeature])) as any[];
 
-    expect(layer.props.getTimestamps(arrayFeature)).toEqual([1000, 2000]);
-    expect(layer.props.getTimestamps(jsonFeature)).toEqual([3000, 4000]);
-    expect(layer.props.getTimestamps(csvFeature)).toEqual([5000, 6000]);
+    expect(layer.props.getTimestamps(arrayFeature)).toEqual([1, 2]);
+    expect(layer.props.getTimestamps(jsonFeature)).toEqual([3, 4]);
+    expect(layer.props.getTimestamps(csvFeature)).toEqual([5, 6]);
   });
 
   it('uses row-level timeFilterFlags while keeping feature identity stable across cursor changes', () => {

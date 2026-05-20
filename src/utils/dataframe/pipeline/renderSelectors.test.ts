@@ -97,6 +97,8 @@ function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccesso
         deps,
       ];
     },
+    array: getAccessor as any,
+    numericArray: getAccessor as any,
   };
   return { getAccessor, getAccessors };
 }

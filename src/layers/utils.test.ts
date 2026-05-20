@@ -76,6 +76,8 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
         deps,
       ];
     },
+    array: getAccessor as any,
+    numericArray: getAccessor as any,
   };
 
   return {
@@ -95,16 +97,12 @@ function createContext(overrides: Partial<Parameters<typeof createCommonLayerPro
 
 describe('layer utils', () => {
   it('computes elevated positions from feature geometry', () => {
-    const config = createConfig({
-      settings: {
-        ...createConfig().settings,
-        elevation: createSourceRef('depth'),
-        elevationScale: 2,
-        depthTest: false,
-      },
-    } as any);
+    const feature = createPointFeature({ depth: 3 });
 
-    expect(getFeaturePosition(createPointFeature({ depth: 3 }), config)).toEqual([-73.9, 40.7, 6]);
+    // getFeaturePosition(feature, z?, offset?) — z is the elevation in meters
+    expect(getFeaturePosition(feature, 6, 0)).toEqual([-73.9, 40.7, 6]);
+    expect(getFeaturePosition(feature)).toEqual([-73.9, 40.7, 0]);
+    expect(getFeaturePosition(feature, 5, 2)).toEqual([-73.9, 40.7, 7]);
   });
 
   it('builds common layer props with click and filter wiring', () => {

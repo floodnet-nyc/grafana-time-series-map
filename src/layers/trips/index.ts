@@ -1,5 +1,4 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import type { SourceRef } from '../../types';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
@@ -92,7 +91,11 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig> = {
     const [getColorValue, updatesColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 200, 180, 220], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
-    const [getTimestamps, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
+    const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
+    const getTimestamps = getTimestampsRaw ?? (options.timestamps?.field ? undefined : (f: Feature) => {
+      const path = getPath(f);
+      return path ? path.map((coord) => Number(coord[2])).filter(Number.isFinite) : [];
+    });
 
     // Panel time filtering and joined-source lookups stay feature-oriented:
     // each trip row is selected once by the shared pipeline, while the per-vertex
