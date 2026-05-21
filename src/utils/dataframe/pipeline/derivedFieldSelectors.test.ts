@@ -2,7 +2,7 @@ import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import { createSourceRef } from '../../../layers/defaults';
 import type { ScatterplotLayerConfig } from '../../../layers/scatterplot';
-import { compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
+import { buildFieldSourceMap, compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
 import { featureArrayToLayerTable } from '../layerTable';
 
 function createLayerConfig(overrides: Partial<LayerConfig> = {}): LayerConfig {
@@ -40,6 +40,20 @@ function createFeature(properties: Record<string, unknown>): Feature {
 }
 
 describe('derivedFieldSelectors', () => {
+  it('builds field source precedence with derived fields overriding local fields', () => {
+    const config = createLayerConfig({
+      derivedFields: [{ as: 'depth', expression: 'this.depth * 2', type: 'number' }],
+    });
+    const table = featureArrayToLayerTable([{ ...createFeature({ depth: 4, payload: { value: 3 } }), __idx: 0 }] as any, 'main');
+
+    expect(buildFieldSourceMap(config, table)).toEqual(
+      new Map([
+        ['depth', 'derived'],
+        ['payload', 'main'],
+      ])
+    );
+  });
+
   it('evaluates derived fields from local and joined values without mutating the feature', () => {
     const config = createLayerConfig({
       data: {
@@ -87,5 +101,56 @@ describe('derivedFieldSelectors', () => {
     );
 
     expect(derivedValues).toEqual([{ ok: 8 }]);
+  });
+
+  it('resolves nested local object paths through the field source map', () => {
+    const config = createLayerConfig({
+      derivedFields: [{ as: 'valueDouble', expression: 'payload.value * 2', type: 'number' }],
+    });
+
+    const derivedValues = selectDerivedValues(
+      compileDerivedFields(config),
+      config,
+      featureArrayToLayerTable([{ ...createFeature({ payload: { value: 4 } }), __idx: 0 }] as any, 'main'),
+    );
+
+    expect(derivedValues).toEqual([{ valueDouble: 8 }]);
+  });
+
+  it('lets bare identifiers prefer previously derived values over local fields', () => {
+    const config = createLayerConfig({
+      derivedFields: [
+        { as: 'depth', expression: 'this.depth * 2', type: 'number' },
+        { as: 'depthPlusOne', expression: 'depth + 1', type: 'number' },
+      ],
+    });
+
+    const derivedValues = selectDerivedValues(
+      compileDerivedFields(config),
+      config,
+      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main'),
+    );
+
+    expect(derivedValues).toEqual([{ depth: 8, depthPlusOne: 9 }]);
+  });
+
+  it('preserves index as an explicit resolver namespace', () => {
+    const config = createLayerConfig({
+      derivedFields: [{ as: 'rowNumber', expression: 'index + 1', type: 'number' }],
+    });
+
+    const derivedValues = selectDerivedValues(
+      compileDerivedFields(config),
+      config,
+      featureArrayToLayerTable(
+        [
+          { ...createFeature({ depth: 4 }), __idx: 0 },
+          { ...createFeature({ depth: 5 }), __idx: 1 },
+        ] as any,
+        'main',
+      ),
+    );
+
+    expect(derivedValues).toEqual([{ rowNumber: 1 }, { rowNumber: 2 }]);
   });
 });

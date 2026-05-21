@@ -2,7 +2,7 @@ import type { DataFrame } from '@grafana/data';
 import type { LayerConfig } from '../../../layers';
 import type { JoinedSourceConfig } from '../../../types';
 import { buildPackedFromAccessors, resolveAsofLookup } from '../closestTimeFiltering';
-import { buildFeatureCollection, dataFramesToLayerTable, getRowValue, type LayerTable } from '../layerTable';
+import { dataFramesToLayerTable, getRowValue, type LayerTable } from '../layerTable';
 
 export type PackedLookupEntry = {
   table: LayerTable;
@@ -97,7 +97,7 @@ export function buildJoinedSourceValuesByLayerId(
       }
 
       const resolved = resolveAsofLookup(
-        buildFeatureCollection(entry.table),
+        entry.table,
         entry.packed,
         joinedSource.fields.map((field) => ({ sourceField: field.field, targetField: field.as ?? field.field })),
         cursorTimeMs,

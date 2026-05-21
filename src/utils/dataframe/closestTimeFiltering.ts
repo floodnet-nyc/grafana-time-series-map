@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Feature } from 'geojson';
 import { DataFrame } from '@grafana/data';
+import { getRowValue, LayerTable } from './layerTable';
 
 type PackedSeries = {
   times: Float64Array;
@@ -202,7 +203,8 @@ export function computeClosestFlags(
 }
 
 export function resolveAsofLookup(
-  features: Feature[],
+  // features: Feature[],
+  table: LayerTable,
   packed: { keyIndex: Map<string, number>; buckets: PackedSeries[] },
   fields: Array<{ sourceField: string; targetField?: string }>,
   t0: number,
@@ -216,10 +218,9 @@ export function resolveAsofLookup(
     const j = asofIndex(bucket.times, t0);
     if (j < 0 || t0 - bucket.times[j] > maxLag) continue;
 
-    const props = features[bucket.indices[j]].properties ?? {};
     const record: Record<string, unknown> = {};
     for (const { sourceField, targetField } of fields) {
-      record[targetField ?? sourceField] = props[sourceField];
+      record[targetField ?? sourceField] = getRowValue(table, bucket.indices[j], sourceField);
     }
     result.set(groupKey, record);
   }

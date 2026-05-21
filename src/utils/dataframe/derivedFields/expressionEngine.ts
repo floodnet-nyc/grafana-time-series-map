@@ -9,16 +9,20 @@ type ExpressionNode =
   | { type: 'unary'; operator: '-'; argument: ExpressionNode }
   | { type: 'binary'; operator: '+' | '-' | '*' | '/'; left: ExpressionNode; right: ExpressionNode };
 
-export interface ExpressionScope {
+export type ExpressionScopeNs = {
   [key: string]: unknown;
 }
+
+export type IdentifierResolver = (path: string[]) => unknown;
+
+export type ExpressionScope = ExpressionScopeNs | IdentifierResolver;
 
 export function compileExpression(expression: string): (scope: ExpressionScope) => number {
   const tokens = tokenize(expression);
   const parser = new Parser(tokens);
   const ast = parser.parseExpression();
   parser.expectEnd();
-  return (scope: ExpressionScope) => evaluateNode(ast, scope);
+  return (scope: ExpressionScope) => evaluateNode(ast, asResolver(scope));
 }
 
 function tokenize(input: string): Token[] {
@@ -164,12 +168,12 @@ class Parser {
   }
 }
 
-function evaluateNode(node: ExpressionNode, scope: ExpressionScope): number {
+function evaluateNode(node: ExpressionNode, scope: IdentifierResolver): number {
   switch (node.type) {
     case 'number':
       return node.value;
     case 'identifier':
-      return coerceToNumber(resolvePath(scope, node.path));
+      return coerceToNumber(scope(node.path));
     case 'unary':
       return -evaluateNode(node.argument, scope);
     case 'binary': {
@@ -189,11 +193,18 @@ function evaluateNode(node: ExpressionNode, scope: ExpressionScope): number {
   }
 }
 
-function resolvePath(scope: ExpressionScope, path: string[]): unknown {
+function asResolver(scope: ExpressionScope): IdentifierResolver {
+  if (typeof scope === 'function') {
+    return scope;
+  }
+  return (path: string[]) => resolvePath(scope, path);
+}
+
+export function resolvePath(scope: any, path: string[]): unknown {
   let current: unknown = scope;
   for (const segment of path) {
     if (!current || typeof current !== 'object' || !(segment in current)) {
-      return 0;
+      return undefined;
     }
     current = (current as Record<string, unknown>)[segment];
   }

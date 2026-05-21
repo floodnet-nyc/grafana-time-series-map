@@ -8,8 +8,7 @@ import type {
 } from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
-import type { LayerDatum, LayerTable } from '../layerTable';
-import { getRowGeometry, getRowValue } from '../layerTable';
+import { getRowGeometry, getRowValue, type LayerTable, type LayerDatum } from '../layerTable';
 
 function dependencyKey(fieldRef?: SourceRef, defaultValue?: unknown) {
   return [fieldRef?.source ?? '', fieldRef?.field ?? '', defaultValue];
@@ -150,7 +149,7 @@ export function selectAccessorFactories({
       return [
         (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) =>
           derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
-        dependencyKey(fieldRef, defaultValue),
+        [...dependencyKey(fieldRef, defaultValue), derivedValues],
       ];
     }
 
