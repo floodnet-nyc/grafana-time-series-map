@@ -21,11 +21,11 @@ const VS_FILTER_COLOR = `
 float depthDiff = instanceDepthDiff;
 float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
 vec4 c = interpolateColor(depthDiff);
-if (solidPolygon.extruded) {
-  c.rgb = lighting_getLightColor(c.rgb, project.cameraPosition, geometry.position.xyz, geometry.normal);
-}
 color = vec4(c.rgb, alpha);
 `.trim();
+// if (solidPolygon.extruded) {
+//   c.rgb = lighting_getLightColor(c.rgb, project.cameraPosition, geometry.position.xyz, geometry.normal);
+// }
 
 const DEFAULT_COLOR_SCALE: ColorScaleConfig = {
   type: 'gradient',
