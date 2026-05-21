@@ -9,6 +9,7 @@ import { createCommonLayerProps } from 'layers/utils';
 export interface FloodInundationLayerSettings {
   depthDiff: SourceRef;
   elevationScale: number;
+  extruded: boolean;
   depthTest: boolean;
   fillOpacity: number;
 }
@@ -51,6 +52,7 @@ const InundationExtension = CreateMathExtensionSubclass({
 const defaultSettings: FloodInundationLayerSettings = {
   depthDiff: createSourceRef('depthDiff'),
   elevationScale: 1,
+  extruded: true,
   depthTest: false,
   fillOpacity: 0.5,
 };
@@ -68,6 +70,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     section('Flood Inundation', [
       { key: 'depthDiff', label: 'Depth difference field', type: 'fieldPicker', defaultValue: createSourceRef('depthDiff') },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
+      { key: 'extruded', label: 'Extruded', type: 'boolean', defaultValue: true },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'fillOpacity', label: 'Fill opacity (0–1)', type: 'number', defaultValue: 0.5 },
     ]),
@@ -86,6 +89,7 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
         data,
         filled: true,
         stroked: false,
+        extruded: options.extruded,
         getPolygon: ((datum: any, ctx: any) => getPolygon(datum, ctx)[0] ?? []) as any,
         getFillColor: [0, 0, 0, 255],
         getFillOpacity: options.fillOpacity,

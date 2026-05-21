@@ -290,7 +290,7 @@
                     }
                 },
                 "deck": {
-                    "interleaved": false
+                    "interleaved": true
                 },
                 "initialView": {
                     "state": {
