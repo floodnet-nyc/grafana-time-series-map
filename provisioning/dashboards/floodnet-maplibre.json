@@ -663,7 +663,8 @@
                             "scaleMax": 24
                         },
                         "settings": {
-                            "elevationScale": 0.254,
+                            "elevationScale": 0.0254,
+                            "extruded": true,
                             "depthTest": false,
                             "fillOpacity": 0.5,
                             "depthDiff": {

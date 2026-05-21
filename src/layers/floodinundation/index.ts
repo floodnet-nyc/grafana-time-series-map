@@ -57,6 +57,13 @@ const defaultSettings: FloodInundationLayerSettings = {
   fillOpacity: 0.5,
 };
 
+class TopPolygonLayer extends SolidPolygonLayer {
+  protected override _getModels(): { models: any[]; topModel: any; sideModel: any; wireframeModel: any; } {
+    const { sideModel, ...models } = super._getModels();
+    return { ...models, sideModel: null };
+  }
+}
+
 export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLayerConfig> = {
   type: 'flood-inundation',
   label: 'Flood Inundation',
@@ -84,11 +91,11 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
     const [getPolygon] = getAccessors.polygon();
 
     return [
-      new SolidPolygonLayer({
+      new TopPolygonLayer({
         ...commonProps,
         data,
         filled: true,
-        stroked: false,
+        wireframe: false,
         extruded: options.extruded,
         getPolygon: ((datum: any, ctx: any) => getPolygon(datum, ctx)[0] ?? []) as any,
         getFillColor: [0, 0, 0, 255],
