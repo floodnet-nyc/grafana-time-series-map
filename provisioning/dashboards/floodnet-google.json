@@ -675,7 +675,7 @@
                         "opacity": 1,
                         "colorScale": {
                             "type": "gradient",
-                            "schemeName": "FloodDepth",
+                            "schemeName": "Cool",
                             "scaleMin": 0,
                             "scaleMax": 24
                         },
