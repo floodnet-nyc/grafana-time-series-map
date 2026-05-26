@@ -58,3 +58,32 @@ export function createLayerConfig<TType extends LayerType>(
   const definition = getLayerDefinition(type);
   return definition?.createDefaultConfig(index) as LayerConfigForType<TType> | undefined;
 }
+
+const asyncLayerDefinitionCache = new Map<string, AnyLayerDefinition>();
+
+export function hasAsyncLayerDefinition(type: string): boolean {
+  return type === 'cog';
+}
+
+export async function loadLayerDefinition(type: string): Promise<AnyLayerDefinition | undefined> {
+  if (!hasAsyncLayerDefinition(type)) {
+    return getLayerDefinition(type);
+  }
+
+  const cachedDefinition = asyncLayerDefinitionCache.get(type);
+  if (cachedDefinition) {
+    return cachedDefinition;
+  }
+
+  if (type === 'cog') {
+    const [{ renderCogLayers }, definition] = await Promise.all([import('./cog/runtime'), import('./cog')]);
+    const loadedDefinition: typeof cogLayerDefinition = {
+      ...definition.cogLayerDefinition,
+      renderLayers: renderCogLayers,
+    };
+    asyncLayerDefinitionCache.set(type, loadedDefinition);
+    return loadedDefinition;
+  }
+
+  return undefined;
+}
