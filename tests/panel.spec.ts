@@ -1,6 +1,7 @@
 import { test, expect } from '@grafana/plugin-e2e';
 
 const MAPLIBRE_DASHBOARD = 'floodnet-maplibre.json';
+const COG_DASHBOARD = 'floodnet-maplibre-cog.json';
 const PANEL_ID = '1';
 
 test('renders the provisioned map panel with legend and playback controls', async ({
@@ -52,4 +53,18 @@ test('can hide and re-show playback controls via panel options', async ({
 
   await showPlayback.check({ force: true });
   await expect(slider).toBeVisible();
+});
+
+test('loads COG tiles when the visible raster layer is provisioned', async ({
+  gotoPanelEditPage,
+  readProvisionedDashboard,
+}) => {
+  const dashboard = await readProvisionedDashboard({ fileName: COG_DASHBOARD });
+  const panelEditPage = await gotoPanelEditPage({ dashboard, id: PANEL_ID });
+  const panel = panelEditPage.panel.locator;
+
+  await expect(panel).toContainText('FloodNet NYC — COG Validation');
+  await expect(panel).toContainText('Precipitation');
+  await expect(panel).toContainText('0');
+  await expect(panel).toContainText('1');
 });

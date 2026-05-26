@@ -15,7 +15,6 @@ import {
 } from '../utils/dataframe/pipeline';
 import { dataFramesToLayerTable, type LayerTablesByLayerId } from '../utils/dataframe/layerTable';
 import type { GeometrySource, FeatureSourceConfig } from '../utils/dataframe/toGeoJsonFeatures';
-import { useLayerRenderers } from './useLayerRenderers';
 
 export interface UsePanelLayersResult {
   layers: Layer[];
@@ -32,8 +31,6 @@ export function usePanelLayers(
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void
 ): UsePanelLayersResult {
-  const getRenderer = useLayerRenderers(options.layers);
-
   // Layer tables are the stable upstream substrate for all selector stages below.
   const timePackedByLayerId = useMemo(() => {
     return buildTimePackedByLayerId(options.layers, tablesByLayerId);
@@ -71,9 +68,8 @@ export function usePanelLayers(
       toTimeMs,
       selectedKey,
       onFeatureClick,
-      getRenderer,
     });
-  }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick, getRenderer]);
+  }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick]);
 
   return useMemo(
     () => ({
