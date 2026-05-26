@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   CompassWidget,
   _ScaleWidget as ScaleWidget,
@@ -7,8 +6,6 @@ import {
   type ScaleWidgetProps,
   type GeocoderWidgetProps,
 } from '@deck.gl/widgets';
-import { NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
-import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 import { GeolocateWidget, type GeolocateWidgetProps } from '../custom/geolocate-widget';
 
@@ -24,6 +21,7 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
   type: 'compass',
   label: 'Compass',
   description: 'Add a compass control that can reset map bearing.',
+  nativeControlProviders: ['google', 'maplibre'],
   createDefaultConfig: (i) => ({
     id: `widget-compass-${i + 1}`,
     type: 'compass',
@@ -53,26 +51,6 @@ export const compassWidgetDefinition: WidgetDefinition<CompassWidgetConfig> = {
             })
         : undefined,
     }),
-  nativeControls: {
-    google: (config) => {
-      const pos = config.settings.placement === 'fill' ? 'top-left' : config.settings.placement;
-      return {
-        rotateControl: true,
-        rotateControlOptions: {
-          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-left'), 'INLINE_START_BLOCK_END'),
-        },
-      };
-    },
-    maplibre: (config) => (
-      <NavigationControl
-        key="widget-compass-native"
-        position={(config.settings.placement === 'fill' ? 'top-left' : config.settings.placement) ?? 'top-left'}
-        showZoom={false}
-        showCompass={true}
-        visualizePitch={true}
-      />
-    ),
-  },
 };
 
 // TODO: theme not working
@@ -80,6 +58,7 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   type: 'scale',
   label: 'Scale',
   description: 'Show a map scale indicator for distance reference.',
+  nativeControlProviders: ['google', 'maplibre'],
   createDefaultConfig: (i) => ({
     id: `widget-scale-${i + 1}`,
     type: 'scale',
@@ -102,10 +81,6 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
     },
   ],
   createWidget: (config) => new ScaleWidget({ id: config.id, ...config.settings }),
-  nativeControls: {
-    google: () => ({ scaleControl: true }),
-    maplibre: () => <ScaleControl key="widget-scale-native" position="bottom-left" />,
-  },
 };
 
 export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> = {

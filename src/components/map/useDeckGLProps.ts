@@ -6,22 +6,24 @@ import type { MapPanelOptions } from '../../types';
 import { buildDeckEffects } from 'utils/deckgl/lighting';
 import { buildDeckParameters } from 'utils/deckgl/parameters';
 import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from 'utils/tooltip';
-import { createWidgets } from 'widgets/_all';
+import { createWidgets, type WidgetConfig } from 'widgets/_all';
 
 export function useDeckGLProps({
   options,
   layers,
   widgetCallbacks,
+  widgetConfigs,
 }: {
   options: MapPanelOptions;
   layers: DeckProps['layers'];
   widgetCallbacks?: WidgetCallbacks;
+  widgetConfigs?: WidgetConfig[];
 }): DeckProps & { interleaved?: boolean } {
   const effects = useMemo(() => buildDeckEffects(options.deck.lighting), [options.deck.lighting]);
   const parameters = useMemo(() => buildDeckParameters(options.deck.parameters), [options.deck.parameters]);
   const widgets = useMemo(
-    () => createWidgets(options.widgets ?? [], widgetCallbacks),
-    [options.widgets, widgetCallbacks]
+    () => createWidgets(widgetConfigs ?? options.widgets ?? [], widgetCallbacks),
+    [options.widgets, widgetCallbacks, widgetConfigs]
   );
   const getTooltip = useMemo(
     () =>

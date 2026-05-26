@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FullscreenWidget,
   _SplitterWidget as SplitterWidget,
@@ -6,8 +5,6 @@ import {
   type SplitterWidgetProps,
 } from '@deck.gl/widgets';
 import { MapView, type Widget } from '@deck.gl/core';
-import { FullscreenControl } from 'react-map-gl/maplibre';
-import { getControlPosition, mapControlToGooglePosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 
 type FullscreenWidgetConfig = BaseWidgetConfig<'fullscreen', Omit<FullscreenWidgetProps, 'id'>>;
@@ -18,6 +15,7 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
   type: 'fullscreen',
   label: 'Fullscreen',
   description: 'Add a control to toggle the map into fullscreen mode.',
+  nativeControlProviders: ['google', 'maplibre'],
   createDefaultConfig: (i) => ({
     id: `widget-fullscreen-${i + 1}`,
     type: 'fullscreen',
@@ -35,23 +33,6 @@ export const fullscreenWidgetDefinition: WidgetDefinition<FullscreenWidgetConfig
     },
   ],
   createWidget: (config) => new FullscreenWidget({ id: config.id, ...config.settings }),
-  nativeControls: {
-    google: (config) => {
-      const pos = config.settings.placement === 'fill' ? 'top-right' : config.settings.placement;
-      return {
-        fullscreenControl: true,
-        fullscreenControlOptions: {
-          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-right'), 'TOP_RIGHT'),
-        },
-      };
-    },
-    maplibre: (config) => (
-      <FullscreenControl
-        key="widget-fullscreen-native"
-        position={(config.settings.placement === 'fill' ? 'top-right' : config.settings.placement) ?? 'top-right'}
-      />
-    ),
-  },
 };
 
 // DISABLE

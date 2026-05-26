@@ -34,7 +34,7 @@ import {
   statsWidgetDefinition,
   themeWidgetDefinition,
 } from './categories/utility';
-import type { BlankWidgetConfig, GoogleNativeControlProps, WidgetCallbacks } from './types';
+import type { BlankWidgetConfig, WidgetCallbacks } from './types';
 import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
 import './deckgl-widgets-stylesheet-do-not-edit.css';
 import './styles.css';
@@ -87,31 +87,6 @@ export function createWidgets(configs: WidgetConfig[], callbacks?: WidgetCallbac
     w.setProps({ style: callbacks?.themeMode === 'dark' ? DarkGlassTheme : LightGlassTheme });
     return w ? [w] : [];
   });
-}
-
-export function resolveGoogleNativeProps(configs: WidgetConfig[]): Partial<GoogleNativeControlProps> {
-  const props: Partial<GoogleNativeControlProps> = {};
-  for (const config of configs) {
-    if (!config.visible || !config.native) continue;
-    const def = widgetDefinitions.find((d) => d.type === config.type);
-    if (def?.nativeControls?.google) {
-      Object.assign(props, def.nativeControls.google(config as never));
-    }
-  }
-  return props;
-}
-
-export function resolveMaplibreNativeControls(configs: WidgetConfig[]): React.ReactNode[] {
-  const controls: React.ReactNode[] = [];
-  for (const config of configs) {
-    if (!config.visible || !config.native) continue;
-    const def = widgetDefinitions.find((d) => d.type === config.type);
-    if (def?.nativeControls?.maplibre) {
-      const node = def.nativeControls.maplibre(config as never);
-      if (node) controls.push(node);
-    }
-  }
-  return controls;
 }
 
 export type { WidgetCallbacks };

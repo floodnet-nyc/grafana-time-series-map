@@ -15,7 +15,7 @@ export interface BaseWidgetConfig<TType extends string, TSettings> {
   type: TType;
   label: string;
   visible: boolean;
-  /** Render as a native map control instead of a DeckGL overlay (requires widget definition nativeControls). */
+  /** Render as a native map control instead of a DeckGL overlay. */
   native?: boolean;
   settings: TSettings;
 }
@@ -74,22 +74,6 @@ export interface WidgetCallbacks {
   onThemeModeChange?: (mode: 'light' | 'dark') => void;
 }
 
-export type GoogleNativeControlProps = Pick<
-  google.maps.MapOptions,
-  | 'zoomControl'
-  | 'zoomControlOptions'
-  | 'cameraControl'
-  | 'cameraControlOptions'
-  | 'fullscreenControl'
-  | 'fullscreenControlOptions'
-  | 'scaleControl'
-  | 'scaleControlOptions'
-  | 'rotateControl'
-  | 'rotateControlOptions'
-  | 'streetViewControl'
-  | 'streetViewControlOptions'
->;
-
 export interface WidgetDefinition<
   TConfig extends BaseWidgetConfig<string, Record<string, unknown>> = BaseWidgetConfig<string, Record<string, unknown>>,
 > {
@@ -97,14 +81,8 @@ export interface WidgetDefinition<
   label: string;
   description: string;
   supportedMapProviders?: Array<'google' | 'maplibre' | 'deck'>;
+  nativeControlProviders?: Array<'google' | 'maplibre'>;
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
   createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget;
-  /** Provider-specific native control configuration used when config.native is true. */
-  nativeControls?: {
-    /** Returns props to spread onto the Google Maps <Map> component. */
-    google?: (config: TConfig) => Partial<GoogleNativeControlProps>;
-    /** Returns a React element rendered as a native child of the MapLibre <Map> component. */
-    maplibre?: (config: TConfig) => React.ReactNode;
-  };
 }

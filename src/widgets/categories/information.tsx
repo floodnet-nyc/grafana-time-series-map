@@ -7,7 +7,6 @@ import {
   type PopupWidgetProps,
 } from '@deck.gl/widgets';
 import type { Feature } from 'geojson';
-import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetDefinition } from '../types';
 import { MessageWidget, MessageWidgetProps } from '../custom/message-widget';
 import { StreetViewWidget, type StreetViewWidgetProps } from '../../modules/street-view';
@@ -137,6 +136,8 @@ export const streetViewWidgetDefinition: WidgetDefinition<StreetViewWidgetConfig
   type: 'street-view',
   label: 'Street View',
   description: 'Show Google Street View for the currently selected point feature.',
+  supportedMapProviders: ['google'],
+  nativeControlProviders: ['google'],
   createDefaultConfig: (i) => ({
     id: `widget-street-view-${i + 1}`,
     type: 'street-view',
@@ -177,15 +178,4 @@ export const streetViewWidgetDefinition: WidgetDefinition<StreetViewWidgetConfig
       selectedKey: callbacks?.selection?.key,
       provider: callbacks?.provider,
     }),
-  nativeControls: {
-    google: (config) => {
-      const pos = config.settings.placement === 'fill' ? 'bottom-right' : config.settings.placement;
-      return {
-        streetViewControl: true,
-        streetViewControlOptions: {
-          position: getControlPosition(mapControlToGooglePosition(pos ?? 'bottom-right'), 'BOTTOM_RIGHT'),
-        },
-      };
-    },
-  },
 };

@@ -38,7 +38,8 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
   );
   const currentDefinition = useMemo(() => widgetDefinitions.find((d) => d.type === widget.type), [widget.type]);
   const settingsRecord = widget.settings as unknown as Record<string, unknown>;
-  const supportsNative = currentDefinition?.nativeControls?.[options.basemap.provider] && options.deck.interleaved;
+  const supportsNative =
+    options.deck.interleaved && currentDefinition?.nativeControlProviders?.includes(options.basemap.provider);
 
   const patch = useCallback(
     (updates: Partial<WidgetConfig>) => onChange({ ...(widget as any), ...updates } as WidgetConfig),

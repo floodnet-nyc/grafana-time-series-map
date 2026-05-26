@@ -9,8 +9,8 @@ import { useDeckGLProps } from '../useDeckGLProps';
 import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getMaplibreStyleUrl } from './style';
-import { resolveMaplibreNativeControls } from '../../../widgets/_all';
 import { useMapProviderState, type MapProviderAdapter } from '../useMapProviderState';
+import { useMaplibreWidgets } from './useWidgets';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 function applyMaplibreViewState(map: MapLibreMap, next: WidgetViewStateChange) {
@@ -134,7 +134,8 @@ export default function MaplibreMap(props: MapProviderProps) {
     [options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl]
   );
 
-  const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
+  const [filteredWidgets, nativeMaplibreControls] = useMaplibreWidgets(options.widgets);
+  const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks, widgetConfigs: filteredWidgets });
 
   /* --------------------------------- Widgets -------------------------------- */
 
@@ -156,7 +157,6 @@ export default function MaplibreMap(props: MapProviderProps) {
   );
 
   useWidgetControls(maplibreMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
-  const nativeMaplibreControls = useMemo(() => resolveMaplibreNativeControls(options.widgets ?? []), [options.widgets]);
 
   const fitBoundsProps = useMemo<Omit<MapFitBoundsProps<MapLibreMap>, 'onViewState' | 'map'>>(
     () => ({

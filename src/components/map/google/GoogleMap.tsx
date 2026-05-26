@@ -8,8 +8,8 @@ import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
 import { useDeckGLProps } from '../useDeckGLProps';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getGoogleColorScheme } from './controlMappings';
-import { resolveGoogleNativeProps } from '../../../widgets/_all';
 import { useMapProviderState, type MapProviderAdapter } from '../useMapProviderState';
+import { useGoogleWidgets } from './useWidgets';
 
 interface GoogleCameraChangedEvent {
   detail: {
@@ -184,7 +184,8 @@ function GoogleMapInner(props: MapProviderProps) {
     mapRef.current = googleMap;
   });
 
-  const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
+  const [filteredWidgets, googleControlProps] = useGoogleWidgets(options.widgets);
+  const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks, widgetConfigs: filteredWidgets });
 
   /* --------------------------------- Widgets -------------------------------- */
 
@@ -200,7 +201,6 @@ function GoogleMapInner(props: MapProviderProps) {
   );
 
   useWidgetControls(googleMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
-  const googleControlProps = useMemo(() => resolveGoogleNativeProps(options.widgets ?? []), [options.widgets]);
 
   /* ----------------------------------- Map ---------------------------------- */
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ZoomWidget,
   ResetViewWidget,
@@ -9,8 +8,6 @@ import {
   type GimbalWidgetProps,
   type ScrollbarWidgetProps,
 } from '@deck.gl/widgets';
-import { NavigationControl } from 'react-map-gl/maplibre';
-import { mapControlToGooglePosition, getControlPosition } from 'components/map/google/controlMappings';
 import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDefinition } from '../types';
 
 type ZoomWidgetConfig = BaseWidgetConfig<'zoom', Omit<ZoomWidgetProps, 'id'>>;
@@ -27,6 +24,7 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
   type: 'zoom',
   label: 'Zoom',
   description: 'Add zoom in and zoom out controls.',
+  nativeControlProviders: ['google', 'maplibre'],
   createDefaultConfig: (i) => ({
     id: `widget-zoom-${i + 1}`,
     type: 'zoom',
@@ -79,25 +77,6 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
             })
         : undefined,
     }),
-  nativeControls: {
-    google: (config) => {
-      const pos = config.settings.placement === 'fill' ? 'top-left' : config.settings.placement;
-      return {
-        zoomControl: true,
-        zoomControlOptions: {
-          position: getControlPosition(mapControlToGooglePosition(pos ?? 'top-left'), 'TOP_LEFT'),
-        },
-      };
-    },
-    maplibre: (config) => (
-      <NavigationControl
-        key="widget-zoom-native"
-        position={(config.settings.placement === 'fill' ? 'top-left' : config.settings.placement) ?? 'top-left'}
-        showZoom={true}
-        showCompass={false}
-      />
-    ),
-  },
 };
 
 export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> = {
