@@ -29,8 +29,9 @@ export const layerDefinitions = [
 ] as const;
 
 export type LayerType = (typeof layerDefinitions)[number]['type'];
+export type AnyLayerDefinition = (typeof layerDefinitions)[number];
 export type LayerDefinitionForType<TType extends LayerType> = Extract<
-  (typeof layerDefinitions)[number],
+  AnyLayerDefinition,
   { type: TType }
 >;
 export type LayerConfigForType<TType extends LayerType> = ReturnType<
@@ -40,13 +41,15 @@ export type LayerConfig = LayerConfigForType<LayerType>;
 
 const layerDefinitionsByType = Object.fromEntries(
   layerDefinitions.map((definition) => [definition.type, definition])
-) as Record<LayerType, (typeof layerDefinitions)[number]>;
+) as Record<LayerType, AnyLayerDefinition>;
+
+const asyncLayerDefinitionCache = new Map<string, AnyLayerDefinition>();
 
 export function getLayerDefinition<TType extends string>(
   type: TType
-): Extract<(typeof layerDefinitions)[number], { type: TType }> | undefined {
-  return (layerDefinitionsByType as Partial<Record<string, (typeof layerDefinitions)[number]>>)[type] as
-    | Extract<(typeof layerDefinitions)[number], { type: TType }>
+): Extract<AnyLayerDefinition, { type: TType }> | undefined {
+  return (layerDefinitionsByType as Partial<Record<string, AnyLayerDefinition>>)[type] as
+    | Extract<AnyLayerDefinition, { type: TType }>
     | undefined;
 }
 
@@ -56,4 +59,31 @@ export function createLayerConfig<TType extends LayerType>(
 ): LayerConfigForType<TType> | undefined {
   const definition = getLayerDefinition(type);
   return definition?.createDefaultConfig(index) as LayerConfigForType<TType> | undefined;
+}
+
+export function hasAsyncLayerDefinition(type: string): boolean {
+  return type === 'cog';
+}
+
+export async function loadLayerDefinition(type: string): Promise<AnyLayerDefinition | undefined> {
+  if (!hasAsyncLayerDefinition(type)) {
+    return getLayerDefinition(type);
+  }
+
+  const cachedDefinition = asyncLayerDefinitionCache.get(type);
+  if (cachedDefinition) {
+    return cachedDefinition;
+  }
+
+  if (type === 'cog') {
+    const [{ renderCogLayers }, definition] = await Promise.all([import('./cog/runtime'), import('./cog')]);
+    const loadedDefinition: typeof cogLayerDefinition = {
+      ...definition.cogLayerDefinition,
+      renderLayers: renderCogLayers,
+    };
+    asyncLayerDefinitionCache.set(type, loadedDefinition);
+    return loadedDefinition;
+  }
+
+  return undefined;
 }
