@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3000/public/plugins/floodnet-timeseriesmap-panel/module.js)",
+      "Bash(curl -s -X POST http://admin:admin@localhost:3000/api/admin/provisioning/datasources/reload -H 'Content-Type: application/json')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:3000/api/ds/query -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -X POST \"http://admin:admin@localhost:3000/api/admin/provisioning/dashboards/reload\" -H \"Content-Type: application/json\")",
+      "Bash(curl -sf http://localhost:3000/api/health)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(find /opt/gh/floodnet-event-map-v2 -name \"past_flood_event_contours.ts\" 2>/dev/null | head -5)",
+      "Bash(npx tsc *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npm run *)",
+      "Bash(npx jest *)"
+    ]
+  }
+}
