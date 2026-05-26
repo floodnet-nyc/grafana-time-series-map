@@ -3,7 +3,7 @@ import type { StreetViewCoords } from './types';
 
 export interface StreetViewPanoramaSession {
   panorama: google.maps.StreetViewPanorama;
-  marker: google.maps.Marker | null;
+  markerElement: HTMLDivElement | null;
   hostElement: HTMLDivElement;
 }
 
@@ -54,33 +54,30 @@ export async function loadStreetViewPanorama({
     maps.event.trigger(panorama, 'resize');
   });
 
-  let marker: google.maps.Marker | null = null;
-  try {
-    existing?.marker?.setMap(null);
-    marker = new maps.Marker({
-      position: coords,
-      map: panorama,
-      title: selectedKey ?? 'Selected feature',
-      icon: {
-        path: maps.SymbolPath.CIRCLE,
-        scale: 5,
-        strokeColor: '#ffffff',
-        strokeWeight: 2,
-        fillColor: '#3388ff',
-        fillOpacity: 1,
-      },
-    });
-  } catch {
-    marker = null;
-  }
+  existing?.markerElement?.remove();
+  const markerElement = createPanoramaMarker(container, selectedKey);
 
-  return { panorama, marker, hostElement: container };
+  return { panorama, markerElement, hostElement: container };
 }
 
 export function clearStreetViewPanorama(session: StreetViewPanoramaSession | null, container: HTMLDivElement | null) {
-  session?.marker?.setMap(null);
+  session?.markerElement?.remove();
   session?.panorama?.setVisible(false);
   if (container) {
     container.innerHTML = '';
   }
+}
+
+function createPanoramaMarker(container: HTMLDivElement, selectedKey?: string | null): HTMLDivElement {
+  const markerElement = document.createElement('div');
+  markerElement.className = 'street-view-widget-marker';
+  markerElement.title = selectedKey ?? 'Selected feature';
+  markerElement.setAttribute('aria-hidden', 'true');
+
+  const inner = document.createElement('div');
+  inner.className = 'street-view-widget-marker-dot';
+  markerElement.appendChild(inner);
+
+  container.appendChild(markerElement);
+  return markerElement;
 }

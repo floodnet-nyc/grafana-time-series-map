@@ -253,10 +253,43 @@
 
 .street-view-widget-panorama {
   width: 100%;
+  position: relative;
   overflow: hidden;
   border-radius: 8px;
   border: 1px solid rgba(127, 127, 127, 0.25);
   background: rgba(0, 0, 0, 0.08);
+}
+
+.street-view-widget-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.street-view-widget-marker::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.street-view-widget-marker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #3388ff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
 }
 
 .street-view-widget-chevron {
