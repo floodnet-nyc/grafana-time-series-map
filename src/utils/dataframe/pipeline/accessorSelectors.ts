@@ -1,11 +1,7 @@
 import type { AccessorContext, AccessorFunction } from '@deck.gl/core';
 import type { Geometry, LineString, MultiLineString, MultiPolygon, Point, Polygon } from 'geojson';
 import type { LayerConfig } from '../../../layers';
-import type {
-  GetAccessorFunction,
-  GetAccessorFunctions,
-  TypedGetAccessorFunction,
-} from '../../../layers/types';
+import type { GetAccessorFunction, GetAccessorFunctions, TypedGetAccessorFunction } from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
 import { getRowGeometry, getRowValue, type LayerTable, type LayerDatum } from '../layerTable';
@@ -19,7 +15,7 @@ function getFeatureFieldValue(
   index: number,
   fieldRef: SourceRef | undefined,
   featureSourceId: string,
-  derived?: Record<string, unknown>,
+  derived?: Record<string, unknown>
 ) {
   if (!fieldRef?.field) {
     return undefined;
@@ -33,7 +29,7 @@ function getFeatureFieldValue(
 function makeTypedGetAccessor<O>(
   raw: GetAccessorFunction,
   toTyped: (raw: unknown, defaultValue: O) => O,
-  defaultValue: O,
+  defaultValue: O
 ) {
   return ((fieldRef, defaultVal) => {
     const resolvedDefault = (defaultVal ?? defaultValue) as O;
@@ -46,7 +42,6 @@ function makeTypedGetAccessor<O>(
     ] as [AccessorFunction<LayerDatum, O> | undefined, readonly unknown[]];
   }) as TypedGetAccessorFunction<O>;
 }
-
 
 function toNumber(raw: unknown, defaultValue: number): number {
   if (typeof raw === 'number') {
@@ -155,7 +150,8 @@ export function selectAccessorFactories({
 
     if (fieldRef.source === config.data.featureSource.id) {
       return [
-        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) => getRowValue(table, index, fieldRef.field) ?? defaultValue,
+        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) =>
+          getRowValue(table, index, fieldRef.field) ?? defaultValue,
         dependencyKey(fieldRef, defaultValue),
       ];
     }
@@ -175,8 +171,8 @@ export function selectAccessorFactories({
               index,
               joinedSource.join.localKey,
               config.data.featureSource.id,
-              derivedValues?.[index],
-            ) ?? '',
+              derivedValues?.[index]
+            ) ?? ''
           );
           return sourceValues.get(localKey)?.[fieldRef.field] ?? defaultValue;
         },

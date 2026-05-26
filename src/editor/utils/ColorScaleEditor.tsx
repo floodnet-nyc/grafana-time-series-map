@@ -47,7 +47,10 @@ const SCHEME_OPTIONS: Array<ComboboxOption<string>> = [
 ];
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
-  const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
+  const h = (n: number) =>
+    Math.round(Math.max(0, Math.min(255, n)))
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}${a < 255 ? h(a) : ''}`;
 }
 
@@ -91,7 +94,11 @@ export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChang
         <Combobox
           options={COLOR_MODES}
           value={mode}
-          onChange={(v) => onChange(createColorModePatch(v.value as 'fixed' | 'threshold' | 'gradient', layer, DEFAULT_VS_FILTER_COLOR))}
+          onChange={(v) =>
+            onChange(
+              createColorModePatch(v.value as 'fixed' | 'threshold' | 'gradient', layer, DEFAULT_VS_FILTER_COLOR)
+            )
+          }
         />
       </Field>
       {mode === 'fixed' && (
@@ -116,18 +123,36 @@ export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChang
             <div key={`threshold-${index}`} className={styles.thresholdRow}>
               <Input
                 value={String(step.value)}
-                onChange={(e) => patchColor({ steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, { value: Number(e.currentTarget.value) }) })}
+                onChange={(e) =>
+                  patchColor({
+                    steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, {
+                      value: Number(e.currentTarget.value),
+                    }),
+                  })
+                }
               />
               <ColorPicker
                 color={rgbaToHex(step.color)}
-                onChange={(hex) => patchColor({ steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, { color: hexToRgba(hex) }) })}
+                onChange={(hex) =>
+                  patchColor({
+                    steps: patchThresholdStep(layer.colorScale?.steps ?? [], index, { color: hexToRgba(hex) }),
+                  })
+                }
               />
-              <Button size="sm" variant="destructive" onClick={() => patchColor({ steps: removeThresholdStep(layer.colorScale?.steps ?? [], index) })}>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => patchColor({ steps: removeThresholdStep(layer.colorScale?.steps ?? [], index) })}
+              >
                 Remove
               </Button>
             </div>
           ))}
-          <Button size="sm" variant="secondary" onClick={() => patchColor({ steps: appendThresholdStep(layer.colorScale?.steps ?? []) })}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => patchColor({ steps: appendThresholdStep(layer.colorScale?.steps ?? []) })}
+          >
             Add threshold
           </Button>
         </>
@@ -143,23 +168,41 @@ export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChang
             />
           </Field>
           <Field label="Scheme">
-            <Combobox options={SCHEME_OPTIONS} value={scheme || ''} onChange={(v) => patchColor({ schemeName: String(v?.value ?? '') })} />
+            <Combobox
+              options={SCHEME_OPTIONS}
+              value={scheme || ''}
+              onChange={(v) => patchColor({ schemeName: String(v?.value ?? '') })}
+            />
           </Field>
           {scheme && <ColorSchemePreview schemeName={scheme} invert={layer.colorScale?.invert} />}
           <Field label="Scale min">
-            <Input type="number" value={String(layer.colorScale?.scaleMin ?? 0)} onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })} />
+            <Input
+              type="number"
+              value={String(layer.colorScale?.scaleMin ?? 0)}
+              onChange={(e) => patchColor({ scaleMin: Number(e.currentTarget.value) })}
+            />
           </Field>
           <Field label="Scale max">
-            <Input type="number" value={String(layer.colorScale?.scaleMax ?? 1)} onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })} />
+            <Input
+              type="number"
+              value={String(layer.colorScale?.scaleMax ?? 1)}
+              onChange={(e) => patchColor({ scaleMax: Number(e.currentTarget.value) })}
+            />
           </Field>
           <Field label="Invert">
-            <Switch value={layer.colorScale?.invert ?? false} onChange={(e) => patchColor({ invert: e.currentTarget.checked })} />
+            <Switch
+              value={layer.colorScale?.invert ?? false}
+              onChange={(e) => patchColor({ invert: e.currentTarget.checked })}
+            />
           </Field>
         </>
       )}
       <CollapsableSection label="Shader" isOpen={false}>
         <Field label="Enabled">
-          <Switch value={layer.shader?.enabled ?? false} onChange={(e) => patchShader({ enabled: e.currentTarget.checked })} />
+          <Switch
+            value={layer.shader?.enabled ?? false}
+            onChange={(e) => patchShader({ enabled: e.currentTarget.checked })}
+          />
         </Field>
         <Field label="Value field">
           <SourceRefEditor
@@ -170,10 +213,16 @@ export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChang
           />
         </Field>
         <Field label="Custom vertex declarations">
-          <TextArea value={layer.shader?.vsDecl ?? ''} onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })} />
+          <TextArea
+            value={layer.shader?.vsDecl ?? ''}
+            onChange={(e) => patchShader({ vsDecl: e.currentTarget.value })}
+          />
         </Field>
         <Field label="Vertex filter color">
-          <TextArea value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR} onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })} />
+          <TextArea
+            value={layer.shader?.vsFilterColor ?? DEFAULT_VS_FILTER_COLOR}
+            onChange={(e) => patchShader({ vsFilterColor: e.currentTarget.value })}
+          />
         </Field>
       </CollapsableSection>
     </>

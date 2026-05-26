@@ -20,7 +20,7 @@ export function parseMapHashView(): MapHashView | null {
 }
 
 export function useInitialMapHashView(enabled: boolean): MapHashView | undefined {
-  return useMemo(() => enabled ? parseMapHashView() ?? undefined : undefined, [enabled]);
+  return useMemo(() => (enabled ? (parseMapHashView() ?? undefined) : undefined), [enabled]);
 }
 
 export function useWriteMapHashView(enabled: boolean): (view: MapHashView) => void {

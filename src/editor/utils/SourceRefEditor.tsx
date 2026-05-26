@@ -18,7 +18,7 @@ interface Props<T> {
 
 interface SourceRefProps extends Props<SourceRef> {
   sourceId?: never;
-};
+}
 
 interface FixedSourceProps extends Props<string> {
   sourceId: string;
@@ -42,12 +42,18 @@ function decodeRef(value: string): SourceRef | undefined {
   return undefined;
 }
 
-export function SeparateSourceRefEditor({ value, onChange, sourceOptions, fieldsBySource, placeholder }: SourceRefProps) {
+export function SeparateSourceRefEditor({
+  value,
+  onChange,
+  sourceOptions,
+  fieldsBySource,
+  placeholder,
+}: SourceRefProps) {
   const source = value?.source ?? sourceOptions[0]?.id ?? DEFAULT_FEATURE_SOURCE_ID;
   const field = value?.field ?? '';
   const fieldOptions = useMemo(
     () => (fieldsBySource[source] ?? []).map((item) => ({ label: item, value: item })),
-    [fieldsBySource, source],
+    [fieldsBySource, source]
   );
 
   return (
@@ -69,7 +75,13 @@ export function SeparateSourceRefEditor({ value, onChange, sourceOptions, fields
   );
 }
 
-export function CombinedSourceRefEditor({ value, onChange, sourceOptions, fieldsBySource, placeholder }: SourceRefProps) {
+export function CombinedSourceRefEditor({
+  value,
+  onChange,
+  sourceOptions,
+  fieldsBySource,
+  placeholder,
+}: SourceRefProps) {
   const currentSource = value?.source ?? sourceOptions[0]?.id ?? DEFAULT_FEATURE_SOURCE_ID;
   const options = useMemo<Array<ComboboxOption<string>>>(
     () =>
@@ -80,7 +92,7 @@ export function CombinedSourceRefEditor({ value, onChange, sourceOptions, fields
           value: encodeRef(sourceOption.id, field),
         }))
       ),
-    [fieldsBySource, sourceOptions],
+    [fieldsBySource, sourceOptions]
   );
 
   return (
@@ -99,18 +111,27 @@ export function CombinedSourceRefEditor({ value, onChange, sourceOptions, fields
   );
 }
 
-export function FixedSourceRefEditor({ value, onChange, sourceOptions, fieldsBySource, placeholder, sourceId }: FixedSourceProps) {
+export function FixedSourceRefEditor({
+  value,
+  onChange,
+  sourceOptions,
+  fieldsBySource,
+  placeholder,
+  sourceId,
+}: FixedSourceProps) {
   const field = value ?? '';
   const fieldOptions = useMemo(
     () => (fieldsBySource[sourceId] ?? []).map((item) => ({ label: item, value: item })),
-    [fieldsBySource, sourceId],
+    [fieldsBySource, sourceId]
   );
 
   return (
     <Combobox
       options={fieldOptions}
       value={field || null}
-      onChange={(selected) => onChange({ source: sourceId, field: selected?.value != null ? String(selected.value) : '' })}
+      onChange={(selected) =>
+        onChange({ source: sourceId, field: selected?.value != null ? String(selected.value) : '' })
+      }
       isClearable
       createCustomValue
       placeholder={placeholder ?? 'Field name…'}

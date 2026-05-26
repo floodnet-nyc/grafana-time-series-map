@@ -61,7 +61,9 @@ describe('preparedLayerSelectors', () => {
 
   it('builds prepared states for each layer config', () => {
     const config = createLayerConfig({ id: 'layer-a' });
-    const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable([createFeature({ depth: 1 }, 0)] as any, 'main')]]);
+    const featuresByLayerId = new Map([
+      [config.id, featureArrayToLayerTable([createFeature({ depth: 1 }, 0)] as any, 'main')],
+    ]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
 
     const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId);

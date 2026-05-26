@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { type EventBus, DataHoverEvent, DataHoverClearEvent, DataSelectEvent, BusEvent, BusEventType, InterpolateFunction } from '@grafana/data';
+import {
+  type EventBus,
+  DataHoverEvent,
+  DataHoverClearEvent,
+  DataSelectEvent,
+  BusEvent,
+  BusEventType,
+  InterpolateFunction,
+} from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
 import { useLatestRef } from './util/useLatestRef';
-import { locationService, RefreshEvent } from '@grafana/runtime';//RefreshEvent
+import { locationService, RefreshEvent } from '@grafana/runtime'; //RefreshEvent
 import { useInterval } from './util/useInterval';
 // import useDebouncedCallback from './util/useDebouncedCallback';
 
@@ -68,76 +76,88 @@ export function useGrafanaEventBridge({
   const lastReceivedAtRef = useRef<number>(0);
 
   const [refreshTime, setRefreshTime] = useState<number>(0);
-  useEventBridgeSubscription(
-    eventBus, RefreshEvent,
-    () => setRefreshTime(Date.now()),
-  );
+  useEventBridgeSubscription(eventBus, RefreshEvent, () => setRefreshTime(Date.now()));
 
-  const selectVarValue = useMemo(() => selectionVariableName && (refreshTime||true) ? replaceVariables(`$${selectionVariableName}`) : null, [replaceVariables, selectionVariableName, refreshTime]);
+  const selectVarValue = useMemo(
+    () => (selectionVariableName && (refreshTime || true) ? replaceVariables(`$${selectionVariableName}`) : null),
+    [replaceVariables, selectionVariableName, refreshTime]
+  );
   const [selectedKey_, setSelectedKey_] = useState<string | null>(null);
   const selectedKey = selectionVariableName ? selectVarValue : selectedKey_;
-  
-  const setSelectedKey = useCallback((key: string | null) => {
-    if (selectionVariableName) {
-      const selectionVariableParam = `var-${selectionVariableName?.trim().replace(/^var-/, '') ?? ''}`;
-      locationService.partial({ [selectionVariableParam]: key ?? '' }, true);
-    }
-    else {
-      setSelectedKey_(key);
-    }
-  }, [selectionVariableName]);
+
+  const setSelectedKey = useCallback(
+    (key: string | null) => {
+      if (selectionVariableName) {
+        const selectionVariableParam = `var-${selectionVariableName?.trim().replace(/^var-/, '') ?? ''}`;
+        locationService.partial({ [selectionVariableParam]: key ?? '' }, true);
+      } else {
+        setSelectedKey_(key);
+      }
+    },
+    [selectionVariableName]
+  );
 
   // Publish cursor position while playing
 
-  useInterval(() => {
-    const pb = playbackRef.current;
-    if (!pb.playing || !eventBus) { return; }
-    if (Date.now() - lastReceivedAtRef.current < ECHO_COOLDOWN_MS) { return; }
-    // Publish point.time only — no data frame, so subscribers won't misread it as a selection.
-    eventBus.publish(new DataHoverEvent({ point: { time: pb.cursorTimeMs } }));
-  }, eventBus && publish ? PUBLISH_INTERVAL_MS : undefined);
-
-  useEventBridgeSubscription(
-    eventBus, DataHoverEvent,
-    !subscribe ? undefined :
-    (event) => {
-      const { point } = event.payload ?? {};
-
-      // Cursor sync: always seek if point.time is in range
-      const timeMs = point?.time;
-      if (typeof timeMs === 'number') {
-        const { fromTimeMs: f, toTimeMs: t } = rangeRef.current;
-        if (timeMs >= f && timeMs <= t) {
-          lastReceivedAtRef.current = Date.now();
-          playbackRef.current.seekTo(timeMs);
-        }
+  useInterval(
+    () => {
+      const pb = playbackRef.current;
+      if (!pb.playing || !eventBus) {
+        return;
       }
-
-      const incomingSelectionKey = getSelectedKeyFromEventPayload(event.payload);
-      if (incomingSelectionKey !== null) {
-        setSelectedKey(incomingSelectionKey);
+      if (Date.now() - lastReceivedAtRef.current < ECHO_COOLDOWN_MS) {
+        return;
       }
+      // Publish point.time only — no data frame, so subscribers won't misread it as a selection.
+      eventBus.publish(new DataHoverEvent({ point: { time: pb.cursorTimeMs } }));
     },
-  )
-  useEventBridgeSubscription(
-    eventBus, DataHoverClearEvent,
-    () => setSelectedKey(null),
+    eventBus && publish ? PUBLISH_INTERVAL_MS : undefined
   );
 
   useEventBridgeSubscription(
-    eventBus, DataSelectEvent,
-    (event) => setSelectedKey(getSelectedKeyFromEventPayload(event.payload)),
+    eventBus,
+    DataHoverEvent,
+    !subscribe
+      ? undefined
+      : (event) => {
+          const { point } = event.payload ?? {};
+
+          // Cursor sync: always seek if point.time is in range
+          const timeMs = point?.time;
+          if (typeof timeMs === 'number') {
+            const { fromTimeMs: f, toTimeMs: t } = rangeRef.current;
+            if (timeMs >= f && timeMs <= t) {
+              lastReceivedAtRef.current = Date.now();
+              playbackRef.current.seekTo(timeMs);
+            }
+          }
+
+          const incomingSelectionKey = getSelectedKeyFromEventPayload(event.payload);
+          if (incomingSelectionKey !== null) {
+            setSelectedKey(incomingSelectionKey);
+          }
+        }
+  );
+  useEventBridgeSubscription(eventBus, DataHoverClearEvent, () => setSelectedKey(null));
+
+  useEventBridgeSubscription(eventBus, DataSelectEvent, (event) =>
+    setSelectedKey(getSelectedKeyFromEventPayload(event.payload))
   );
 
   return { selectedKey, setSelectedKey };
 }
 
-
-const useEventBridgeSubscription = <T extends BusEvent>(eventBus: EventBus | undefined, event: BusEventType<T>, fn?: (event: T) => void) => {
+const useEventBridgeSubscription = <T extends BusEvent>(
+  eventBus: EventBus | undefined,
+  event: BusEventType<T>,
+  fn?: (event: T) => void
+) => {
   const fnRef = useLatestRef(fn);
   const enabled = Boolean(eventBus && event && fn);
   useEffect(() => {
-    if (!enabled) { return; }
+    if (!enabled) {
+      return;
+    }
     const subscription = eventBus?.subscribe(event, (event: T) => fnRef.current?.(event));
     return () => subscription?.unsubscribe();
   }, [eventBus, event, fnRef, enabled]);

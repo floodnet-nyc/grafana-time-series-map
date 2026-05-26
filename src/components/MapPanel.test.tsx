@@ -34,6 +34,10 @@ jest.mock('../hooks/useFitBounds', () => ({
   useFitBounds: (...args: unknown[]) => mockUseFitBounds(...args),
 }));
 
+jest.mock('../layers/current-location/currentLocationLayers', () => ({
+  buildCurrentLocationLayers: () => [],
+}));
+
 jest.mock('../hooks/usePanelLayers', () => ({
   usePanelFeatures: (...args: unknown[]) => mockUsePanelFeatures(...args),
   usePanelLayers: (...args: unknown[]) => {
@@ -51,7 +55,13 @@ jest.mock('./map/DeckGLMap', () => ({
 }));
 
 jest.mock('./map-legend/MapLegend', () => ({
-  MapLegend: ({ layers, onToggleVisibility }: { layers: Array<{ id: string }>; onToggleVisibility?: (layerId: string) => void }) => (
+  MapLegend: ({
+    layers,
+    onToggleVisibility,
+  }: {
+    layers: Array<{ id: string }>;
+    onToggleVisibility?: (layerId: string) => void;
+  }) => (
     <button type="button" onClick={() => onToggleVisibility?.(layers[0].id)}>
       toggle-layer
     </button>
@@ -78,7 +88,11 @@ function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = 
   return {
     basemap: { provider: 'maplibre', maplibre: { mapStyle: 'carto-dark' }, google: {} },
     deck: { parameters: {}, lighting: {}, interleaved: true },
-    initialView: { mode: 'manual', state: { latitude: 40.7, longitude: -73.9, zoom: 11 }, fitData: { source: 'allLayers', padding: 48, maxZoom: 22 } },
+    initialView: {
+      mode: 'manual',
+      state: { latitude: 40.7, longitude: -73.9, zoom: 11 },
+      fitData: { source: 'allLayers', padding: 48, maxZoom: 22 },
+    },
     layers: [
       {
         id: 'layer-1',
@@ -100,7 +114,7 @@ function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = 
         },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', time: createSourceRef() },
-            opacity: 1,
+        opacity: 1,
         selectionKey: createSourceRef('deployment_id'),
       },
     ],
@@ -228,7 +242,13 @@ describe('MapPanel', () => {
     expect(latestFeatureClick).toBeDefined();
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
+      latestFeatureClick?.(feature, {
+        layer: {
+          props: {
+            config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } },
+          },
+        },
+      });
     });
     view.rerender(<MapPanel {...props} />);
 
@@ -254,7 +274,11 @@ describe('MapPanel', () => {
     render(<MapPanel {...props} />);
     expect(latestFeatureClick).toBeDefined();
 
-    latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
+    latestFeatureClick?.(feature, {
+      layer: {
+        props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } },
+      },
+    });
 
     expect(setSelectedKey).toHaveBeenCalledWith(null);
   });
@@ -270,7 +294,13 @@ describe('MapPanel', () => {
     const view = render(<MapPanel {...props} />);
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
+      latestFeatureClick?.(feature, {
+        layer: {
+          props: {
+            config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } },
+          },
+        },
+      });
     });
     view.rerender(<MapPanel {...props} />);
     expect(screen.getByText('sensor-1')).toBeInTheDocument();
@@ -296,7 +326,13 @@ describe('MapPanel', () => {
     );
 
     act(() => {
-      latestFeatureClick?.(feature, { layer: { props: { config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } } } } });
+      latestFeatureClick?.(feature, {
+        layer: {
+          props: {
+            config: { selectionKey: createSourceRef('deployment_id'), data: { featureSource: { id: 'main' } } },
+          },
+        },
+      });
     });
     view.rerender(<MapPanel {...props} />);
 

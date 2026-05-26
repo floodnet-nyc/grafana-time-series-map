@@ -1,5 +1,12 @@
 import type { MapPanelOptions } from '../../types';
-import { FIT_BOUNDS_MAX_ZOOM, FIT_BOUNDS_PADDING_PX, getFitBoundsKey, getFitBoundsOptions, getInitialViewport, getManualViewport } from 'components/map/MapFitBounds';
+import {
+  FIT_BOUNDS_MAX_ZOOM,
+  FIT_BOUNDS_PADDING_PX,
+  getFitBoundsKey,
+  getFitBoundsOptions,
+  getInitialViewport,
+  getManualViewport,
+} from 'components/map/MapFitBounds';
 
 function createOptions(overrides: { initialView?: Partial<MapPanelOptions['initialView']> } = {}): MapPanelOptions {
   return {
@@ -25,7 +32,12 @@ describe('map view state helpers', () => {
     expect(FIT_BOUNDS_PADDING_PX).toBe(48);
     expect(FIT_BOUNDS_MAX_ZOOM).toBe(22);
     expect(getFitBoundsKey()).toBeNull();
-    expect(getFitBoundsKey([[1, 2], [3, 4]])).toBe('[[1,2],[3,4]]');
+    expect(
+      getFitBoundsKey([
+        [1, 2],
+        [3, 4],
+      ])
+    ).toBe('[[1,2],[3,4]]');
   });
 
   it('builds fit-bounds options from panel settings', () => {

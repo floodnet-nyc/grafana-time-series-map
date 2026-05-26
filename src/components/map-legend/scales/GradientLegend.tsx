@@ -6,7 +6,7 @@ import { formatValue } from '../utils';
 export function GradientLegend({ colorScale }: { colorScale: ColorScaleConfig }) {
   const gradient = useMemo(
     () => schemeToGradientCss(colorScale.schemeName ?? '', colorScale.invert ?? false),
-    [colorScale.invert, colorScale.schemeName],
+    [colorScale.invert, colorScale.schemeName]
   );
 
   const min = colorScale.scaleMin ?? 0;

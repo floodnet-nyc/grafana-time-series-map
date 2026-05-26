@@ -6,7 +6,9 @@ describe('getMaplibreStyleUrl', () => {
     expect(getMaplibreStyleUrl('versatiles-colorful')).toBe(
       'https://tiles.versatiles.org/assets/styles/colorful/style.json'
     );
-    expect(getMaplibreStyleUrl('versatiles-shadow')).toBe('https://tiles.versatiles.org/assets/styles/shadow/style.json');
+    expect(getMaplibreStyleUrl('versatiles-shadow')).toBe(
+      'https://tiles.versatiles.org/assets/styles/shadow/style.json'
+    );
   });
 
   it('uses custom URLs when provided', () => {

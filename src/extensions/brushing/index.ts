@@ -24,11 +24,17 @@ export const brushingExtensionDefinition: LayerExtensionDefinition<LayerBrushing
       fields: [
         { key: 'enabled', label: 'Enable brushing', type: 'boolean', defaultValue: false },
         { key: 'brushingRadius', label: 'Brushing radius', type: 'number', defaultValue: 100000 },
-        { key: 'brushingTarget', label: 'Brushing target', type: 'select', defaultValue: 'source', selectOptions: [
-          { label: 'Source', value: 'source' },
-          { label: 'Target', value: 'target' },
-          { label: 'Source and Target', value: 'source_target' },
-        ] }
+        {
+          key: 'brushingTarget',
+          label: 'Brushing target',
+          type: 'select',
+          defaultValue: 'source',
+          selectOptions: [
+            { label: 'Source', value: 'source' },
+            { label: 'Target', value: 'target' },
+            { label: 'Source and Target', value: 'source_target' },
+          ],
+        },
       ],
     },
   ],

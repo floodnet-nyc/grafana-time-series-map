@@ -2,9 +2,8 @@ import type { MapViewState } from '@deck.gl/core';
 import type { LayerConfig } from './layers';
 import type { WidgetConfig } from './widgets/_all';
 
-export type DataSource =
-  | { type: 'query' }
-  // | { type: 'geojson-url'; url: string };
+export type DataSource = { type: 'query' };
+// | { type: 'geojson-url'; url: string };
 
 export interface SourceRef {
   source: string;
@@ -124,7 +123,6 @@ export type DeckDepthCompare =
   | 'not-equal'
   | 'greater-equal'
   | 'always';
-
 
 export type BasemapProvider = 'maplibre' | 'google';
 export type MaplibreStyle =

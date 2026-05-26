@@ -30,9 +30,7 @@ export function LayerLegendEntry({ layer, onToggle, showEye }: LayerLegendEntryP
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          {colorScale?.type === 'fixed' && colorScale.fixedColor && (
-            <FixedLegend colorScale={colorScale} />
-          )}
+          {colorScale?.type === 'fixed' && colorScale.fixedColor && <FixedLegend colorScale={colorScale} />}
 
           <span
             style={{
@@ -79,17 +77,19 @@ export function LayerLegendEntry({ layer, onToggle, showEye }: LayerLegendEntryP
 }
 
 const FixedLegend = ({ colorScale }: { colorScale: LayerConfig['colorScale'] }) => {
-  return colorScale?.fixedColor && (
-    <div
-      style={{
-        display: 'inline-block',
-        width: 10,
-        height: 10,
-        borderRadius: 2,
-        backgroundColor: swatchHex(colorScale.fixedColor),
-        flexShrink: 0,
-        boxShadow: '0 0 0 1px rgba(255,255,255,0.12)',
-      }}
-    />
+  return (
+    colorScale?.fixedColor && (
+      <div
+        style={{
+          display: 'inline-block',
+          width: 10,
+          height: 10,
+          borderRadius: 2,
+          backgroundColor: swatchHex(colorScale.fixedColor),
+          flexShrink: 0,
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.12)',
+        }}
+      />
+    )
   );
-}
+};

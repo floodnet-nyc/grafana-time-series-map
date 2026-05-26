@@ -146,10 +146,7 @@ function MessageWidgetView({
           <span className="message-widget-chevron">{'\u2039'}</span>
         </button>
       </div>
-      <div
-        className="message-widget-content"
-        dangerouslySetInnerHTML={{ __html: template }}
-      />
+      <div className="message-widget-content" dangerouslySetInnerHTML={{ __html: template }} />
     </div>
   );
 }

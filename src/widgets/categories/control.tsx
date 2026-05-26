@@ -30,7 +30,13 @@ export const iconWidgetDefinition: WidgetDefinition<IconWidgetConfig> = {
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-right',
+        },
         { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: '' },
         { key: 'color', label: 'Color', type: 'color', defaultValue: '' },
@@ -55,7 +61,13 @@ export const toggleWidgetDefinition: WidgetDefinition<ToggleWidgetConfig> = {
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-right',
+        },
         { key: 'icon', label: 'Icon (data URL or SVG)', type: 'string', defaultValue: '' },
         { key: 'onIcon', label: 'Checked icon', type: 'string', defaultValue: '' },
         // { key: 'label', label: 'Tooltip', type: 'string', defaultValue: '' },
@@ -100,12 +112,25 @@ export const timelineWidgetDefinition: WidgetDefinition<TimelineWidgetConfig> = 
     type: 'timeline',
     label: `Timeline ${i + 1}`,
     visible: true,
-    settings: { placement: 'bottom-left', timeRange: [0, 100], step: 1, autoPlay: false, loop: false, playInterval: 1000 },
+    settings: {
+      placement: 'bottom-left',
+      timeRange: [0, 100],
+      step: 1,
+      autoPlay: false,
+      loop: false,
+      playInterval: 1000,
+    },
   }),
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-left',
+        },
         { key: 'autoPlay', label: 'Auto play', type: 'boolean', defaultValue: false },
         { key: 'loop', label: 'Loop', type: 'boolean', defaultValue: false },
         { key: 'playInterval', label: 'Play interval (ms)', type: 'number', defaultValue: 1000 },

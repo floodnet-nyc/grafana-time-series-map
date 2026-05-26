@@ -2,10 +2,7 @@ import type { Feature } from 'geojson';
 import type { LayerConfig } from '.';
 import { createSourceRef } from './defaults';
 import type { ScatterplotLayerConfig } from './scatterplot';
-import {
-  createCommonLayerProps,
-  getFeaturePosition,
-} from './utils';
+import { createCommonLayerProps, getFeaturePosition } from './utils';
 import type { GetAccessorFunction, GetAccessorFunctions } from './types';
 import { featureArrayToLayerTable } from '../utils/dataframe/layerTable';
 
@@ -48,7 +45,7 @@ function createPointFeature(properties: Record<string, unknown> = {}): Feature {
 
 function createContext(overrides: Partial<Parameters<typeof createCommonLayerProps>[0]> = {}) {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
+    fieldName?.field ? (feature: any) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {

@@ -70,7 +70,7 @@ export function getRawCursorTimeMs(
   referenceStartTimeMs: number,
   playbackClockStartTimeMs: number | null,
   playbackSpeed: number,
-  fallbackTimeMs: number,
+  fallbackTimeMs: number
 ): number {
   if (!playbackClockStartTimeMs) {
     return fallbackTimeMs;
@@ -87,12 +87,12 @@ export function normalizeCursorTimeMs(raw: number, fromTimeMs: number, toTimeMs:
   }
 
   if (raw <= fromTimeMs) {
-    return loop ? ((raw - fromTimeMs) % span + span) % span + fromTimeMs : fromTimeMs;
+    return loop ? ((((raw - fromTimeMs) % span) + span) % span) + fromTimeMs : fromTimeMs;
   }
 
   if (!loop && raw >= toTimeMs) {
     return toTimeMs;
   }
 
-  return (((raw - fromTimeMs) % span) + span) % span + fromTimeMs;
+  return ((((raw - fromTimeMs) % span) + span) % span) + fromTimeMs;
 }

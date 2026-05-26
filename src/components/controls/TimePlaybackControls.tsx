@@ -3,8 +3,7 @@ import { css } from '@emotion/css';
 import { useStyles2, IconButton, Slider, Combobox } from '@grafana/ui';
 import type { GrafanaTheme2 } from '@grafana/data';
 import type { UsePlaybackResult } from '../../hooks/usePlayback';
-import { formatSpeedLabel } from "utils/playback/speedOptions";
-
+import { formatSpeedLabel } from 'utils/playback/speedOptions';
 
 function formatTime(ms: number): string {
   const d = new Date(ms);
@@ -30,7 +29,7 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
 
   const handleSliderChange = useCallback(
     (value: number) => scrubTo(fromTimeMs + value * (toTimeMs - fromTimeMs)),
-    [fromTimeMs, toTimeMs, scrubTo],
+    [fromTimeMs, toTimeMs, scrubTo]
   );
 
   const progress = toTimeMs > fromTimeMs ? (cursorTimeMs - fromTimeMs) / (toTimeMs - fromTimeMs) : 0;
@@ -55,12 +54,7 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
         />
         <span className={styles.timeLabel}>{formatTime(cursorTimeMs)}</span>
       </div>
-      <Combobox
-        width={14}
-        options={speedOptions}
-        value={playbackSpeed}
-        onChange={(v) => setSpeed(v.value)}
-      />
+      <Combobox width={14} options={speedOptions} value={playbackSpeed} onChange={(v) => setSpeed(v.value)} />
     </div>
   );
 }

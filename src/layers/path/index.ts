@@ -16,7 +16,6 @@ export interface PathLayerSettings {
 
 export type PathLayerConfig = BaseLayerConfig<'path', PathLayerSettings>;
 
-
 const defaultSettings: PathLayerSettings = {
   widthMinPixels: 2,
   widthMaxPixels: 10,
@@ -47,10 +46,12 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
 
-    const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updatesColor] = config.colorScale?.field
+      ? getAccessors.number(config.colorScale.field)
+      : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue as any);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, options.widthScale);
-    
+
     return [
       new PathLayer({
         ...commonProps,

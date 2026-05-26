@@ -38,7 +38,13 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
     {
       fields: [
         { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'top-left' },
-        { key: 'orientation', label: 'Orientation', type: 'select', selectOptions: ORIENTATIONS, defaultValue: 'vertical' },
+        {
+          key: 'orientation',
+          label: 'Orientation',
+          type: 'select',
+          selectOptions: ORIENTATIONS,
+          defaultValue: 'vertical',
+        },
         { key: 'transitionDuration', label: 'Transition (ms)', type: 'number', defaultValue: 200 },
         // { key: 'zoomInLabel', label: 'Zoom in tooltip', type: 'string', defaultValue: 'Zoom in' },
         // { key: 'zoomOutLabel', label: 'Zoom out tooltip', type: 'string', defaultValue: 'Zoom out' },
@@ -50,7 +56,19 @@ export const zoomWidgetDefinition: WidgetDefinition<ZoomWidgetConfig> = {
       id: config.id,
       ...config.settings,
       onZoom: callbacks?.onViewStateChange
-        ? ({ viewId, delta, zoom, zoomX, zoomY }: { viewId: string; delta: number; zoom: number; zoomX?: number; zoomY?: number }) =>
+        ? ({
+            viewId,
+            delta,
+            zoom,
+            zoomX,
+            zoomY,
+          }: {
+            viewId: string;
+            delta: number;
+            zoom: number;
+            zoomX?: number;
+            zoomY?: number;
+          }) =>
             callbacks.onViewStateChange!({
               viewId,
               delta,
@@ -107,8 +125,7 @@ export const resetViewWidgetDefinition: WidgetDefinition<ResetViewWidgetConfig> 
       ...config.settings,
       initialViewState: callbacks?.resetViewState,
       onReset: callbacks?.onViewStateChange
-        ? ({ viewState }: { viewState: object }) =>
-            callbacks.onViewStateChange!(callbacks.resetViewState!)
+        ? ({ viewState }: { viewState: object }) => callbacks.onViewStateChange!(callbacks.resetViewState!)
         : undefined,
     }),
 };
@@ -164,8 +181,20 @@ export const scrollbarWidgetDefinition: WidgetDefinition<ScrollbarWidgetConfig> 
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
-        { key: 'orientation', label: 'Orientation', type: 'select', selectOptions: ORIENTATIONS, defaultValue: 'horizontal' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-left',
+        },
+        {
+          key: 'orientation',
+          label: 'Orientation',
+          type: 'select',
+          selectOptions: ORIENTATIONS,
+          defaultValue: 'horizontal',
+        },
         { key: 'captureWheel', label: 'Capture wheel', type: 'boolean', defaultValue: false },
       ],
     },

@@ -13,7 +13,10 @@ import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDef
 type LoadingWidgetConfig = BaseWidgetConfig<'loading', Omit<LoadingWidgetProps, 'id'>>;
 type ScreenshotWidgetConfig = BaseWidgetConfig<'screenshot', Omit<ScreenshotWidgetProps, 'id'>>;
 type StatsWidgetConfig = BaseWidgetConfig<'stats', Omit<StatsWidgetProps, 'id'>>;
-type ThemeWidgetConfig = BaseWidgetConfig<'theme', Omit<ThemeWidgetProps, 'id' | 'initialThemeMode' | 'themeMode' | 'onThemeModeChange'>>;
+type ThemeWidgetConfig = BaseWidgetConfig<
+  'theme',
+  Omit<ThemeWidgetProps, 'id' | 'initialThemeMode' | 'themeMode' | 'onThemeModeChange'>
+>;
 
 // Not sure if grafana provides this state
 export const loadingWidgetDefinition: WidgetDefinition<LoadingWidgetConfig> = {
@@ -60,7 +63,10 @@ export const screenshotWidgetDefinition: WidgetDefinition<ScreenshotWidgetConfig
           label: 'Format',
           type: 'select',
           defaultValue: 'image/png',
-          selectOptions: [{ label: 'PNG', value: 'image/png' }, { label: 'JPEG', value: 'image/jpeg' }],
+          selectOptions: [
+            { label: 'PNG', value: 'image/png' },
+            { label: 'JPEG', value: 'image/jpeg' },
+          ],
         },
       ],
     },
@@ -83,7 +89,13 @@ export const statsWidgetDefinition: WidgetDefinition<StatsWidgetConfig> = {
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-left',
+        },
         {
           key: 'type',
           label: 'Stats type',

@@ -62,9 +62,7 @@ describe('accessorSelectors', () => {
       derivedFields: [{ as: 'depthDiff', expression: 'A.depth - this.contour_depth_inches', type: 'number' }],
     });
     const feature = createFeature({ deployment_id: 'sensor-1', contour_depth_inches: 2 });
-    const joinedSourceValues = new Map([
-      ['A', new Map([['sensor-1', { depth: 5 }]])],
-    ]);
+    const joinedSourceValues = new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]);
     const derivedValues = [{ depthDiff: 3 }];
     const table = featureArrayToLayerTable([{ ...feature, __idx: 0 }] as any, 'main');
     const context = { index: 0 } as AccessorContext<any>;

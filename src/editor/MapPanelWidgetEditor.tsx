@@ -25,15 +25,18 @@ export function MapPanelWidgetEditor({ value: widgets, onChange, context: { opti
     removeBehavior: 'clear',
   });
 
-  const addWidget = useCallback((type = '') => {
-    addWidgetItem({
-      id: `widget-${widgetList.length + 1}`,
-      type,
-      label: '',
-      visible: true,
-      settings: {},
-    } as WidgetConfig);
-  }, [addWidgetItem, widgetList.length]);
+  const addWidget = useCallback(
+    (type = '') => {
+      addWidgetItem({
+        id: `widget-${widgetList.length + 1}`,
+        type,
+        label: '',
+        visible: true,
+        settings: {},
+      } as WidgetConfig);
+    },
+    [addWidgetItem, widgetList.length]
+  );
 
   const toggleVisibility = useCallback(
     (i: number) => {
@@ -42,14 +45,15 @@ export function MapPanelWidgetEditor({ value: widgets, onChange, context: { opti
         updateWidget(i, { ...w, visible: !w.visible });
       }
     },
-    [widgetList, updateWidget],
+    [widgetList, updateWidget]
   );
 
   const mapProvider = options.deck.interleaved ? options.basemap.provider : 'deck';
-  const widgetTypes = useMemo(() => 
+  const widgetTypes = useMemo(
+    () =>
       widgetDefinitions
-      .filter(d => !d.supportedMapProviders || d.supportedMapProviders.includes(mapProvider))
-      .map((d) => ({ label: d.label, value: d.type, description: d.description })),
+        .filter((d) => !d.supportedMapProviders || d.supportedMapProviders.includes(mapProvider))
+        .map((d) => ({ label: d.label, value: d.type, description: d.description })),
     [mapProvider]
   );
 
@@ -60,7 +64,10 @@ export function MapPanelWidgetEditor({ value: widgets, onChange, context: { opti
         selectedIndex={selectedIndex}
         onSelect={setSelectedIndex}
         getItemKey={(widget) => widget.id}
-        getItemLabel={(widget) => widgetDefinitions.find((definition) => definition.type === widget.type)?.label ?? (widget.label || 'Select widget type')}
+        getItemLabel={(widget) =>
+          widgetDefinitions.find((definition) => definition.type === widget.type)?.label ??
+          (widget.label || 'Select widget type')
+        }
         addButtonLabel="Add widget"
         addOptions={widgetTypes}
         onAdd={addWidget}
@@ -69,7 +76,9 @@ export function MapPanelWidgetEditor({ value: widgets, onChange, context: { opti
         onToggleVisibility={toggleVisibility}
         isVisible={(widget) => widget.visible}
         getVisibilityTooltip={(widget) => (widget.visible ? 'Hide widget' : 'Show widget')}
-        renderEditor={(widget, index) => <WidgetEditor widget={widget} options={options} onChange={(updated) => updateWidget(index, updated)} />}
+        renderEditor={(widget, index) => (
+          <WidgetEditor widget={widget} options={options} onChange={(updated) => updateWidget(index, updated)} />
+        )}
       />
     </div>
   );

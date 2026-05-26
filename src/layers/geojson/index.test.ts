@@ -9,9 +9,8 @@ jest.mock('@deck.gl/layers', () => ({
   },
 }));
 
-import { geoJsonLayerDefinition } from './index';
+import { geoJsonLayerDefinition, type GeoJsonLayerConfig } from './index';
 import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
-import type { GeoJsonLayerConfig } from './index';
 import { featureArrayToLayerTable } from '../../utils/dataframe/layerTable';
 
 function createFeature(properties: Record<string, unknown> = {}): Feature {
@@ -55,7 +54,7 @@ function createConfig(overrides: Partial<GeoJsonLayerConfig> = {}): GeoJsonLayer
 
 function createContext(config: GeoJsonLayerConfig, features: Feature[]): LayerRenderContext<GeoJsonLayerConfig> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
+    fieldName?.field ? (feature: any) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {

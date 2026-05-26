@@ -29,7 +29,7 @@ export function usePanelLayers(
   fromTimeMs: number,
   toTimeMs: number,
   selectedKey: string | null,
-  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void,
+  onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void
 ): UsePanelLayersResult {
   // Layer tables are the stable upstream substrate for all selector stages below.
   const timePackedByLayerId = useMemo(() => {
@@ -45,7 +45,14 @@ export function usePanelLayers(
   }, [cursorTimeMs, options.layers, joinedSourcePackedByLayerId]);
 
   const timeFlagsByLayerId = useMemo(() => {
-    return buildTimeFilterFlagsByLayerId(options.layers, tablesByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs);
+    return buildTimeFilterFlagsByLayerId(
+      options.layers,
+      tablesByLayerId,
+      timePackedByLayerId,
+      cursorTimeMs,
+      fromTimeMs,
+      toTimeMs
+    );
   }, [tablesByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
@@ -69,7 +76,7 @@ export function usePanelLayers(
       layers,
       preparedLayerStates,
     }),
-    [layers, preparedLayerStates],
+    [layers, preparedLayerStates]
   );
 }
 
@@ -78,7 +85,7 @@ export type PanelFeaturesByLayerId = LayerTablesByLayerId;
 function buildFeatureSourceCacheKey(
   featureSource: FeatureSourceConfig,
   geometry: GeometrySource,
-  elevationField: string | undefined,
+  elevationField: string | undefined
 ) {
   return JSON.stringify([featureSource.refId ?? '', featureSource.id, geometry, elevationField ?? '']);
 }
@@ -108,7 +115,7 @@ export function usePanelFeatures(data: PanelData, options: MapPanelOptions): Pan
           layerConfig.data.featureSource.refId,
           layerConfig.geometry,
           elevationField,
-          layerConfig.data.featureSource.id,
+          layerConfig.data.featureSource.id
         );
       featuresBySourceKey.set(cacheKey, features);
       featuresByLayer.set(layerConfig.id, features);

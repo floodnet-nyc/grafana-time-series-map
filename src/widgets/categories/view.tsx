@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  FullscreenWidget, 
+import {
+  FullscreenWidget,
   _SplitterWidget as SplitterWidget,
   type FullscreenWidgetProps,
   type SplitterWidgetProps,
@@ -78,7 +78,10 @@ export const splitterWidgetDefinition: WidgetDefinition<SplitterWidgetConfig> = 
           key: 'viewLayout.orientation',
           label: 'Orientation',
           type: 'select',
-          selectOptions: [{ label: 'Horizontal', value: 'horizontal' }, { label: 'Vertical', value: 'vertical' }],
+          selectOptions: [
+            { label: 'Horizontal', value: 'horizontal' },
+            { label: 'Vertical', value: 'vertical' },
+          ],
           defaultValue: 'horizontal',
         },
       ],

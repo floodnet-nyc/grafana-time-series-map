@@ -30,9 +30,14 @@ jest.mock('../layers', () => ({
         },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', time: createSourceRef('time') },
-            opacity: 1,
+        opacity: 1,
       }),
-      editorSections: [{ title: 'Point', fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }] }],
+      editorSections: [
+        {
+          title: 'Point',
+          fields: [{ key: 'radiusMinPixels', label: 'Min radius (px)', type: 'number', defaultValue: 4 }],
+        },
+      ],
       renderLayers: jest.fn(() => []),
     },
     {
@@ -54,9 +59,14 @@ jest.mock('../layers', () => ({
         },
         geometry: { type: 'none' },
         timeFilter: { mode: 'none', time: createSourceRef('time') },
-            opacity: 1,
+        opacity: 1,
       }),
-      editorSections: [{ title: 'Path', fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }] }],
+      editorSections: [
+        {
+          title: 'Path',
+          fields: [{ key: 'widthMinPixels', label: 'Min width (px)', type: 'number', defaultValue: 2 }],
+        },
+      ],
       renderLayers: jest.fn(() => []),
     },
   ],
@@ -81,20 +91,44 @@ jest.mock('@grafana/ui', () => {
           error: { text: '#f00' },
         },
       }),
-    Field: ({ label, children }: { label: string; children: React.ReactNode }) => <label><span>{label}</span>{children}</label>,
+    Field: ({ label, children }: { label: string; children: React.ReactNode }) => (
+      <label>
+        <span>{label}</span>
+        {children}
+      </label>
+    ),
     Input: ({ value, onChange, type = 'text' }: any) => <input type={type} value={value} onChange={onChange} />,
     Switch: ({ value, onChange }: any) => <input type="checkbox" checked={value} onChange={onChange} />,
     Combobox: ({ options = [], value, onChange }: any) => (
       <select value={value ?? ''} onChange={(event) => onChange({ value: event.currentTarget.value })}>
-        {options.map((option: any, index: number) => <option key={`${String(option.value)}-${index}`} value={option.value}>{option.label}</option>)}
+        {options.map((option: any, index: number) => (
+          <option key={`${String(option.value)}-${index}`} value={option.value}>
+            {option.label}
+          </option>
+        ))}
       </select>
     ),
     Slider: ({ value, onChange, min = 0, max = 100, step = 1, inputId }: any) => (
-      <input aria-label={inputId} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.currentTarget.value))} />
+      <input
+        aria-label={inputId}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.currentTarget.value))}
+      />
     ),
     TextArea: ({ value, onChange }: any) => <textarea value={value} onChange={onChange} />,
-    CollapsableSection: ({ label, children }: { label: string; children: React.ReactNode }) => <section><h2>{label}</h2>{children}</section>,
-    ColorPicker: ({ color, onChange }: any) => <input value={color} onChange={(e) => onChange(e.currentTarget.value)} />,
+    CollapsableSection: ({ label, children }: { label: string; children: React.ReactNode }) => (
+      <section>
+        <h2>{label}</h2>
+        {children}
+      </section>
+    ),
+    ColorPicker: ({ color, onChange }: any) => (
+      <input value={color} onChange={(e) => onChange(e.currentTarget.value)} />
+    ),
     Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
     IconButton: ({ onClick, tooltip, name }: any) => (
       <button onClick={onClick} aria-label={tooltip ?? name}>

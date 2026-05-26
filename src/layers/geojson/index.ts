@@ -63,7 +63,9 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
     const { config, featureCollection = [], getAccessor, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue, updatesColor] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updatesColor] = config.colorScale?.field
+      ? getAccessors.number(config.colorScale.field)
+      : [undefined, []];
     const getFillColor = buildColorAccessor(config.colorScale, [0, 155, 104, 255], getColorValue as any);
     const getLineColor = buildColorAccessor(config.colorScale, [200, 200, 240, 200], getColorValue as any);
     const [getLineWidth, updatesLineWidth] = getAccessor(options.lineWidth, 0);
@@ -80,7 +82,7 @@ export const geoJsonLayerDefinition: LayerDefinition<GeoJsonLayerConfig> = {
         pointRadiusMaxPixels: options.pointRadiusMaxPixels,
         lineWidthUnits: options.lineWidthUnits,
         lineWidthMinPixels: options.lineWidthMinPixels,
-        getLineWidth: (getLineWidth ? ((feature: any, ctx: any) => getLineWidth(feature, ctx) ?? 0) : 0) as any,
+        getLineWidth: (getLineWidth ? (feature: any, ctx: any) => getLineWidth(feature, ctx) ?? 0 : 0) as any,
         getFillColor: getFillColor as any,
         getLineColor: getLineColor as any,
         updateTriggers: {

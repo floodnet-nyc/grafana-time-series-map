@@ -102,10 +102,7 @@ function getPanorama(
   });
 }
 
-function distanceMeters(
-  from: google.maps.LatLng | google.maps.LatLngLiteral,
-  to: google.maps.LatLngLiteral
-): number {
+function distanceMeters(from: google.maps.LatLng | google.maps.LatLngLiteral, to: google.maps.LatLngLiteral): number {
   const fromLat = typeof from.lat === 'function' ? from.lat() : from.lat;
   const fromLng = typeof from.lng === 'function' ? from.lng() : from.lng;
   const lat1 = toRadians(fromLat);
@@ -134,12 +131,7 @@ function offsetLatLng(
   const cosAngular = Math.cos(angularDistance);
 
   const lat2 = Math.asin(sinLat1 * cosAngular + cosLat1 * sinAngular * Math.cos(bearing));
-  const lng2 =
-    lng1 +
-    Math.atan2(
-      Math.sin(bearing) * sinAngular * cosLat1,
-      cosAngular - sinLat1 * Math.sin(lat2)
-    );
+  const lng2 = lng1 + Math.atan2(Math.sin(bearing) * sinAngular * cosLat1, cosAngular - sinLat1 * Math.sin(lat2));
 
   return {
     lat: toDegrees(lat2),

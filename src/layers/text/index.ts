@@ -1,6 +1,11 @@
 import { TextLayer } from '@deck.gl/layers';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
+import type { AccessorContext } from '@deck.gl/core';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
 
 export interface TextLayerSettings {
   text: SourceRef;
@@ -24,11 +29,6 @@ export interface TextLayerSettings {
 }
 
 export type TextLayerConfig = BaseLayerConfig<'text', TextLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, getDatumPosition } from '../utils';
-import { AccessorContext } from '@deck.gl/core';
-import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 const defaultSettings: TextLayerSettings = {
   text: createSourceRef(),
@@ -68,7 +68,12 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
       { key: 'elevation', label: 'Elevation field', type: 'fieldPicker', defaultValue: createSourceRef() },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
-      { key: 'fontFamily', label: 'Font family', type: 'string', defaultValue: 'Helvetica Neue, Verdana, Roboto, sans-serif' },
+      {
+        key: 'fontFamily',
+        label: 'Font family',
+        type: 'string',
+        defaultValue: 'Helvetica Neue, Verdana, Roboto, sans-serif',
+      },
       {
         key: 'fontWeight',
         label: 'Font weight',
@@ -121,12 +126,14 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor<LayerDatum>(config.colorScale, [255, 255, 255, 220], getColorValue);
-    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
-    const getColor = (
-      selectedKey != null && getSelection ? 
-        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (getSelection(datum, ctx) && config.selectionColor ? config.selectionColor : baseColor(datum, ctx))
-        : baseColor
-    );
+    const [getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getColor =
+      selectedKey != null && getSelection
+        ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+            String(getSelection(datum, ctx) ?? '') === selectedKey
+              ? (config.selectionColor ?? DEFAULT_SELECTED_COLOR)
+              : baseColor(datum, ctx)
+        : baseColor;
 
     const [getText, updatesText] = getAccessor(options.text, '');
     const [getSize, updatesSize] = getAccessors.number(options.size, options.fontSize);
@@ -146,9 +153,16 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
-        getText: getText ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), options.autoDecimals) : undefined,
-        getSize: getSize ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsSize(getSize(datum, ctx), options.autoDecimals) : options.fontSize,
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getText: getText
+          ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+              autoDecimalsText(getText(datum, ctx), options.autoDecimals)
+          : undefined,
+        getSize: getSize
+          ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+              autoDecimalsSize(getSize(datum, ctx), options.autoDecimals)
+          : options.fontSize,
         getColor,
         getTextAnchor: options.anchor,
         getAlignmentBaseline: options.baseline,
@@ -174,9 +188,15 @@ export const autoDecimalsSize = (v: string | number | null | undefined, auto: bo
     if (auto) {
       const decs = v > 6 ? 0 : 1;
       const chars = String(v.toFixed(decs)).length;
-      return Math.max(defaultSettings.sizeMinPixels, Math.min(defaultSettings.sizeMaxPixels, defaultSettings.sizeMinPixels + v * defaultSettings.sizeScale) / chars);
+      return Math.max(
+        defaultSettings.sizeMinPixels,
+        Math.min(defaultSettings.sizeMaxPixels, defaultSettings.sizeMinPixels + v * defaultSettings.sizeScale) / chars
+      );
     }
-    return Math.max(defaultSettings.sizeMinPixels, Math.min(defaultSettings.sizeMaxPixels, v * defaultSettings.sizeScale));
+    return Math.max(
+      defaultSettings.sizeMinPixels,
+      Math.min(defaultSettings.sizeMaxPixels, v * defaultSettings.sizeScale)
+    );
   }
   return defaultSettings.fontSize;
 };

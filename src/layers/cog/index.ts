@@ -1,4 +1,8 @@
-import { texture as geotiffTexture, type GetTileDataOptions, type MinimalTileData } from '@developmentseed/deck.gl-geotiff';
+import {
+  texture as geotiffTexture,
+  type GetTileDataOptions,
+  type MinimalTileData,
+} from '@developmentseed/deck.gl-geotiff';
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
 import { MaskTexture as _MaskTexture } from '@developmentseed/deck.gl-raster/gpu-modules';
 import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
@@ -83,14 +87,14 @@ function getRenderTile(colorMaxValue: number, colorScale: ColorScaleConfig): (da
   return (data: CogTileData): RenderTileResult => ({
     image: data.texture as any,
     renderPipeline: [{ module: colorModule as any }],
-  })
+  });
 }
 
 function padRowsToAlignment(
   data: Uint8Array | Uint16Array,
   width: number,
   height: number,
-  bytesPerPixel: number,
+  bytesPerPixel: number
 ): { data: Uint8Array | Uint16Array; bytesPerRow: number } {
   const rowBytes = width * bytesPerPixel;
   const bytesPerRow = Math.ceil(rowBytes / 4) * 4;

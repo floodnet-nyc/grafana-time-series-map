@@ -7,7 +7,11 @@ import { getCurrentViewportSnapshot, subscribeCurrentViewportSnapshot } from '..
 
 const VIEW_MODE_OPTIONS: Array<ComboboxOption<InitialViewMode>> = [
   { label: 'Coordinates', value: 'manual', description: 'Start at the configured latitude, longitude, and zoom.' },
-  { label: 'Fit to data', value: 'fitData', description: 'Automatically fit the initial view to the loaded layer data.' },
+  {
+    label: 'Fit to data',
+    value: 'fitData',
+    description: 'Automatically fit the initial view to the loaded layer data.',
+  },
 ];
 
 const FIT_DATA_SOURCE_OPTIONS: Array<{ label: string; value: InitialViewFitDataSource }> = [
@@ -61,7 +65,11 @@ function normalizeInitialView(value?: MapPanelOptions['initialView']): MapPanelO
   };
 }
 
-export function InitialViewEditor({ value, onChange, context }: StandardEditorProps<MapPanelOptions['initialView'], unknown, MapPanelOptions>) {
+export function InitialViewEditor({
+  value,
+  onChange,
+  context,
+}: StandardEditorProps<MapPanelOptions['initialView'], unknown, MapPanelOptions>) {
   const styles = useStyles2(getStyles);
   const [currentViewport, setCurrentViewport] = useState(() => getCurrentViewportSnapshot());
   const initialView = useMemo(() => normalizeInitialView(value), [value]);
@@ -73,7 +81,7 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
         label: layer.label || layer.type,
         value: layer.id,
       })),
-    [context.options?.layers],
+    [context.options?.layers]
   );
 
   useEffect(() => {
@@ -131,7 +139,11 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
       <div className={styles.grid}>
         <div className={styles.labelCell}>View</div>
         <div className={styles.controlCell}>
-          <Combobox options={VIEW_MODE_OPTIONS} value={initialView.mode} onChange={(option) => option?.value && patch({ mode: option.value })} />
+          <Combobox
+            options={VIEW_MODE_OPTIONS}
+            value={initialView.mode}
+            onChange={(option) => option?.value && patch({ mode: option.value })}
+          />
         </div>
         {!isManual && (
           <>
@@ -161,7 +173,9 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
               <Input
                 type="number"
                 value={String(initialView.fitData?.padding ?? 48)}
-                onChange={(event) => patch({ fitData: { ...initialView.fitData, padding: Number(event.currentTarget.value) } })}
+                onChange={(event) =>
+                  patch({ fitData: { ...initialView.fitData, padding: Number(event.currentTarget.value) } })
+                }
               />
             </div>
             <div className={styles.labelCell}>Max Zoom</div>
@@ -169,7 +183,9 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
               <Input
                 type="number"
                 value={String(initialView.fitData?.maxZoom ?? 22)}
-                onChange={(event) => patch({ fitData: { ...initialView.fitData, maxZoom: Number(event.currentTarget.value) } })}
+                onChange={(event) =>
+                  patch({ fitData: { ...initialView.fitData, maxZoom: Number(event.currentTarget.value) } })
+                }
               />
             </div>
           </>
@@ -178,23 +194,43 @@ export function InitialViewEditor({ value, onChange, context }: StandardEditorPr
           <>
             <div className={styles.labelCell}>Latitude</div>
             <div className={styles.controlCell}>
-              <Input type="number" value={String(initialView.state.latitude)} onChange={(event) => patchState('latitude', event.currentTarget.value)} />
+              <Input
+                type="number"
+                value={String(initialView.state.latitude)}
+                onChange={(event) => patchState('latitude', event.currentTarget.value)}
+              />
             </div>
             <div className={styles.labelCell}>Longitude</div>
             <div className={styles.controlCell}>
-              <Input type="number" value={String(initialView.state.longitude)} onChange={(event) => patchState('longitude', event.currentTarget.value)} />
+              <Input
+                type="number"
+                value={String(initialView.state.longitude)}
+                onChange={(event) => patchState('longitude', event.currentTarget.value)}
+              />
             </div>
             <div className={styles.labelCell}>Zoom</div>
             <div className={styles.controlCell}>
-              <Input type="number" value={String(initialView.state.zoom)} onChange={(event) => patchState('zoom', event.currentTarget.value)} />
+              <Input
+                type="number"
+                value={String(initialView.state.zoom)}
+                onChange={(event) => patchState('zoom', event.currentTarget.value)}
+              />
             </div>
             <div className={styles.labelCell}>Bearing</div>
             <div className={styles.controlCell}>
-              <Input type="number" value={String(initialView.state.bearing ?? 0)} onChange={(event) => patchState('bearing', event.currentTarget.value)} />
+              <Input
+                type="number"
+                value={String(initialView.state.bearing ?? 0)}
+                onChange={(event) => patchState('bearing', event.currentTarget.value)}
+              />
             </div>
             <div className={styles.labelCell}>Pitch</div>
             <div className={styles.controlCell}>
-              <Input type="number" value={String(initialView.state.pitch ?? 0)} onChange={(event) => patchState('pitch', event.currentTarget.value)} />
+              <Input
+                type="number"
+                value={String(initialView.state.pitch ?? 0)}
+                onChange={(event) => patchState('pitch', event.currentTarget.value)}
+              />
             </div>
           </>
         )}

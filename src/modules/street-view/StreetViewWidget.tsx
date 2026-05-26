@@ -7,11 +7,7 @@ import {
   loadStreetViewPanorama,
   type StreetViewPanoramaSession,
 } from './googlePanoramaAdapter';
-import {
-  getFeatureCoords,
-  getMapsUrl,
-  getStreetViewStatusMessage,
-} from './streetViewModel';
+import { getFeatureCoords, getMapsUrl, getStreetViewStatusMessage } from './streetViewModel';
 import type { StreetViewStatus, StreetViewWidgetProps } from './types';
 
 export class StreetViewWidget extends Widget<StreetViewWidgetProps> {

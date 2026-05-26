@@ -39,12 +39,20 @@ export function LiquidContextTree({ data }: Props) {
           <tbody>
             <Row name="_key" type="string" desc="Selected feature key" styles={styles} />
             <Row name="properties" type="array" desc="All feature fields — use in a for-loop" styles={styles} />
-            <Row name="p.key" type="string" desc="Field name (inside {% for p in properties %})" styles={styles} indent />
+            <Row
+              name="p.key"
+              type="string"
+              desc="Field name (inside {% for p in properties %})"
+              styles={styles}
+              indent
+            />
             <Row name="p.value" type="any" desc="Field value" styles={styles} indent />
             {dataFields.length > 0 && (
               <>
                 <tr>
-                  <td colSpan={3} className={styles.sectionLabel}>Fields from your data</td>
+                  <td colSpan={3} className={styles.sectionLabel}>
+                    Fields from your data
+                  </td>
                 </tr>
                 {dataFields.map((f) => (
                   <Row key={f.name} name={f.name} type={f.type} styles={styles} />

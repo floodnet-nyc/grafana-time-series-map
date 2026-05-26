@@ -11,7 +11,6 @@ export interface LayerCollisionConfig {
   testScale: number;
 }
 
-
 export const collisionExtensionDefinition: LayerExtensionDefinition<LayerCollisionConfig> = {
   id: 'collision',
   label: 'Collision',
@@ -55,7 +54,8 @@ export const collisionExtensionDefinition: LayerExtensionDefinition<LayerCollisi
       },
       getCollisionPriority: config.priorityField
         ? (datum: any) =>
-            Number(getFeatureProperties(datum)[config.priorityField] ?? 0) * config.priorityScale + config.priorityOffset
+            Number(getFeatureProperties(datum)[config.priorityField] ?? 0) * config.priorityScale +
+            config.priorityOffset
         : config.priorityOffset,
       extensions: appendDeckExtension(layer, new CollisionFilterExtension()),
       updateTriggers: {

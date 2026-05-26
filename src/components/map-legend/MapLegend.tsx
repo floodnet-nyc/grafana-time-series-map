@@ -4,7 +4,14 @@ import { getLegendEntries, SMALL_PANEL_THRESHOLD } from './utils';
 import { LayerLegendEntry } from './LayerLegendEntry';
 import type { MapLegendProps } from './types';
 
-export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEye = false, maxWidth, maxHeight }: MapLegendProps) {
+export function MapLegend({
+  layers,
+  onToggleVisibility,
+  panelWidth = 500,
+  showEye = false,
+  maxWidth,
+  maxHeight,
+}: MapLegendProps) {
   const [collapsed, setCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
 
   const entries = useMemo(() => getLegendEntries(layers), [layers]);
@@ -12,8 +19,8 @@ export function MapLegend({ layers, onToggleVisibility, panelWidth = 500, showEy
   const boxStyle = {
     maxWidth: maxWidth ?? undefined,
     maxHeight: maxHeight ?? undefined,
-    overflowY: maxHeight ? 'auto' as const : undefined,
-  }
+    overflowY: maxHeight ? ('auto' as const) : undefined,
+  };
 
   if (entries.length === 0) {
     return null;

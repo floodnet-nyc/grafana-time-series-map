@@ -43,7 +43,11 @@ describe('map legend helpers', () => {
   it('filters to legend-worthy layers only', () => {
     const entries = getLegendEntries([
       createLayer({ id: 'visible-fixed', colorScale: { type: 'fixed', fixedColor: [0, 0, 0, 255] } }),
-      createLayer({ id: 'hidden-legend', showInLegend: false, colorScale: { type: 'fixed', fixedColor: [0, 0, 0, 255] } }),
+      createLayer({
+        id: 'hidden-legend',
+        showInLegend: false,
+        colorScale: { type: 'fixed', fixedColor: [0, 0, 0, 255] },
+      }),
       createLayer({ id: 'no-content', colorScale: { type: 'gradient' } }),
     ]);
 

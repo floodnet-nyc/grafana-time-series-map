@@ -10,7 +10,9 @@ export function useInterval(fn: () => void, interval?: number) {
   const fnRef = useLatestRef(fn);
   // Publish cursor position while playing
   useEffect(() => {
-    if (!interval) { return; }
+    if (!interval) {
+      return;
+    }
     const intervalId = setInterval(() => fnRef.current?.(), interval);
     return () => clearInterval(intervalId);
   }, [fnRef, interval]);

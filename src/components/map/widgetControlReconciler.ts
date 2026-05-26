@@ -12,7 +12,7 @@ export interface WidgetControlAdapter<TWidget extends Widget, TControl> {
 export function reconcileWidgetControls<TWidget extends Widget, TControl>(
   widgets: TWidget[] | undefined,
   currentControls: Map<string, TControl>,
-  adapter: WidgetControlAdapter<TWidget, TControl>,
+  adapter: WidgetControlAdapter<TWidget, TControl>
 ) {
   const nextControls = new Map<string, TControl>();
 
@@ -46,7 +46,7 @@ export function reconcileWidgetControls<TWidget extends Widget, TControl>(
 export function useWidgetControls<TControl>(
   map: unknown | null,
   widgets: Widget[] | undefined,
-  adapter: WidgetControlAdapter<Widget, TControl>,
+  adapter: WidgetControlAdapter<Widget, TControl>
 ): Widget[] {
   const controlsRef = useRef(new Map<string, TControl>());
 
@@ -55,11 +55,7 @@ export function useWidgetControls<TControl>(
       return;
     }
 
-    controlsRef.current = reconcileWidgetControls(
-      widgets,
-      controlsRef.current,
-      adapter,
-    );
+    controlsRef.current = reconcileWidgetControls(widgets, controlsRef.current, adapter);
   }, [map, widgets, adapter]);
 
   useEffect(() => {
@@ -80,8 +76,7 @@ export function useWidgetControls<TControl>(
 export function resolvePlacement<TPosition>(
   placement: WidgetPlacement,
   fallback: TPosition,
-  positionMap: Partial<Record<WidgetPlacement, TPosition>>,
+  positionMap: Partial<Record<WidgetPlacement, TPosition>>
 ): TPosition {
   return positionMap[placement] ?? fallback;
 }
-

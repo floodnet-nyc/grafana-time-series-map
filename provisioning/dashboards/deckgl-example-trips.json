@@ -1,336 +1,304 @@
 {
-    "annotations": {
-        "list": []
-    },
-    "editable": true,
-    "fiscalYearStartMonth": 0,
-    "graphTooltip": 0,
-    "id": null,
-    "links": [],
-    "liveNow": false,
-    "panels": [
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Trips",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
         {
-            "datasource": {
-                "type": "yesoreyeram-infinity-datasource",
-                "uid": "infinity-ds"
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/buildings.geojson",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            {
+              "selector": "properties.height",
+              "text": "height",
+              "type": "number"
             },
-            "gridPos": {
-                "h": 16,
-                "w": 24,
-                "x": 0,
-                "y": 0
-            },
-            "id": 1,
-            "title": "Trips",
-            "type": "floodnet-timeseriesmap-panel",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "yesoreyeram-infinity-datasource",
-                        "uid": "infinity-ds"
-                    },
-                    "refId": "A",
-                    "type": "json",
-                    "source": "url",
-                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/buildings.geojson",
-                    "url_options": {
-                        "method": "GET",
-                        "data": ""
-                    },
-                    "parser": "backend",
-                    "root_selector": "features",
-                    "columns": [
-                        {
-                            "selector": "properties.height",
-                            "text": "height",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "geometry",
-                            "text": "geometry",
-                            "type": "string"
-                        }
-                    ],
-                    "format": "table"
-                },
-                {
-                    "datasource": {
-                        "type": "yesoreyeram-infinity-datasource",
-                        "uid": "infinity-ds"
-                    },
-                    "refId": "B",
-                    "type": "json",
-                    "source": "url",
-                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/trips-v7.geojson",
-                    "url_options": {
-                        "method": "GET",
-                        "data": ""
-                    },
-                    "parser": "backend",
-                    "root_selector": "features",
-                    "columns": [
-                        {
-                            "selector": "properties.vendor",
-                            "text": "vendor",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "properties.timestamps",
-                            "text": "timestamps",
-                            "type": "string"
-                        },
-                        {
-                            "selector": "geometry",
-                            "text": "geometry",
-                            "type": "string"
-                        }
-                    ],
-                    "format": "table"
-                }
-            ],
-            "options": {
-                "basemap": {
-                    "provider": "maplibre",
-                    "maplibre": {
-                        "mapStyle": "carto-dark",
-                        "projection": "mercator"
-                    },
-                    "interactions": {
-                        "syncViewToUrl": true
-                    },
-                    "controlSettings": {
-                        "navigation": {
-                            "position": "top-right",
-                            "showZoom": true,
-                            "showCompass": true
-                        },
-                        "fullscreen": {
-                            "position": "top-right"
-                        }
-                    }
-                },
-                "deck": {
-                    "interleaved": true,
-                    "lighting": {
-                        "enabled": true,
-                        "lights": [
-                            {
-                                "id": "ambient-1",
-                                "type": "ambient",
-                                "intensity": 1,
-                                "color": [
-                                    255,
-                                    255,
-                                    255
-                                ]
-                            },
-                            {
-                                "id": "point-1",
-                                "type": "point",
-                                "intensity": 2,
-                                "color": [
-                                    255,
-                                    255,
-                                    255
-                                ],
-                                "longitude": -74.05,
-                                "latitude": 40.7,
-                                "altitude": 8000
-                            }
-                        ]
-                    }
-                },
-                "initialView": {
-                    "mode": "manual",
-                    "state": {
-                        "latitude": 40.72,
-                        "longitude": -74,
-                        "zoom": 13,
-                        "bearing": 0,
-                        "pitch": 45
-                    }
-                },
-                "layers": [
-                    {
-                        "id": "buildings",
-                        "type": "polygon",
-                        "label": "Buildings",
-                        "visible": true,
-                        "geometry": {
-                            "type": "geojson",
-                            "value": {
-                                "source": "main",
-                                "field": "geometry"
-                            }
-                        },
-                        "timeFilter": {
-                            "mode": "none",
-                            "time": {
-                                "source": "main",
-                                "field": ""
-                            }
-                        },
-                        "fieldMappings": [],
-                        "opacity": 0.5,
-                        "colorScale": {
-                            "type": "fixed",
-                            "fixedColor": [
-                                74,
-                                80,
-                                87,
-                                255
-                            ]
-                        },
-                        "extensions": [
-                            {
-                                "id": "material-1",
-                                "type": "material",
-                                "config": {
-                                    "enabled": true,
-                                    "ambient": 0.1,
-                                    "diffuse": 0.6,
-                                    "shininess": 32,
-                                    "specularColor": [
-                                        60,
-                                        64,
-                                        70,
-                                        255
-                                    ]
-                                }
-                            }
-                        ],
-                        "settings": {
-                            "fillOpacity": 180,
-                            "extruded": true,
-                            "elevationScale": 1,
-                            "elevation": {
-                                "source": "main",
-                                "field": "height"
-                            }
-                        },
-                        "data": {
-                            "featureSource": {
-                                "id": "main",
-                                "refId": "A"
-                            }
-                        }
-                    },
-                    {
-                        "id": "cab-trips",
-                        "type": "trips",
-                        "label": "Cab trips",
-                        "visible": true,
-                        "geometry": {
-                            "type": "geojson",
-                            "value": {
-                                "source": "main",
-                                "field": "geometry"
-                            }
-                        },
-                        "timeFilter": {
-                            "mode": "none",
-                            "time": {
-                                "source": "main",
-                                "field": ""
-                            }
-                        },
-                        "fieldMappings": [
-                            {
-                                "fieldName": "vendor",
-                                "alias": "value"
-                            }
-                        ],
-                        "opacity": 0.35,
-                        "colorScale": {
-                            "type": "threshold",
-                            "field": {
-                                "source": "main",
-                                "field": "vendor"
-                            },
-                            "steps": [
-                                {
-                                    "value": 0,
-                                    "color": [
-                                        253,
-                                        128,
-                                        93,
-                                        255
-                                    ]
-                                },
-                                {
-                                    "value": 1,
-                                    "color": [
-                                        23,
-                                        184,
-                                        190,
-                                        255
-                                    ]
-                                }
-                            ]
-                        },
-                        "settings": {
-                            "timestampUnit": "s",
-                            "trailLengthMs": 180000,
-                            "fadeTrail": true,
-                            "widthMinPixels": 2,
-                            "widthMaxPixels": 4,
-                            "widthScale": 1,
-                            "capRounded": true,
-                            "jointRounded": true,
-                            "width": {
-                                "source": "main",
-                                "field": ""
-                            },
-                            "timestamps": {
-                                "source": "main",
-                                "field": "timestamps"
-                            }
-                        },
-                        "data": {
-                            "featureSource": {
-                                "id": "main",
-                                "refId": "B"
-                            }
-                        }
-                    }
-                ],
-                "time": {
-                    "show": true,
-                    "loop": true,
-                    "defaultSpeed": 50
-                },
-                "legend": {
-                    "show": true
-                },
-                "tooltip": {
-                    "show": true,
-                    "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}"
-                },
-                "sync": {
-                    "publish": false,
-                    "subscribe": false
-                }
+            {
+              "selector": "geometry",
+              "text": "geometry",
+              "type": "string"
             }
+          ],
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "B",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/trips/trips-v7.geojson",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            {
+              "selector": "properties.vendor",
+              "text": "vendor",
+              "type": "number"
+            },
+            {
+              "selector": "properties.timestamps",
+              "text": "timestamps",
+              "type": "string"
+            },
+            {
+              "selector": "geometry",
+              "text": "geometry",
+              "type": "string"
+            }
+          ],
+          "format": "table"
         }
-    ],
-    "refresh": false,
-    "schemaVersion": 41,
-    "tags": [
-        "deckgl",
-        "showcase",
-        "phase1"
-    ],
-    "templating": {
-        "list": []
-    },
-    "time": {
-        "from": "1970-01-01T00:19:51.000Z",
-        "to": "1970-01-01T00:31:09.000Z"
-    },
-    "timepicker": {},
-    "timezone": "",
-    "title": "Deck.gl Showcase — Trips",
-    "uid": "deckgl-showcase-trips",
-    "version": 1,
-    "weekStart": ""
+      ],
+      "options": {
+        "basemap": {
+          "provider": "maplibre",
+          "maplibre": {
+            "mapStyle": "carto-dark",
+            "projection": "mercator"
+          },
+          "interactions": {
+            "syncViewToUrl": true
+          },
+          "controlSettings": {
+            "navigation": {
+              "position": "top-right",
+              "showZoom": true,
+              "showCompass": true
+            },
+            "fullscreen": {
+              "position": "top-right"
+            }
+          }
+        },
+        "deck": {
+          "interleaved": true,
+          "lighting": {
+            "enabled": true,
+            "lights": [
+              {
+                "id": "ambient-1",
+                "type": "ambient",
+                "intensity": 1,
+                "color": [255, 255, 255]
+              },
+              {
+                "id": "point-1",
+                "type": "point",
+                "intensity": 2,
+                "color": [255, 255, 255],
+                "longitude": -74.05,
+                "latitude": 40.7,
+                "altitude": 8000
+              }
+            ]
+          }
+        },
+        "initialView": {
+          "mode": "manual",
+          "state": {
+            "latitude": 40.72,
+            "longitude": -74,
+            "zoom": 13,
+            "bearing": 0,
+            "pitch": 45
+          }
+        },
+        "layers": [
+          {
+            "id": "buildings",
+            "type": "polygon",
+            "label": "Buildings",
+            "visible": true,
+            "geometry": {
+              "type": "geojson",
+              "value": {
+                "source": "main",
+                "field": "geometry"
+              }
+            },
+            "timeFilter": {
+              "mode": "none",
+              "time": {
+                "source": "main",
+                "field": ""
+              }
+            },
+            "fieldMappings": [],
+            "opacity": 0.5,
+            "colorScale": {
+              "type": "fixed",
+              "fixedColor": [74, 80, 87, 255]
+            },
+            "extensions": [
+              {
+                "id": "material-1",
+                "type": "material",
+                "config": {
+                  "enabled": true,
+                  "ambient": 0.1,
+                  "diffuse": 0.6,
+                  "shininess": 32,
+                  "specularColor": [60, 64, 70, 255]
+                }
+              }
+            ],
+            "settings": {
+              "fillOpacity": 180,
+              "extruded": true,
+              "elevationScale": 1,
+              "elevation": {
+                "source": "main",
+                "field": "height"
+              }
+            },
+            "data": {
+              "featureSource": {
+                "id": "main",
+                "refId": "A"
+              }
+            }
+          },
+          {
+            "id": "cab-trips",
+            "type": "trips",
+            "label": "Cab trips",
+            "visible": true,
+            "geometry": {
+              "type": "geojson",
+              "value": {
+                "source": "main",
+                "field": "geometry"
+              }
+            },
+            "timeFilter": {
+              "mode": "none",
+              "time": {
+                "source": "main",
+                "field": ""
+              }
+            },
+            "fieldMappings": [
+              {
+                "fieldName": "vendor",
+                "alias": "value"
+              }
+            ],
+            "opacity": 0.35,
+            "colorScale": {
+              "type": "threshold",
+              "field": {
+                "source": "main",
+                "field": "vendor"
+              },
+              "steps": [
+                {
+                  "value": 0,
+                  "color": [253, 128, 93, 255]
+                },
+                {
+                  "value": 1,
+                  "color": [23, 184, 190, 255]
+                }
+              ]
+            },
+            "settings": {
+              "timestampUnit": "s",
+              "trailLengthMs": 180000,
+              "fadeTrail": true,
+              "widthMinPixels": 2,
+              "widthMaxPixels": 4,
+              "widthScale": 1,
+              "capRounded": true,
+              "jointRounded": true,
+              "width": {
+                "source": "main",
+                "field": ""
+              },
+              "timestamps": {
+                "source": "main",
+                "field": "timestamps"
+              }
+            },
+            "data": {
+              "featureSource": {
+                "id": "main",
+                "refId": "B"
+              }
+            }
+          }
+        ],
+        "time": {
+          "show": true,
+          "loop": true,
+          "defaultSpeed": 50
+        },
+        "legend": {
+          "show": true
+        },
+        "tooltip": {
+          "show": true,
+          "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}"
+        },
+        "sync": {
+          "publish": false,
+          "subscribe": false
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": ["deckgl", "showcase", "phase1"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "1970-01-01T00:19:51.000Z",
+    "to": "1970-01-01T00:31:09.000Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase — Trips",
+  "uid": "deckgl-showcase-trips",
+  "version": 1,
+  "weekStart": ""
 }

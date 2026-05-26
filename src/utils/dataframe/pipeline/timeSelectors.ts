@@ -1,11 +1,13 @@
 import type { LayerConfig } from '../../../layers';
 import { buildPackedFromAccessors, computeClosestFlags } from '../closestTimeFiltering';
-import type { LayerTableLike } from '../layerTable';
-import { coerceLayerTable, getRowValue } from '../layerTable';
+import { coerceLayerTable, getRowValue, type LayerTableLike } from '../layerTable';
 
 export type TimePackedByLayerId = Map<string, ReturnType<typeof buildPackedFromAccessors>>;
 
-export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], tablesByLayerId: Map<string, LayerTableLike>): TimePackedByLayerId {
+export function buildTimePackedByLayerId(
+  layerConfigs: LayerConfig[],
+  tablesByLayerId: Map<string, LayerTableLike>
+): TimePackedByLayerId {
   const packedByLayerId = new Map<string, ReturnType<typeof buildPackedFromAccessors>>();
 
   for (const layerConfig of layerConfigs) {
@@ -25,12 +27,12 @@ export function buildTimePackedByLayerId(layerConfigs: LayerConfig[], tablesByLa
       layerConfig.id,
       buildPackedFromAccessors(
         table?.data.length ?? 0,
-        (index) => groupByRef?.field ? getRowValue(table!, index, groupByRef.field) ?? '' : '',
+        (index) => (groupByRef?.field ? (getRowValue(table!, index, groupByRef.field) ?? '') : ''),
         (index) => {
           const raw = getRowValue(table!, index, timeRef.field);
           return raw instanceof Date ? raw.getTime() : Number(raw);
-        },
-      ),
+        }
+      )
     );
   }
 
@@ -43,7 +45,7 @@ export function buildTimeFilterFlagsByLayerId(
   packedByLayerId: TimePackedByLayerId,
   cursorTimeMs: number,
   fromTimeMs: number,
-  toTimeMs: number,
+  toTimeMs: number
 ) {
   const flagsByLayerId = new Map<string, Uint8Array>();
 
@@ -65,7 +67,8 @@ export function buildTimeFilterFlagsByLayerId(
       table?.data.forEach((_row, index) => {
         const raw = getRowValue(table, index, time.field);
         const timeMs = raw instanceof Date ? raw.getTime() : Number(raw);
-        flags[index] = Number.isFinite(timeMs) && timeMs >= fromTimeMs - tolerance && timeMs <= toTimeMs + tolerance ? 1 : 0;
+        flags[index] =
+          Number.isFinite(timeMs) && timeMs >= fromTimeMs - tolerance && timeMs <= toTimeMs + tolerance ? 1 : 0;
       });
 
       flagsByLayerId.set(layerConfig.id, flags);
@@ -76,7 +79,7 @@ export function buildTimeFilterFlagsByLayerId(
       const packed = packedByLayerId.get(layerConfig.id);
       flagsByLayerId.set(
         layerConfig.id,
-        packed ? computeClosestFlags(packed.buckets, cursorTimeMs, maxLagMs) : new Uint8Array(rowCount),
+        packed ? computeClosestFlags(packed.buckets, cursorTimeMs, maxLagMs) : new Uint8Array(rowCount)
       );
       continue;
     }

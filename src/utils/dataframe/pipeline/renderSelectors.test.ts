@@ -68,7 +68,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
 
 function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
+    fieldName?.field ? (feature: any) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -117,9 +117,27 @@ describe('renderSelectors', () => {
     const hiddenFeatures = [createFeature({ value: 2 }, undefined, 0)];
     const missingFeatures = [createFeature({ value: 3 }, undefined, 0)];
     const preparedLayerStates: PreparedLayerState[] = [
-      { config: visibleConfig, table: featureArrayToLayerTable(visibleFeatures as any, 'main'), features: visibleFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: hiddenConfig, table: featureArrayToLayerTable(hiddenFeatures as any, 'main'), features: hiddenFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: missingConfig, table: featureArrayToLayerTable(missingFeatures as any, 'main'), features: missingFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      {
+        config: visibleConfig,
+        table: featureArrayToLayerTable(visibleFeatures as any, 'main'),
+        features: visibleFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
+      {
+        config: hiddenConfig,
+        table: featureArrayToLayerTable(hiddenFeatures as any, 'main'),
+        features: hiddenFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
+      {
+        config: missingConfig,
+        table: featureArrayToLayerTable(missingFeatures as any, 'main'),
+        features: missingFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
     ];
 
     const renderer = {

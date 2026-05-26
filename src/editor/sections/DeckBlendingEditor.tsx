@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { CollapsableSection, Combobox, Field, Switch } from '@grafana/ui';
 import type { StandardEditorProps } from '@grafana/data';
 import type { DeckBlendFactor, DeckBlendOperation, DeckRenderParametersOptions } from 'types';
@@ -29,15 +29,21 @@ const deckBlendFactors: Array<{ label: string; value: DeckBlendFactor }> = [
 ];
 
 export function DeckBlendingEditor({ value, onChange }: StandardEditorProps<DeckRenderParametersOptions>) {
-  const parameters = { ...DEFAULT_DECK_PARAMETERS, ...(value ?? {}) };
+  const parameters = useMemo(() => ({ ...DEFAULT_DECK_PARAMETERS, ...(value ?? {}) }), [value]);
 
-  const patch = useCallback((updates: Partial<DeckRenderParametersOptions>) => {
-    onChange({ ...parameters, ...updates });
-  }, [onChange, parameters]);
+  const patch = useCallback(
+    (updates: Partial<DeckRenderParametersOptions>) => {
+      onChange({ ...parameters, ...updates });
+    },
+    [onChange, parameters]
+  );
 
   return (
     <CollapsableSection label="Blending" isOpen={false}>
-      <Field label="Enable blending" description="Enable GPU blending for deck.gl rendering. Layer parameters can still override this.">
+      <Field
+        label="Enable blending"
+        description="Enable GPU blending for deck.gl rendering. Layer parameters can still override this."
+      >
         <Switch value={parameters.blend} onChange={(event) => patch({ blend: event.currentTarget.checked })} />
       </Field>
       {parameters.blend && (

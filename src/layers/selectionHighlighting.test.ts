@@ -1,9 +1,11 @@
 import type { Feature } from 'geojson';
 import { createSourceRef } from './defaults';
 import type { LayerRenderContext } from './types';
+import { DEFAULT_SELECTED_COLOR } from './utils';
 import { iconLayerDefinition } from './icon';
 import { scatterplotLayerDefinition } from './scatterplot';
 import { textLayerDefinition } from './text';
+import { featureArrayToLayerTable } from '../utils/dataframe/layerTable';
 
 jest.mock('@deck.gl/layers', () => ({
   ScatterplotLayer: class MockScatterplotLayer {
@@ -40,24 +42,72 @@ function createFeature(properties: Record<string, unknown>): Feature {
 function createBaseContext() {
   const selected = createFeature({ deployment_id: 'sensor-1', sensor_id: 'group-a', label: 'Selected' });
   const unselected = createFeature({ deployment_id: 'sensor-2', sensor_id: 'group-a', label: 'Other' });
+  const features = [selected, unselected].map((feature, index) => ({ ...feature, __idx: index })) as Array<
+    Feature & { __idx: number }
+  >;
+  const table = featureArrayToLayerTable(features as any);
+  const data = features.map((feature) => ({ __idx: feature.__idx }));
+  const resolveAccessor = (fieldName: string, defaultValue?: unknown) => (_datum: unknown, ctx: { index: number }) =>
+    features[ctx.index].properties?.[fieldName] ?? defaultValue;
+  const getAccessor = (fieldRef?: { field?: string }, defaultValue?: unknown) =>
+    [
+      typeof fieldRef?.field === 'string' ? resolveAccessor(fieldRef.field, defaultValue) : undefined,
+      [fieldRef?.field ?? '', defaultValue],
+    ] as const;
+  const getAccessors = {
+    number: (fieldRef?: { field?: string }, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (datum: unknown, ctx: { index: number }) => {
+              const value = accessor(datum, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ] as const;
+    },
+    date: getAccessor,
+    dateMs: (fieldRef?: { field?: string }, defaultValue = 0) => {
+      const [accessor, deps] = getAccessor(fieldRef, defaultValue);
+      return [
+        accessor
+          ? (datum: unknown, ctx: { index: number }) => {
+              const value = accessor(datum, ctx);
+              return typeof value === 'number' && Number.isFinite(value) ? value : defaultValue;
+            }
+          : undefined,
+        deps,
+      ] as const;
+    },
+    array: getAccessor,
+    numericArray: getAccessor,
+    geometry: (defaultValue = null) => [() => defaultValue, []] as const,
+    pointPosition: (defaultValue: [number, number] = [0, 0]) => [() => defaultValue, []] as const,
+    path: (defaultValue: number[][] = []) => [() => defaultValue, []] as const,
+    polygon: (defaultValue: number[][][] = []) => [() => defaultValue, []] as const,
+  };
 
   return {
     panelOptions: {} as any,
-    features: [selected, unselected],
+    features,
+    data,
+    table,
     cursorTimeMs: 0,
     fromTimeMs: 0,
     toTimeMs: 0,
     timeFilterFlags: new Uint8Array([1, 1]),
     selectedKey: 'sensor-1',
+    getAccessor,
+    getAccessors,
   };
 }
 
 describe('layer selection highlighting', () => {
   it('uses selectionKey for scatterplot selection styling', () => {
-    const { features, ...shared } = createBaseContext();
+    const shared = createBaseContext();
     const [layer] = scatterplotLayerDefinition.renderLayers({
       ...shared,
-      features,
       config: {
         id: 'scatter-1',
         type: 'scatterplot',
@@ -78,20 +128,19 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
         timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
-            opacity: 1,
+        opacity: 1,
         selectionKey: createSourceRef('deployment_id'),
       },
-    } as LayerRenderContext<any>);
+    } as unknown as LayerRenderContext<any>);
 
-    expect((layer as any).props.getLineColor(features[0])).toEqual([255, 230, 60, 255]);
-    expect((layer as any).props.getLineColor(features[1])).toEqual([200, 200, 240, 60]);
+    expect((layer as any).props.getLineColor(shared.data[0], { index: 0 })).toEqual(DEFAULT_SELECTED_COLOR);
+    expect((layer as any).props.getLineColor(shared.data[1], { index: 1 })).toEqual([200, 200, 240, 60]);
   });
 
   it('uses selectionKey for icon selection styling', () => {
-    const { features, ...shared } = createBaseContext();
+    const shared = createBaseContext();
     const [layer] = iconLayerDefinition.renderLayers({
       ...shared,
-      features,
       config: {
         id: 'icon-1',
         type: 'icon',
@@ -115,20 +164,19 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
         timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
-            opacity: 1,
+        opacity: 1,
         selectionKey: createSourceRef('deployment_id'),
       },
-    } as LayerRenderContext<any>);
+    } as unknown as LayerRenderContext<any>);
 
-    expect((layer as any).props.getColor(features[0])).toEqual([255, 230, 60, 255]);
-    expect((layer as any).props.getColor(features[1])).not.toEqual([255, 230, 60, 255]);
+    expect((layer as any).props.getColor(shared.data[0], { index: 0 })).toEqual(DEFAULT_SELECTED_COLOR);
+    expect((layer as any).props.getColor(shared.data[1], { index: 1 })).not.toEqual(DEFAULT_SELECTED_COLOR);
   });
 
   it('uses selectionKey for text selection styling', () => {
-    const { features, ...shared } = createBaseContext();
+    const shared = createBaseContext();
     const [layer] = textLayerDefinition.renderLayers({
       ...shared,
-      features,
       config: {
         id: 'text-1',
         type: 'text',
@@ -157,12 +205,12 @@ describe('layer selection highlighting', () => {
         },
         geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
         timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
-            opacity: 1,
+        opacity: 1,
         selectionKey: createSourceRef('deployment_id'),
       },
-    } as LayerRenderContext<any>);
+    } as unknown as LayerRenderContext<any>);
 
-    expect((layer as any).props.getColor(features[0])).toEqual([255, 230, 60, 255]);
-    expect((layer as any).props.getColor(features[1])).not.toEqual([255, 230, 60, 255]);
+    expect((layer as any).props.getColor(shared.data[0], { index: 0 })).toEqual(DEFAULT_SELECTED_COLOR);
+    expect((layer as any).props.getColor(shared.data[1], { index: 1 })).not.toEqual(DEFAULT_SELECTED_COLOR);
   });
 });

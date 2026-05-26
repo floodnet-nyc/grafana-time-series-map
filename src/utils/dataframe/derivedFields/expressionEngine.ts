@@ -11,7 +11,7 @@ type ExpressionNode =
 
 export type ExpressionScopeNs = {
   [key: string]: unknown;
-}
+};
 
 export type IdentifierResolver = (path: string[]) => unknown;
 

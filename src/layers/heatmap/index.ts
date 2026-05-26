@@ -44,7 +44,7 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
   renderLayers(context: LayerRenderContext<HeatmapLayerConfig>) {
     const { config, data, getAccessors } = context;
     const options = config.settings;
-    
+
     const { onClick: _, ...commonProps } = createCommonLayerProps(context);
     const [getWeight, updatesWeight] = getAccessors.number(options.weight, 1);
     const colorRange = buildColorRange(config.colorScale, 'HeatmapFire', 7) as Array<[number, number, number, number]>;

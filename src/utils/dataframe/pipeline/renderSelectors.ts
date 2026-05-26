@@ -89,7 +89,8 @@ function createLayerRenderContext({
     data: preparedLayerState.table.data,
     table: preparedLayerState.table,
     features: preparedLayerState.features,
-    featureCollection: preparedLayerState.config.type === 'geojson' ? buildFeatureCollection(preparedLayerState.table) : undefined,
+    featureCollection:
+      preparedLayerState.config.type === 'geojson' ? buildFeatureCollection(preparedLayerState.table) : undefined,
     cursorTimeMs,
     fromTimeMs,
     toTimeMs,

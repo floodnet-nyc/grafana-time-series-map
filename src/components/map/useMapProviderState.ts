@@ -1,28 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ScreenshotWidget } from '@deck.gl/widgets';
-import type { MapProviderProps, ViewportSnapshot, WidgetCallbacks, WidgetViewStateChange } from './types';
-import { resolveMapInstance, type ControlledViewportChangeEvent, type MapRefLike } from './types';
+import {
+  resolveMapInstance,
+  type ControlledViewportChangeEvent,
+  type MapProviderProps,
+  type MapRefLike,
+  type ViewportSnapshot,
+  type WidgetCallbacks,
+  type WidgetViewStateChange,
+} from './types';
 import type { ResetViewState } from '../../widgets/types';
-import type { MapThemeMode } from 'types';
+import type { MapThemeMode } from '../../types';
 
-export interface MapProviderAdapter<TMap, TControlledEvent = ControlledViewportChangeEvent, TMoveEndEvent = ControlledViewportChangeEvent> {
+export interface MapProviderAdapter<
+  TMap,
+  TControlledEvent = ControlledViewportChangeEvent,
+  TMoveEndEvent = ControlledViewportChangeEvent,
+> {
   applyViewState: (map: TMap, change: WidgetViewStateChange) => void;
   captureScreenshot?: (map: TMap) => Promise<string | undefined>;
   limitViewState?: (event: TControlledEvent) => TControlledEvent;
   getViewport: (event: TControlledEvent | TMoveEndEvent | ViewportSnapshot) => ViewportSnapshot;
 }
 
-export function useMapProviderState<TMap, TControlledEvent = ControlledViewportChangeEvent, TMoveEndEvent = TControlledEvent>(
-  props: MapProviderProps,
-  adapter: MapProviderAdapter<TMap, TControlledEvent, TMoveEndEvent>,
-) {
+export function useMapProviderState<
+  TMap,
+  TControlledEvent = ControlledViewportChangeEvent,
+  TMoveEndEvent = TControlledEvent,
+>(props: MapProviderProps, adapter: MapProviderAdapter<TMap, TControlledEvent, TMoveEndEvent>) {
   const { options, widgetCallbacks, initialViewState, onViewportChange } = props;
   const interactions = options.basemap.interactions ?? {};
   const interactive = interactions.interactive ?? true;
   const controller = options.deck.interleaved !== true;
 
   const [viewState, setViewState] = useState<ViewportSnapshot>(
-    initialViewState ?? { latitude: 0, longitude: 0, zoom: 2, bearing: 0, pitch: 0 },
+    initialViewState ?? { latitude: 0, longitude: 0, zoom: 2, bearing: 0, pitch: 0 }
   );
 
   const handleViewStateChange = useCallback(
@@ -32,7 +44,7 @@ export function useMapProviderState<TMap, TControlledEvent = ControlledViewportC
       setViewState(vs);
       onViewportChange?.(vs);
     },
-    [onViewportChange, adapter],
+    [onViewportChange, adapter]
   );
 
   const handleFitViewState = useCallback((next: WidgetViewStateChange) => {
@@ -53,14 +65,14 @@ export function useMapProviderState<TMap, TControlledEvent = ControlledViewportC
       }
       adapter.applyViewState(map, next);
     },
-    [controller, adapter],
+    [controller, adapter]
   );
 
   const handleMoveEnd = useCallback(
     (e: TMoveEndEvent) => {
       onViewportChange?.(adapter.getViewport(e));
     },
-    [adapter, onViewportChange],
+    [adapter, onViewportChange]
   );
 
   const handleScreenshotCapture = useCallback(
@@ -77,7 +89,7 @@ export function useMapProviderState<TMap, TControlledEvent = ControlledViewportC
         widget.downloadDataURL(dataUrl, widget.props.filename);
       }
     },
-    [adapter],
+    [adapter]
   );
 
   const { themeMode, setThemeMode } = useProviderThemeMode(options.theme?.mode);
@@ -88,9 +100,7 @@ export function useMapProviderState<TMap, TControlledEvent = ControlledViewportC
     widgetCallbacks,
     onViewStateChange: handleWidgetViewStateChange,
     resetViewState: initialViewState,
-    screenshot: adapter.captureScreenshot
-      ? { onCapture: handleScreenshotCapture }
-      : undefined,
+    screenshot: adapter.captureScreenshot ? { onCapture: handleScreenshotCapture } : undefined,
     themeMode,
     onThemeModeChange: setThemeMode,
   });
@@ -114,23 +124,30 @@ export function applyWidgetViewStateChange(current: ViewportSnapshot, next: Widg
   return {
     latitude: typeof next.latitude === 'number' ? next.latitude : current.latitude,
     longitude: typeof next.longitude === 'number' ? next.longitude : current.longitude,
-    zoom: typeof next.delta === 'number'
-      ? current.zoom + next.delta
-      : typeof next.zoom === 'number'
-        ? next.zoom
-        : current.zoom,
+    zoom:
+      typeof next.delta === 'number'
+        ? current.zoom + next.delta
+        : typeof next.zoom === 'number'
+          ? next.zoom
+          : current.zoom,
     bearing: typeof next.bearing === 'number' ? next.bearing : current.bearing,
     pitch: typeof next.pitch === 'number' ? next.pitch : current.pitch,
   };
 }
 
 export function useProviderThemeMode(mode: MapThemeMode | undefined) {
-  const initialThemeMode = useMemo(() => resolveInitialThemeMode(mode), [mode]);
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(initialThemeMode);
-
-  useEffect(() => {
-    setThemeMode(initialThemeMode);
-  }, [initialThemeMode]);
+  const resolvedThemeMode = useMemo(() => resolveInitialThemeMode(mode), [mode]);
+  const [autoThemeMode, setAutoThemeMode] = useState<'light' | 'dark'>(resolvedThemeMode);
+  const themeMode = mode === 'light' || mode === 'dark' ? mode : autoThemeMode;
+  const setThemeMode = useCallback(
+    (nextMode: 'light' | 'dark') => {
+      if (mode === 'light' || mode === 'dark') {
+        return;
+      }
+      setAutoThemeMode(nextMode);
+    },
+    [mode]
+  );
 
   return { themeMode, setThemeMode };
 }
@@ -148,7 +165,12 @@ export function useInitialViewportReport(
 }
 
 export function useProviderWidgetCallbacks({
-  widgetCallbacks, onViewStateChange, resetViewState, themeMode, onThemeModeChange, screenshot,
+  widgetCallbacks,
+  onViewStateChange,
+  resetViewState,
+  themeMode,
+  onThemeModeChange,
+  screenshot,
 }: {
   widgetCallbacks?: WidgetCallbacks;
   onViewStateChange: (next: WidgetViewStateChange) => void;

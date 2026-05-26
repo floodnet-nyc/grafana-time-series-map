@@ -12,7 +12,7 @@ export function createBaseLayerConfig<TType extends string, TSettings extends La
   label: string,
   index: number,
   settings: TSettings,
-  geometry: GeometrySource = { type: 'wkb', value: createSourceRef('geom') },
+  geometry: GeometrySource = { type: 'wkb', value: createSourceRef('geom') }
 ): BaseLayerConfig<TType, TSettings> {
   return {
     id: `layer-${type}-${index + 1}`,

@@ -96,11 +96,7 @@ export function createColorModePatch(
   };
 }
 
-export function patchThresholdStep(
-  steps: ColorStep[],
-  index: number,
-  updates: Partial<ColorStep>
-): ColorStep[] {
+export function patchThresholdStep(steps: ColorStep[], index: number, updates: Partial<ColorStep>): ColorStep[] {
   return steps.map((step, stepIndex) => (stepIndex === index ? { ...step, ...updates } : step));
 }
 
@@ -113,10 +109,7 @@ export function appendThresholdStep(steps: ColorStep[]): ColorStep[] {
   return [...steps, { value: (last?.value ?? 0) + 10, color: [200, 200, 200, 255] }];
 }
 
-export function createPatchedShader(
-  shader: ShaderConfig | undefined,
-  updates: Partial<ShaderConfig>
-): ShaderConfig {
+export function createPatchedShader(shader: ShaderConfig | undefined, updates: Partial<ShaderConfig>): ShaderConfig {
   return { enabled: false, value: createSourceRef(), ...shader, ...updates };
 }
 

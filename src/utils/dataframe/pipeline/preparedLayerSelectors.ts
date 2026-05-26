@@ -1,8 +1,7 @@
 import type { Feature } from 'geojson';
 import type { LayerConfig } from '../../../layers';
 import type { GetAccessorFunction, GetAccessorFunctions } from '../../../layers/types';
-import type { LayerTable, LayerTableLike } from '../layerTable';
-import { buildFeatureCollection, coerceLayerTable } from '../layerTable';
+import { buildFeatureCollection, coerceLayerTable, type LayerTable, type LayerTableLike } from '../layerTable';
 import { compileDerivedFields, selectDerivedValues } from './derivedFieldSelectors';
 import { selectAccessorFactories } from './accessorSelectors';
 
@@ -47,7 +46,7 @@ export function buildPreparedLayerStates(
   layerConfigs: LayerConfig[],
   tablesByLayerId: Map<string, LayerTableLike>,
   flagsByLayerId: Map<string, Uint8Array>,
-  joinedSourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, unknown>>>> = new Map(),
+  joinedSourceValuesByLayerId: Map<string, Map<string, Map<string, Record<string, unknown>>>> = new Map()
 ): PreparedLayerState[] {
   return layerConfigs.flatMap((config) => {
     const tableLike = tablesByLayerId.get(config.id);
@@ -56,12 +55,12 @@ export function buildPreparedLayerStates(
     }
     const table = coerceLayerTable(tableLike, config.data.featureSource.id);
     return [
-    selectPreparedLayerState({
-      config,
-      table,
-      timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(table.data.length),
-      joinedSourceValues: joinedSourceValuesByLayerId.get(config.id),
-    }),
-  ];
+      selectPreparedLayerState({
+        config,
+        table,
+        timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(table.data.length),
+        joinedSourceValues: joinedSourceValuesByLayerId.get(config.id),
+      }),
+    ];
   });
 }

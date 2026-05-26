@@ -75,7 +75,11 @@ function lerpRgb(c0: [number, number, number], c1: [number, number, number], f: 
 // Flood-depth: 5 uniformly-spaced stops (teal→blue→amber→red→purple)
 function interpolateFloodDepth(t: number): string {
   const s: Array<[number, number, number]> = [
-    [0, 155, 104], [0, 204, 255], [253, 191, 75], [254, 77, 76], [215, 77, 254],
+    [0, 155, 104],
+    [0, 204, 255],
+    [253, 191, 75],
+    [254, 77, 76],
+    [215, 77, 254],
   ];
   const n = s.length - 1;
   const idx = Math.min(t * n, n - 1e-10);
@@ -86,11 +90,20 @@ function interpolateFloodDepth(t: number): string {
 // MRMS precipitation: 6 stops at non-uniform positions matching the COG shader ramp
 function interpolateMrmsPrecip(t: number): string {
   const s: Array<[number, [number, number, number]]> = [
-    [0.00, [143, 196, 250]], [0.18, [26, 242, 219]], [0.42, [82, 250, 115]],
-    [0.68, [245, 214, 51]],  [0.88, [250, 97, 194]], [1.00, [250, 191, 237]],
+    [0.0, [143, 196, 250]],
+    [0.18, [26, 242, 219]],
+    [0.42, [82, 250, 115]],
+    [0.68, [245, 214, 51]],
+    [0.88, [250, 97, 194]],
+    [1.0, [250, 191, 237]],
   ];
   let i = s.length - 2;
-  for (let j = 0; j < s.length - 1; j++) { if (t <= s[j + 1][0]) { i = j; break; } }
+  for (let j = 0; j < s.length - 1; j++) {
+    if (t <= s[j + 1][0]) {
+      i = j;
+      break;
+    }
+  }
   const [t0, c0] = s[i];
   const [t1, c1] = s[Math.min(i + 1, s.length - 1)];
   const f = t1 === t0 ? 1 : Math.max(0, Math.min(1, (t - t0) / (t1 - t0)));
@@ -227,11 +240,7 @@ function cssColorToRgba(str: string): [number, number, number, number] {
   return [parseInt(m[0], 10), parseInt(m[1], 10), parseInt(m[2], 10), 255];
 }
 
-export function interpolateScheme(
-  schemeName: string,
-  t: number,
-  invert = false,
-): [number, number, number, number] {
+export function interpolateScheme(schemeName: string, t: number, invert = false): [number, number, number, number] {
   const fn = INTERPOLATORS[schemeName];
   if (!fn) return [128, 128, 128, 255];
   const tt = invert ? 1 - t : t;

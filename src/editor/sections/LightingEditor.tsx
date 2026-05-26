@@ -1,15 +1,6 @@
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
-import {
-  ColorPicker,
-  Combobox,
-  Field,
-  Input,
-  Slider,
-  Switch,
-  useStyles2,
-  type ComboboxOption,
-} from '@grafana/ui';
+import { ColorPicker, Combobox, Field, Input, Slider, Switch, useStyles2, type ComboboxOption } from '@grafana/ui';
 import type { GrafanaTheme2, StandardEditorProps } from '@grafana/data';
 import type { DeckLightColor, DeckLightConfig, DeckLightingOptions, DeckLightType } from 'types';
 import { DEFAULT_DECK_LIGHTING } from 'utils/deckgl/lighting';
@@ -45,7 +36,16 @@ function defaultLight(type: DeckLightType, index: number): DeckLightConfig {
         attenuationQuadratic: 0,
       };
     case 'directional':
-      return { id, type, color: [255, 255, 255], intensity: 1, directionX: 0, directionY: 0, directionZ: -1, shadow: false };
+      return {
+        id,
+        type,
+        color: [255, 255, 255],
+        intensity: 1,
+        directionX: 0,
+        directionY: 0,
+        directionZ: -1,
+        shadow: false,
+      };
     case 'camera':
       return { id, type, color: [255, 255, 255], intensity: 1 };
     case 'sun':
@@ -63,7 +63,10 @@ function numberValue(value: unknown, fallback: number) {
 function colorToHex(value: DeckLightColor | undefined) {
   const parts = Array.isArray(value) ? value : [255, 255, 255];
   const [r = 255, g = 255, b = 255] = parts;
-  const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
+  const h = (n: number) =>
+    Math.round(Math.max(0, Math.min(255, n)))
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
@@ -128,9 +131,12 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
   const lighting = value ?? DEFAULT_DECK_LIGHTING;
   const lights = lighting.lights ?? DEFAULT_DECK_LIGHTING.lights;
 
-  const patch = useCallback((updates: Partial<DeckLightingOptions>) => {
-    onChange({ ...lighting, ...updates });
-  }, [lighting, onChange]);
+  const patch = useCallback(
+    (updates: Partial<DeckLightingOptions>) => {
+      onChange({ ...lighting, ...updates });
+    },
+    [lighting, onChange]
+  );
 
   const {
     selectedIndex,
@@ -168,7 +174,9 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
                 <Combobox
                   options={lightTypes}
                   value={light.type}
-                  onChange={(selected) => selected?.value && patchLight(index, { ...defaultLight(selected.value, index), id: light.id })}
+                  onChange={(selected) =>
+                    selected?.value && patchLight(index, { ...defaultLight(selected.value, index), id: light.id })
+                  }
                 />
               </Field>
               <Field label="ID">
@@ -182,32 +190,117 @@ export function LightingEditor({ value, onChange }: StandardEditorProps<DeckLigh
                   />
                 </div>
               </Field>
-              <SliderField inputId={`light-${index}-intensity`} label="Intensity" value={light.intensity} fallback={1} min={0} max={2} step={0.05} onChange={(intensity) => patchLight(index, { intensity })} />
+              <SliderField
+                inputId={`light-${index}-intensity`}
+                label="Intensity"
+                value={light.intensity}
+                fallback={1}
+                min={0}
+                max={2}
+                step={0.05}
+                onChange={(intensity) => patchLight(index, { intensity })}
+              />
               {light.type === 'point' && (
                 <>
-                  <SliderField inputId={`light-${index}-longitude`} label="Longitude" value={light.longitude} fallback={0} min={-180} max={180} step={0.000001} onChange={(longitude) => patchLight(index, { longitude })} />
-                  <SliderField inputId={`light-${index}-latitude`} label="Latitude" value={light.latitude} fallback={0} min={-90} max={90} step={0.000001} onChange={(latitude) => patchLight(index, { latitude })} />
-                  <NumberField label="Altitude" value={light.altitude} fallback={1} onChange={(altitude) => patchLight(index, { altitude })} />
-                  <NumberField label="Attenuation constant" value={light.attenuationConstant} fallback={1} onChange={(attenuationConstant) => patchLight(index, { attenuationConstant })} />
-                  <NumberField label="Attenuation linear" value={light.attenuationLinear} fallback={0} onChange={(attenuationLinear) => patchLight(index, { attenuationLinear })} />
-                  <NumberField label="Attenuation quadratic" value={light.attenuationQuadratic} fallback={0} onChange={(attenuationQuadratic) => patchLight(index, { attenuationQuadratic })} />
+                  <SliderField
+                    inputId={`light-${index}-longitude`}
+                    label="Longitude"
+                    value={light.longitude}
+                    fallback={0}
+                    min={-180}
+                    max={180}
+                    step={0.000001}
+                    onChange={(longitude) => patchLight(index, { longitude })}
+                  />
+                  <SliderField
+                    inputId={`light-${index}-latitude`}
+                    label="Latitude"
+                    value={light.latitude}
+                    fallback={0}
+                    min={-90}
+                    max={90}
+                    step={0.000001}
+                    onChange={(latitude) => patchLight(index, { latitude })}
+                  />
+                  <NumberField
+                    label="Altitude"
+                    value={light.altitude}
+                    fallback={1}
+                    onChange={(altitude) => patchLight(index, { altitude })}
+                  />
+                  <NumberField
+                    label="Attenuation constant"
+                    value={light.attenuationConstant}
+                    fallback={1}
+                    onChange={(attenuationConstant) => patchLight(index, { attenuationConstant })}
+                  />
+                  <NumberField
+                    label="Attenuation linear"
+                    value={light.attenuationLinear}
+                    fallback={0}
+                    onChange={(attenuationLinear) => patchLight(index, { attenuationLinear })}
+                  />
+                  <NumberField
+                    label="Attenuation quadratic"
+                    value={light.attenuationQuadratic}
+                    fallback={0}
+                    onChange={(attenuationQuadratic) => patchLight(index, { attenuationQuadratic })}
+                  />
                 </>
               )}
               {light.type === 'directional' && (
                 <>
-                  <SliderField inputId={`light-${index}-direction-x`} label="Direction X" value={light.directionX} fallback={0} min={-1} max={1} step={0.05} onChange={(directionX) => patchLight(index, { directionX })} />
-                  <SliderField inputId={`light-${index}-direction-y`} label="Direction Y" value={light.directionY} fallback={0} min={-1} max={1} step={0.05} onChange={(directionY) => patchLight(index, { directionY })} />
-                  <SliderField inputId={`light-${index}-direction-z`} label="Direction Z" value={light.directionZ} fallback={-1} min={-1} max={1} step={0.05} onChange={(directionZ) => patchLight(index, { directionZ })} />
+                  <SliderField
+                    inputId={`light-${index}-direction-x`}
+                    label="Direction X"
+                    value={light.directionX}
+                    fallback={0}
+                    min={-1}
+                    max={1}
+                    step={0.05}
+                    onChange={(directionX) => patchLight(index, { directionX })}
+                  />
+                  <SliderField
+                    inputId={`light-${index}-direction-y`}
+                    label="Direction Y"
+                    value={light.directionY}
+                    fallback={0}
+                    min={-1}
+                    max={1}
+                    step={0.05}
+                    onChange={(directionY) => patchLight(index, { directionY })}
+                  />
+                  <SliderField
+                    inputId={`light-${index}-direction-z`}
+                    label="Direction Z"
+                    value={light.directionZ}
+                    fallback={-1}
+                    min={-1}
+                    max={1}
+                    step={0.05}
+                    onChange={(directionZ) => patchLight(index, { directionZ })}
+                  />
                   <Field label="Shadow">
-                    <Switch value={light.shadow ?? false} onChange={(event) => patchLight(index, { shadow: event.currentTarget.checked })} />
+                    <Switch
+                      value={light.shadow ?? false}
+                      onChange={(event) => patchLight(index, { shadow: event.currentTarget.checked })}
+                    />
                   </Field>
                 </>
               )}
               {light.type === 'sun' && (
                 <>
-                  <NumberField label="Timestamp" value={light.timestamp} fallback={DEFAULT_SUN_TIMESTAMP} onChange={(timestamp) => patchLight(index, { timestamp })} />
+                  <NumberField
+                    label="Timestamp"
+                    value={light.timestamp}
+                    fallback={DEFAULT_SUN_TIMESTAMP}
+                    onChange={(timestamp) => patchLight(index, { timestamp })}
+                  />
                   <Field label="Shadow">
-                    <Switch value={light.shadow ?? false} onChange={(event) => patchLight(index, { shadow: event.currentTarget.checked })} />
+                    <Switch
+                      value={light.shadow ?? false}
+                      onChange={(event) => patchLight(index, { shadow: event.currentTarget.checked })}
+                    />
                   </Field>
                 </>
               )}

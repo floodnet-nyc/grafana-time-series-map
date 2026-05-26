@@ -34,7 +34,7 @@ function pointFeature(longitude: number, latitude: number): Feature {
 }
 
 const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-  fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
+  fieldName?.field ? (feature: any) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
   [fieldName?.source, fieldName?.field, defaultValue],
 ];
 
@@ -73,7 +73,10 @@ const getAccessors: GetAccessorFunctions = {
 };
 
 function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): PreparedLayerState {
-  const features = [pointFeature(-122, 37), pointFeature(-74, 40)].map((feature, index) => ({ ...feature, __idx: index }));
+  const features = [pointFeature(-122, 37), pointFeature(-74, 40)].map((feature, index) => ({
+    ...feature,
+    __idx: index,
+  }));
   return {
     config: {
       id: 'layer-1',
@@ -84,7 +87,7 @@ function createPreparedLayerState(overrides: Partial<PreparedLayerState> = {}): 
       data: { featureSource: { id: 'main', refId: '' } },
       geometry: { type: 'geojson', value: createSourceRef('geometry') },
       timeFilter: { mode: 'window', time: createSourceRef('time') },
-        opacity: 1,
+      opacity: 1,
     } as any,
     table: featureArrayToLayerTable(features as any),
     features,

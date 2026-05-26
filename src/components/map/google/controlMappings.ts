@@ -28,7 +28,7 @@ const googleControlPositionValues: Record<GoogleControlPosition, google.maps.Con
   BOTTOM_RIGHT: ControlPosition.BOTTOM_RIGHT,
 };
 
-const googleColorSchemeValues: Record<MapThemeMode, typeof ColorScheme[keyof typeof ColorScheme]> = {
+const googleColorSchemeValues: Record<MapThemeMode, (typeof ColorScheme)[keyof typeof ColorScheme]> = {
   light: ColorScheme.LIGHT,
   dark: ColorScheme.DARK,
   auto: ColorScheme.FOLLOW_SYSTEM,
@@ -40,11 +40,16 @@ export function getControlPosition(position: GoogleControlPosition | undefined, 
 
 export function mapControlToGooglePosition(position: MapControlPosition): GoogleControlPosition {
   switch (position) {
-    case 'top-left':     return 'TOP_LEFT';
-    case 'top-right':    return 'TOP_RIGHT';
-    case 'bottom-left':  return 'BOTTOM_LEFT';
-    case 'bottom-right': return 'BOTTOM_RIGHT';
-    default:             return 'TOP_RIGHT';
+    case 'top-left':
+      return 'TOP_LEFT';
+    case 'top-right':
+      return 'TOP_RIGHT';
+    case 'bottom-left':
+      return 'BOTTOM_LEFT';
+    case 'bottom-right':
+      return 'BOTTOM_RIGHT';
+    default:
+      return 'TOP_RIGHT';
   }
 }
 

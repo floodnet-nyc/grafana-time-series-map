@@ -130,7 +130,7 @@ export function selectDerivedValues(
   compiledDerivedFields: DerivedFieldSet,
   config: LayerConfig,
   table: LayerTable,
-  joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>,
+  joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>
 ): DerivedValueTable {
   if (!compiledDerivedFields?.length) {
     return undefined;

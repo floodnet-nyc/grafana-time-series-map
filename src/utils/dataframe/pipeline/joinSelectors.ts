@@ -53,7 +53,7 @@ export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], se
               (index) => {
                 const raw = getRowValue(table, index, joinedSource.join.time);
                 return raw instanceof Date ? raw.getTime() : Number(raw);
-              },
+              }
             ),
           };
         })();
@@ -73,7 +73,7 @@ export function buildJoinedSourcePackedByLayerId(layerConfigs: LayerConfig[], se
 export function buildJoinedSourceValuesByLayerId(
   layerConfigs: LayerConfig[],
   packedByLayerId: Map<string, Map<string, PackedLookupEntry>>,
-  cursorTimeMs: number,
+  cursorTimeMs: number
 ) {
   const valuesByLayerId = new Map<string, Map<string, Map<string, Record<string, unknown>>>>();
 
@@ -101,7 +101,7 @@ export function buildJoinedSourceValuesByLayerId(
         entry.packed,
         joinedSource.fields.map((field) => ({ sourceField: field.field, targetField: field.as ?? field.field })),
         cursorTimeMs,
-        joinedSource.join.maxLagMs,
+        joinedSource.join.maxLagMs
       );
       valuesBySourceId.set(joinedSource.id, resolved as Map<string, Record<string, unknown>>);
     }

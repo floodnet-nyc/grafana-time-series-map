@@ -1,199 +1,195 @@
 {
-    "annotations": {
-        "list": []
-    },
-    "editable": true,
-    "fiscalYearStartMonth": 0,
-    "graphTooltip": 0,
-    "id": null,
-    "links": [],
-    "liveNow": false,
-    "panels": [
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity-ds"
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "GeoJSON",
+      "type": "floodnet-timeseriesmap-panel",
+      "targets": [
         {
-            "datasource": {
-                "type": "yesoreyeram-infinity-datasource",
-                "uid": "infinity-ds"
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity-ds"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "http://localhost:3000/public/sample-data/deckgl-showcase/geojson/vancouver-blocks.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "parser": "backend",
+          "root_selector": "features",
+          "columns": [
+            {
+              "selector": "properties.name",
+              "text": "name",
+              "type": "string"
             },
-            "gridPos": {
-                "h": 16,
-                "w": 24,
-                "x": 0,
-                "y": 0
+            {
+              "selector": "properties.value",
+              "text": "value",
+              "type": "number"
             },
-            "id": 1,
-            "title": "GeoJSON",
-            "type": "floodnet-timeseriesmap-panel",
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "yesoreyeram-infinity-datasource",
-                        "uid": "infinity-ds"
-                    },
-                    "refId": "A",
-                    "type": "json",
-                    "source": "url",
-                    "url": "http://localhost:3000/public/sample-data/deckgl-showcase/geojson/vancouver-blocks.json",
-                    "url_options": {
-                        "method": "GET",
-                        "data": ""
-                    },
-                    "parser": "backend",
-                    "root_selector": "features",
-                    "columns": [
-                        {
-                            "selector": "properties.name",
-                            "text": "name",
-                            "type": "string"
-                        },
-                        {
-                            "selector": "properties.value",
-                            "text": "value",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "properties.fatalities",
-                            "text": "fatalities",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "properties.incidents",
-                            "text": "incidents",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "properties.valuePerSqm",
-                            "text": "valuePerSqm",
-                            "type": "number"
-                        },
-                        {
-                            "selector": "geometry",
-                            "text": "geometry",
-                            "type": "string"
-                        }
-                    ],
-                    "format": "table"
-                }
-            ],
-            "options": {
-                "basemap": {
-                    "provider": "maplibre",
-                    "maplibre": {
-                        "mapStyle": "carto-light",
-                        "projection": "mercator"
-                    },
-                    "interactions": {
-                        "syncViewToUrl": true
-                    },
-                    "controlSettings": {
-                        "navigation": {
-                            "position": "top-right",
-                            "showZoom": true,
-                            "showCompass": true
-                        },
-                        "fullscreen": {
-                            "position": "top-right"
-                        }
-                    }
-                },
-                "deck": {
-                    "interleaved": true
-                },
-                "initialView": {
-                    "mode": "manual",
-                    "state": {
-                        "latitude": 49.254,
-                        "longitude": -123.13,
-                        "zoom": 11,
-                        "bearing": 0,
-                        "pitch": 45
-                    }
-                },
-                "layers": [
-                    {
-                        "id": "vancouver-blocks",
-                        "type": "geojson",
-                        "label": "Vancouver blocks",
-                        "visible": true,
-                        "geometry": {
-                            "type": "geojson",
-                            "value": {
-                                "source": "main",
-                                "field": "geometry"
-                            }
-                        },
-                        "timeFilter": {
-                            "mode": "none",
-                            "time": {
-                                "source": "main",
-                                "field": ""
-                            }
-                        },
-                        "fieldMappings": [],
-                        "opacity": 0.88,
-                        "pickable": true,
-                        "colorScale": {
-                            "type": "gradient",
-                            "field": {
-                                "source": "main",
-                                "field": "valuePerSqm"
-                            },
-                            "schemeName": "YlGnBu",
-                            "scaleMin": 0,
-                            "scaleMax": 16000
-                        },
-                        "settings": {
-                            "pointRadiusMinPixels": 2,
-                            "pointRadiusMaxPixels": 8,
-                            "lineWidthMinPixels": 1,
-                            "filled": true,
-                            "stroked": true,
-                            "extruded": false
-                        },
-                        "data": {
-                            "featureSource": {
-                                "id": "main",
-                                "refId": "A"
-                            }
-                        }
-                    }
-                ],
-                "time": {
-                    "show": false,
-                    "loop": false,
-                    "defaultSpeed": 1
-                },
-                "legend": {
-                    "show": true
-                },
-                "tooltip": {
-                    "show": true,
-                    "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}"
-                },
-                "sync": {
-                    "publish": false,
-                    "subscribe": false
-                }
+            {
+              "selector": "properties.fatalities",
+              "text": "fatalities",
+              "type": "number"
+            },
+            {
+              "selector": "properties.incidents",
+              "text": "incidents",
+              "type": "number"
+            },
+            {
+              "selector": "properties.valuePerSqm",
+              "text": "valuePerSqm",
+              "type": "number"
+            },
+            {
+              "selector": "geometry",
+              "text": "geometry",
+              "type": "string"
             }
+          ],
+          "format": "table"
         }
-    ],
-    "refresh": false,
-    "schemaVersion": 41,
-    "tags": [
-        "deckgl",
-        "showcase",
-        "phase1"
-    ],
-    "templating": {
-        "list": []
-    },
-    "time": {
-        "from": "now-6h",
-        "to": "now"
-    },
-    "timepicker": {},
-    "timezone": "",
-    "title": "Deck.gl Showcase — GeoJSON",
-    "uid": "deckgl-showcase-geojson",
-    "version": 1,
-    "weekStart": ""
+      ],
+      "options": {
+        "basemap": {
+          "provider": "maplibre",
+          "maplibre": {
+            "mapStyle": "carto-light",
+            "projection": "mercator"
+          },
+          "interactions": {
+            "syncViewToUrl": true
+          },
+          "controlSettings": {
+            "navigation": {
+              "position": "top-right",
+              "showZoom": true,
+              "showCompass": true
+            },
+            "fullscreen": {
+              "position": "top-right"
+            }
+          }
+        },
+        "deck": {
+          "interleaved": true
+        },
+        "initialView": {
+          "mode": "manual",
+          "state": {
+            "latitude": 49.254,
+            "longitude": -123.13,
+            "zoom": 11,
+            "bearing": 0,
+            "pitch": 45
+          }
+        },
+        "layers": [
+          {
+            "id": "vancouver-blocks",
+            "type": "geojson",
+            "label": "Vancouver blocks",
+            "visible": true,
+            "geometry": {
+              "type": "geojson",
+              "value": {
+                "source": "main",
+                "field": "geometry"
+              }
+            },
+            "timeFilter": {
+              "mode": "none",
+              "time": {
+                "source": "main",
+                "field": ""
+              }
+            },
+            "fieldMappings": [],
+            "opacity": 0.88,
+            "pickable": true,
+            "colorScale": {
+              "type": "gradient",
+              "field": {
+                "source": "main",
+                "field": "valuePerSqm"
+              },
+              "schemeName": "YlGnBu",
+              "scaleMin": 0,
+              "scaleMax": 16000
+            },
+            "settings": {
+              "pointRadiusMinPixels": 2,
+              "pointRadiusMaxPixels": 8,
+              "lineWidthMinPixels": 1,
+              "filled": true,
+              "stroked": true,
+              "extruded": false
+            },
+            "data": {
+              "featureSource": {
+                "id": "main",
+                "refId": "A"
+              }
+            }
+          }
+        ],
+        "time": {
+          "show": false,
+          "loop": false,
+          "defaultSpeed": 1
+        },
+        "legend": {
+          "show": true
+        },
+        "tooltip": {
+          "show": true,
+          "template": "{% if name %}<div><b>{{ name }}</b></div>{% endif %}{% if value %}<div>Value: {{ value }}</div>{% endif %}{% if fatalities %}<div>Fatalities: {{ fatalities }}</div>{% endif %}{% if incidents %}<div>Incidents: {{ incidents }}</div>{% endif %}"
+        },
+        "sync": {
+          "publish": false,
+          "subscribe": false
+        }
+      }
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 41,
+  "tags": ["deckgl", "showcase", "phase1"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Deck.gl Showcase — GeoJSON",
+  "uid": "deckgl-showcase-geojson",
+  "version": 1,
+  "weekStart": ""
 }

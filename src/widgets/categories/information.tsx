@@ -1,6 +1,6 @@
-import { 
-  ContextMenuWidget, 
-  InfoWidget, 
+import {
+  ContextMenuWidget,
+  InfoWidget,
   PopupWidget,
   type ContextMenuWidgetProps,
   type InfoWidgetProps,
@@ -15,8 +15,14 @@ import { StreetViewWidget, type StreetViewWidgetProps } from '../../modules/stre
 type ContextMenuWidgetConfig = BaseWidgetConfig<'context-menu', Omit<ContextMenuWidgetProps, 'id'>>;
 type InfoWidgetConfig = BaseWidgetConfig<'info', Omit<InfoWidgetProps, 'id'>>;
 type PopupWidgetConfig = BaseWidgetConfig<'popup', Omit<PopupWidgetProps, 'id'>>;
-type MessageWidgetConfig = BaseWidgetConfig<'message', Omit<MessageWidgetProps, 'id' | 'template'> & { templateHtml: string }>;
-type StreetViewWidgetConfig = BaseWidgetConfig<'street-view', Omit<StreetViewWidgetProps, 'id' | 'selectedFeature' | 'selectedKey' | 'provider'>>;
+type MessageWidgetConfig = BaseWidgetConfig<
+  'message',
+  Omit<MessageWidgetProps, 'id' | 'template'> & { templateHtml: string }
+>;
+type StreetViewWidgetConfig = BaseWidgetConfig<
+  'street-view',
+  Omit<StreetViewWidgetProps, 'id' | 'selectedFeature' | 'selectedKey' | 'provider'>
+>;
 
 export const contextMenuWidgetDefinition: WidgetDefinition<ContextMenuWidgetConfig> = {
   type: 'context-menu',
@@ -51,7 +57,10 @@ export const infoWidgetDefinition: WidgetDefinition<InfoWidgetConfig> = {
           key: 'mode',
           label: 'Trigger',
           type: 'select',
-          selectOptions: [{ label: 'Hover', value: 'hover' }, { label: 'Click', value: 'click' }],
+          selectOptions: [
+            { label: 'Hover', value: 'hover' },
+            { label: 'Click', value: 'click' },
+          ],
           defaultValue: 'hover',
         },
       ],
@@ -82,7 +91,6 @@ export const popupWidgetDefinition: WidgetDefinition<PopupWidgetConfig> = {
   ],
   createWidget: (config) => new PopupWidget({ id: config.id, ...config.settings }),
 };
-
 
 export const messageWidgetDefinition: WidgetDefinition<MessageWidgetConfig> = {
   type: 'message',
@@ -146,7 +154,13 @@ export const streetViewWidgetDefinition: WidgetDefinition<StreetViewWidgetConfig
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-right' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-right',
+        },
         { key: 'label', label: 'Label', type: 'string', defaultValue: 'Street View' },
         { key: 'icon', label: 'Icon', type: 'string', defaultValue: '\u25a3' },
         { key: 'defaultCollapsed', label: 'Collapsed by default', type: 'boolean', defaultValue: true },

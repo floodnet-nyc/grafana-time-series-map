@@ -29,4 +29,3 @@ export function appendDeckExtension(layer: any, extension: unknown) {
   });
   return hasExtension ? existing : [...existing, extension];
 }
-

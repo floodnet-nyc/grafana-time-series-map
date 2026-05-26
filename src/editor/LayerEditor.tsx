@@ -38,7 +38,10 @@ function parseZoomInput(value: string, fallback: number): number {
 }
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
-  const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
+  const h = (n: number) =>
+    Math.round(Math.max(0, Math.min(255, n)))
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}${a < 255 ? h(a) : ''}`;
 }
 
@@ -85,14 +88,16 @@ export function LayerEditor({
     [extensionDefs]
   );
   const currentRenderer = useMemo(
-    () => layerRegistry.getLayerDefinition?.(layer.type) ?? layerRegistry.layerDefinitions.find((definition) => definition.type === layer.type),
+    () =>
+      layerRegistry.getLayerDefinition?.(layer.type) ??
+      layerRegistry.layerDefinitions.find((definition) => definition.type === layer.type),
     [layer.type]
   );
   const settingsRecord = layer.settings as unknown as Record<string, unknown>;
 
   const patch = useCallback(
     (updates: Partial<LayerConfig>) => onChange({ ...layer, ...updates } as LayerConfig),
-    [layer, onChange],
+    [layer, onChange]
   );
   const {
     selectedIndex: selectedExtensionIndex,
@@ -114,18 +119,21 @@ export function LayerEditor({
         maxZoom: nextMax >= DEFAULT_MAX_ZOOM ? undefined : nextMax,
       });
     },
-    [patch],
+    [patch]
   );
 
   const patchSettings = useCallback(
     (key: string, value: unknown) =>
-      patch({ settings: { ...settingsRecord, [key]: value } as unknown as LayerConfig['settings'] } as Partial<LayerConfig>),
-    [patch, settingsRecord],
+      patch({
+        settings: { ...settingsRecord, [key]: value } as unknown as LayerConfig['settings'],
+      } as Partial<LayerConfig>),
+    [patch, settingsRecord]
   );
 
   const handleTypeChange = useCallback(
     (type: LayerType) => {
-      const definition = layerRegistry.getLayerDefinition?.(type) ?? layerRegistry.layerDefinitions.find((item) => item.type === type);
+      const definition =
+        layerRegistry.getLayerDefinition?.(type) ?? layerRegistry.layerDefinitions.find((item) => item.type === type);
       if (!definition) {
         return;
       }
@@ -151,11 +159,15 @@ export function LayerEditor({
         extensions: layer.extensions ?? next.extensions,
       });
     },
-    [layer, onChange],
+    [layer, onChange]
   );
 
   const renderOptionField = useCallback(
-    (field: LayerOptionField, source: Record<string, unknown>, onFieldChange: (key: string, value: unknown) => void) => {
+    (
+      field: LayerOptionField,
+      source: Record<string, unknown>,
+      onFieldChange: (key: string, value: unknown) => void
+    ) => {
       const value = source[field.key] ?? field.defaultValue;
       if (field.showIf && !field.showIf(source)) {
         return null;
@@ -217,7 +229,7 @@ export function LayerEditor({
         </Field>
       );
     },
-    [fieldsBySource, sourceOptions],
+    [fieldsBySource, sourceOptions]
   );
 
   return (
@@ -227,10 +239,17 @@ export function LayerEditor({
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
         <Field label="Layer type">
-          <Combobox options={layerTypes} value={layer.type} onChange={(v) => v?.value && handleTypeChange(String(v.value) as LayerType)} />
+          <Combobox
+            options={layerTypes}
+            value={layer.type}
+            onChange={(v) => v?.value && handleTypeChange(String(v.value) as LayerType)}
+          />
         </Field>
         <Field label="Description">
-          <TextArea value={layer.description ?? ''} onChange={(e) => patch({ description: e.currentTarget.value || undefined })} />
+          <TextArea
+            value={layer.description ?? ''}
+            onChange={(e) => patch({ description: e.currentTarget.value || undefined })}
+          />
         </Field>
 
         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -241,11 +260,21 @@ export function LayerEditor({
             <Switch value={layer.pickable ?? true} onChange={(e) => patch({ pickable: e.currentTarget.checked })} />
           </Field>
           <Field label="Show in legend">
-            <Switch value={layer.showInLegend ?? true} onChange={(e) => patch({ showInLegend: e.currentTarget.checked })} />
+            <Switch
+              value={layer.showInLegend ?? true}
+              onChange={(e) => patch({ showInLegend: e.currentTarget.checked })}
+            />
           </Field>
         </div>
         <Field label="Opacity">
-          <Slider value={layer.opacity} min={0} max={1} step={0.01} onChange={(value) => patch({ opacity: Number(value) })} inputId="opacity" />
+          <Slider
+            value={layer.opacity}
+            min={0}
+            max={1}
+            step={0.01}
+            onChange={(value) => patch({ opacity: Number(value) })}
+            inputId="opacity"
+          />
         </Field>
         <Field label="Selection color">
           <ColorPicker
@@ -258,11 +287,21 @@ export function LayerEditor({
           <div className={styles.zoomRow}>
             <Input
               value={String(layer.minZoom ?? DEFAULT_MIN_ZOOM)}
-              onChange={(e) => patchZoomRange(parseZoomInput(e.currentTarget.value, layer.minZoom ?? DEFAULT_MIN_ZOOM), layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
+              onChange={(e) =>
+                patchZoomRange(
+                  parseZoomInput(e.currentTarget.value, layer.minZoom ?? DEFAULT_MIN_ZOOM),
+                  layer.maxZoom ?? DEFAULT_MAX_ZOOM
+                )
+              }
             />
             <Input
               value={String(layer.maxZoom ?? DEFAULT_MAX_ZOOM)}
-              onChange={(e) => patchZoomRange(layer.minZoom ?? DEFAULT_MIN_ZOOM, parseZoomInput(e.currentTarget.value, layer.maxZoom ?? DEFAULT_MAX_ZOOM))}
+              onChange={(e) =>
+                patchZoomRange(
+                  layer.minZoom ?? DEFAULT_MIN_ZOOM,
+                  parseZoomInput(e.currentTarget.value, layer.maxZoom ?? DEFAULT_MAX_ZOOM)
+                )
+              }
             />
           </div>
         </Field>
@@ -310,7 +349,12 @@ export function LayerEditor({
       ))}
 
       <CollapsableSection label="Color" isOpen={true}>
-        <ColorScaleEditor layer={layer} sourceOptions={sourceOptions} fieldsBySource={fieldsBySource} onChange={patch} />
+        <ColorScaleEditor
+          layer={layer}
+          sourceOptions={sourceOptions}
+          fieldsBySource={fieldsBySource}
+          onChange={patch}
+        />
       </CollapsableSection>
 
       <CollapsableSection label="Advanced" isOpen={true}>

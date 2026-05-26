@@ -37,7 +37,12 @@ function resolveValue(field: Field, i: number): unknown {
   return value;
 }
 
-function parseRowGeometry(frame: DataFrame, rowIndex: number, geometry: GeometrySource, featureSourceId: string): Geometry | null {
+function parseRowGeometry(
+  frame: DataFrame,
+  rowIndex: number,
+  geometry: GeometrySource,
+  featureSourceId: string
+): Geometry | null {
   let geomField: Field | undefined;
   let latField: Field | undefined;
   let lngField: Field | undefined;
@@ -92,7 +97,7 @@ export function dataFramesToLayerTable(
   refId: string | undefined,
   geometrySource: GeometrySource,
   elevationField: string | undefined,
-  featureSourceId = DEFAULT_FEATURE_SOURCE_ID,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID
 ): LayerTable {
   const matchingFrames = refId ? frames.filter((frame) => frame.refId === refId) : frames.slice(0, 1);
   const entries: Array<{ rowRef: LayerRowRef; geometry: Geometry | null }> = [];
@@ -125,7 +130,10 @@ export function dataFramesToLayerTable(
   };
 }
 
-export function featureArrayToLayerTable(features: Array<Feature & { __idx: number }>, featureSourceId = DEFAULT_FEATURE_SOURCE_ID): LayerTable {
+export function featureArrayToLayerTable(
+  features: Array<Feature & { __idx: number }>,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID
+): LayerTable {
   return {
     frames: [],
     rowRefs: features.map((_feature, index) => ({ frameIndex: 0, rowIndex: index })),

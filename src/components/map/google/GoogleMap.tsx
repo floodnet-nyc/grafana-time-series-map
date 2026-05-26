@@ -2,12 +2,10 @@ import React, { useEffect, useMemo } from 'react';
 import { APIProvider, Map, limitTiltRange, useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
 import type { MapViewState, ViewStateChangeParameters, Widget, WidgetPlacement } from '@deck.gl/core';
-import DeckGL, { DeckGLProps } from '@deck.gl/react';
-import type { FitBounds } from '../types';
-import type { MapFitBoundsProps } from '../MapFitBounds';
-import type { MapProviderProps, WidgetViewStateChange } from '../types';
+import DeckGL, { type DeckGLProps } from '@deck.gl/react';
+import type { FitBounds, MapProviderProps, WidgetViewStateChange } from '../types';
+import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
 import { useDeckGLProps } from '../DeckGLMap';
-import { MapFitBounds } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getGoogleColorScheme } from './controlMappings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
@@ -62,9 +60,13 @@ class GoogleWidgetControl {
   private map: google.maps.Map | null = null;
   private position: google.maps.ControlPosition | null = null;
 
-  constructor(widget: Widget) { this.widget = widget; }
+  constructor(widget: Widget) {
+    this.widget = widget;
+  }
 
-  get widgetRef() { return this.widget; }
+  get widgetRef() {
+    return this.widget;
+  }
 
   addToMap(map: google.maps.Map) {
     const container = document.createElement('div');
@@ -85,7 +87,9 @@ class GoogleWidgetControl {
     if (this.map && this.position !== null && this.container) {
       const controls = this.map.controls[this.position];
       const index = controls.getArray().indexOf(this.container);
-      if (index >= 0) { controls.removeAt(index); }
+      if (index >= 0) {
+        controls.removeAt(index);
+      }
     }
     this.container?.remove();
     this.container = null;
@@ -93,22 +97,30 @@ class GoogleWidgetControl {
     this.position = null;
   }
 
-  matches(w: Widget) { return this.widget.id === w.id && this.widget.placement === w.placement; }
+  matches(w: Widget) {
+    return this.widget.id === w.id && this.widget.placement === w.placement;
+  }
 
   setWidget(w: Widget) {
     this.widget = w;
-    if (this.container) { w.props._container = this.container; }
+    if (this.container) {
+      w.props._container = this.container;
+    }
   }
 }
 
 function getGoogleWidgetPlacement(placement: WidgetPlacement): google.maps.ControlPosition {
   switch (placement) {
-    case 'top-right':    return google.maps.ControlPosition.TOP_RIGHT;
-    case 'bottom-left':  return google.maps.ControlPosition.BOTTOM_LEFT;
-    case 'bottom-right': return google.maps.ControlPosition.BOTTOM_RIGHT;
+    case 'top-right':
+      return google.maps.ControlPosition.TOP_RIGHT;
+    case 'bottom-left':
+      return google.maps.ControlPosition.BOTTOM_LEFT;
+    case 'bottom-right':
+      return google.maps.ControlPosition.BOTTOM_RIGHT;
     case 'fill':
     case 'top-left':
-    default:             return google.maps.ControlPosition.TOP_LEFT;
+    default:
+      return google.maps.ControlPosition.TOP_LEFT;
   }
 }
 
@@ -125,29 +137,36 @@ export default function GoogleMap(props: MapProviderProps) {
 function GoogleMapInner(props: MapProviderProps) {
   const { width, height, options, layers } = props;
   const googleMap = useMap();
-  const viewportAdapter: MapProviderAdapter<google.maps.Map, ViewStateChangeParameters<MapViewState>, GoogleCameraChangedEvent> = useMemo(() => ({
-    applyViewState: applyGoogleViewState,
-    limitViewState: limitTiltRange,
-    getViewport: (event) => {
-      if ('detail' in event) {
+  const viewportAdapter: MapProviderAdapter<
+    google.maps.Map,
+    ViewStateChangeParameters<MapViewState>,
+    GoogleCameraChangedEvent
+  > = useMemo(
+    () => ({
+      applyViewState: applyGoogleViewState,
+      limitViewState: limitTiltRange,
+      getViewport: (event) => {
+        if ('detail' in event) {
+          return {
+            latitude: event.detail.center.lat,
+            longitude: event.detail.center.lng,
+            zoom: event.detail.zoom,
+            bearing: event.detail.heading,
+            pitch: event.detail.tilt,
+          };
+        }
+        const viewState = 'viewState' in event ? event.viewState : event;
         return {
-          latitude: event.detail.center.lat,
-          longitude: event.detail.center.lng,
-          zoom: event.detail.zoom,
-          bearing: event.detail.heading,
-          pitch: event.detail.tilt,
+          latitude: viewState.latitude,
+          longitude: viewState.longitude,
+          zoom: viewState.zoom,
+          bearing: viewState.bearing ?? 0,
+          pitch: viewState.pitch ?? 0,
         };
-      }
-      const viewState = 'viewState' in event ? event.viewState : event;
-      return {
-        latitude: viewState.latitude,
-        longitude: viewState.longitude,
-        zoom: viewState.zoom,
-        bearing: viewState.bearing ?? 0,
-        pitch: viewState.pitch ?? 0,
-      };
-    },
-  }), []);
+      },
+    }),
+    []
+  );
 
   const {
     controller,
@@ -161,20 +180,24 @@ function GoogleMapInner(props: MapProviderProps) {
   } = useMapProviderState(props, viewportAdapter);
 
   // Sync Google map to the hook's ref so widget callbacks can access it.
-  useEffect(() => { mapRef.current = googleMap; });
-
+  useEffect(() => {
+    mapRef.current = googleMap;
+  });
 
   const deckProps = useDeckGLProps({ options, layers, widgetCallbacks: mergedCallbacks });
 
   /* --------------------------------- Widgets -------------------------------- */
 
-  const widgetAdapter: WidgetControlAdapter<Widget, GoogleWidgetControl> = useMemo(() => ({
-    createControl: (widget) => new GoogleWidgetControl(widget),
-    mountControl: (control) => googleMap && control.addToMap(googleMap),
-    unmountControl: (control) => control.remove(),
-    matches: (control, widget) => control.matches(widget),
-    updateControl: (control, widget) => control.setWidget(widget),
-  }), [googleMap]);
+  const widgetAdapter: WidgetControlAdapter<Widget, GoogleWidgetControl> = useMemo(
+    () => ({
+      createControl: (widget) => new GoogleWidgetControl(widget),
+      mountControl: (control) => googleMap && control.addToMap(googleMap),
+      unmountControl: (control) => control.remove(),
+      matches: (control, widget) => control.matches(widget),
+      updateControl: (control, widget) => control.setWidget(widget),
+    }),
+    [googleMap]
+  );
 
   useWidgetControls(googleMap, deckProps.widgets as Widget[] | undefined, widgetAdapter);
   const googleControlProps = useMemo(() => resolveGoogleNativeProps(options.widgets ?? []), [options.widgets]);
@@ -199,7 +222,7 @@ function GoogleMapInner(props: MapProviderProps) {
       const m = map;
       const lb = new google.maps.LatLngBounds(
         { lat: bounds[0][1], lng: bounds[0][0] },
-        { lat: bounds[1][1], lng: bounds[1][0] },
+        { lat: bounds[1][1], lng: bounds[1][0] }
       );
       m.fitBounds(lb, fitOpts.padding);
       const zoom = m.getZoom();
@@ -220,7 +243,14 @@ function GoogleMapInner(props: MapProviderProps) {
   if (controller) {
     return (
       <div style={{ width, height }}>
-        <DeckGL {...deckProps as DeckGLProps} width={width} height={height} controller viewState={viewState} onViewStateChange={handleViewStateChange}>
+        <DeckGL
+          {...(deckProps as DeckGLProps)}
+          width={width}
+          height={height}
+          controller
+          viewState={viewState}
+          onViewStateChange={handleViewStateChange}
+        >
           <Map
             {...sharedMapProps}
             style={{ width, height }}
@@ -246,13 +276,17 @@ function GoogleMapInner(props: MapProviderProps) {
     <Map
       {...sharedMapProps}
       style={{ width, height }}
-      gestureHandling={!interactive ? 'none' : (options.basemap.interactions?.cooperativeGestures ? 'cooperative' : 'auto')}
+      gestureHandling={
+        !interactive ? 'none' : options.basemap.interactions?.cooperativeGestures ? 'cooperative' : 'auto'
+      }
       keyboardShortcuts={interactive}
       clickableIcons={interactive}
       controlSize={25}
       {...googleControlProps}
       tiltInteractionEnabled={options.basemap.interactions?.rollEnabled}
-      onCameraChanged={(event: GoogleCameraChangedEvent) => props.onViewportChange?.(viewportAdapter.getViewport(event))}
+      onCameraChanged={(event: GoogleCameraChangedEvent) =>
+        props.onViewportChange?.(viewportAdapter.getViewport(event))
+      }
     >
       <DeckOverlay deckProps={deckProps as DeckGLProps} googleMap={googleMap ?? undefined} />
       {children}
@@ -264,15 +298,19 @@ function DeckOverlay({ deckProps, googleMap }: { deckProps: DeckGLProps; googleM
   const overlay = useMemo(
     () => new GoogleMapsOverlay({ ...deckProps } as any),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   useEffect(() => {
-    if (!googleMap || !overlay) { return; }
+    if (!googleMap || !overlay) {
+      return;
+    }
     overlay.setMap(googleMap);
     return () => overlay.setMap(null);
   }, [googleMap, overlay]);
 
-  useEffect(() => { overlay?.setProps(deckProps); }, [overlay, deckProps]);
+  useEffect(() => {
+    overlay?.setProps(deckProps);
+  }, [overlay, deckProps]);
   return null;
 }

@@ -14,7 +14,10 @@ import { useFitBounds } from '../hooks/useFitBounds';
 import { useGrafanaEventBridge } from '../hooks/useGrafanaEventBridge';
 import { setCurrentViewportSnapshot } from '../editor/currentViewportStore';
 import { parseMapHashView, useWriteMapHashView } from 'hooks/useMapHashRoute';
-import { buildCurrentLocationLayers, type CurrentLocationState } from '../layers/current-location/currentLocationLayers';
+import {
+  buildCurrentLocationLayers,
+  type CurrentLocationState,
+} from '../layers/current-location/currentLocationLayers';
 import type { FeaturePickingInfo } from '../layers/types';
 import { buildFeatureAt, getRowValue } from '../utils/dataframe/layerTable';
 import 'style.css';
@@ -27,7 +30,10 @@ function isLiveTimeRange(raw: RawTimeRange): boolean {
 
 function useMapViewState(options: MapPanelOptions) {
   const hashRoutingEnabled = options.basemap.interactions?.syncViewToUrl ?? false;
-  const hashInitialView = useMemo(() => hashRoutingEnabled ? parseMapHashView() ?? undefined : undefined, [hashRoutingEnabled]);
+  const hashInitialView = useMemo(
+    () => (hashRoutingEnabled ? (parseMapHashView() ?? undefined) : undefined),
+    [hashRoutingEnabled]
+  );
   const { latitude, longitude, zoom, bearing, pitch } = options.initialView.state;
   const manualViewState: ViewportSnapshot = { latitude, longitude, zoom, bearing: bearing ?? 0, pitch: pitch ?? 0 };
   const initialViewState: ViewportSnapshot = hashInitialView ?? manualViewState;
@@ -35,8 +41,15 @@ function useMapViewState(options: MapPanelOptions) {
   return { initialViewState, initialViewFromHash: Boolean(hashInitialView), writeHashView };
 }
 
-
-export function MapPanel({ data, options, onOptionsChange, width, height, eventBus, replaceVariables }: PanelProps<MapPanelOptions>) {
+export function MapPanel({
+  data,
+  options,
+  onOptionsChange,
+  width,
+  height,
+  eventBus,
+  replaceVariables,
+}: PanelProps<MapPanelOptions>) {
   const fromTimeMs = data.timeRange.from.valueOf();
   const toTimeMs = data.timeRange.to.valueOf();
   const live = isLiveTimeRange(data.timeRange.raw);
@@ -69,9 +82,13 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     (feature: Feature, info: FeaturePickingInfo) => {
       const keyField = info.layer?.props.config?.selectionKey;
       const featureSourceId = info.layer?.props.config?.data?.featureSource?.id;
-      if (!keyField?.field || keyField.source !== featureSourceId) { return; }
+      if (!keyField?.field || keyField.source !== featureSourceId) {
+        return;
+      }
       const key = String(feature.properties?.[keyField.field] ?? '');
-      if (!key) { return; }
+      if (!key) {
+        return;
+      }
       if (key === selectedKey) {
         selectKey(null);
         setSelectedFeature(null);
@@ -80,7 +97,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         setSelectedFeature(feature);
       }
     },
-    [selectedKey, selectKey],
+    [selectedKey, selectKey]
   );
 
   const handlePopupClose = useCallback(() => {
@@ -88,21 +105,29 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     setSelectedFeature(null);
   }, [selectKey]);
 
-  const onToggleLayerVisibility = useCallback((layerId: string) => {
-    const idx = options.layers.findIndex((l) => l.id === layerId);
-    if (idx === -1) { return; }
-    const layers = [...options.layers];
-    layers[idx] = { ...layers[idx], visible: !layers[idx].visible };
-    onOptionsChange({ ...options, layers });
-  }, [options, onOptionsChange]);
+  const onToggleLayerVisibility = useCallback(
+    (layerId: string) => {
+      const idx = options.layers.findIndex((l) => l.id === layerId);
+      if (idx === -1) {
+        return;
+      }
+      const layers = [...options.layers];
+      layers[idx] = { ...layers[idx], visible: !layers[idx].visible };
+      onOptionsChange({ ...options, layers });
+    },
+    [options, onOptionsChange]
+  );
 
   // ── Viewport tracking ───────────────────────────────────────────────────────
   const { initialViewState, initialViewFromHash, writeHashView } = useMapViewState(options);
 
-  const handleViewportChange = useCallback((viewport: ViewportSnapshot) => {
-    setCurrentViewportSnapshot(viewport);
-    writeHashView(viewport);
-  }, [writeHashView]);
+  const handleViewportChange = useCallback(
+    (viewport: ViewportSnapshot) => {
+      setCurrentViewportSnapshot(viewport);
+      writeHashView(viewport);
+    },
+    [writeHashView]
+  );
 
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
@@ -151,7 +176,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
     fromTimeMs,
     toTimeMs,
     selectedKey,
-    onFeatureClick,
+    onFeatureClick
   );
   const fitBounds = useFitBounds(options, preparedLayerStates);
   const fitRequestId = options.initialView.fitRequestId ?? 0;
@@ -159,26 +184,29 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
   const deckLayers = useMemo(() => [...layers, ...currentLocationLayers], [layers, currentLocationLayers]);
 
   // Widget callbacks sourced from panel-level state (viewport callbacks are added by each provider).
-  const widgetCallbacks = useMemo(() => ({
-    provider: options.basemap.provider,
-    geolocate: {
-      onLocation: ({ latitude, longitude, accuracy }: CurrentLocationState & { zoom: number }) =>
-        setCurrentLocation({ latitude, longitude, accuracy }),
-    },
-    playback: {
-      cursorTimeMs: playback.cursorTimeMs,
-      timeRange: [fromTimeMs, toTimeMs] as [number, number],
-      playing: playback.playing,
-      playInterval: playback.playbackSpeed,
-      onPlayingChange: (v: boolean) => v ? playback.play() : playback.pause(),
-      onSeekTo: (t: number) => playback.seekTo(t, false),
-      formatLabel: (timeMs: number) => new Date(timeMs).toLocaleString(),
-    },
-    selection: {
-      key: selectedKey,
-      feature: resolvedSelectedFeature,
-    },
-  }), [playback, fromTimeMs, options.basemap.provider, resolvedSelectedFeature, selectedKey, toTimeMs]);
+  const widgetCallbacks = useMemo(
+    () => ({
+      provider: options.basemap.provider,
+      geolocate: {
+        onLocation: ({ latitude, longitude, accuracy }: CurrentLocationState & { zoom: number }) =>
+          setCurrentLocation({ latitude, longitude, accuracy }),
+      },
+      playback: {
+        cursorTimeMs: playback.cursorTimeMs,
+        timeRange: [fromTimeMs, toTimeMs] as [number, number],
+        playing: playback.playing,
+        playInterval: playback.playbackSpeed,
+        onPlayingChange: (v: boolean) => (v ? playback.play() : playback.pause()),
+        onSeekTo: (t: number) => playback.seekTo(t, false),
+        formatLabel: (timeMs: number) => new Date(timeMs).toLocaleString(),
+      },
+      selection: {
+        key: selectedKey,
+        feature: resolvedSelectedFeature,
+      },
+    }),
+    [playback, fromTimeMs, options.basemap.provider, resolvedSelectedFeature, selectedKey, toTimeMs]
+  );
 
   return (
     <div
@@ -221,12 +249,7 @@ export function MapPanel({ data, options, onOptionsChange, width, height, eventB
         />
       )}
       {options.time.show && (
-        <TimePlaybackControls
-          width={width}
-          fromTimeMs={fromTimeMs}
-          toTimeMs={toTimeMs}
-          playback={playback}
-        />
+        <TimePlaybackControls width={width} fromTimeMs={fromTimeMs} toTimeMs={toTimeMs} playback={playback} />
       )}
     </div>
   );

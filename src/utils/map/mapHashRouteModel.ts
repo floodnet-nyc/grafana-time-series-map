@@ -14,7 +14,9 @@ export function parseMapHashViewFromHash(hash: string): MapHashView | null {
     return null;
   }
 
-  const values = decodeURIComponent(part.slice(HASH_VIEW_KEY.length + 1)).split('/').map(Number);
+  const values = decodeURIComponent(part.slice(HASH_VIEW_KEY.length + 1))
+    .split('/')
+    .map(Number);
   const [zoom, latitude, longitude, bearing = 0, pitch = 0] = values;
   if (![zoom, latitude, longitude, bearing, pitch].every(Number.isFinite)) {
     return null;

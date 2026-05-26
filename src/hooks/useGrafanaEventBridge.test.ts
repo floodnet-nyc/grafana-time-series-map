@@ -61,7 +61,11 @@ function createPlayback(overrides: Partial<UsePlaybackResult> = {}): UsePlayback
   };
 }
 
-function renderBridge(eventBus: EventBus, playback: UsePlaybackResult, overrides: Partial<Parameters<typeof useGrafanaEventBridge>[0]> = {}) {
+function renderBridge(
+  eventBus: EventBus,
+  playback: UsePlaybackResult,
+  overrides: Partial<Parameters<typeof useGrafanaEventBridge>[0]> = {}
+) {
   return renderHook(() =>
     useGrafanaEventBridge({
       eventBus,

@@ -46,8 +46,7 @@ const packFloat32Array = (arr: number[][]) => {
 };
 
 const declaration = (inout: string, type: GlslType, name: string, length?: number) =>
-  (type === 'int' ? 'flat ' : '') +
-  `${inout} ${type} ${name}${length && length > 1 ? `[${length}]` : ''};`;
+  (type === 'int' ? 'flat ' : '') + `${inout} ${type} ${name}${length && length > 1 ? `[${length}]` : ''};`;
 
 export class MathExtension extends LayerExtension<MathExtensionOptions & { name: string }> {
   static extensionName = 'MathExtension';
@@ -68,8 +67,12 @@ export class MathExtension extends LayerExtension<MathExtensionOptions & { name:
   /** Two MathExtensions are equal if they produce the same shader — uniform values
    *  are runtime data passed via draw() and do not affect shader compilation. */
   equals(extension: MathExtension): boolean {
-    if (this === extension) { return true; }
-    if (this.constructor !== extension.constructor) { return false; }
+    if (this === extension) {
+      return true;
+    }
+    if (this.constructor !== extension.constructor) {
+      return false;
+    }
     const a = this.opts;
     const b = extension.opts;
     return (
@@ -100,9 +103,7 @@ export class MathExtension extends LayerExtension<MathExtensionOptions & { name:
         .map(([n, val]) => declaration('', val.type, n, val.length || (val.value as any)?.length))
         .join('\n')
         .trim();
-      uniformBlock = uniformDefs
-        ? `uniform ${name}Uniforms {\n${uniformDefs}\n} ${name};`
-        : '';
+      uniformBlock = uniformDefs ? `uniform ${name}Uniforms {\n${uniformDefs}\n} ${name};` : '';
     }
 
     const vertexInputs = Object.entries(attrs)
@@ -185,51 +186,62 @@ function capitalizeFirstLetter(val: string) {
 
 // ── equals() helpers — compare shader structure, ignore runtime uniform values ──
 
-function _injectEqual(
-  a: MathExtensionOptions['inject'],
-  b: MathExtensionOptions['inject'],
-): boolean {
-  if (a === b) { return true; }
-  if (!a || !b) { return false; }
+function _injectEqual(a: MathExtensionOptions['inject'], b: MathExtensionOptions['inject']): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
   const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) { return false; }
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
   return keysA.every((k) => a[k] === b[k]);
 }
 
-function _attrsEqual(
-  a: MathExtensionOptions['attrs'],
-  b: MathExtensionOptions['attrs'],
-): boolean {
-  if (a === b) { return true; }
-  if (!a || !b) { return a === b; }
+function _attrsEqual(a: MathExtensionOptions['attrs'], b: MathExtensionOptions['attrs']): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (!a || !b) {
+    return a === b;
+  }
   const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) { return false; }
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
   return keysA.every((k) => a[k]?.type === b[k]?.type);
 }
 
-function _uniformStructEqual(
-  a: MathExtensionOptions['uniforms'],
-  b: MathExtensionOptions['uniforms'],
-): boolean {
-  if (a === b) { return true; }
+function _uniformStructEqual(a: MathExtensionOptions['uniforms'], b: MathExtensionOptions['uniforms']): boolean {
+  if (a === b) {
+    return true;
+  }
   const keysA = Object.keys(a);
-  if (keysA.length !== Object.keys(b).length) { return false; }
+  if (keysA.length !== Object.keys(b).length) {
+    return false;
+  }
   // Compare declaration-relevant fields only; `value` is runtime data.
   return keysA.every((k) => a[k]?.type === b[k]?.type && a[k]?.length === b[k]?.length);
 }
 
-
-function fromUniformValues(values: Record<string, Uniform['value']>, uniforms: Record<string, Uniform>): Record<string, Uniform> {
-  return Object.keys(uniforms).reduce((acc, k) => {
+function fromUniformValues(
+  values: Record<string, Uniform['value']>,
+  uniforms: Record<string, Uniform>
+): Record<string, Uniform> {
+  return Object.keys(uniforms).reduce(
+    (acc, k) => {
       const v = values[k];
       const u = uniforms[k];
       acc[k] = { ...u, value: v === undefined ? u.value : v };
       return acc;
-    }, {} as Record<string, Uniform>)
+    },
+    {} as Record<string, Uniform>
+  );
 }
 
 export const CreateMathExtensionSubclass = (options: MathExtensionOptions) => {
-  
   const defaultProps = Object.entries(options.attrs || {}).reduce((acc, [attr, { value }]) => {
     acc[`get${capitalizeFirstLetter(attr)}`] = { type: 'accessor' as const, value: value ?? null };
     return acc;
@@ -238,7 +250,15 @@ export const CreateMathExtensionSubclass = (options: MathExtensionOptions) => {
   const SubMathExtension = class extends MathExtension {
     static extensionName = options.name || 'SubMathExtension';
     defaultProps = defaultProps;
-    constructor({ name, uniforms, inject }: { name?: string; uniforms: Record<string, Uniform['value']>; inject?: Record<string, string> }) {
+    constructor({
+      name,
+      uniforms,
+      inject,
+    }: {
+      name?: string;
+      uniforms: Record<string, Uniform['value']>;
+      inject?: Record<string, string>;
+    }) {
       // options.name = name || SubMathExtension.extensionName;
       // for (const n of Object.keys(options.uniforms)) {
       //   if (uniforms[n] !== undefined) options.uniforms[n].value = uniforms[n] as Uniform['value'];

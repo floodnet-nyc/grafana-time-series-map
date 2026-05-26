@@ -1,9 +1,6 @@
 import type { Layer } from '@deck.gl/core';
 import { ScatterplotLayer } from '@deck.gl/layers';
-import {
-  CURRENT_LOCATION_EFFECT_RADIUS,
-  CurrentLocationPulseExtension,
-} from './currentLocationPulseExtension';
+import { CURRENT_LOCATION_EFFECT_RADIUS, CurrentLocationPulseExtension } from './currentLocationPulseExtension';
 
 export interface CurrentLocationState {
   latitude: number;

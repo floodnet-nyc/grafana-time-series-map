@@ -1,7 +1,7 @@
 import type { Feature } from 'geojson';
 import { createSourceRef } from '../defaults';
 import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
-import type { TripsLayerConfig } from './index';
+import { tripsLayerDefinition, type TripsLayerConfig } from './index';
 import { featureArrayToLayerTable } from '../../utils/dataframe/layerTable';
 
 jest.mock('@deck.gl/geo-layers', () => ({
@@ -22,12 +22,10 @@ jest.mock('@deck.gl/extensions', () => ({
   },
 }));
 
-import { tripsLayerDefinition } from './index';
-
 function createFeature(
   coordinates: number[][],
   properties: Record<string, unknown> = {},
-  index = 0,
+  index = 0
 ): Feature & { __idx: number } {
   return {
     type: 'Feature',
@@ -66,9 +64,12 @@ function createConfig(overrides: Partial<TripsLayerConfig> = {}): TripsLayerConf
   };
 }
 
-function createContext(config: TripsLayerConfig, features: Array<Feature & { __idx: number }>): LayerRenderContext<TripsLayerConfig> {
+function createContext(
+  config: TripsLayerConfig,
+  features: Array<Feature & { __idx: number }>
+): LayerRenderContext<TripsLayerConfig> {
   const getAccessor: GetAccessorFunction = (fieldRef, defaultValue) => [
-    fieldRef?.field ? ((feature: any) => feature.properties?.[fieldRef.field] ?? defaultValue) : undefined,
+    fieldRef?.field ? (feature: any) => feature.properties?.[fieldRef.field] ?? defaultValue : undefined,
     [fieldRef?.source, fieldRef?.field, defaultValue],
   ];
 
@@ -86,8 +87,13 @@ function createContext(config: TripsLayerConfig, features: Array<Feature & { __i
         if (Array.isArray(parsed)) {
           return parsed.map(Number).filter(Number.isFinite);
         }
-      } catch { /* not JSON */ }
-      return trimmed.split(',').map((v) => Number(v.trim())).filter(Number.isFinite);
+      } catch {
+        /* not JSON */
+      }
+      return trimmed
+        .split(',')
+        .map((v) => Number(v.trim()))
+        .filter(Number.isFinite);
     }
     return defaultValue;
   }
@@ -160,7 +166,7 @@ describe('tripsLayerDefinition', () => {
         [-73.8, 40.8, 2000],
       ],
       { width_value: 7 },
-      0,
+      0
     );
     const clicked: Feature[] = [];
     const config = createConfig();
@@ -191,7 +197,7 @@ describe('tripsLayerDefinition', () => {
         [-73.8, 40.8, 2000],
       ],
       { trip_times: [1000, 2000] },
-      0,
+      0
     );
     const tooShort = createFeature([[-73.9, 40.7, 1000]], {}, 1);
     const mismatchedTimestamps = createFeature(
@@ -200,7 +206,7 @@ describe('tripsLayerDefinition', () => {
         [-73.6, 40.5],
       ],
       { trip_times: [1000] },
-      2,
+      2
     );
     const config = createConfig({
       settings: {
@@ -233,7 +239,7 @@ describe('tripsLayerDefinition', () => {
         [-73.8, 40.8],
       ],
       { trip_times: [1, 2] },
-      0,
+      0
     );
     const jsonFeature = createFeature(
       [
@@ -241,7 +247,7 @@ describe('tripsLayerDefinition', () => {
         [-73.6, 40.5],
       ],
       { trip_times: '[3,4]' },
-      1,
+      1
     );
     const csvFeature = createFeature(
       [
@@ -249,7 +255,7 @@ describe('tripsLayerDefinition', () => {
         [-73.4, 40.3],
       ],
       { trip_times: '5, 6' },
-      2,
+      2
     );
     const config = createConfig({
       settings: {
@@ -258,7 +264,9 @@ describe('tripsLayerDefinition', () => {
       },
     });
 
-    const [layer] = tripsLayerDefinition.renderLayers(createContext(config, [arrayFeature, jsonFeature, csvFeature])) as any[];
+    const [layer] = tripsLayerDefinition.renderLayers(
+      createContext(config, [arrayFeature, jsonFeature, csvFeature])
+    ) as any[];
 
     expect(layer.props.getTimestamps(arrayFeature, { index: 0 })).toEqual([1, 2]);
     expect(layer.props.getTimestamps(jsonFeature, { index: 1 })).toEqual([3, 4]);
@@ -272,7 +280,7 @@ describe('tripsLayerDefinition', () => {
         [-73.8, 40.8, 2000],
       ],
       {},
-      0,
+      0
     );
     const config = createConfig();
     const sharedFeatures = [feature];

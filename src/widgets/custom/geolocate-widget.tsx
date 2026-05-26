@@ -53,13 +53,8 @@ export class GeolocateWidget extends Widget<GeolocateWidgetProps> {
             onClick: () => this.handleLocate(),
             title: this.props.label,
           },
-          h(
-            'span',
-            { style: targetStyle },
-            h('span', { style: outerRingStyle }),
-            h('span', { style: innerDotStyle }),
-          ),
-        ),
+          h('span', { style: targetStyle }, h('span', { style: outerRingStyle }), h('span', { style: innerDotStyle }))
+        )
       ),
       rootElement
     );
@@ -83,7 +78,7 @@ export class GeolocateWidget extends Widget<GeolocateWidgetProps> {
       () => {
         this.props.onError?.('The geolocation request failed.');
       },
-      { enableHighAccuracy: this.props.enableHighAccuracy },
+      { enableHighAccuracy: this.props.enableHighAccuracy }
     );
   }
 }

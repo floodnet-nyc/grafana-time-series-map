@@ -78,7 +78,7 @@ function createOptions(overrides: Partial<MapPanelOptions> = {}): MapPanelOption
 
 function createAccessors(): Pick<PreparedLayerState, 'getAccessor' | 'getAccessors'> {
   const getAccessor: GetAccessorFunction = (fieldName, defaultValue) => [
-    fieldName?.field ? ((feature: any) => feature.properties?.[fieldName.field] ?? defaultValue) : undefined,
+    fieldName?.field ? (feature: any) => feature.properties?.[fieldName.field] ?? defaultValue : undefined,
     [fieldName?.source, fieldName?.field, defaultValue],
   ];
   const getAccessors: GetAccessorFunctions = {
@@ -125,11 +125,14 @@ describe('panelLayersModel', () => {
     const featuresByLayerId = new Map([
       [
         config.id,
-        featureArrayToLayerTable([
-          createFeature({ time: 900 }, undefined, 0),
-          createFeature({ time: 1500 }, undefined, 1),
-          createFeature({ time: 2201 }, undefined, 2),
-        ] as any, 'main'),
+        featureArrayToLayerTable(
+          [
+            createFeature({ time: 900 }, undefined, 0),
+            createFeature({ time: 1500 }, undefined, 1),
+            createFeature({ time: 2201 }, undefined, 2),
+          ] as any,
+          'main'
+        ),
       ],
     ]);
 
@@ -139,7 +142,12 @@ describe('panelLayersModel', () => {
 
   it('builds as-of time-filter flags from packed series', () => {
     const config = createLayerConfig({
-      timeFilter: { mode: 'asof', time: createSourceRef('time'), groupBy: createSourceRef('deployment_id'), maxLagMs: 1000 },
+      timeFilter: {
+        mode: 'asof',
+        time: createSourceRef('time'),
+        groupBy: createSourceRef('deployment_id'),
+        maxLagMs: 1000,
+      },
     });
     const features = [
       createFeature({ deployment_id: 'a', time: 1000 }, 'a-1', 0),
@@ -147,9 +155,7 @@ describe('panelLayersModel', () => {
       createFeature({ deployment_id: 'b', time: 1200 }, 'b-1', 2),
     ];
     const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable(features as any, 'main')]]);
-    const packedByLayerId = new Map([
-      [config.id, buildPacked('geojson', features, 'deployment_id', 'time')],
-    ]);
+    const packedByLayerId = new Map([[config.id, buildPacked('geojson', features, 'deployment_id', 'time')]]);
 
     const flags = buildTimeFilterFlagsByLayerId([config], featuresByLayerId, packedByLayerId, 2100, 0, 0);
     expect(Array.from(flags.get(config.id) ?? [])).toEqual([0, 1, 1]);
@@ -160,18 +166,18 @@ describe('panelLayersModel', () => {
       data: {
         featureSource: { id: 'main', refId: '' },
         joinedSources: [
-        {
-          id: 'A',
-          refId: 'A',
-          join: {
-            type: 'asof',
-            localKey: createSourceRef('deployment_id'),
-            remoteKey: 'deployment_id',
-            time: 'time',
+          {
+            id: 'A',
+            refId: 'A',
+            join: {
+              type: 'asof',
+              localKey: createSourceRef('deployment_id'),
+              remoteKey: 'deployment_id',
+              time: 'time',
+            },
+            fields: [{ field: 'depth' }],
           },
-          fields: [{ field: 'depth' }],
-        },
-      ],
+        ],
       },
       derivedFields: [
         {
@@ -184,9 +190,7 @@ describe('panelLayersModel', () => {
     const features = [createFeature({ time: 1000, deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
     const featuresByLayerId = new Map([[config.id, featureArrayToLayerTable(features as any, 'main')]]);
     const flagsByLayerId = new Map([[config.id, new Uint8Array([1])]]);
-    const joinedSourceValues = new Map([
-      [config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])],
-    ]);
+    const joinedSourceValues = new Map([[config.id, new Map([['A', new Map([['sensor-1', { depth: 5 }]])]])]]);
 
     const [state] = buildPreparedLayerStates([config], featuresByLayerId, flagsByLayerId, joinedSourceValues);
 
@@ -212,7 +216,11 @@ describe('panelLayersModel', () => {
     });
     const features = [createFeature({ depth: 4 }, undefined, 0)];
 
-    const derivedValues = selectDerivedValues(compileDerivedFields(config), config, featureArrayToLayerTable(features as any, 'main'));
+    const derivedValues = selectDerivedValues(
+      compileDerivedFields(config),
+      config,
+      featureArrayToLayerTable(features as any, 'main')
+    );
 
     expect(derivedValues).toEqual([{ depthDouble: 8 }]);
     expect((features[0] as GeoFeature & { __derived?: Record<string, unknown> }).__derived).toBeUndefined();
@@ -245,9 +253,7 @@ describe('panelLayersModel', () => {
       ],
     });
     const features = [createFeature({ deployment_id: 'sensor-1', contour_depth_inches: 2 }, undefined, 0)];
-    const joinedSourceValues = new Map([
-      ['A', new Map([['sensor-1', { depth: 5 }]])],
-    ]);
+    const joinedSourceValues = new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]);
     const derivedValues = [{ depthDiff: 3 }];
     const table = featureArrayToLayerTable(features as any, 'main');
     const { getAccessor, getAccessors } = selectAccessorFactories({ config, table, joinedSourceValues, derivedValues });
@@ -291,19 +297,19 @@ describe('panelLayersModel', () => {
       data: {
         featureSource: { id: 'main', refId: '' },
         joinedSources: [
-        {
-          id: 'B',
-          refId: 'B',
-          join: {
-            type: 'asof',
-            localKey: createSourceRef('deployment_id'),
-            remoteKey: 'deployment_id',
-            time: 'time',
-            maxLagMs: 1000,
+          {
+            id: 'B',
+            refId: 'B',
+            join: {
+              type: 'asof',
+              localKey: createSourceRef('deployment_id'),
+              remoteKey: 'deployment_id',
+              time: 'time',
+              maxLagMs: 1000,
+            },
+            fields: [{ field: 'depth' }],
           },
-          fields: [{ field: 'depth' }],
-        },
-      ],
+        ],
       },
     });
 
@@ -351,9 +357,27 @@ describe('panelLayersModel', () => {
     const hiddenFeatures = [createFeature({ value: 2 }, undefined, 0)];
     const missingFeatures = [createFeature({ value: 3 }, undefined, 0)];
     const preparedLayerStates: PreparedLayerState[] = [
-      { config: visibleConfig, table: featureArrayToLayerTable(visibleFeatures as any, 'main'), features: visibleFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: hiddenConfig, table: featureArrayToLayerTable(hiddenFeatures as any, 'main'), features: hiddenFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
-      { config: missingConfig, table: featureArrayToLayerTable(missingFeatures as any, 'main'), features: missingFeatures as any, timeFilterFlags: new Uint8Array([1]), ...accessors },
+      {
+        config: visibleConfig,
+        table: featureArrayToLayerTable(visibleFeatures as any, 'main'),
+        features: visibleFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
+      {
+        config: hiddenConfig,
+        table: featureArrayToLayerTable(hiddenFeatures as any, 'main'),
+        features: hiddenFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
+      {
+        config: missingConfig,
+        table: featureArrayToLayerTable(missingFeatures as any, 'main'),
+        features: missingFeatures as any,
+        timeFilterFlags: new Uint8Array([1]),
+        ...accessors,
+      },
     ];
 
     const renderer = {
@@ -361,8 +385,7 @@ describe('panelLayersModel', () => {
       label: 'Known',
       createDefaultConfig: () => visibleConfig,
       editorSections: [],
-      renderLayers: (ctx: any) =>
-        [{ id: `deck-${ctx.config.id}` } as Layer],
+      renderLayers: (ctx: any) => [{ id: `deck-${ctx.config.id}` } as Layer],
     };
 
     const rendered = renderPreparedLayers({

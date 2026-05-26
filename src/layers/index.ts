@@ -29,21 +29,31 @@ export const layerDefinitions = [
 ] as const;
 
 export type LayerType = (typeof layerDefinitions)[number]['type'];
-export type LayerDefinitionForType<TType extends LayerType> = Extract<(typeof layerDefinitions)[number], { type: TType }>;
-export type LayerConfigForType<TType extends LayerType> = ReturnType<LayerDefinitionForType<TType>['createDefaultConfig']>;
+export type LayerDefinitionForType<TType extends LayerType> = Extract<
+  (typeof layerDefinitions)[number],
+  { type: TType }
+>;
+export type LayerConfigForType<TType extends LayerType> = ReturnType<
+  LayerDefinitionForType<TType>['createDefaultConfig']
+>;
 export type LayerConfig = LayerConfigForType<LayerType>;
 
 const layerDefinitionsByType = Object.fromEntries(
   layerDefinitions.map((definition) => [definition.type, definition])
 ) as Record<LayerType, (typeof layerDefinitions)[number]>;
 
-export function getLayerDefinition<TType extends string>(type: TType): Extract<(typeof layerDefinitions)[number], { type: TType }> | undefined {
+export function getLayerDefinition<TType extends string>(
+  type: TType
+): Extract<(typeof layerDefinitions)[number], { type: TType }> | undefined {
   return (layerDefinitionsByType as Partial<Record<string, (typeof layerDefinitions)[number]>>)[type] as
     | Extract<(typeof layerDefinitions)[number], { type: TType }>
     | undefined;
 }
 
-export function createLayerConfig<TType extends LayerType>(type: TType, index: number): LayerConfigForType<TType> | undefined {
+export function createLayerConfig<TType extends LayerType>(
+  type: TType,
+  index: number
+): LayerConfigForType<TType> | undefined {
   const definition = getLayerDefinition(type);
   return definition?.createDefaultConfig(index) as LayerConfigForType<TType> | undefined;
 }

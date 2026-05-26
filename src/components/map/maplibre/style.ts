@@ -16,5 +16,5 @@ const STYLE_URLS: Record<Exclude<MaplibreStyle, 'custom'>, string> = {
 };
 
 export function getMaplibreStyleUrl(maplibreStyle: MaplibreStyle, customStyleUrl?: string) {
-  return maplibreStyle === 'custom' ? customStyleUrl ?? STYLE_URLS[DEFAULT_STYLE] : STYLE_URLS[maplibreStyle];
+  return maplibreStyle === 'custom' ? (customStyleUrl ?? STYLE_URLS[DEFAULT_STYLE]) : STYLE_URLS[maplibreStyle];
 }

@@ -45,7 +45,9 @@ jest.mock('@grafana/ui', () => {
         onChange={(event) => onChange(Number(event.currentTarget.value))}
       />
     ),
-    ColorPicker: ({ color, onChange }: any) => <input aria-label="color" value={color} onChange={(event) => onChange(event.currentTarget.value)} />,
+    ColorPicker: ({ color, onChange }: any) => (
+      <input aria-label="color" value={color} onChange={(event) => onChange(event.currentTarget.value)} />
+    ),
     Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
     IconButton: ({ tooltip, name, onClick }: any) => (
       <button aria-label={tooltip ?? name} onClick={onClick}>
@@ -61,9 +63,17 @@ function Harness({ initialValue }: { initialValue?: DeckLightingOptions }) {
       enabled: true,
       lights: [
         { id: 'ambient-1', type: 'ambient', color: [255, 255, 255], intensity: 1 },
-        { id: 'point-1', type: 'point', color: [255, 255, 255], intensity: 0.8, longitude: 0, latitude: 0, altitude: 8000 },
+        {
+          id: 'point-1',
+          type: 'point',
+          color: [255, 255, 255],
+          intensity: 0.8,
+          longitude: 0,
+          latitude: 0,
+          altitude: 8000,
+        },
       ],
-    },
+    }
   );
 
   return (

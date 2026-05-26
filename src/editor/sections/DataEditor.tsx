@@ -1,6 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
 import { Field, Combobox, MultiCombobox, Input, TextArea, Switch, type ComboboxOption } from '@grafana/ui';
-import type { FeatureSourceConfig, JoinedSourceConfig, LayerDataConfig, LayerDerivedFieldConfig, TimeFilterConfig } from '../../types';
+import type {
+  FeatureSourceConfig,
+  JoinedSourceConfig,
+  LayerDataConfig,
+  LayerDerivedFieldConfig,
+  TimeFilterConfig,
+} from '../../types';
 import { createSourceRef, DEFAULT_FEATURE_SOURCE_ID } from '../../layers/defaults';
 import { SourceRefEditor } from '../utils/SourceRefEditor';
 import { SelectableListEditor } from '../utils/SelectableListEditor';
@@ -12,7 +18,11 @@ const DERIVED_FIELD_TYPES: Array<ComboboxOption<string>> = [
   { label: 'Boolean', value: 'boolean' },
 ];
 
-function getDefaultJoinedSource(featureSourceId: string, featureSourceRefId: string | undefined, availableRefIds: string[]): JoinedSourceConfig {
+function getDefaultJoinedSource(
+  featureSourceId: string,
+  featureSourceRefId: string | undefined,
+  availableRefIds: string[]
+): JoinedSourceConfig {
   const preferredRefId = availableRefIds.find((refId) => refId !== featureSourceRefId) ?? availableRefIds[0] ?? '';
   const id = `source-${Date.now()}`;
   return {
@@ -50,13 +60,14 @@ function JoinedSourceEditor({
   queryFieldsByRefId: Record<string, string[]>;
   patchSource: (updates: Partial<JoinedSourceConfig>) => void;
 }) {
-  const sourceFields = source.refId ? queryFieldsByRefId[source.refId] ?? [] : [];
+  const sourceFields = source.refId ? (queryFieldsByRefId[source.refId] ?? []) : [];
   const refIdOptions = [
     { label: 'First query', value: '' },
     ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
   ];
 
-  const patchJoin = (updates: Partial<JoinedSourceConfig['join']>) => patchSource({ join: { ...source.join, ...updates } });
+  const patchJoin = (updates: Partial<JoinedSourceConfig['join']>) =>
+    patchSource({ join: { ...source.join, ...updates } });
 
   return (
     <>
@@ -74,7 +85,12 @@ function JoinedSourceEditor({
         <SourceRefEditor
           value={source.join.localKey}
           onChange={(value) => patchJoin({ localKey: value })}
-          sourceOptions={[{ id: featureSourceId, label: featureSourceId === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSourceId }]}
+          sourceOptions={[
+            {
+              id: featureSourceId,
+              label: featureSourceId === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSourceId,
+            },
+          ]}
           fieldsBySource={{ [featureSourceId]: featureSourceFields }}
         />
       </Field>
@@ -164,7 +180,12 @@ function FeatureSourceEditor({
     ...availableRefIds.map((refId) => ({ label: refId, value: refId })),
   ];
   const geotemporal = timeFilter.mode === 'asof';
-  const sourceOptions = [{ id: featureSource.id, label: featureSource.id === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSource.id }];
+  const sourceOptions = [
+    {
+      id: featureSource.id,
+      label: featureSource.id === DEFAULT_FEATURE_SOURCE_ID ? 'Feature source' : featureSource.id,
+    },
+  ];
 
   const patchTimeFilter = (updates: Partial<TimeFilterConfig>) => onTimeFilterChange({ ...timeFilter, ...updates });
 
@@ -177,7 +198,10 @@ function FeatureSourceEditor({
           onChange={(v) => patchFeatureSource({ refId: String(v?.value ?? '') })}
         />
       </Field>
-      <Field label="Has time field" description="Whether to enable geotemporal filtering. If time series data comes from a joined source, leave this disabled and configure the time field on the joined source instead.">
+      <Field
+        label="Has time field"
+        description="Whether to enable geotemporal filtering. If time series data comes from a joined source, leave this disabled and configure the time field on the joined source instead."
+      >
         <Switch
           value={geotemporal}
           onChange={(e) =>
@@ -242,7 +266,10 @@ export function JoinedSourceListEditor({
   queryFieldsByRefId: Record<string, string[]>;
   onChange: (sources: JoinedSourceConfig[]) => void;
 }) {
-  const { selectedIndex, setSelectedIndex, patchAt, addItem, removeAt, moveAt } = useSelectableListState({ items: sources, onChange });
+  const { selectedIndex, setSelectedIndex, patchAt, addItem, removeAt, moveAt } = useSelectableListState({
+    items: sources,
+    onChange,
+  });
 
   const addJoinedSource = useCallback(() => {
     addItem(getDefaultJoinedSource(featureSourceId, undefined, availableRefIds));
@@ -282,7 +309,10 @@ export function DerivedFieldListEditor({
   fields: LayerDerivedFieldConfig[];
   onChange: (fields: LayerDerivedFieldConfig[]) => void;
 }) {
-  const { selectedIndex, setSelectedIndex, patchAt, addItem, removeAt, moveAt } = useSelectableListState({ items: fields, onChange });
+  const { selectedIndex, setSelectedIndex, patchAt, addItem, removeAt, moveAt } = useSelectableListState({
+    items: fields,
+    onChange,
+  });
 
   const addDerivedField = useCallback(() => {
     addItem({ as: '', expression: '', type: 'number' });
@@ -352,7 +382,6 @@ export function FeatureSourceListEditor({
       )}
     />
   );
-
 }
 
 export function DataEditor({
@@ -378,7 +407,7 @@ export function DataEditor({
           availableRefIds={availableRefIds}
           onChange={([next]) => onDataChange({ ...data, featureSource: next })}
           onTimeFilterChange={onTimeFilterChange}
-         />
+        />
       </Field>
       <Field label="Joined Sources">
         <JoinedSourceListEditor
@@ -388,13 +417,10 @@ export function DataEditor({
           availableRefIds={availableRefIds}
           queryFieldsByRefId={queryFieldsByRefId}
           onChange={(next) => onDataChange({ ...data, joinedSources: next })}
-         />
+        />
       </Field>
       <Field label="Derived Fields">
-        <DerivedFieldListEditor
-          fields={derivedFields}
-          onChange={onDerivedFieldsChange}
-         />
+        <DerivedFieldListEditor fields={derivedFields} onChange={onDerivedFieldsChange} />
       </Field>
     </>
   );

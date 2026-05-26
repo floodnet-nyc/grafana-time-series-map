@@ -8,119 +8,98 @@ type PackedSeries = {
   indices: Uint32Array;
 };
 
-const dateAsNumber = (date: Date | number) => date instanceof Date ? date.getTime() : date;
+const dateAsNumber = (date: Date | number) => (date instanceof Date ? date.getTime() : date);
 
 export function buildPackedFromAccessors(
   n: number,
   getKey?: (i: number) => any,
-  getTime?: (i: number) => number,
-): { 
-    keyIndex: Map<string, number>; 
-    buckets: PackedSeries[] 
+  getTime?: (i: number) => number
+): {
+  keyIndex: Map<string, number>;
+  buckets: PackedSeries[];
 } {
-    if (!n || !getTime) return { keyIndex: new Map(), buckets: [] };
+  if (!n || !getTime) return { keyIndex: new Map(), buckets: [] };
 
-    const keyIndex = new Map<string, number>();
-    let counter = 0;
-    const tmp: Record<number, Array<{ t: number; i: number }>> = {};
-    for (let i = 0; i < n; i++) {
-        const key = getKey ? String(getKey(i) ?? '') : '';
-        if (!keyIndex.has(key)) keyIndex.set(key, counter++);
-        const di = keyIndex.get(key)!;
-        const t = getTime(i);
-        (tmp[di] ||= []).push({ t, i });
+  const keyIndex = new Map<string, number>();
+  let counter = 0;
+  const tmp: Record<number, Array<{ t: number; i: number }>> = {};
+  for (let i = 0; i < n; i++) {
+    const key = getKey ? String(getKey(i) ?? '') : '';
+    if (!keyIndex.has(key)) keyIndex.set(key, counter++);
+    const di = keyIndex.get(key)!;
+    const t = getTime(i);
+    (tmp[di] ||= []).push({ t, i });
+  }
+
+  const buckets: PackedSeries[] = Array.from({ length: counter }, () => ({
+    times: new Float64Array(0),
+    indices: new Uint32Array(0),
+  }));
+  for (const [k, arr] of Object.entries(tmp)) {
+    arr.sort((a, b) => a.t - b.t);
+    const m = arr.length;
+    const times = new Float64Array(m);
+    const indices = new Uint32Array(m);
+    for (let j = 0; j < m; j++) {
+      times[j] = arr[j].t;
+      indices[j] = arr[j].i;
     }
+    buckets[+k] = { times, indices };
+  }
 
-    const buckets: PackedSeries[] = Array.from({ length: counter }, () => ({
-        times: new Float64Array(0),
-        indices: new Uint32Array(0),
-    }));
-    for (const [k, arr] of Object.entries(tmp)) {
-        arr.sort((a, b) => a.t - b.t);
-        const m = arr.length;
-        const times = new Float64Array(m);
-        const indices = new Uint32Array(m);
-        for (let j = 0; j < m; j++) {
-            times[j] = arr[j].t;
-            indices[j] = arr[j].i;
-        }
-        buckets[+k] = { times, indices };
-    }
-
-    return { keyIndex, buckets };
+  return { keyIndex, buckets };
 }
-
 
 const getGrafanaFieldAccessor = (data: DataFrame, fieldName: string) => {
-    const field = data.fields.find(f => f.name === fieldName);
-    return field ? (index: number) => field.values[index] : undefined;
-}
-
+  const field = data.fields.find((f) => f.name === fieldName);
+  return field ? (index: number) => field.values[index] : undefined;
+};
 
 const getGeoJsonFieldAccessor = (data: Feature[], fieldName: string) => {
-    return (index: number) => data[index].properties?.[fieldName];
-}
+  return (index: number) => data[index].properties?.[fieldName];
+};
 
 const lengthAccessors = {
-    grafana: (data: DataFrame) => data.length,
-    geojson: (data: Feature[]) => data.length,
+  grafana: (data: DataFrame) => data.length,
+  geojson: (data: Feature[]) => data.length,
 };
 
 const fieldAccessors = {
-    grafana: getGrafanaFieldAccessor,
-    geojson: getGeoJsonFieldAccessor,
+  grafana: getGrafanaFieldAccessor,
+  geojson: getGeoJsonFieldAccessor,
 };
 export type AccessorType = keyof typeof fieldAccessors;
 
-// type AccessorFactory<T> = (data: T, fieldName: string) => ((i: number) => any) | undefined;
-
 export function buildPacked(
-    accessorType: 'grafana',
-    data: DataFrame,
-    keyFieldName?: string,
-    timeFieldName?: string,
-): ReturnType<typeof buildPackedFromAccessors>;
-export function buildPacked(
-    accessorType: 'geojson',
-    data: Feature[],
-    keyFieldName?: string,
-    timeFieldName?: string,
-): ReturnType<typeof buildPackedFromAccessors>;
-export function buildPacked(
-    accessorType: AccessorType,
-    data: DataFrame | Feature[],
-    keyFieldName?: string,
-    timeFieldName?: string,
+  accessorType: AccessorType,
+  data: DataFrame | Feature[],
+  keyFieldName?: string,
+  timeFieldName?: string
 ) {
-    if (accessorType === 'grafana') {
-        const frame = data as DataFrame;
-        const length = lengthAccessors.grafana(frame);
-        const keyAccessor = getGrafanaFieldAccessor(frame, keyFieldName ?? '');
-        const timeAccessor = getGrafanaFieldAccessor(frame, timeFieldName ?? '');
-        return buildPackedFromAccessors(
-            length,
-            keyAccessor ? (i) => keyAccessor(i) : undefined,
-            timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined,
-        );
-    }
-
-    const features = data as Feature[];
-    const length = lengthAccessors.geojson(features);
-    const keyAccessor = getGeoJsonFieldAccessor(features, keyFieldName ?? '');
-    const timeAccessor = getGeoJsonFieldAccessor(features, timeFieldName ?? '');
+  if (accessorType === 'grafana') {
+    const frame = data as DataFrame;
+    const length = lengthAccessors.grafana(frame);
+    const keyAccessor = getGrafanaFieldAccessor(frame, keyFieldName ?? '');
+    const timeAccessor = getGrafanaFieldAccessor(frame, timeFieldName ?? '');
     return buildPackedFromAccessors(
-        length,
-        keyAccessor ? (i) => keyAccessor(i) : undefined,
-        timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined,
+      length,
+      keyAccessor ? (i) => keyAccessor(i) : undefined,
+      timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined
     );
+  }
+
+  const features = data as Feature[];
+  const length = lengthAccessors.geojson(features);
+  const keyAccessor = getGeoJsonFieldAccessor(features, keyFieldName ?? '');
+  const timeAccessor = getGeoJsonFieldAccessor(features, timeFieldName ?? '');
+  return buildPackedFromAccessors(
+    length,
+    keyAccessor ? (i) => keyAccessor(i) : undefined,
+    timeAccessor ? (i) => dateAsNumber(timeAccessor(i)) : undefined
+  );
 }
 
-
-
-
 /* ------------------------ Implementation Specifics ------------------------ */
-
-
 
 // export function buildPacked(
 //   features: Feature[],
@@ -184,11 +163,7 @@ function asofIndex(times: Float64Array, t0: number): number {
 
 const DEFAULT_MAX_LAG_MS = 60 * 60 * 1000;
 
-export function computeClosestFlags(
-  buckets: PackedSeries[],
-  t0: number,
-  maxLag = DEFAULT_MAX_LAG_MS,
-): Uint8Array {
+export function computeClosestFlags(buckets: PackedSeries[], t0: number, maxLag = DEFAULT_MAX_LAG_MS): Uint8Array {
   const totalPoints = buckets.reduce((s, b) => s + b.indices.length, 0);
   const flags = new Uint8Array(totalPoints);
 
@@ -208,7 +183,7 @@ export function resolveAsofLookup(
   packed: { keyIndex: Map<string, number>; buckets: PackedSeries[] },
   fields: Array<{ sourceField: string; targetField?: string }>,
   t0: number,
-  maxLag = DEFAULT_MAX_LAG_MS,
+  maxLag = DEFAULT_MAX_LAG_MS
 ): Map<string, Record<string, unknown>> {
   const { keyIndex, buckets } = packed;
   const result = new Map<string, Record<string, unknown>>();
@@ -233,11 +208,11 @@ export function useCurrentTimeFilter(
   currentTime?: Date,
   maxLag = DEFAULT_MAX_LAG_MS,
   idKey = 'deployment_id',
-  timeKey = 'time',
+  timeKey = 'time'
 ): Uint8Array {
   const { buckets } = useMemo(
     () => (features ? buildPacked('geojson', features, idKey, timeKey) : { buckets: [] }),
-    [features, idKey, timeKey],
+    [features, idKey, timeKey]
   );
 
   const t = currentTime?.getTime();
@@ -245,8 +220,6 @@ export function useCurrentTimeFilter(
 
   return useMemo(() => {
     const t0 = t ?? Number.NEGATIVE_INFINITY;
-    return Number.isFinite(t0) && buckets.length
-      ? computeClosestFlags(buckets, t0, maxLag)
-      : new Uint8Array(n);
+    return Number.isFinite(t0) && buckets.length ? computeClosestFlags(buckets, t0, maxLag) : new Uint8Array(n);
   }, [buckets, t, n, maxLag]);
 }

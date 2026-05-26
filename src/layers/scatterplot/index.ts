@@ -6,12 +6,9 @@ import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathE
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import CollisionFilterExtension from '../../utils/deckgl/extensions/CollisionFilterExtension';
-import {
-  createCommonLayerProps,
-  getDatumPosition,
-} from '../utils';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
 import { autoDecimalsText } from 'layers/text';
-import { AccessorContext } from '@deck.gl/core';
+import type { AccessorContext } from '@deck.gl/core';
 import type { LayerDatum } from '../../utils/dataframe/layerTable';
 export interface ScatterplotLayerSettings {
   radiusMinPixels: number;
@@ -27,7 +24,6 @@ export interface ScatterplotLayerSettings {
 }
 
 export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
-
 
 const ScatterColorExtension = CreateMathExtensionSubclass({
   name: 'ScatterColor',
@@ -84,23 +80,33 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
       const userDecl = config.shader?.vsDecl?.trim() ?? '';
       const vsFilterColor = config.shader?.vsFilterColor?.trim() || DEFAULT_VS_FILTER_COLOR;
-      shaderExtensions.push(new ScatterColorExtension({
-        name: `shader_${config.id}`,
-        uniforms: {},
-        inject: {
-          'vs:#decl': userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl,
-          'vs:DECKGL_FILTER_COLOR': vsFilterColor,
-        },
-      }));
+      shaderExtensions.push(
+        new ScatterColorExtension({
+          name: `shader_${config.id}`,
+          uniforms: {},
+          inject: {
+            'vs:#decl': userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl,
+            'vs:DECKGL_FILTER_COLOR': vsFilterColor,
+          },
+        })
+      );
     }
 
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue, updateColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updateColorValue] = config.colorScale?.field
+      ? getAccessors.number(config.colorScale.field)
+      : [undefined, []];
     const getColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 104, 255], getColorValue);
 
-    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
-    const getLineColor = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (selectedKey != null && getSelection?.(datum, ctx) ? config.selectionColor ?? [200, 200, 240, 200] : [0, 0, 0, 0]) as [number, number, number, number];
-    const getLineWidth = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => selectedKey != null ? (getSelection?.(datum, ctx) ? 3 : 1) : 2;
+    const [getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getLineColor = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+      (selectedKey != null
+        ? String(getSelection?.(datum, ctx) ?? '') === selectedKey
+          ? (config.selectionColor ?? DEFAULT_SELECTED_COLOR)
+          : [200, 200, 240, 60]
+        : [0, 0, 0, 0]) as [number, number, number, number];
+    const getLineWidth = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+      selectedKey != null ? (String(getSelection?.(datum, ctx) ?? '') === selectedKey ? 3 : 1) : 2;
 
     const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
@@ -116,7 +122,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         stroked: options.stroked,
         filled: true,
         lineWidthMinPixels: 0,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
         getLineColor: getLineColor ?? [0, 0, 0, 0],
         getLineWidth: getLineWidth ?? 0,
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
@@ -138,7 +145,10 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
 
     if (options.showLabels) {
       const [getText, updateText] = getAccessor(options.label?.field ? options.label : valueField, '');
-      const [getCollisionPriority, updateCollisionPriority] = getAccessors.number(options.elevation, options.elevationScale);
+      const [getCollisionPriority, updateCollisionPriority] = getAccessors.number(
+        options.elevation,
+        options.elevationScale
+      );
       const getDecimals = (v: number) => (v > 6 ? 0 : 1);
       layers.push(
         new TextLayer({
@@ -146,14 +156,22 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           data,
           visible: config.visible,
           pickable: false,
-          getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 2),
-          getText: getText ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), true) : undefined,
-          getSize: getRadius ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
-            const v = getRadius(datum, ctx);
-            const decs = getDecimals(v);
-            const chars = String(v.toFixed(decs)).length;
-            return options.radiusMinPixels + Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / chars;
-          } : 12,
+          getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+            getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 2),
+          getText: getText
+            ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), true)
+            : undefined,
+          getSize: getRadius
+            ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
+                const v = getRadius(datum, ctx);
+                const decs = getDecimals(v);
+                const chars = String(v.toFixed(decs)).length;
+                return (
+                  options.radiusMinPixels +
+                  Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / chars
+                );
+              }
+            : 12,
           getColor: [255, 255, 255, 220],
           getAlignmentBaseline: 'center',
           getAnchor: 'middle',
@@ -168,7 +186,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           collisionTestProps: { sizeScale: 2 },
           getCollisionPriority: getCollisionPriority ?? 0,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
-          updateTriggers: { 
+          updateTriggers: {
             ...commonProps.updateTriggers,
             getPosition: updateElevation,
             getText: updateText,
@@ -176,7 +194,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           },
           parameters: { depthTest: false },
           polygonOffset: 1,
-        }),
+        })
       );
     }
 

@@ -61,14 +61,20 @@ export const arcLayerDefinition: LayerDefinition<ArcLayerConfig, LayerDatum> = {
         data,
         greatCircle: options.greatCircle,
         widthMinPixels: options.widthMinPixels,
-        getSourcePosition: srcLatAccessor && srcLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
-          srcLngAccessor(datum, ctx),
-          srcLatAccessor(datum, ctx),
-        ] : undefined,
-        getTargetPosition: tgtLatAccessor && tgtLngAccessor ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
-          tgtLngAccessor(datum, ctx),
-          tgtLatAccessor(datum, ctx),
-        ] : undefined,
+        getSourcePosition:
+          srcLatAccessor && srcLngAccessor
+            ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+                srcLngAccessor(datum, ctx),
+                srcLatAccessor(datum, ctx),
+              ]
+            : undefined,
+        getTargetPosition:
+          tgtLatAccessor && tgtLngAccessor
+            ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => [
+                tgtLngAccessor(datum, ctx),
+                tgtLatAccessor(datum, ctx),
+              ]
+            : undefined,
         getSourceColor: getColor,
         getTargetColor: getColor,
         updateTriggers: {

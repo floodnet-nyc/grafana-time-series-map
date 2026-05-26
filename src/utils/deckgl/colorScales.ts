@@ -11,28 +11,24 @@ function thresholdToColor(steps: ColorStep[], value: number): RGBA {
   // steps must be sorted ascending. Return color of last step whose value <= input.
   let color = steps[0].color;
   for (const step of steps) {
-    if (value >= step.value) { color = step.color; }
+    if (value >= step.value) {
+      color = step.color;
+    }
   }
   return color;
 }
 
-export function buildColorAccessor(
-  colorScale: ColorScaleConfig | undefined,
-  defaultColor?: RGBA,
-  getValue?: (feature: Feature, ctx: AccessorContext<Feature>) => number,
-): (feature: Feature, ctx: AccessorContext<Feature>) => RGBA;
-export function buildColorAccessor<TDatum>(
-  colorScale: ColorScaleConfig | undefined,
-  defaultColor?: RGBA,
-  getValue?: AccessorFunction<TDatum, number>,
-): AccessorFunction<TDatum, RGBA>;
 export function buildColorAccessor<TDatum>(
   colorScale: ColorScaleConfig | undefined,
   defaultColor: RGBA = [0, 155, 104, 255],
-  getValue?: AccessorFunction<TDatum, number>,
+  getValue?: AccessorFunction<TDatum, number>
 ): AccessorFunction<TDatum, RGBA> {
-  if (!colorScale) { return () => defaultColor; }
-  if (colorScale.type === 'fixed') { return () => colorScale.fixedColor ?? defaultColor; }
+  if (!colorScale) {
+    return () => defaultColor;
+  }
+  if (colorScale.type === 'fixed') {
+    return () => colorScale.fixedColor ?? defaultColor;
+  }
 
   if (colorScale.type === 'threshold' && colorScale.steps?.length && colorScale.field) {
     const steps = [...colorScale.steps].sort((a, b) => a.value - b.value);
@@ -58,11 +54,7 @@ export function buildColorAccessor<TDatum>(
   return () => defaultColor;
 }
 
-export function buildColorRange(
-  colorScale: ColorScaleConfig | undefined,
-  fallbackSchemeName: string,
-  n = 6,
-): RGBA[] {
+export function buildColorRange(colorScale: ColorScaleConfig | undefined, fallbackSchemeName: string, n = 6): RGBA[] {
   const steps = Math.max(2, n);
 
   if (!colorScale) {
@@ -85,7 +77,9 @@ export function buildColorRange(
   }
 
   const schemeName = colorScale.schemeName ?? fallbackSchemeName;
-  return Array.from({ length: steps }, (_, index) => interpolateScheme(schemeName, index / (steps - 1), colorScale.invert ?? false));
+  return Array.from({ length: steps }, (_, index) =>
+    interpolateScheme(schemeName, index / (steps - 1), colorScale.invert ?? false)
+  );
 }
 
 // ── Palette array builder (for uniform-based shaders) ────────────────────────
@@ -94,7 +88,7 @@ const PALETTE_N = 32;
 
 export function buildPaletteArrays(
   colorScale: ColorScaleConfig,
-  n: number = PALETTE_N,
+  n: number = PALETTE_N
 ): { r: Float32Array; g: Float32Array; b: Float32Array; scaleMin: number; scaleMax: number } {
   const r = new Float32Array(n);
   const g = new Float32Array(n);
@@ -171,16 +165,14 @@ export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, paletteS
   const palette: Array<[number, number, number]> = [];
   for (let i = 0; i < paletteSteps; i++) {
     const t = i / (paletteSteps - 1); // paletteSteps >= 2 guaranteed above
-    const rgba = schemeName
-      ? interpolateScheme(schemeName, t, invert)
-      : ([128, 128, 128, 255] as RGBA);
+    const rgba = schemeName ? interpolateScheme(schemeName, t, invert) : ([128, 128, 128, 255] as RGBA);
     palette.push([rgba[0], rgba[1], rgba[2]]);
   }
 
   const paletteLines = palette
     .map(
       (c, i) =>
-        `  palette[${i}] = vec3(${(c[0] / 255).toFixed(4)}, ${(c[1] / 255).toFixed(4)}, ${(c[2] / 255).toFixed(4)});`,
+        `  palette[${i}] = vec3(${(c[0] / 255).toFixed(4)}, ${(c[1] / 255).toFixed(4)}, ${(c[2] / 255).toFixed(4)});`
     )
     .join('\n');
 

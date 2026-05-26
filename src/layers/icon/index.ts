@@ -1,6 +1,11 @@
 import { IconLayer } from '@deck.gl/layers';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
+import { AccessorContext } from '@deck.gl/core';
+import { buildColorAccessor } from '../../utils/deckgl/colorScales';
+import type { LayerDatum } from '../../utils/dataframe/layerTable';
+import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
 
 export interface IconLayerSettings {
   fixedIcon: string;
@@ -19,11 +24,6 @@ export interface IconLayerSettings {
 }
 
 export type IconLayerConfig = BaseLayerConfig<'icon', IconLayerSettings>;
-import { buildColorAccessor } from '../../utils/deckgl/colorScales';
-import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { createCommonLayerProps, getDatumPosition } from '../utils';
-import { AccessorContext } from '@deck.gl/core';
-import type { LayerDatum } from '../../utils/dataframe/layerTable';
 
 const BUILT_IN_ICONS = [
   { label: 'Marker', value: 'marker' },
@@ -119,12 +119,14 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
     const baseColor = buildColorAccessor<LayerDatum>(config.colorScale, [0, 155, 104, 255], getColorValue);
-    const[getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
-    const getColor = (
-      selectedKey != null && getSelection && config.selectionColor ? 
-        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => (getSelection(datum, ctx) && config.selectionColor ? config.selectionColor : baseColor(datum, ctx))
-        : baseColor
-    );
+    const [getSelection, updateSelection] = getAccessor(config.selectionKey, undefined);
+    const getColor =
+      selectedKey != null && getSelection
+        ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+            String(getSelection(datum, ctx) ?? '') === selectedKey
+              ? (config.selectionColor ?? DEFAULT_SELECTED_COLOR)
+              : baseColor(datum, ctx)
+        : baseColor;
 
     const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
 
@@ -145,7 +147,8 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
         getIcon: getIcon
           ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
               const iconName = getIcon(datum, ctx) as string;

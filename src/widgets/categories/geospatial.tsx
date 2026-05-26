@@ -13,7 +13,10 @@ import { PLACEMENTS, type BaseWidgetConfig, type WidgetCallbacks, type WidgetDef
 import { GeolocateWidget, type GeolocateWidgetProps } from '../custom/geolocate-widget';
 
 type CompassWidgetConfig = BaseWidgetConfig<'compass', Omit<CompassWidgetProps, 'id'>>;
-type GeolocateWidgetConfig = BaseWidgetConfig<'geolocate', Omit<GeolocateWidgetProps, 'id' | 'onGeolocate' | 'onError'>>;
+type GeolocateWidgetConfig = BaseWidgetConfig<
+  'geolocate',
+  Omit<GeolocateWidgetProps, 'id' | 'onGeolocate' | 'onError'>
+>;
 type ScaleWidgetConfig = BaseWidgetConfig<'scale', Omit<ScaleWidgetProps, 'id'>>;
 type GeocoderWidgetConfig = BaseWidgetConfig<'geocoder', Omit<GeocoderWidgetProps, 'id'>>;
 
@@ -87,7 +90,13 @@ export const scaleWidgetDefinition: WidgetDefinition<ScaleWidgetConfig> = {
   editorSections: [
     {
       fields: [
-        { key: 'placement', label: 'Placement', type: 'select', selectOptions: PLACEMENTS, defaultValue: 'bottom-left' },
+        {
+          key: 'placement',
+          label: 'Placement',
+          type: 'select',
+          selectOptions: PLACEMENTS,
+          defaultValue: 'bottom-left',
+        },
         { key: 'label', label: 'Label', type: 'string', defaultValue: '' },
       ],
     },
@@ -133,7 +142,17 @@ export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> 
       ...config.settings,
       onGeolocate:
         callbacks?.onViewStateChange || callbacks?.geolocate?.onLocation
-          ? ({ latitude, longitude, zoom, accuracy }: { latitude: number; longitude: number; zoom: number; accuracy?: number }) => {
+          ? ({
+              latitude,
+              longitude,
+              zoom,
+              accuracy,
+            }: {
+              latitude: number;
+              longitude: number;
+              zoom: number;
+              accuracy?: number;
+            }) => {
               callbacks.geolocate?.onLocation({ latitude, longitude, zoom, accuracy });
               callbacks.onViewStateChange?.({
                 latitude,
@@ -142,7 +161,7 @@ export const geolocateWidgetDefinition: WidgetDefinition<GeolocateWidgetConfig> 
                 transitionDuration: config.settings.transitionDuration,
               });
             }
-        : undefined,
+          : undefined,
     }),
 };
 

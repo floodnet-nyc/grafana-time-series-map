@@ -28,7 +28,10 @@ function collectCoords(geom: Geometry | null | undefined): Array<[number, number
   }
 }
 
-export function useFitBounds(options: MapPanelOptions, preparedLayerStates: PreparedLayerState[]): FitBounds | undefined {
+export function useFitBounds(
+  options: MapPanelOptions,
+  preparedLayerStates: PreparedLayerState[]
+): FitBounds | undefined {
   return useMemo(() => {
     if (options.initialView.mode !== 'fitData') {
       return undefined;
@@ -75,5 +78,10 @@ export function useFitBounds(options: MapPanelOptions, preparedLayerStates: Prep
       [minLng, minLat],
       [maxLng, maxLat],
     ];
-  }, [options.initialView.fitData?.layerId, options.initialView.fitData?.source, options.initialView.mode, preparedLayerStates]);
+  }, [
+    options.initialView.fitData?.layerId,
+    options.initialView.fitData?.source,
+    options.initialView.mode,
+    preparedLayerStates,
+  ]);
 }

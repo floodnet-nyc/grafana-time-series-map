@@ -1,44 +1,43 @@
 import type { Widget } from '@deck.gl/core';
-import { 
-  // gimbalWidgetDefinition, 
-  resetViewWidgetDefinition, 
-  // scrollbarWidgetDefinition, 
+import {
+  // gimbalWidgetDefinition,
+  resetViewWidgetDefinition,
+  // scrollbarWidgetDefinition,
   zoomWidgetDefinition,
 } from './categories/navigation';
-import { 
-  compassWidgetDefinition, 
+import {
+  compassWidgetDefinition,
   geolocateWidgetDefinition,
-  geocoderWidgetDefinition, 
-  scaleWidgetDefinition 
+  geocoderWidgetDefinition,
+  scaleWidgetDefinition,
 } from './categories/geospatial';
-import { 
-  fullscreenWidgetDefinition, 
-  // splitterWidgetDefinition 
+import {
+  fullscreenWidgetDefinition,
+  // splitterWidgetDefinition
 } from './categories/view';
-import { 
-  // contextMenuWidgetDefinition, 
-  // infoWidgetDefinition, 
-  // popupWidgetDefinition, 
+import {
+  // contextMenuWidgetDefinition,
+  // infoWidgetDefinition,
+  // popupWidgetDefinition,
   messageWidgetDefinition,
   streetViewWidgetDefinition,
 } from './categories/information';
-import { 
-  // iconWidgetDefinition, 
-  // selectorWidgetDefinition, 
-  timelineWidgetDefinition, 
-  // toggleWidgetDefinition 
+import {
+  // iconWidgetDefinition,
+  // selectorWidgetDefinition,
+  timelineWidgetDefinition,
+  // toggleWidgetDefinition
 } from './categories/control';
-import { 
-  // loadingWidgetDefinition, 
-  screenshotWidgetDefinition, 
-  statsWidgetDefinition, 
-  themeWidgetDefinition 
+import {
+  // loadingWidgetDefinition,
+  screenshotWidgetDefinition,
+  statsWidgetDefinition,
+  themeWidgetDefinition,
 } from './categories/utility';
 import type { BlankWidgetConfig, GoogleNativeControlProps, WidgetCallbacks } from './types';
 import { DarkGlassTheme, LightGlassTheme } from '@deck.gl/widgets';
 import './deckgl-widgets-stylesheet-do-not-edit.css';
 import './styles.css';
-
 
 export const widgetDefinitions = [
   // Navigation
@@ -56,10 +55,10 @@ export const widgetDefinitions = [
   // splitterWidgetDefinition,
   // Information
   // contextMenuWidgetDefinition,
-  
+
   // infoWidgetDefinition,
   // popupWidgetDefinition,
-  
+
   // Control
   // iconWidgetDefinition,
   // toggleWidgetDefinition,

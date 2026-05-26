@@ -10,9 +10,11 @@ import { SelectableListEditor } from './utils/SelectableListEditor';
 import { useSelectableListState } from './utils/useSelectableListState';
 
 function makeDefaultLayer(type: LayerType, index: number): LayerConfig {
-  return layerRegistry.createLayerConfig?.(type, index)
-    ?? layerRegistry.layerDefinitions.find((definition) => definition.type === type)?.createDefaultConfig(index)
-    ?? layerRegistry.layerDefinitions[0].createDefaultConfig(index);
+  return (
+    layerRegistry.createLayerConfig?.(type, index) ??
+    layerRegistry.layerDefinitions.find((definition) => definition.type === type)?.createDefaultConfig(index) ??
+    layerRegistry.layerDefinitions[0].createDefaultConfig(index)
+  );
 }
 
 interface Props extends StandardEditorProps<LayerConfig[]> {}
@@ -53,7 +55,6 @@ function buildFieldIndex(series: DataFrame[]) {
 
   return { refIds, fieldsByRefId, firstFrameFields };
 }
-
 
 const getAvailableFieldsForRefId = (refId: string | undefined, fieldIndex: ReturnType<typeof buildFieldIndex>) => {
   if (!refId) {
@@ -112,7 +113,6 @@ function getSourceContext(layer: LayerConfig | undefined, fieldIndex: ReturnType
   };
 }
 
-
 export function MapPanelEditor({ value: layers, onChange, context }: Props) {
   const styles = useStyles2(getStyles);
   const layerList = useMemo(() => layers ?? [], [layers]);
@@ -148,7 +148,7 @@ export function MapPanelEditor({ value: layers, onChange, context }: Props) {
 
       updateLayer(i, { ...layer, visible: !layer.visible });
     },
-    [layerList, updateLayer],
+    [layerList, updateLayer]
   );
 
   return (

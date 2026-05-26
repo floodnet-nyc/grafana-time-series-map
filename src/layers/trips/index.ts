@@ -76,12 +76,15 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
     const { config, data, cursorTimeMs, timeFilterFlags, getAccessors } = context;
     const options = config.settings;
     const commonProps = createCommonLayerProps(context);
-    const [getColorValue, updatesColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];
+    const [getColorValue, updatesColorValue] = config.colorScale?.field
+      ? getAccessors.number(config.colorScale.field)
+      : [undefined, []];
     const getColor = buildColorAccessor<TripDatum>(config.colorScale, [0, 200, 180, 220], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
     const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
     const getIndex = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx?.index ?? datum.__idx ?? -1;
-    const getContext = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx ?? ({ index: getIndex(datum, ctx) } as AccessorContext<TripDatum>);
+    const getContext = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) =>
+      ctx ?? ({ index: getIndex(datum, ctx) } as AccessorContext<TripDatum>);
     const getPathAccessor = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
       const path = getPath(getRowGeometry(context.table, getIndex(datum, ctx)));
       return path.length >= 2 ? path : [];

@@ -10,7 +10,9 @@ jest.mock('./util/useAnimationFrame', () => ({
 const mockUseAnimationFrame = useAnimationFrame as jest.MockedFunction<typeof useAnimationFrame>;
 
 describe('usePlayback', () => {
-  let latestAnimationConfig: { onUpdate: (timestamp: number, delta: number) => void; enabled: boolean; interval: number } | undefined;
+  let latestAnimationConfig:
+    | { onUpdate: (timestamp: number, delta: number) => void; enabled: boolean; interval: number }
+    | undefined;
 
   beforeEach(() => {
     latestAnimationConfig = undefined;

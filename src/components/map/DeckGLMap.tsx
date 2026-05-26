@@ -34,10 +34,14 @@ export function useDeckGLProps({
 }): DeckProps & { interleaved?: boolean } {
   const effects = useMemo(() => buildDeckEffects(options.deck.lighting), [options.deck.lighting]);
   const parameters = useMemo(() => buildDeckParameters(options.deck.parameters), [options.deck.parameters]);
-  const widgets = useMemo(() => createWidgets(options.widgets ?? [], widgetCallbacks), [options.widgets, widgetCallbacks]);
+  const widgets = useMemo(
+    () => createWidgets(options.widgets ?? [], widgetCallbacks),
+    [options.widgets, widgetCallbacks]
+  );
   const getTooltip = useMemo(
-    () => (options.tooltip.show !== false ? buildDeckTooltip(options.tooltip.template ?? DEFAULT_TOOLTIP_TEMPLATE) : null),
-    [options.tooltip.show, options.tooltip.template],
+    () =>
+      options.tooltip.show !== false ? buildDeckTooltip(options.tooltip.template ?? DEFAULT_TOOLTIP_TEMPLATE) : null,
+    [options.tooltip.show, options.tooltip.template]
   );
   // console.log('DeckGL props', { effects, parameters, widgets, layers });
   return {

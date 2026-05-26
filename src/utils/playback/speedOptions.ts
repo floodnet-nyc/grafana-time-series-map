@@ -1,4 +1,3 @@
-
 /* ------------------------------ Speed Options ----------------------------- */
 const second = 1000;
 const minute = second * 60;
@@ -43,7 +42,13 @@ export function formatSpeedLabel(speedMs: number): string {
 }
 
 export function selectSpeedOptions({
-  rangeMs, defaultSpeed, minSteps = 4, targetSteps = 50, maxSteps = 10000, minSpeed = SPEED_CANDIDATES_MS[0], maxSpeed = SPEED_CANDIDATES_MS[SPEED_CANDIDATES_MS.length - 1],
+  rangeMs,
+  defaultSpeed,
+  minSteps = 4,
+  targetSteps = 50,
+  maxSteps = 10000,
+  minSpeed = SPEED_CANDIDATES_MS[0],
+  maxSpeed = SPEED_CANDIDATES_MS[SPEED_CANDIDATES_MS.length - 1],
 }: {
   rangeMs: number;
   defaultSpeed?: number;
@@ -63,6 +68,8 @@ export function selectSpeedOptions({
 
 export function selectBestSpeedOption(rangeMs: number, targetDivisions: number): number {
   const targetSpeed = rangeMs / targetDivisions;
-  return SPEED_CANDIDATES_MS.reduce((best, candidate) => Math.abs(candidate - targetSpeed) < Math.abs(best - targetSpeed) ? candidate : best,
-    SPEED_CANDIDATES_MS[0]);
+  return SPEED_CANDIDATES_MS.reduce(
+    (best, candidate) => (Math.abs(candidate - targetSpeed) < Math.abs(best - targetSpeed) ? candidate : best),
+    SPEED_CANDIDATES_MS[0]
+  );
 }

@@ -119,15 +119,17 @@ export function SelectableListEditor<T>({
             </div>
           );
         })}
-        {canAdd && !addOptions ?  (
-            <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
-              {addButtonLabel}
-            </Button>
+        {canAdd && !addOptions ? (
+          <Button variant="secondary" size="sm" icon="plus" onClick={() => onAdd()}>
+            {addButtonLabel}
+          </Button>
         ) : null}
         {collapsedHint && selectedItem === undefined ? <div className={styles.hint}>{collapsedHint}</div> : null}
       </div>
 
-      {selectedItem !== undefined && selectedIndex !== null && <div className={styles.editor}>{renderEditor(selectedItem, selectedIndex)}</div>}
+      {selectedItem !== undefined && selectedIndex !== null && (
+        <div className={styles.editor}>{renderEditor(selectedItem, selectedIndex)}</div>
+      )}
     </div>
   );
 }

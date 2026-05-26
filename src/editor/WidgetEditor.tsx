@@ -8,7 +8,10 @@ import { MapPanelOptions } from 'types';
 import { HtmlCodeEditor } from './utils/HtmlCodeEditor';
 
 function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
-  const h = (n: number) => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
+  const h = (n: number) =>
+    Math.round(Math.max(0, Math.min(255, n)))
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}${a < 255 ? h(a) : ''}`;
 }
 
@@ -39,13 +42,13 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
 
   const patch = useCallback(
     (updates: Partial<WidgetConfig>) => onChange({ ...(widget as any), ...updates } as WidgetConfig),
-    [widget, onChange],
+    [widget, onChange]
   );
 
   const patchSettings = useCallback(
     (key: string, value: unknown) =>
       patch({ settings: { ...(widget.settings as any), [key]: value } } as Partial<WidgetConfig>),
-    [widget.settings, patch],
+    [widget.settings, patch]
   );
 
   const handleTypeChange = useCallback(
@@ -57,11 +60,15 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
       const next = definition.createDefaultConfig(0);
       onChange({ ...next, id: widget.id, label: widget.label, visible: widget.visible } as WidgetConfig);
     },
-    [widget, onChange],
+    [widget, onChange]
   );
 
   const renderOptionField = useCallback(
-    (field: LayerOptionField, source: Record<string, unknown>, onFieldChange: (key: string, value: unknown) => void) => {
+    (
+      field: LayerOptionField,
+      source: Record<string, unknown>,
+      onFieldChange: (key: string, value: unknown) => void
+    ) => {
       const value = source[field.key] ?? field.defaultValue;
       if (field.showIf && !field.showIf(source)) {
         return null;
@@ -118,30 +125,29 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
         </Field>
       );
     },
-    [],
+    []
   );
 
   return (
     <div className={styles.root}>
-        <Field label="Widget type">
-          <Combobox
-            options={widgetTypes}
-            value={widget.type || null}
-            onChange={(v) => v?.value && handleTypeChange(String(v.value))}
-          />
-        </Field>
+      <Field label="Widget type">
+        <Combobox
+          options={widgetTypes}
+          value={widget.type || null}
+          onChange={(v) => v?.value && handleTypeChange(String(v.value))}
+        />
+      </Field>
       {/* <CollapsableSection label="General" isOpen> */}
-        {/* <Field label="Visible">
+      {/* <Field label="Visible">
           <Switch value={widget.visible} onChange={(e) => patch({ visible: e.currentTarget.checked })} />
         </Field> */}
       {/* </CollapsableSection> */}
 
-      
       {/* TODO: customize options e.g. cameraControlOptions */}
       {currentDefinition?.editorSections.map((section, index) => (
         <React.Fragment key={section.title ?? index}>
           {section.title && <h6>{section.title}</h6>}
-        {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
+          {section.fields.map((field) => renderOptionField(field, settingsRecord, patchSettings))}
         </React.Fragment>
         // <CollapsableSection key={section.title ?? index} label={section.title ?? ''} isOpen>
         // </CollapsableSection>
@@ -152,7 +158,6 @@ export function WidgetEditor({ widget, onChange, options }: Props) {
           <Switch value={widget.native} onChange={(e) => patch({ native: e.currentTarget.checked })} />
         </Field>
       ) : null}
-
     </div>
   );
 }

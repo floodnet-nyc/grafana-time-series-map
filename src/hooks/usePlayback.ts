@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import useAnimationFrame from './util/useAnimationFrame';
 import { getRawCursorTimeMs, normalizeCursorTimeMs, playbackReducer } from '../utils/playback/playbackModel';
-import { selectSpeedOptions } from "utils/playback/speedOptions";
+import { selectSpeedOptions } from 'utils/playback/speedOptions';
 
 const LIVE_PIN_TOLERANCE_MS = 1000;
 
@@ -43,10 +43,14 @@ export function usePlayback({
   loop: boolean;
   live?: boolean;
 }): UsePlaybackResult {
-  const [defaultSpeed, speeds] = useMemo(() => selectSpeedOptions({
-    rangeMs: toTimeMs - fromTimeMs,
-    defaultSpeed: defaultPlaybackSpeed,
-  }), [fromTimeMs, toTimeMs, defaultPlaybackSpeed]);
+  const [defaultSpeed, speeds] = useMemo(
+    () =>
+      selectSpeedOptions({
+        rangeMs: toTimeMs - fromTimeMs,
+        defaultSpeed: defaultPlaybackSpeed,
+      }),
+    [fromTimeMs, toTimeMs, defaultPlaybackSpeed]
+  );
   const initialCursorTimeMs = live ? toTimeMs : fromTimeMs;
   const [playback, dispatch] = useReducer(playbackReducer, {
     referenceStartTimeMs: initialCursorTimeMs,
@@ -59,7 +63,9 @@ export function usePlayback({
   const playing = !!playbackClockStartTimeMs;
   const followLive = live && livePinned && !playing && !scrubbing;
   const playbackRef = useRef(playback);
-  useEffect(() => { playbackRef.current = playback; }, [playback]);
+  useEffect(() => {
+    playbackRef.current = playback;
+  }, [playback]);
 
   const cursorTimeMsRef = useRef<number>(initialCursorTimeMs);
   const [cursorTimeMs, setCursorTimeMs] = useState(initialCursorTimeMs);
@@ -69,53 +75,62 @@ export function usePlayback({
     setCursorTimeMs(timeMs);
   }, []);
 
-  const getCursorTimeMs = useCallback((nowMs?: number) => {
-    const currentNowMs = nowMs ?? performance.timeOrigin + performance.now();
-    const currentPlayback = playbackRef.current;
-    const raw = getRawCursorTimeMs(
-      currentNowMs,
-      currentPlayback.referenceStartTimeMs,
-      currentPlayback.playbackClockStartTimeMs,
-      currentPlayback.playbackSpeed,
-      cursorTimeMsRef.current,
-    );
-    return normalizeCursorTimeMs(raw, fromTimeMs, toTimeMs, loop);
-  }, [fromTimeMs, loop, toTimeMs]);
+  const getCursorTimeMs = useCallback(
+    (nowMs?: number) => {
+      const currentNowMs = nowMs ?? performance.timeOrigin + performance.now();
+      const currentPlayback = playbackRef.current;
+      const raw = getRawCursorTimeMs(
+        currentNowMs,
+        currentPlayback.referenceStartTimeMs,
+        currentPlayback.playbackClockStartTimeMs,
+        currentPlayback.playbackSpeed,
+        cursorTimeMsRef.current
+      );
+      return normalizeCursorTimeMs(raw, fromTimeMs, toTimeMs, loop);
+    },
+    [fromTimeMs, loop, toTimeMs]
+  );
 
-  const setCursorState = useCallback((update: CursorUpdate = {}) => {
-    const nowMs = performance.timeOrigin + performance.now();
-    const currentPlayback = playbackRef.current;
-    const rawTimeMs = update.timeMs ?? getRawCursorTimeMs(
-      nowMs,
-      currentPlayback.referenceStartTimeMs,
-      currentPlayback.playbackClockStartTimeMs,
-      currentPlayback.playbackSpeed,
-      cursorTimeMsRef.current,
-    );
-    const nextTimeMs = normalizeCursorTimeMs(rawTimeMs, fromTimeMs, toTimeMs, loop);
-    const resolvedPlay = typeof update.play === 'function' ? update.play(!!currentPlayback.playbackClockStartTimeMs) : update.play;
-    const nearLiveEdge = live && Math.abs(toTimeMs - nextTimeMs) <= LIVE_PIN_TOLERANCE_MS;
+  const setCursorState = useCallback(
+    (update: CursorUpdate = {}) => {
+      const nowMs = performance.timeOrigin + performance.now();
+      const currentPlayback = playbackRef.current;
+      const rawTimeMs =
+        update.timeMs ??
+        getRawCursorTimeMs(
+          nowMs,
+          currentPlayback.referenceStartTimeMs,
+          currentPlayback.playbackClockStartTimeMs,
+          currentPlayback.playbackSpeed,
+          cursorTimeMsRef.current
+        );
+      const nextTimeMs = normalizeCursorTimeMs(rawTimeMs, fromTimeMs, toTimeMs, loop);
+      const resolvedPlay =
+        typeof update.play === 'function' ? update.play(!!currentPlayback.playbackClockStartTimeMs) : update.play;
+      const nearLiveEdge = live && Math.abs(toTimeMs - nextTimeMs) <= LIVE_PIN_TOLERANCE_MS;
 
-    syncCursorTime(nextTimeMs);
+      syncCursorTime(nextTimeMs);
 
-    if (resolvedPlay === true) {
-      const action = { type: 'startPlay' as const, timeMs: nextTimeMs, nowMs, speed: update.playbackSpeed };
+      if (resolvedPlay === true) {
+        const action = { type: 'startPlay' as const, timeMs: nextTimeMs, nowMs, speed: update.playbackSpeed };
+        playbackRef.current = playbackReducer(currentPlayback, action);
+        dispatch(action);
+        return;
+      }
+
+      if (update.scrubbing) {
+        const action = { type: 'scrub' as const, timeMs: nextTimeMs, nearLiveEdge, speed: update.playbackSpeed };
+        playbackRef.current = playbackReducer(currentPlayback, action);
+        dispatch(action);
+        return;
+      }
+
+      const action = { type: 'pause' as const, timeMs: nextTimeMs, nearLiveEdge, speed: update.playbackSpeed };
       playbackRef.current = playbackReducer(currentPlayback, action);
       dispatch(action);
-      return;
-    }
-
-    if (update.scrubbing) {
-      const action = { type: 'scrub' as const, timeMs: nextTimeMs, nearLiveEdge, speed: update.playbackSpeed };
-      playbackRef.current = playbackReducer(currentPlayback, action);
-      dispatch(action);
-      return;
-    }
-
-    const action = { type: 'pause' as const, timeMs: nextTimeMs, nearLiveEdge, speed: update.playbackSpeed };
-    playbackRef.current = playbackReducer(currentPlayback, action);
-    dispatch(action);
-  }, [fromTimeMs, live, loop, syncCursorTime, toTimeMs]);
+    },
+    [fromTimeMs, live, loop, syncCursorTime, toTimeMs]
+  );
 
   useAnimationFrame({
     enabled: playing && fromTimeMs < toTimeMs,
@@ -126,7 +141,7 @@ export function usePlayback({
         referenceStartTimeMs,
         playbackClockStartTimeMs,
         playbackSpeed,
-        cursorTimeMsRef.current,
+        cursorTimeMsRef.current
       );
 
       if (!loop && raw >= toTimeMs) {
@@ -149,16 +164,18 @@ export function usePlayback({
 
   useEffect(() => {
     if (followLive) {
-      syncCursorTime(toTimeMs);
+      cursorTimeMsRef.current = toTimeMs;
       const action = { type: 'pinLive' as const, toTimeMs };
       playbackRef.current = playbackReducer(playbackRef.current, action);
       dispatch(action);
     }
-  }, [followLive, syncCursorTime, toTimeMs]);
+  }, [followLive, toTimeMs]);
 
   // Reset cursor when time range shifts out of bounds (skip zero-duration ranges)
   useEffect(() => {
-    if (fromTimeMs >= toTimeMs) { return; }
+    if (fromTimeMs >= toTimeMs) {
+      return;
+    }
     if (cursorTimeMsRef.current < fromTimeMs || cursorTimeMsRef.current > toTimeMs) {
       setCursorState({ timeMs: fromTimeMs, play: false });
     }
@@ -172,20 +189,29 @@ export function usePlayback({
     setCursorState({ play: false });
   }, [setCursorState]);
 
-  const scrubTo = useCallback((ms: number) => {
-    setCursorState({ timeMs: ms, scrubbing: true });
-  }, [setCursorState]);
+  const scrubTo = useCallback(
+    (ms: number) => {
+      setCursorState({ timeMs: ms, scrubbing: true });
+    },
+    [setCursorState]
+  );
 
-  const seekTo = useCallback((ms: number, pause = true) => {
-    setCursorState({ timeMs: ms, play: pause ? false : (prev) => prev });
-  }, [setCursorState]);
+  const seekTo = useCallback(
+    (ms: number, pause = true) => {
+      setCursorState({ timeMs: ms, play: pause ? false : (prev) => prev });
+    },
+    [setCursorState]
+  );
 
-  const setSpeed = useCallback((speed: number) => {
-    setCursorState({ playbackSpeed: speed, play: false });
-  }, [setCursorState]);
+  const setSpeed = useCallback(
+    (speed: number) => {
+      setCursorState({ playbackSpeed: speed, play: false });
+    },
+    [setCursorState]
+  );
 
   return {
-    cursorTimeMs,
+    cursorTimeMs: followLive ? toTimeMs : cursorTimeMs,
     cursorTimeMsRef,
     getCursorTimeMs,
     playing,

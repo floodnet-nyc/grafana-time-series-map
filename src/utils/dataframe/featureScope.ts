@@ -2,7 +2,12 @@ import type { LayerConfig } from 'layers';
 import type { SourceRef } from '../../types';
 import { getRowProperties, getRowValue, type LayerTable } from './layerTable';
 
-function getSourceRefValue(table: LayerTable, index: number, ref: SourceRef | undefined, derived?: Record<string, unknown>) {
+function getSourceRefValue(
+  table: LayerTable,
+  index: number,
+  ref: SourceRef | undefined,
+  derived?: Record<string, unknown>
+) {
   if (!ref?.field) {
     return '';
   }
@@ -20,13 +25,7 @@ interface BuildFeatureScopeArgs {
   derivedRow?: Record<string, unknown>;
 }
 
-export function buildFeatureScope({
-  config,
-  table,
-  index,
-  joinedSourceValues,
-  derivedRow,
-}: BuildFeatureScopeArgs) {
+export function buildFeatureScope({ config, table, index, joinedSourceValues, derivedRow }: BuildFeatureScopeArgs) {
   const primary = getRowProperties(table, index);
   const sources: Record<string, Record<string, unknown>> = {};
 

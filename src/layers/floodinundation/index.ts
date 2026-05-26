@@ -16,7 +16,6 @@ export interface FloodInundationLayerSettings {
 
 export type FloodInundationLayerConfig = BaseLayerConfig<'flood-inundation', FloodInundationLayerSettings>;
 
-
 const VS_FILTER_COLOR = `
 float depthDiff = instanceDepthDiff;
 float alpha = smoothstep(0.0, 3.0, depthDiff) * instanceFillOpacity;
@@ -57,8 +56,8 @@ const defaultSettings: FloodInundationLayerSettings = {
   fillOpacity: 0.5,
 };
 
-class TopPolygonLayer<DataT=any, ExtraPropsT extends {} = {}> extends SolidPolygonLayer<DataT, ExtraPropsT> {
-  protected override _getModels(): { models: any[]; topModel: any; sideModel: any; wireframeModel: any; } {
+class TopPolygonLayer<DataT = any, ExtraPropsT extends {} = {}> extends SolidPolygonLayer<DataT, ExtraPropsT> {
+  protected override _getModels(): { models: any[]; topModel: any; sideModel: any; wireframeModel: any } {
     const { sideModel, ...models } = super._getModels();
     return { ...models, sideModel: null };
   }
@@ -75,7 +74,12 @@ export const floodInundationLayerDefinition: LayerDefinition<FloodInundationLaye
   },
   editorSections: [
     section('Flood Inundation', [
-      { key: 'depthDiff', label: 'Depth difference field', type: 'fieldPicker', defaultValue: createSourceRef('depthDiff') },
+      {
+        key: 'depthDiff',
+        label: 'Depth difference field',
+        type: 'fieldPicker',
+        defaultValue: createSourceRef('depthDiff'),
+      },
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'extruded', label: 'Extruded', type: 'boolean', defaultValue: true },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },

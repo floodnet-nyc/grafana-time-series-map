@@ -5,9 +5,10 @@ import type { LayerEditorSection } from '../layers/types';
 
 export type WidgetEditorSection = LayerEditorSection;
 
-export const PLACEMENTS = (['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map(
-  (v) => ({ label: v, value: v }),
-);
+export const PLACEMENTS = (['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map((v) => ({
+  label: v,
+  value: v,
+}));
 
 export interface BaseWidgetConfig<TType extends string, TSettings> {
   id: string;
@@ -90,12 +91,12 @@ export type GoogleNativeControlProps = Pick<
 >;
 
 export interface WidgetDefinition<
-  TConfig extends BaseWidgetConfig<string, Record<string, unknown>> = BaseWidgetConfig<string, Record<string, unknown>>
+  TConfig extends BaseWidgetConfig<string, Record<string, unknown>> = BaseWidgetConfig<string, Record<string, unknown>>,
 > {
   type: string;
   label: string;
   description: string;
-  supportedMapProviders?: Array<('google' | 'maplibre' | 'deck')>;
+  supportedMapProviders?: Array<'google' | 'maplibre' | 'deck'>;
   createDefaultConfig: (index: number) => TConfig;
   editorSections: WidgetEditorSection[];
   createWidget: (config: TConfig, callbacks?: WidgetCallbacks) => Widget;

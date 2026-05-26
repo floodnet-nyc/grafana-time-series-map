@@ -39,7 +39,10 @@ export const DEFAULT_DECK_LIGHTING: Required<DeckLightingOptions> = {
   ],
 };
 
-function parseRgb(value: DeckLightColor | string | undefined, fallback: [number, number, number]): [number, number, number] {
+function parseRgb(
+  value: DeckLightColor | string | undefined,
+  fallback: [number, number, number]
+): [number, number, number] {
   if (Array.isArray(value)) {
     if (value.length < 3) {
       return fallback;
@@ -130,7 +133,7 @@ export function buildDeckEffects(options?: DeckLightingOptions) {
   const lightSources = Object.fromEntries(
     lights
       .map((light, index) => [light.id || `${light.type}-${index}`, createLight(light)])
-      .filter((entry): entry is [string, NonNullable<ReturnType<typeof createLight>>] => Boolean(entry[1])),
+      .filter((entry): entry is [string, NonNullable<ReturnType<typeof createLight>>] => Boolean(entry[1]))
   );
   return [new LightingEffect(lightSources)];
 }

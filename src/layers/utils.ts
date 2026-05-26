@@ -37,12 +37,16 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
             });
           }
         : undefined,
-    getFilterValue: timeFilterFlags ? (datum: LayerDatum) => (datum.__idx === undefined || timeFilterFlags[datum.__idx] ? 1 : -1) : undefined,
+    getFilterValue: timeFilterFlags
+      ? (datum: LayerDatum) => (datum.__idx === undefined || timeFilterFlags[datum.__idx] ? 1 : -1)
+      : undefined,
     filterRange: [1, 1] as [number, number],
     updateTriggers: {
       getFilterValue: [timeFilterFlags],
     },
-    extensions: [timeFilterFlags ? new DataFilterExtension({ filterSize: 1 }) : undefined].filter(Boolean) as LayerExtension[],
+    extensions: [timeFilterFlags ? new DataFilterExtension({ filterSize: 1 }) : undefined].filter(
+      Boolean
+    ) as LayerExtension[],
     parameters: {
       depthTest: (config?.settings as ElevationSettings)?.depthTest ?? false,
     },
@@ -65,7 +69,12 @@ export function getDatumLngLat(table: LayerRenderContext<any>['table'], index: n
   return coords ? [coords[0] ?? 0, coords[1] ?? 0] : [0, 0];
 }
 
-export function getDatumPosition(table: LayerRenderContext<any>['table'], index: number, z?: number, offset = 0): [number, number, number] {
+export function getDatumPosition(
+  table: LayerRenderContext<any>['table'],
+  index: number,
+  z?: number,
+  offset = 0
+): [number, number, number] {
   const [lng, lat] = getDatumLngLat(table, index);
   return [lng, lat, (z ?? 0) + offset];
 }

@@ -5,8 +5,6 @@
   stroke: white !important;
 } */
 
-
-
 .deck-widget-timeline .deck-widget-button-group {
   backdrop-filter: blur(12px);
   padding: 0.2em;
@@ -15,7 +13,6 @@
 .deck-widget-range__track {
   background: #00000057;
 }
-
 
 /* Welcome widget */
 .message-widget-root {

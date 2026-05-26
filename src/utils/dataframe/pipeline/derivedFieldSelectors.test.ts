@@ -44,7 +44,10 @@ describe('derivedFieldSelectors', () => {
     const config = createLayerConfig({
       derivedFields: [{ as: 'depth', expression: 'this.depth * 2', type: 'number' }],
     });
-    const table = featureArrayToLayerTable([{ ...createFeature({ depth: 4, payload: { value: 3 } }), __idx: 0 }] as any, 'main');
+    const table = featureArrayToLayerTable(
+      [{ ...createFeature({ depth: 4, payload: { value: 3 } }), __idx: 0 }] as any,
+      'main'
+    );
 
     expect(buildFieldSourceMap(config, table)).toEqual(
       new Map([
@@ -75,9 +78,7 @@ describe('derivedFieldSelectors', () => {
       derivedFields: [{ as: 'depthDiff', expression: 'A.depth - this.contour_depth_inches', type: 'number' }],
     });
     const feature = createFeature({ deployment_id: 'sensor-1', contour_depth_inches: 2 });
-    const joinedSourceValues = new Map([
-      ['A', new Map([['sensor-1', { depth: 5 }]])],
-    ]);
+    const joinedSourceValues = new Map([['A', new Map([['sensor-1', { depth: 5 }]])]]);
     const table = featureArrayToLayerTable([{ ...feature, __idx: 0 }] as any, 'main');
 
     const derivedValues = selectDerivedValues(compileDerivedFields(config), config, table, joinedSourceValues);
@@ -97,7 +98,7 @@ describe('derivedFieldSelectors', () => {
     const derivedValues = selectDerivedValues(
       compileDerivedFields(config),
       config,
-      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main'),
+      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main')
     );
 
     expect(derivedValues).toEqual([{ ok: 8 }]);
@@ -111,7 +112,7 @@ describe('derivedFieldSelectors', () => {
     const derivedValues = selectDerivedValues(
       compileDerivedFields(config),
       config,
-      featureArrayToLayerTable([{ ...createFeature({ payload: { value: 4 } }), __idx: 0 }] as any, 'main'),
+      featureArrayToLayerTable([{ ...createFeature({ payload: { value: 4 } }), __idx: 0 }] as any, 'main')
     );
 
     expect(derivedValues).toEqual([{ valueDouble: 8 }]);
@@ -128,7 +129,7 @@ describe('derivedFieldSelectors', () => {
     const derivedValues = selectDerivedValues(
       compileDerivedFields(config),
       config,
-      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main'),
+      featureArrayToLayerTable([{ ...createFeature({ depth: 4 }), __idx: 0 }] as any, 'main')
     );
 
     expect(derivedValues).toEqual([{ depth: 8, depthPlusOne: 9 }]);
@@ -147,8 +148,8 @@ describe('derivedFieldSelectors', () => {
           { ...createFeature({ depth: 4 }), __idx: 0 },
           { ...createFeature({ depth: 5 }), __idx: 1 },
         ] as any,
-        'main',
-      ),
+        'main'
+      )
     );
 
     expect(derivedValues).toEqual([{ rowNumber: 1 }, { rowNumber: 2 }]);

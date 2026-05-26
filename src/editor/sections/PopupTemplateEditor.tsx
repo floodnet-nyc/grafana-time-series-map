@@ -7,12 +7,7 @@ import { DEFAULT_POPUP_TEMPLATE } from 'components/SensorPopup';
 export function PopupTemplateEditor({ value, onChange, context }: StandardEditorProps<string>) {
   return (
     <>
-      <HtmlCodeEditor
-        value={value ?? DEFAULT_POPUP_TEMPLATE}
-        onChange={onChange}
-        language="html"
-        height={280}
-      />
+      <HtmlCodeEditor value={value ?? DEFAULT_POPUP_TEMPLATE} onChange={onChange} language="html" height={280} />
       <LiquidContextTree data={context.data} />
     </>
   );

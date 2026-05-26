@@ -45,43 +45,41 @@ theme
 - normalization
 - clustering
 
-    bearing: initialViewState.bearing + 120,
-    transitionDuration: 1000,
-    transitionInterpolator: new LinearInterpolator(['bearing']),
-    onTransitionEnd: rotateCamera
+  bearing: initialViewState.bearing + 120,
+  transitionDuration: 1000,
+  transitionInterpolator: new LinearInterpolator(['bearing']),
+  onTransitionEnd: rotateCamera
 
 Extend the plugin geojson layer to support lineColor from colorScale, not just fill.
 Add lineWidthField, lineWidthScale, and lineWidthUnits to the geojson layer settings.
 Switch the highway dashboard from type: "path" to type: "geojson".
 
-
 new features
+
 - transitions: { elevationScale: 3000 }
 - transitionInterpolator
 - flyTo
 
-
 TODO:
 
- - Panel Settings:
-   - map settings
-      - bounds 
-         - fit to current viewport bounding box
-         - restrictable map bounds (set to current viewport)
-      - flyto interaction
-      - navigate game-like controls addEventListener('keydown')
-      - map padding
-      - minimap
-      - Fly to a location based on scroll position
-      - clustering
+- Panel Settings:
+  - map settings
+    - bounds
+      - fit to current viewport bounding box
+      - restrictable map bounds (set to current viewport)
+    - flyto interaction
+    - navigate game-like controls addEventListener('keydown')
+    - map padding
+    - minimap
+    - Fly to a location based on scroll position
+    - clustering
 
-      - maplibre
-         - dark/light/auto toggle
-   
-   - scatter unit pixels
-   - legend not implemented - implement
-   - popup not implemented - implement
+    - maplibre
+      - dark/light/auto toggle
 
+  - scatter unit pixels
+  - legend not implemented - implement
+  - popup not implemented - implement
 
 ## What are Grafana panel plugins?
 

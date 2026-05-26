@@ -16,7 +16,6 @@ export interface PolygonLayerSettings {
 
 export type PolygonLayerConfig = BaseLayerConfig<'polygon', PolygonLayerSettings>;
 
-
 const PolygonColorExtension = CreateMathExtensionSubclass({
   name: 'PolygonColor',
   attrs: { value: { type: 'float' } },
@@ -64,7 +63,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
             'vs:#decl': userDecl ? `${autoDecl}\n\n${userDecl}` : autoDecl,
             'vs:DECKGL_FILTER_COLOR': vsFilterColor,
           },
-        }),
+        })
       );
     }
 
@@ -90,7 +89,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
             },
         ...(useShader ? { getValue } : {}),
         extensions: [commonProps.extensions, ...extensions],
-        updateTriggers: { 
+        updateTriggers: {
           ...commonProps.updateTriggers,
           getFillColor: [config.colorScale, options.fillOpacity],
           getElevation: updatesElevation,

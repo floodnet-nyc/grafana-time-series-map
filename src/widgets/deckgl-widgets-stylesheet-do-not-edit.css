@@ -211,10 +211,10 @@
   right: 0;
   pointer-events: all;
 }
-.deck-widget.deck-widget-timeline[data-placement^=top-] {
+.deck-widget.deck-widget-timeline[data-placement^='top-'] {
   top: 0;
 }
-.deck-widget.deck-widget-timeline[data-placement^=bottom-] {
+.deck-widget.deck-widget-timeline[data-placement^='bottom-'] {
   bottom: 0;
 }
 .deck-widget.deck-widget-timeline .deck-widget-button-group {
@@ -637,20 +637,20 @@
   top: var(--range-step-button-size, 24px);
   height: calc(100% - var(--range-step-button-size, 24px) * 2);
 }
-.deck-widget-scrollbar[data-placement$=-left] .deck-widget-range--vertical {
+.deck-widget-scrollbar[data-placement$='-left'] .deck-widget-range--vertical {
   left: 0;
 }
-.deck-widget-scrollbar[data-placement$=-right] .deck-widget-range--vertical {
+.deck-widget-scrollbar[data-placement$='-right'] .deck-widget-range--vertical {
   right: 0;
 }
 .deck-widget-scrollbar .deck-widget-range--horizontal {
   left: var(--range-step-button-size, 24px);
   width: calc(100% - var(--range-step-button-size, 24px) * 2);
 }
-.deck-widget-scrollbar[data-placement^=top-] .deck-widget-range--horizontal {
+.deck-widget-scrollbar[data-placement^='top-'] .deck-widget-range--horizontal {
   top: 0;
 }
-.deck-widget-scrollbar[data-placement^=bottom-] .deck-widget-range--horizontal {
+.deck-widget-scrollbar[data-placement^='bottom-'] .deck-widget-range--horizontal {
   bottom: 0;
 }
 

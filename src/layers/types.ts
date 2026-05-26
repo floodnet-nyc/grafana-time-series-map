@@ -16,7 +16,10 @@ import type { LayerDatum, LayerTable } from '../utils/dataframe/layerTable';
 export type { LayerExtensionInstance };
 
 export type LayerSettingsObject = object;
-export type LayerConfigBase<TType extends string = string, TSettings extends LayerSettingsObject = LayerSettingsObject> = BaseLayerConfig<TType, TSettings>;
+export type LayerConfigBase<
+  TType extends string = string,
+  TSettings extends LayerSettingsObject = LayerSettingsObject,
+> = BaseLayerConfig<TType, TSettings>;
 
 export interface BaseLayerConfig<TType extends string, TSettings extends LayerSettingsObject> {
   id: string;
@@ -61,7 +64,9 @@ export type LayerWithConfig<TLayerConfig extends LayerConfigBase = LayerConfigBa
   props: Layer['props'] & { config?: TLayerConfig };
 };
 
-export type FeaturePickingInfo<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Partial<PickingInfo<Feature>> & {
+export type FeaturePickingInfo<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Partial<
+  PickingInfo<Feature>
+> & {
   object?: Feature;
   layer?: LayerWithConfig<TLayerConfig> | null;
 };

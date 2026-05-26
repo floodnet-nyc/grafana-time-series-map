@@ -2,7 +2,6 @@ import React from 'react';
 import type { Feature } from 'geojson';
 import { buildLiquidScope, renderLiquidTemplate } from '../utils/liquid';
 
-
 export const DEFAULT_POPUP_TEMPLATE = `\
 <table class="fn-datatable">
   {%- for p in properties -%}
@@ -38,7 +37,7 @@ export function SensorPopup({ selectedKey, feature, template, onClose }: SensorP
         zIndex: 100,
         fontFamily: 'inherit',
       }}
-      className='map-card'
+      className="map-card"
     >
       <button
         style={{

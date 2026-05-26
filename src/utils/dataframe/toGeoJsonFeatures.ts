@@ -1,7 +1,6 @@
-import { FieldType, DataFrame, Field } from '@grafana/data';
+import { FieldType, DataFrame, type Field } from '@grafana/data';
 import type { Feature, Geometry } from 'geojson';
-import type { GeometrySource } from '../../types';
-import type { FeatureSourceConfig } from '../../types';
+import type { FeatureSourceConfig, GeometrySource } from '../../types';
 import { DEFAULT_FEATURE_SOURCE_ID } from '../../layers/defaults';
 import { parseGeometry } from './geometry';
 
@@ -23,7 +22,7 @@ function resolveValue(field: Field, i: number): unknown {
 export function dataFrameToFeatures(
   frame: DataFrame,
   geometry: GeometrySource,
-  featureSourceId = DEFAULT_FEATURE_SOURCE_ID,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID
 ): GeoFeature[] {
   const len = frame.length;
   const features: GeoFeature[] = [];
@@ -39,14 +38,18 @@ export function dataFrameToFeatures(
       return [];
     }
     geomField = resolveField(frame, geometry.value.field);
-    if (!geomField) { return []; }
+    if (!geomField) {
+      return [];
+    }
   } else if (geometry.type === 'latlng') {
     if (geometry.lat.source !== featureSourceId || geometry.lng.source !== featureSourceId) {
       return [];
     }
     latField = resolveField(frame, geometry.lat.field);
     lngField = resolveField(frame, geometry.lng.field);
-    if (!latField || !lngField) { return []; }
+    if (!latField || !lngField) {
+      return [];
+    }
   }
 
   for (let i = 0; i < len; i++) {
@@ -94,11 +97,9 @@ export function dataFramesToFeatures(
   refId: string | undefined,
   geometry: GeometrySource,
   elevationField: string | undefined,
-  featureSourceId = DEFAULT_FEATURE_SOURCE_ID,
+  featureSourceId = DEFAULT_FEATURE_SOURCE_ID
 ): GeoFeature[] {
-  const matching = refId
-    ? frames.filter((f) => f.refId === refId)
-    : frames.slice(0, 1);
+  const matching = refId ? frames.filter((f) => f.refId === refId) : frames.slice(0, 1);
 
   const all: GeoFeature[] = [];
   let offset = 0;
@@ -138,35 +139,38 @@ export function geojsonToFeatures(geojson: unknown): GeoFeature[] {
   if (fc.type === 'FeatureCollection' && Array.isArray(fc.features)) {
     return (fc.features as Array<Record<string, unknown>>).map((f, i) => ({
       type: 'Feature',
-      geometry: f.geometry as Geometry | null | undefined ?? null,
-      properties: f.properties as Record<string, unknown> ?? {},
+      geometry: (f.geometry as Geometry | null | undefined) ?? null,
+      properties: (f.properties as Record<string, unknown>) ?? {},
       id: f.id,
       __idx: i,
     })) as GeoFeature[];
   }
 
   if (fc.type === 'Feature') {
-    return [{
-      type: 'Feature',
-      geometry: fc.geometry as Geometry | null | undefined ?? null,
-      properties: fc.properties as Record<string, unknown> ?? {},
-      id: fc.id,
-      __idx: 0,
-    }] as GeoFeature[];
+    return [
+      {
+        type: 'Feature',
+        geometry: (fc.geometry as Geometry | null | undefined) ?? null,
+        properties: (fc.properties as Record<string, unknown>) ?? {},
+        id: fc.id,
+        __idx: 0,
+      },
+    ] as GeoFeature[];
   }
 
   if (
     fc.type === 'GeometryCollection' ||
-    (typeof fc.type === 'string' && (
-      fc.type.startsWith('Multi') || fc.type === 'Point' || fc.type === 'LineString' || fc.type === 'Polygon'
-    ))
+    (typeof fc.type === 'string' &&
+      (fc.type.startsWith('Multi') || fc.type === 'Point' || fc.type === 'LineString' || fc.type === 'Polygon'))
   ) {
-    return [{
-      type: 'Feature',
-      geometry: fc as unknown as Geometry,
-      properties: {},
-      __idx: 0,
-    }] as GeoFeature[];
+    return [
+      {
+        type: 'Feature',
+        geometry: fc as unknown as Geometry,
+        properties: {},
+        __idx: 0,
+      },
+    ] as GeoFeature[];
   }
 
   return [];
