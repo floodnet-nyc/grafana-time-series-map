@@ -5,7 +5,7 @@ import type { Map as MapLibreMap } from 'maplibre-gl';
 import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
 import type { MapViewState, ViewStateChangeParameters, Widget, WidgetPlacement } from '@deck.gl/core';
 import { resolveMapInstance, type FitBounds, type MapProviderProps, type WidgetViewStateChange } from '../types';
-import { useDeckGLProps } from '../DeckGLMap';
+import { useDeckGLProps } from '../useDeckGLProps';
 import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getMaplibreStyleUrl } from './style';

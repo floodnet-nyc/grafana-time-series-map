@@ -5,7 +5,7 @@ import type { MapViewState, ViewStateChangeParameters, Widget, WidgetPlacement }
 import DeckGL, { type DeckGLProps } from '@deck.gl/react';
 import type { FitBounds, MapProviderProps, WidgetViewStateChange } from '../types';
 import { MapFitBounds, type MapFitBoundsProps } from '../MapFitBounds';
-import { useDeckGLProps } from '../DeckGLMap';
+import { useDeckGLProps } from '../useDeckGLProps';
 import { useWidgetControls, WidgetControlAdapter } from '../widgetControlReconciler';
 import { getGoogleColorScheme } from './controlMappings';
 import { resolveGoogleNativeProps } from '../../../widgets/_all';
