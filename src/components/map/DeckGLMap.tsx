@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { DeckProps } from '@deck.gl/core';
 import type { MapProviderProps, WidgetCallbacks } from './types';
 import type { MapPanelOptions } from '../../types';
@@ -7,21 +7,8 @@ import { buildDeckParameters } from 'utils/deckgl/parameters';
 import { createWidgets } from 'widgets/_all';
 import { LightGlassTheme } from '@deck.gl/widgets';
 import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from 'utils/tooltip';
-
-const LazyGoogleMap = lazy(() => import('./google/GoogleMap'));
-const LazyMaplibreMap = lazy(() => import('./maplibre/MaplibreMap'));
-
-function MapProviderFallback({ width, height }: Pick<MapProviderProps, 'width' | 'height'>) {
-  return (
-    <div
-      style={{
-        width,
-        height,
-        background: 'rgba(14, 16, 25, 0.4)',
-      }}
-    />
-  );
-}
+import GoogleMap from './google/GoogleMap';
+import MaplibreMap from './maplibre/MaplibreMap';
 
 export function useDeckGLProps({
   options,
@@ -57,17 +44,8 @@ export function useDeckGLProps({
 }
 
 export function DeckGLMap(providerProps: MapProviderProps) {
-  const fallback = <MapProviderFallback width={providerProps.width} height={providerProps.height} />;
   if (providerProps.options.basemap.provider === 'google') {
-    return (
-      <Suspense fallback={fallback}>
-        <LazyGoogleMap {...providerProps} />
-      </Suspense>
-    );
+    return <GoogleMap {...providerProps} />;
   }
-  return (
-    <Suspense fallback={fallback}>
-      <LazyMaplibreMap {...providerProps} />
-    </Suspense>
-  );
+  return <MaplibreMap {...providerProps} />;
 }
