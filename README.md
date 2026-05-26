@@ -6,7 +6,7 @@ This template is a starting point for building a panel plugin for Grafana.
 
 The repository now includes a first provisioned showcase tranche under `provisioning/dashboards/deckgl-example-*.json`.
 
-Phase 1 dashboards:
+Demo dashboards:
 
 - `scatterplot`
 - `line`
@@ -26,7 +26,7 @@ Sample data lives under `provisioning/sample-data/deckgl-showcase`.
 - GeoJSON URL is preferred for vector examples.
 - Small derived fixtures are generated only where Grafana query configuration or plugin semantics would otherwise become brittle.
 
-Refresh the mirrored phase-1 assets with:
+Refresh the mirrored assets with:
 
 ```bash
 python3 provisioning/scripts/mirror_deckgl_showcase_data.py phase1

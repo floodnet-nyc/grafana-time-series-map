@@ -57,7 +57,7 @@ const defaultSettings: FloodInundationLayerSettings = {
   fillOpacity: 0.5,
 };
 
-class TopPolygonLayer extends SolidPolygonLayer {
+class TopPolygonLayer<DataT=any, ExtraPropsT extends {} = {}> extends SolidPolygonLayer<DataT, ExtraPropsT> {
   protected override _getModels(): { models: any[]; topModel: any; sideModel: any; wireframeModel: any; } {
     const { sideModel, ...models } = super._getModels();
     return { ...models, sideModel: null };
