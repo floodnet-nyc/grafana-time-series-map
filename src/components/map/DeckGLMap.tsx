@@ -1,7 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import type { MapProviderProps } from './types';
-import MaplibreMap from './maplibre/MaplibreMap';
-
+const MaplibreMap = lazy(() => import(/* webpackChunkName: "maplibre-map" */ './maplibre/MaplibreMap'));
 const GoogleMap = lazy(() => import(/* webpackChunkName: "google-map" */ './google/GoogleMap'));
 
 export function DeckGLMap(providerProps: MapProviderProps) {
@@ -12,5 +11,9 @@ export function DeckGLMap(providerProps: MapProviderProps) {
       </Suspense>
     );
   }
-  return <MaplibreMap {...providerProps} />;
+  return (
+    <Suspense fallback={<div style={{ width: providerProps.width, height: providerProps.height }} />}>
+      <MaplibreMap {...providerProps} />
+    </Suspense>
+  );
 }
