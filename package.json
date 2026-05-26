@@ -4,6 +4,7 @@
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "build:html": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "deploy:html": "gh-pages --branch html",
     "test": "jest",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -44,6 +45,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-webpack-plugin": "^5.0.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
+    "gh-pages": "^6.3.0",
     "glob": "^11.1.0",
     "identity-obj-proxy": "^3.0.0",
     "imports-loader": "^5.0.0",
