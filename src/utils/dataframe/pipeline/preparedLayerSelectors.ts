@@ -9,7 +9,7 @@ export interface PreparedLayerState {
   config: LayerConfig;
   table: LayerTable;
   features?: Array<ReturnType<typeof buildFeatureCollection>[number]> | Feature[];
-  timeFilterFlags: Uint8Array;
+  timeFilterFlags?: Uint8Array;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;
   getAccessor: GetAccessorFunction;
@@ -58,7 +58,7 @@ export function buildPreparedLayerStates(
       selectPreparedLayerState({
         config,
         table,
-        timeFilterFlags: flagsByLayerId.get(config.id) ?? new Uint8Array(table.data.length),
+        timeFilterFlags: flagsByLayerId.get(config.id),
         joinedSourceValues: joinedSourceValuesByLayerId.get(config.id),
       }),
     ];

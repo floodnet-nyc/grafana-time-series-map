@@ -56,7 +56,7 @@ export function buildTimeFilterFlagsByLayerId(
     const { mode, time, maxLagMs } = layerConfig.timeFilter;
 
     if (mode === 'none' || !time?.field || time.source !== layerConfig.data.featureSource.id) {
-      flagsByLayerId.set(layerConfig.id, new Uint8Array(rowCount).fill(1));
+      // flagsByLayerId.set(layerConfig.id, new Uint8Array(rowCount).fill(1));
       continue;
     }
 

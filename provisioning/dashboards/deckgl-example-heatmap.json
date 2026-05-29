@@ -81,7 +81,7 @@
           }
         },
         "deck": {
-          "interleaved": true
+          "interleaved": false
         },
         "initialView": {
           "mode": "manual",
@@ -125,9 +125,9 @@
               "invert": true
             },
             "settings": {
-              "radiusPixels": 5,
+              "radiusPixels": 30,
               "intensity": 1,
-              "threshold": 5,
+              "threshold": 0.03,
               "weight": {
                 "source": "main",
                 "field": "weight"

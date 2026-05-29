@@ -44,9 +44,9 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
   renderLayers(context: LayerRenderContext<HeatmapLayerConfig>) {
     const { config, data, getAccessors } = context;
     const options = config.settings;
-
-    const { onClick: _, ...commonProps } = createCommonLayerProps(context);
+    const { onClick: _, ...commonProps } = createCommonLayerProps({ ...context });
     const [getWeight, updatesWeight] = getAccessors.number(options.weight, 1);
+    const [getPosition, updatesPosition] = getAccessors.pointPosition();
     const colorRange = buildColorRange(config.colorScale, 'HeatmapFire', 7) as Array<[number, number, number, number]>;
 
     return [
@@ -57,10 +57,11 @@ export const heatmapLayerDefinition: LayerDefinition<HeatmapLayerConfig> = {
         intensity: options.intensity,
         threshold: options.threshold,
         colorRange,
-        getPosition: getAccessors.pointPosition()[0],
+        getPosition,
         getWeight: getWeight ?? 1,
         updateTriggers: {
           getWeight: updatesWeight,
+          getPosition: updatesPosition,
         },
       }),
     ];
