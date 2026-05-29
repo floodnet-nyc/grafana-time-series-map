@@ -269,7 +269,7 @@
         "time": {
           "show": true,
           "loop": true,
-          "defaultSpeed": 50
+          "defaultSpeed": 30000
         },
         "legend": {
           "show": true
