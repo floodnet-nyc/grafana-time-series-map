@@ -133,6 +133,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
     const options = ctx.config.settings;
     const commonProps = createCommonLayerProps(ctx);
     const colorRange = COLOR_RANGES[options.colorRange] ?? COLOR_RANGES.teal;
+    const [getPosition, updatesPosition] = getAccessors.pointPosition();
     const [getColorWeight, updatesColorWeight] = getAccessors.number(options.colorWeight, 1);
     const [getElevationWeight, updatesElevationWeight] = getAccessors.number(options.elevationWeight, 1);
 
@@ -149,12 +150,13 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         colorRange,
         lowerPercentile: options.lowerPercentile,
         upperPercentile: options.upperPercentile,
-        getPosition: getAccessors.pointPosition()[0],
+        getPosition: getPosition,
         getColorWeight: getColorWeight ?? 1,
         getElevationWeight: getElevationWeight ?? 1,
         updateTriggers: {
           getColorWeight: updatesColorWeight,
           getElevationWeight: updatesElevationWeight,
+          getPosition: updatesPosition,
         },
       } as any),
     ];

@@ -79,4 +79,46 @@ describe('accessorSelectors', () => {
     expect(getLocal?.(datum, context)).toBe(2);
     expect(getMissingNumeric?.(datum, context)).toBe(7);
   });
+
+  it('builds 3d point positions from an elevation accessor', () => {
+    const config = createLayerConfig({
+      geometry: {
+        type: 'latlng',
+        lat: createSourceRef('lat'),
+        lng: createSourceRef('lng'),
+      },
+    });
+    const feature = {
+      ...createFeature({ lat: 40.7, lng: -73.9, height: 12 }),
+      geometry: { type: 'Point', coordinates: [-73.9, 40.7] },
+      __idx: 0,
+    };
+    const table = featureArrayToLayerTable([feature] as any, 'main');
+    const context = { index: 0 } as AccessorContext<any>;
+    const datum = { __idx: 0 };
+    const { getAccessors } = selectAccessorFactories({ config, table });
+
+    const [getElevation] = getAccessors.number(createSourceRef('height'));
+    const [getPosition] = getAccessors.pointPosition([0, 0, 0], getElevation);
+
+    expect(getPosition(datum, context)).toEqual([-73.9, 40.7, 12]);
+  });
+
+  it('applies an elevation offset through pointPosition', () => {
+    const config = createLayerConfig();
+    const feature = {
+      ...createFeature({ height: 12 }),
+      geometry: { type: 'Point', coordinates: [-73.9, 40.7] },
+      __idx: 0,
+    };
+    const table = featureArrayToLayerTable([feature] as any, 'main');
+    const context = { index: 0 } as AccessorContext<any>;
+    const datum = { __idx: 0 };
+    const { getAccessors } = selectAccessorFactories({ config, table });
+
+    const [getElevation] = getAccessors.number(createSourceRef('height'));
+    const [getPosition] = getAccessors.pointPosition([0, 0, 0], getElevation, 6);
+
+    expect(getPosition(datum, context)).toEqual([-73.9, 40.7, 18]);
+  });
 });

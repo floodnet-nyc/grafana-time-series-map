@@ -5,7 +5,7 @@ import type { AccessorContext } from '@deck.gl/core';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import type { LayerDatum } from '../../utils/dataframe/layerTable';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps } from '../utils';
 
 export interface TextLayerSettings {
   text: SourceRef;
@@ -138,6 +138,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
     const [getText, updatesText] = getAccessor(options.text, '');
     const [getSize, updatesSize] = getAccessors.number(options.size, options.fontSize);
     const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
+    const [getPosition, updatesPosition] = getAccessors.pointPosition([0, 0, 0], getElevation);
 
     // const getDecimals = (v: number) => (v > 6 ? 0 : 1);
 
@@ -153,8 +154,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getPosition,
         getText: getText
           ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
               autoDecimalsText(getText(datum, ctx), options.autoDecimals)
@@ -170,7 +170,7 @@ export const textLayerDefinition: LayerDefinition<TextLayerConfig, LayerDatum> =
         polygonOffset: 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getPosition: updateElevation,
+          getPosition: [...updatesPosition, ...updateElevation],
           getColor: updateSelection,
           getText: updatesText,
           getSize: updatesSize,

@@ -6,7 +6,7 @@ import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathE
 import { buildColorAccessor, buildInterpolateColorGlsl, DEFAULT_VS_FILTER_COLOR } from '../../utils/deckgl/colorScales';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
 import CollisionFilterExtension from '../../utils/deckgl/extensions/CollisionFilterExtension';
-import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps } from '../utils';
 import { autoDecimalsText } from 'layers/text';
 import type { AccessorContext } from '@deck.gl/core';
 import type { LayerDatum } from '../../utils/dataframe/layerTable';
@@ -111,6 +111,8 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
     const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
     const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
+    const [getPosition, updatesPosition] = getAccessors.pointPosition([0, 0, 0], getElevation);
+    const [getLabelPosition, updatesLabelPosition] = getAccessors.pointPosition([0, 0, 0], getElevation, 6);
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -122,8 +124,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         stroked: options.stroked,
         filled: true,
         lineWidthMinPixels: 0,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getPosition,
         getLineColor: getLineColor ?? [0, 0, 0, 0],
         getLineWidth: getLineWidth ?? 0,
         getFillColor: useShader ? [0, 0, 0, 255] : getColor,
@@ -132,7 +133,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         extensions: [...commonProps.extensions, ...(shaderExtensions as any[])],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getPosition: updateElevation,
+          getPosition: [...updatesPosition, ...updateElevation],
           getLineColor: updateSelection,
           getLineWidth: updateSelection,
           getRadius: updateRadius,
@@ -156,8 +157,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           data,
           visible: config.visible,
           pickable: false,
-          getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-            getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 6),
+          getPosition: getLabelPosition,
           getText: getText
             ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), true)
             : undefined,
@@ -188,7 +188,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
           updateTriggers: {
             ...commonProps.updateTriggers,
-            getPosition: updateElevation,
+            getPosition: [...updatesLabelPosition, ...updateElevation],
             getText: updateText,
             getCollisionPriority: updateCollisionPriority,
           },

@@ -60,6 +60,12 @@ export type GeometryAccessorFunction<O, T = any> = (
   defaultValue?: O
 ) => [AccessorFunction<T, O>, AccessorDependencyKey];
 
+export type PointPositionAccessorFunction<T = any> = (
+  defaultValue?: [number, number] | [number, number, number],
+  getElevation?: AccessorFunction<T, number>,
+  elevationOffset?: number
+) => [AccessorFunction<T, [number, number] | [number, number, number]>, AccessorDependencyKey];
+
 export type LayerWithConfig<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Layer & {
   props: Layer['props'] & { config?: TLayerConfig };
 };
@@ -78,7 +84,7 @@ export interface GetAccessorFunctions {
   date: TypedGetAccessorFunction<Date>;
   dateMs: TypedGetAccessorFunction<number>;
   geometry: GeometryAccessorFunction<Geometry | null>;
-  pointPosition: GeometryAccessorFunction<[number, number]>;
+  pointPosition: PointPositionAccessorFunction;
   path: GeometryAccessorFunction<number[][]>;
   polygon: GeometryAccessorFunction<number[][][]>;
 }

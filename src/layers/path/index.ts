@@ -50,6 +50,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
       ? getAccessors.number(config.colorScale.field)
       : [undefined, []];
     const getColor = buildColorAccessor(config.colorScale, [0, 155, 200, 200], getColorValue as any);
+    const [getPath, updatesPath] = getAccessors.path();
     const [getWidth, updatesWidth] = getAccessors.number(options.width, options.widthScale);
 
     return [
@@ -60,13 +61,14 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: getAccessors.path()[0] as any,
+        getPath: getPath,
         getColor,
         getWidth: getWidth ?? 1,
         updateTriggers: {
           ...commonProps.updateTriggers,
           getColor: updatesColor,
           getWidth: updatesWidth,
+          getPath: updatesPath,
         },
       }),
     ];

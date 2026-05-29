@@ -1,7 +1,12 @@
 import type { AccessorContext, AccessorFunction } from '@deck.gl/core';
 import type { Geometry, LineString, MultiLineString, MultiPolygon, Point, Polygon } from 'geojson';
 import type { LayerConfig } from '../../../layers';
-import type { GetAccessorFunction, GetAccessorFunctions, TypedGetAccessorFunction } from '../../../layers/types';
+import type {
+  GetAccessorFunction,
+  GetAccessorFunctions,
+  PointPositionAccessorFunction,
+  TypedGetAccessorFunction,
+} from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
 import { getRowGeometry, getRowValue, type LayerTable, type LayerDatum } from '../layerTable';
@@ -94,11 +99,36 @@ function toDateMs(raw: unknown, defaultValue: number): number {
   return Number.isFinite(n) ? n : defaultValue;
 }
 
-function getPointPositionFromGeometry(geometry: Geometry | null, defaultValue: [number, number]): [number, number] {
+function getPointPositionFromGeometry(
+  geometry: Geometry | null,
+  defaultValue: [number, number] | [number, number, number],
+  elevation?: number,
+  elevationOffset = 0
+): [number, number] | [number, number, number] {
+  const [defaultLng = 0, defaultLat = 0, defaultZ] = defaultValue;
+  const fallbackZ = (defaultZ ?? 0) + elevationOffset;
+
   if (geometry?.type === 'Point') {
-    const [lng = defaultValue[0], lat = defaultValue[1]] = geometry.coordinates as Point['coordinates'];
+    const [lng = defaultLng, lat = defaultLat, rawZ] = geometry.coordinates as Point['coordinates'];
+    if (typeof elevation === 'number' && Number.isFinite(elevation)) {
+      return [lng, lat, elevation + elevationOffset];
+    }
+    if (typeof rawZ === 'number' && Number.isFinite(rawZ)) {
+      return [lng, lat, rawZ + elevationOffset];
+    }
+    if (defaultValue.length > 2 || elevationOffset !== 0) {
+      return [lng, lat, fallbackZ];
+    }
     return [lng, lat];
   }
+
+  if (typeof elevation === 'number' && Number.isFinite(elevation)) {
+    return [defaultLng, defaultLat, elevation + elevationOffset];
+  }
+  if (defaultValue.length > 2 || elevationOffset !== 0) {
+    return [defaultLng, defaultLat, fallbackZ];
+  }
+
   return defaultValue;
 }
 
@@ -195,10 +225,16 @@ export function selectAccessorFactories({
         (_datum, { index }) => getRowGeometry(table, index) ?? defaultValue,
         [table.geometry],
       ],
-      pointPosition: (defaultValue: [number, number] = [0, 0]) => [
-        (_datum, { index }) => getPointPositionFromGeometry(getRowGeometry(table, index), defaultValue),
+      pointPosition: ((defaultValue: [number, number] | [number, number, number] = [0, 0], getElevation, elevationOffset = 0) => [
+        (datum, ctx) =>
+          getPointPositionFromGeometry(
+            getRowGeometry(table, ctx.index),
+            defaultValue,
+            getElevation?.(datum, ctx),
+            elevationOffset
+          ),
         [table.geometry],
-      ],
+      ]) as PointPositionAccessorFunction,
       path: (defaultValue: number[][] = []) => [
         (_datum, { index }) => getPathFromGeometry(getRowGeometry(table, index), defaultValue),
         [table.geometry],

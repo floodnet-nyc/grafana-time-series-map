@@ -5,7 +5,7 @@ import { AccessorContext } from '@deck.gl/core';
 import { buildColorAccessor } from '../../utils/deckgl/colorScales';
 import type { LayerDatum } from '../../utils/dataframe/layerTable';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
-import { DEFAULT_SELECTED_COLOR, createCommonLayerProps, getDatumPosition } from '../utils';
+import { DEFAULT_SELECTED_COLOR, createCommonLayerProps } from '../utils';
 
 export interface IconLayerSettings {
   fixedIcon: string;
@@ -129,6 +129,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
         : baseColor;
 
     const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
+    const [getPosition, updatesPosition] = getAccessors.pointPosition([0, 0, 0], getElevation);
 
     const [getIcon, updatesIcon] = getAccessor(options.icon, options.fixedIcon);
     const [getSize, updatesSize] = getAccessors.number(options.size, options.sizeScale);
@@ -147,8 +148,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
         sizeScale: 1,
         sizeMinPixels: options.sizeMinPixels,
         sizeMaxPixels: options.sizeMaxPixels,
-        getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-          getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx)),
+        getPosition,
         getIcon: getIcon
           ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
               const iconName = getIcon(datum, ctx) as string;
@@ -159,7 +159,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
         getColor: getColor ?? [255, 255, 255, 255],
         updateTriggers: {
           ...commonProps.updateTriggers,
-          getPosition: updateElevation,
+          getPosition: [...updatesPosition, ...updateElevation],
           getColor: updateSelection,
           getIcon: updatesIcon,
           getSize: updatesSize,

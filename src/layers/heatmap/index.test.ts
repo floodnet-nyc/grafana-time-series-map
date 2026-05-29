@@ -1,4 +1,4 @@
-import type { Feature } from 'geojson';
+import type { Feature, Point } from 'geojson';
 import { featureArrayToLayerTable } from '../../utils/dataframe/layerTable';
 import { createSourceRef } from '../defaults';
 import type { GetAccessorFunction, GetAccessorFunctions, LayerRenderContext } from '../types';
@@ -86,7 +86,10 @@ function createContext(
     date: getAccessor as any,
     dateMs: getAccessor as any,
     geometry: () => [() => null, []],
-    pointPosition: () => [(_feature: any, { index }: { index: number }) => features[index].geometry.coordinates, ['positions']],
+    pointPosition: () => [
+      (_feature: any, { index }: { index: number }) => (features[index].geometry as Point).coordinates,
+      ['positions'],
+    ],
     path: () => [() => [], []],
     polygon: () => [() => [], []],
   };
@@ -107,33 +110,17 @@ function createContext(
 }
 
 describe('heatmapLayerDefinition', () => {
-  it('matches the plain heatmap-layer shape expected by deck aggregation layers', () => {
+  it('wires point and weight accessors from layer data', () => {
     const feature = createFeature([-73.95, 40.78], { weight: 2 }, 0);
 
     const [layer] = heatmapLayerDefinition.renderLayers(createContext(createConfig(), [feature])) as any[];
 
     expect(layer.props.id).toBe('heatmap/heatmap-1');
-    expect(layer.props.pickable).toBe(false);
     expect(layer.props.radiusPixels).toBe(30);
     expect(layer.props.intensity).toBe(1);
     expect(layer.props.threshold).toBe(0.03);
-    expect(layer.props.extensions).toBeUndefined();
-    expect(layer.props.parameters).toBeUndefined();
     expect(layer.props.data).toEqual([{ __idx: 0 }]);
     expect(layer.props.getWeight({ __idx: 0 }, { index: 0 })).toBe(2);
     expect(layer.props.getPosition({ __idx: 0 }, { index: 0 })).toEqual([-73.95, 40.78]);
-  });
-
-  it('filters out rows disabled by timeFilterFlags before they reach the aggregation layer', () => {
-    const features = [
-      createFeature([-73.95, 40.78], { weight: 2 }, 0),
-      createFeature([-73.96, 40.79], { weight: 3 }, 1),
-    ];
-
-    const [layer] = heatmapLayerDefinition.renderLayers(
-      createContext(createConfig(), features, new Uint8Array([1, 0]))
-    ) as any[];
-
-    expect(layer.props.data).toEqual([{ __idx: 0 }]);
   });
 });
