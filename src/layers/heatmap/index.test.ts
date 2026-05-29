@@ -87,7 +87,7 @@ function createContext(
     dateMs: getAccessor as any,
     geometry: () => [() => null, []],
     pointPosition: () => [
-      (_feature: any, { index }: { index: number }) => (features[index].geometry as Point).coordinates,
+      (_feature: any, { index }: { index: number }) => (features[index].geometry as Point).coordinates as [number, number],
       ['positions'],
     ],
     path: () => [() => [], []],
