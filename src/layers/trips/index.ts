@@ -106,7 +106,7 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
         };
     const getFilterValue = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
       const index = getIndex(datum, ctx);
-      if (index < 0 || !timeFilterFlags[index]) {
+      if (index < 0 || (timeFilterFlags && !timeFilterFlags[index])) {
         return -1;
       }
       const path = getPathAccessor(datum, ctx);
