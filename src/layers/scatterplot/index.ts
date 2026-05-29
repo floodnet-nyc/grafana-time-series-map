@@ -103,7 +103,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
       (selectedKey != null
         ? String(getSelection?.(datum, ctx) ?? '') === selectedKey
           ? (config.selectionColor ?? DEFAULT_SELECTED_COLOR)
-          : [200, 200, 240, 60]
+          : [200, 200, 240, 0]
         : [0, 0, 0, 0]) as [number, number, number, number];
     const getLineWidth = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
       selectedKey != null ? (String(getSelection?.(datum, ctx) ?? '') === selectedKey ? 3 : 1) : 2;
@@ -157,7 +157,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           visible: config.visible,
           pickable: false,
           getPosition: (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-            getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 2),
+            getDatumPosition(context.table, ctx.index, getElevation?.(datum, ctx), 6),
           getText: getText
             ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => autoDecimalsText(getText(datum, ctx), true)
             : undefined,

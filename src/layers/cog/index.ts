@@ -1,6 +1,7 @@
 import type { ColorScaleConfig, SourceRef } from '../../types';
-import type { BaseLayerConfig, LayerDefinition } from '../types';
+import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import { createBaseLayerConfig, createSourceRef, section } from '../defaults';
+import { renderCogLayers } from './runtime';
 
 export interface CogLayerSettings {
   url: SourceRef;
@@ -41,8 +42,8 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
       { key: 'maxFrameRate', label: 'Max frame rate (fps)', type: 'number', defaultValue: 0 },
     ]),
   ],
-  renderLayers() {
-    return [];
+  renderLayers(context: LayerRenderContext<CogLayerConfig>) {
+    return renderCogLayers(context);
   },
 };
 

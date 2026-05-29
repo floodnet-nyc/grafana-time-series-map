@@ -176,7 +176,7 @@ export function selectAccessorFactories({
           );
           return sourceValues.get(localKey)?.[fieldRef.field] ?? defaultValue;
         },
-        [...dependencyKey(fieldRef, defaultValue), joinedSource.join.localKey.source, joinedSource.join.localKey.field],
+        [...dependencyKey(fieldRef, defaultValue), joinedSource.join.localKey.source, joinedSource.join.localKey.field, sourceValues],
       ];
     }
 
