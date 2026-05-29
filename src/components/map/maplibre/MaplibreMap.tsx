@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Map, { type ControlPosition, type MapRef, type ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Map, { type ControlPosition, type MapRef, type ViewStateChangeEvent, useControl } from 'react-map-gl/maplibre';
 import { DeckGL, type DeckGLProps } from '@deck.gl/react';
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
@@ -118,16 +118,14 @@ export default function MaplibreMap(props: MapProviderProps) {
     mergedCallbacks,
   } = useMapProviderState(props, viewportAdapter);
 
-  // Sync ref-based map instance into state for reactive hooks.
-  // Re-syncs after each render — safe because setState with the
-  // same value is a no-op.
   const [maplibreMap, setMaplibreMap] = useState<MapLibreMap | undefined>();
-  const mapElementRef = React.useRef<MapRef | null>(null);
-  useEffect(() => {
-    const map = mapElementRef.current?.getMap();
-    mapRef.current = mapElementRef.current;
-    setMaplibreMap(map);
-  }, [mapRef]);
+  const handleMapRef = useCallback(
+    (instance: MapRef | null) => {
+      mapRef.current = instance;
+      setMaplibreMap(instance?.getMap());
+    },
+    [mapRef]
+  );
 
   const styleUrl = useMemo(
     () => getMaplibreStyleUrl(options.basemap.maplibre.mapStyle, options.basemap.maplibre.mapStyleUrl),
@@ -202,7 +200,7 @@ export default function MaplibreMap(props: MapProviderProps) {
           viewState={viewState}
           onViewStateChange={handleViewStateChange}
         >
-          <Map {...mapProps} ref={mapElementRef}>
+          <Map {...mapProps} ref={handleMapRef}>
             {children}
           </Map>
         </DeckGL>
@@ -211,32 +209,20 @@ export default function MaplibreMap(props: MapProviderProps) {
   }
 
   return (
-    <Map ref={mapElementRef} {...mapProps} initialViewState={props.initialViewState} onMoveEnd={handleMoveEnd}>
-      <DeckOverlay deckProps={deckProps as DeckGLProps} maplibreMap={maplibreMap} />
+    <Map ref={handleMapRef} {...mapProps} initialViewState={props.initialViewState} onMoveEnd={handleMoveEnd}>
+      <DeckOverlay deckProps={deckProps as DeckGLProps} />
       {children}
     </Map>
   );
 }
 
-function DeckOverlay({ deckProps, maplibreMap }: { deckProps: DeckGLProps; maplibreMap?: MapLibreMap }) {
-  const overlay = useMemo(
-    () => new MapboxOverlay({ ...deckProps } as MapboxOverlayProps),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+function DeckOverlay({ deckProps }: { deckProps: DeckGLProps }) {
+  const overlay = useControl<MapboxOverlay>(
+    () => new MapboxOverlay({ ...deckProps } as MapboxOverlayProps)
   );
 
   useEffect(() => {
-    if (!maplibreMap || !overlay) {
-      return;
-    }
-    maplibreMap.addControl(overlay as any);
-    return () => {
-      maplibreMap.removeControl(overlay as any);
-    };
-  }, [maplibreMap, overlay]);
-
-  useEffect(() => {
-    overlay?.setProps(deckProps);
+    overlay.setProps(deckProps as MapboxOverlayProps);
   }, [overlay, deckProps]);
   return null;
 }
