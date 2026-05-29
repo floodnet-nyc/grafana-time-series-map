@@ -70,6 +70,8 @@ export function MapPanel({
     toTimeMs,
     publish: options.sync.publish,
     subscribe: options.sync.subscribe,
+    publishSelection: options.sync.publishSelection,
+    subscribeSelection: options.sync.subscribeSelection,
     selectionVariableName: options.sync.selectionVariableName,
   });
 

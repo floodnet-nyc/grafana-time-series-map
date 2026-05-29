@@ -59,6 +59,8 @@ export function useGrafanaEventBridge({
   toTimeMs,
   publish = true,
   subscribe = true,
+  publishSelection = true,
+  subscribeSelection = true,
   selectionVariableName,
 }: {
   eventBus: EventBus | undefined;
@@ -70,6 +72,8 @@ export function useGrafanaEventBridge({
 
   publish?: boolean;
   subscribe?: boolean;
+  publishSelection?: boolean;
+  subscribeSelection?: boolean;
 }): UseGrafanaEventBridgeResult {
   const playbackRef = useLatestRef(playback);
   const rangeRef = useLatestRef({ fromTimeMs, toTimeMs });
@@ -85,17 +89,27 @@ export function useGrafanaEventBridge({
   const [selectedKey_, setSelectedKey_] = useState<string | null>(null);
   const selectedKey = selectionVariableName ? selectVarValue : selectedKey_;
 
-  const setSelectedKey = useCallback(
-    (key: string | null) => {
+  const applySelectedKey = useCallback(
+    (key: string | null, origin: 'local' | 'external') => {
       if (selectionVariableName) {
         const selectionVariableParam = `var-${selectionVariableName?.trim().replace(/^var-/, '') ?? ''}`;
         locationService.partial({ [selectionVariableParam]: key ?? '' }, true);
       } else {
         setSelectedKey_(key);
       }
+
+      if (origin === 'local' && publishSelection && eventBus) {
+        if (key) {
+          eventBus.publish(new DataSelectEvent({ data: { name: key } } as any));
+        } else {
+          eventBus.publish(new DataHoverClearEvent());
+        }
+      }
     },
-    [selectionVariableName]
+    [selectionVariableName, publishSelection, eventBus]
   );
+
+  const setSelectedKey = useCallback((key: string | null) => applySelectedKey(key, 'local'), [applySelectedKey]);
 
   // Publish cursor position while playing
 
@@ -133,15 +147,21 @@ export function useGrafanaEventBridge({
           }
 
           const incomingSelectionKey = getSelectedKeyFromEventPayload(event.payload);
-          if (incomingSelectionKey !== null) {
-            setSelectedKey(incomingSelectionKey);
+          if (subscribeSelection && incomingSelectionKey !== null) {
+            applySelectedKey(incomingSelectionKey, 'external');
           }
         }
   );
-  useEventBridgeSubscription(eventBus, DataHoverClearEvent, () => setSelectedKey(null));
+  useEventBridgeSubscription(
+    eventBus,
+    DataHoverClearEvent,
+    subscribeSelection ? () => applySelectedKey(null, 'external') : undefined
+  );
 
-  useEventBridgeSubscription(eventBus, DataSelectEvent, (event) =>
-    setSelectedKey(getSelectedKeyFromEventPayload(event.payload))
+  useEventBridgeSubscription(
+    eventBus,
+    DataSelectEvent,
+    subscribeSelection ? (event) => applySelectedKey(getSelectedKeyFromEventPayload(event.payload), 'external') : undefined
   );
 
   return { selectedKey, setSelectedKey };

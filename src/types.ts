@@ -303,6 +303,8 @@ export interface MapPanelOptions {
   sync: {
     publish: boolean;
     subscribe: boolean;
+    publishSelection?: boolean;
+    subscribeSelection?: boolean;
     selectionVariableName?: string;
   };
 }

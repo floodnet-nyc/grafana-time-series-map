@@ -122,7 +122,7 @@ function createOptions(overrides: { sync?: Partial<MapPanelOptions['sync']> } = 
     legend: { show: true },
     tooltip: { show: true },
     popup: { show: true },
-    sync: { publish: true, subscribe: true, ...overrides.sync },
+    sync: { publish: true, subscribe: true, publishSelection: true, subscribeSelection: true, ...overrides.sync },
   };
 }
 
@@ -322,7 +322,11 @@ describe('MapPanel', () => {
 
     const view = render(<MapPanel {...props} />);
     expect(mockUseGrafanaEventBridge).toHaveBeenCalledWith(
-      expect.objectContaining({ selectionVariableName: 'selected_sensor' })
+      expect.objectContaining({
+        selectionVariableName: 'selected_sensor',
+        publishSelection: true,
+        subscribeSelection: true,
+      })
     );
 
     act(() => {

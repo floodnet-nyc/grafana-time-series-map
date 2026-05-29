@@ -212,16 +212,30 @@ export const plugin = new PanelPlugin<MapPanelOptions>(MapPanel).setNoPadding().
     })
     .addBooleanSwitch({
       path: 'sync.publish',
-      name: 'Publish playback time to other panels',
+      name: 'Publish time hover to other panels',
       description:
-        'Broadcast time cursor and hover selection to other panels. Displays a cursor at the current time on other time series panels.',
+        'Broadcast the playback time cursor to other panels. Displays a cursor at the current time on other time series panels.',
       defaultValue: true,
       category: ['Tooltip', 'Cross-panel sync'],
     })
     .addBooleanSwitch({
       path: 'sync.subscribe',
       name: 'Subscribe to time hover events from other panels',
-      description: 'Receive time cursor and hover selection from other panels',
+      description: 'Receive playback time cursor updates from other panels.',
+      defaultValue: true,
+      category: ['Tooltip', 'Cross-panel sync'],
+    })
+    .addBooleanSwitch({
+      path: 'sync.publishSelection',
+      name: 'Publish selection to other panels',
+      description: 'Broadcast selected feature keys to other panels using Grafana selection events.',
+      defaultValue: true,
+      category: ['Tooltip', 'Cross-panel sync'],
+    })
+    .addBooleanSwitch({
+      path: 'sync.subscribeSelection',
+      name: 'Subscribe to selection events from other panels',
+      description: 'Receive selection and hover-series keys from other panels.',
       defaultValue: true,
       category: ['Tooltip', 'Cross-panel sync'],
     })

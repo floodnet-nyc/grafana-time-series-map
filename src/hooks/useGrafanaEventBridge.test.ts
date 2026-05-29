@@ -75,6 +75,8 @@ function renderBridge(
       toTimeMs: 2000,
       publish: true,
       subscribe: true,
+      publishSelection: true,
+      subscribeSelection: true,
       ...overrides,
     })
   );
@@ -107,6 +109,32 @@ describe('useGrafanaEventBridge', () => {
       clearSubscriber?.handler(new DataHoverClearEvent());
     });
     expect(result.current.selectedKey).toBeNull();
+  });
+
+  it('publishes selection changes when enabled', () => {
+    const { eventBus, published } = createEventBus();
+    const { result } = renderBridge(eventBus, createPlayback());
+
+    act(() => {
+      result.current.setSelectedKey('sensor-1');
+    });
+    expect(published.at(-1)).toBeInstanceOf(DataSelectEvent);
+
+    act(() => {
+      result.current.setSelectedKey(null);
+    });
+    expect(published.at(-1)).toBeInstanceOf(DataHoverClearEvent);
+  });
+
+  it('does not publish selection changes when publishSelection is disabled', () => {
+    const { eventBus, published } = createEventBus();
+    const { result } = renderBridge(eventBus, createPlayback(), { publishSelection: false });
+
+    act(() => {
+      result.current.setSelectedKey('sensor-1');
+    });
+
+    expect(published).toHaveLength(0);
   });
 
   it('writes the configured dashboard variable when local selection changes', () => {
@@ -158,6 +186,20 @@ describe('useGrafanaEventBridge', () => {
     });
 
     expect(result.current.selectedKey).toBe('sensor-2');
+  });
+
+  it('ignores incoming selection payloads when subscribeSelection is disabled', () => {
+    const { eventBus, subscribers } = createEventBus();
+    const { result } = renderBridge(eventBus, createPlayback(), { subscribeSelection: false });
+
+    const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
+    expect(hoverSubscriber).toBeDefined();
+
+    act(() => {
+      hoverSubscriber?.handler(new DataHoverEvent({ data: { name: 'sensor-2' } } as any));
+    });
+
+    expect(result.current.selectedKey).toBeNull();
   });
 
   it('updates selectedKey from incoming DataSelectEvent', () => {
