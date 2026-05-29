@@ -38,6 +38,10 @@ function getPath(geometry: unknown): number[][] {
   return [];
 }
 
+function scaleTimestamp(value: number, unit: TripsLayerSettings['timestampUnit']): number {
+  return unit === 's' ? value * 1000 : value;
+}
+
 const defaultSettings: TripsLayerSettings = {
   timestamps: createSourceRef(),
   timestampUnit: 'ms',
@@ -82,6 +86,7 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
     const getColor = buildColorAccessor<TripDatum>(config.colorScale, [0, 200, 180, 220], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
     const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
+    const scaleTimestamps = (timestamps: number[]) => timestamps.map((timestamp) => scaleTimestamp(timestamp, options.timestampUnit));
     const getIndex = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx?.index ?? datum.__idx ?? -1;
     const getContext = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) =>
       ctx ?? ({ index: getIndex(datum, ctx) } as AccessorContext<TripDatum>);
@@ -91,13 +96,13 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
     };
     const getTimestamps = getTimestampsRaw
       ? (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
-          const timestamps = getTimestampsRaw(datum, ctx);
+          const timestamps = scaleTimestamps(getTimestampsRaw(datum, ctx));
           const path = getPathAccessor(datum, ctx);
           return timestamps.length === path.length ? timestamps : [];
         }
       : (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
           const path = getPathAccessor(datum, ctx);
-          return path.map((coord) => Number(coord[2])).filter(Number.isFinite);
+          return scaleTimestamps(path.map((coord) => Number(coord[2])).filter(Number.isFinite));
         };
     const getFilterValue = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
       const index = getIndex(datum, ctx);

@@ -273,6 +273,49 @@ describe('tripsLayerDefinition', () => {
     expect(layer.props.getTimestamps(csvFeature, { index: 2 })).toEqual([5, 6]);
   });
 
+  it('scales second-based timestamps to milliseconds when configured', () => {
+    const feature = createFeature(
+      [
+        [-73.9, 40.7],
+        [-73.8, 40.8],
+      ],
+      { trip_times: [1191, 1193.803] },
+      0
+    );
+    const config = createConfig({
+      settings: {
+        ...createConfig().settings,
+        timestampUnit: 's',
+        timestamps: createSourceRef('trip_times'),
+      },
+    });
+
+    const [layer] = tripsLayerDefinition.renderLayers(createContext(config, [feature])) as any[];
+
+    expect(layer.props.getTimestamps(feature, { index: 0 })).toEqual([1191000, 1193803]);
+  });
+
+  it('scales fallback z-coordinate timestamps to milliseconds when configured', () => {
+    const feature = createFeature(
+      [
+        [-73.9, 40.7, 1191],
+        [-73.8, 40.8, 1193.803],
+      ],
+      {},
+      0
+    );
+    const config = createConfig({
+      settings: {
+        ...createConfig().settings,
+        timestampUnit: 's',
+      },
+    });
+
+    const [layer] = tripsLayerDefinition.renderLayers(createContext(config, [feature])) as any[];
+
+    expect(layer.props.getTimestamps(feature, { index: 0 })).toEqual([1191000, 1193803]);
+  });
+
   it('uses row-level timeFilterFlags while keeping feature identity stable across cursor changes', () => {
     const feature = createFeature(
       [
