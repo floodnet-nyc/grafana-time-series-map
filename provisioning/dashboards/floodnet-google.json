@@ -802,11 +802,11 @@
               "showLabels": true,
               "stroked": true,
               "radius": {
-                "source": "main",
+                "source": "A",
                 "field": "depth_inches"
               },
               "label": {
-                "source": "main",
+                "source": "A",
                 "field": "depth_inches"
               }
             },
@@ -822,11 +822,11 @@
               }
             },
             "type": "scatterplot",
-            "visible": true,
+            "visible": false,
             "colorScale": {
               "type": "threshold",
               "field": {
-                "source": "main",
+                "source": "A",
                 "field": "depth_inches"
               },
               "steps": [
