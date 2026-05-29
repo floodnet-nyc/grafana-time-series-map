@@ -1,5 +1,4 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
@@ -50,7 +49,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
     const valueField = config.colorScale?.field || config.shader?.value;
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
     const useShader = !!(hasScheme && valueField?.field);
-    const extensions: any[] = [new DataFilterExtension({ filterSize: 1 })];
+    const extensions: any[] = [];
     if (useShader) {
       const autoDecl = buildInterpolateColorGlsl(config.colorScale!);
       const userDecl = config.shader?.vsDecl?.trim() ?? '';
@@ -88,7 +87,7 @@ export const polygonLayerDefinition: LayerDefinition<PolygonLayerConfig> = {
               return [c[0], c[1], c[2], fillOpacity] as [number, number, number, number];
             },
         ...(useShader ? { getValue } : {}),
-        extensions: [commonProps.extensions, ...extensions],
+        extensions: [...commonProps.extensions, ...extensions],
         updateTriggers: {
           ...commonProps.updateTriggers,
           getFillColor: [config.colorScale, options.fillOpacity],
