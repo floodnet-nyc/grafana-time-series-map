@@ -4,14 +4,14 @@ import {
   type MinimalTileData,
 } from '@developmentseed/deck.gl-geotiff';
 import type { RenderTileResult } from '@developmentseed/deck.gl-raster';
-import { type GeoTIFF, type Overview } from '@developmentseed/geotiff';
+import { DecoderPool, type GeoTIFF, type Overview } from '@developmentseed/geotiff';
 import { TimeCOGLayer } from '@floodnet/deck.gl-time-cog-layer';
 import type { Texture } from '@luma.gl/core';
 import { buildInterpolateColorGlsl } from '../../utils/deckgl/colorScales';
 import type { LayerRenderContext } from '../types';
 import { DEFAULT_COG_COLOR_SCALE, type CogLayerConfig } from '.';
 
-// const mainThreadPool = new DecoderPool();
+const mainThreadPool = new DecoderPool();
 
 type CogTileData = MinimalTileData & {
   texture: Texture;
@@ -118,18 +118,14 @@ export function renderCogLayers(context: LayerRenderContext<CogLayerConfig>) {
 
   const [getUrl, updatesUrl] = getAccessor<string>(options.url, '');
   const [getTime, updatesTime] = getAccessors.number(options.timestamp, 0);
-  console.log(data)
+  // console.log(data)
 
   return [
     new TimeCOGLayer({
       id: `cog/${config.id}`,
       data,
       currentTime: cursorTimeMs,
-      getUrl: (datum, ctx) => {
-        const url = getUrl?.(datum, ctx);
-        console.log('COG URL:', url);
-        return url;
-      },
+      getUrl,
       getTime,
       getTileData,
       renderTile: getRenderTile(options.colorMaxValue, config.colorScale ?? DEFAULT_COG_COLOR_SCALE),
@@ -137,7 +133,7 @@ export function renderCogLayers(context: LayerRenderContext<CogLayerConfig>) {
       visible: config.visible,
       // maxRequests: options.maxRequests,
       // maxFrameRate: options.maxFrameRate,
-      // pool: mainThreadPool,
+      pool: mainThreadPool,
       updateTriggers: {
         getUrl: updatesUrl,
         getTime: updatesTime,

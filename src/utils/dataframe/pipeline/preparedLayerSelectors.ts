@@ -24,7 +24,7 @@ export function selectPreparedLayerState({
 }: {
   config: LayerConfig;
   table: LayerTable;
-  timeFilterFlags: Uint8Array;
+  timeFilterFlags?: Uint8Array;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
 }): PreparedLayerState {
   const derivedFields = compileDerivedFields(config);

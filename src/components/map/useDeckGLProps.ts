@@ -30,6 +30,7 @@ export function useDeckGLProps({
       options.tooltip.show !== false ? buildDeckTooltip(options.tooltip.template ?? DEFAULT_TOOLTIP_TEMPLATE) : null,
     [options.tooltip.show, options.tooltip.template]
   );
+  // console.log(layers)
 
   return {
     effects,
