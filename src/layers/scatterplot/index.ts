@@ -19,8 +19,12 @@ export interface ScatterplotLayerSettings {
   elevationScale: number;
   depthTest: boolean;
   stroked: boolean;
+  antialiasing?: boolean;
   showLabels: boolean;
   label: SourceRef;
+  labelCollisionTestScale?: number;
+  labelCollisionPriorityScale?: number;
+  labelElevationOffset?: number;
 }
 
 export type ScatterplotLayerConfig = BaseLayerConfig<'scatterplot', ScatterplotLayerSettings>;
@@ -41,8 +45,12 @@ const defaultSettings: ScatterplotLayerSettings = {
   elevationScale: 1,
   depthTest: false,
   stroked: true,
+  antialiasing: true,
   showLabels: false,
   label: createSourceRef(),
+  labelCollisionTestScale: 1.2,
+  labelCollisionPriorityScale: 1,
+  labelElevationOffset: 6,
 };
 
 export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig, LayerDatum> = {
@@ -61,10 +69,14 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
       { key: 'elevationScale', label: 'Elevation scale', type: 'number', defaultValue: 1 },
       { key: 'depthTest', label: 'Depth test', type: 'boolean', defaultValue: false },
       { key: 'stroked', label: 'Stroke outline', type: 'boolean', defaultValue: true },
+      { key: 'antialiasing', label: 'Antialiasing', type: 'boolean', defaultValue: true },
     ]),
     section('Text', [
       { key: 'showLabels', label: 'Show labels', type: 'boolean', defaultValue: false },
       { key: 'label', label: 'Label field', type: 'fieldPicker', defaultValue: createSourceRef() },
+      { key: 'labelCollisionTestScale', label: 'Label collision test scale', type: 'number', defaultValue: 1.2 },
+      { key: 'labelCollisionPriorityScale', label: 'Label collision priority scale', type: 'number', defaultValue: 1 },
+      { key: 'labelElevationOffset', label: 'Label elevation offset (px)', type: 'number', defaultValue: 6 },
     ]),
   ],
   renderLayers(context: LayerRenderContext<ScatterplotLayerConfig>) {
@@ -112,7 +124,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
     const [getElevation, updateElevation] = getAccessors.number(options.elevation, options.elevationScale);
     const [getPosition, updatesPosition] = getAccessors.pointPosition([0, 0, 0], getElevation);
-    const [getLabelPosition, updatesLabelPosition] = getAccessors.pointPosition([0, 0, 0], getElevation, 6);
+    const [getLabelPosition, updatesLabelPosition] = getAccessors.pointPosition([0, 0, 0], getElevation, options.labelElevationOffset);
 
     const layers: any[] = [
       new ScatterplotLayer({
@@ -123,6 +135,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         radiusUnits: 'pixels' as const,
         stroked: options.stroked,
         filled: true,
+        antialiasing: options.antialiasing ?? true,
         lineWidthMinPixels: 0,
         getPosition,
         getLineColor: getLineColor ?? [0, 0, 0, 0],
@@ -141,16 +154,18 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           ...(useShader ? { getValue: [...updateValue, selectedKey, config.colorScale] } : {}),
         },
         parameters: { blend: true, depthTest: false },
+        getPolygonOffset: null,
       }),
     ];
 
     if (options.showLabels) {
       const [getText, updateText] = getAccessor(options.label?.field ? options.label : valueField, '');
-      const [getCollisionPriority, updateCollisionPriority] = getAccessors.number(
-        options.elevation,
-        options.elevationScale
-      );
-      const getDecimals = (v: number) => (v > 6 ? 0 : 1);
+      const [getCollisionPriorityValue, updateCollisionPriority] = getAccessors.number(options.elevation, 1);
+      const getCollisionPriority = getCollisionPriorityValue
+        ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
+            return (getCollisionPriorityValue(datum, ctx) ?? 0) * (options.labelCollisionPriorityScale ?? 1);
+          }
+        : undefined;
       layers.push(
         new TextLayer({
           id: `scatterplot-labels/${config.id}`,
@@ -164,17 +179,12 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           getSize: getRadius
             ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
                 const v = getRadius(datum, ctx);
-                const decs = getDecimals(v);
-                const chars = String(v.toFixed(decs)).length;
-                return (
-                  options.radiusMinPixels +
-                  Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / chars
-                );
+                return options.radiusMinPixels + Math.max(0, Math.min(options.radiusMaxPixels, v * options.radiusScale)) / 2;
               }
             : 12,
           getColor: [255, 255, 255, 220],
           getAlignmentBaseline: 'center',
-          getAnchor: 'middle',
+          getTextAnchor: 'middle',
           billboard: true,
           fontWeight: 900,
           fontFamily: 'Helvetica Neue, Verdana, Roboto, Helvetica, sans-serif',
@@ -183,17 +193,23 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           getFilterValue: commonProps.getFilterValue,
           filterRange: commonProps.filterRange,
           collisionGroup: 'scatter-labels',
-          collisionTestProps: { sizeScale: 2 },
+          collisionTestProps: {
+            sizeScale: options.labelCollisionTestScale ?? 1.2,
+            background: true,
+            backgroundPadding: [4, 2, 4, 2] as [number, number, number, number],
+            getBackgroundColor: [255, 255, 255, 255] as [number, number, number, number],
+          },
           getCollisionPriority: getCollisionPriority ?? 0,
           extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
           updateTriggers: {
             ...commonProps.updateTriggers,
             getPosition: [...updatesLabelPosition, ...updateElevation],
             getText: updateText,
-            getCollisionPriority: updateCollisionPriority,
+            getCollisionPriority: [...updateCollisionPriority, options.labelCollisionPriorityScale ?? 1],
           },
           parameters: { depthTest: false },
-          polygonOffset: 1,
+          // getPolygonOffset: () => [-1, 100] as [number, number],
+          getPolygonOffset: null,
         })
       );
     }

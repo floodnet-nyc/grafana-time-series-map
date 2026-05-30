@@ -154,6 +154,7 @@ export const hexagonLayerDefinition: LayerDefinition<HexagonLayerConfig> = {
         getColorWeight: getColorWeight ?? 1,
         getElevationWeight: getElevationWeight ?? 1,
         updateTriggers: {
+          ...commonProps.updateTriggers,
           getColorWeight: updatesColorWeight,
           getElevationWeight: updatesElevationWeight,
           getPosition: updatesPosition,

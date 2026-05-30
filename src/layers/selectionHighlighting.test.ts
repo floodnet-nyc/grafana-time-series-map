@@ -40,8 +40,8 @@ function createFeature(properties: Record<string, unknown>): Feature {
 }
 
 function createBaseContext() {
-  const selected = createFeature({ deployment_id: 'sensor-1', sensor_id: 'group-a', label: 'Selected' });
-  const unselected = createFeature({ deployment_id: 'sensor-2', sensor_id: 'group-a', label: 'Other' });
+  const selected = createFeature({ deployment_id: 'sensor-1', sensor_id: 'group-a', label: 'Selected', depth: 1 });
+  const unselected = createFeature({ deployment_id: 'sensor-2', sensor_id: 'group-a', label: 'Other', depth: 10 });
   const features = [selected, unselected].map((feature, index) => ({ ...feature, __idx: index })) as Array<
     Feature & { __idx: number }
   >;
@@ -134,7 +134,42 @@ describe('layer selection highlighting', () => {
     } as unknown as LayerRenderContext<any>);
 
     expect((layer as any).props.getLineColor(shared.data[0], { index: 0 })).toEqual(DEFAULT_SELECTED_COLOR);
-    expect((layer as any).props.getLineColor(shared.data[1], { index: 1 })).toEqual([200, 200, 240, 60]);
+    expect((layer as any).props.getLineColor(shared.data[1], { index: 1 })).toEqual([200, 200, 240, 0]);
+  });
+
+  it('uses higher scatterplot label collision priorities for larger values', () => {
+    const shared = createBaseContext();
+    const layers = scatterplotLayerDefinition.renderLayers({
+      ...shared,
+      config: {
+        id: 'scatter-labels-1',
+        type: 'scatterplot',
+        label: 'Scatter Labels',
+        visible: true,
+        data: { featureSource: { id: 'main', refId: '' } },
+        settings: {
+          radiusMinPixels: 4,
+          radiusMaxPixels: 20,
+          radius: createSourceRef(),
+          radiusScale: 1,
+          elevation: createSourceRef('depth'),
+          elevationScale: 1,
+          depthTest: false,
+          stroked: true,
+          antialiasing: true,
+          showLabels: true,
+          label: createSourceRef('label'),
+          labelCollisionPriorityScale: 2,
+        },
+        geometry: { type: 'latlng', lat: createSourceRef('lat'), lng: createSourceRef('lng') },
+        timeFilter: { mode: 'none', time: createSourceRef(), groupBy: createSourceRef('sensor_id') },
+        opacity: 1,
+      },
+    } as unknown as LayerRenderContext<any>);
+
+    const labelLayer = layers[1] as any;
+    expect(labelLayer.props.getCollisionPriority(shared.data[0], { index: 0 })).toBe(2);
+    expect(labelLayer.props.getCollisionPriority(shared.data[1], { index: 1 })).toBe(20);
   });
 
   it('uses selectionKey for icon selection styling', () => {

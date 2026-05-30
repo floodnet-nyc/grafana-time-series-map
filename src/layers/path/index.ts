@@ -61,7 +61,7 @@ export const pathLayerDefinition: LayerDefinition<PathLayerConfig> = {
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: getPath,
+        getPath: getPath as any,
         getColor,
         getWidth: getWidth ?? 1,
         updateTriggers: {
