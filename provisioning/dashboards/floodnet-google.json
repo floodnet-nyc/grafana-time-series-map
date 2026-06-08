@@ -853,7 +853,7 @@
               ]
             },
             "shader": {
-              "enabled": true,
+              "enabled": false,
               "vsDecl": "",
               "vsFilterColor": "float v = instanceValue;\ncolor = interpolateColor(v);",
               "value": {

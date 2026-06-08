@@ -207,7 +207,7 @@ export const autoDecimalsText = (v: string | number | null | undefined, auto: bo
   }
   if (typeof v === 'number') {
     if (auto) {
-      return v.toFixed(v > 6 ? 0 : 1);
+      return v.toFixed(v > 6 ? 0 : 0);
     }
     return Number.isInteger(v) ? String(v) : v.toFixed(2);
   }

@@ -5,13 +5,14 @@ import {
   Input,
   Switch,
   Combobox,
+  Select,
   Slider,
   Field,
   TextArea,
   CollapsableSection,
   ColorPicker,
 } from '@grafana/ui';
-import type { GrafanaTheme2 } from '@grafana/data';
+import type { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import type { LayerOptionField, LayerExtensionInstance } from '../layers/types';
 import type { SourceRef } from '../types';
 import * as layerRegistry from '../layers';
@@ -57,6 +58,28 @@ function hexToRgba(hex: string): [number, number, number, number] {
 interface SourceOption {
   id: string;
   label: string;
+}
+
+function renderPreviewSelectOption(
+  option: SelectableValue<string | number>,
+  styles: ReturnType<typeof getStyles>
+) {
+  return (
+    <div className={styles.previewOption}>
+      {option.previewUrl && (
+        <span
+          className={styles.previewIcon}
+          style={{
+            maskImage: `url("${option.previewUrl}")`,
+            WebkitMaskImage: `url("${option.previewUrl}")`,
+          }}
+        />
+      )}
+      <span className={styles.previewText}>
+        <span>{option.label ?? option.value}</span>
+      </span>
+    </div>
+  );
 }
 
 interface Props {
@@ -180,13 +203,24 @@ export function LayerEditor({
         );
       }
       if (field.type === 'select') {
+        const hasPreviewOptions = field.selectOptions?.some((option) => option.previewUrl);
         return (
           <Field key={field.key} label={field.label}>
-            <Combobox
-              options={field.selectOptions ?? []}
-              value={value as string | number | null}
-              onChange={(v) => onFieldChange(field.key, v?.value)}
-            />
+            {hasPreviewOptions ? (
+              <Select
+                options={field.selectOptions ?? []}
+                value={(field.selectOptions ?? []).find((option) => option.value === value) ?? null}
+                onChange={(v) => onFieldChange(field.key, v?.value)}
+                isClearable={false}
+                formatOptionLabel={(option) => renderPreviewSelectOption(option, styles)}
+              />
+            ) : (
+              <Combobox
+                options={field.selectOptions ?? []}
+                value={value as string | number | null}
+                onChange={(v) => onFieldChange(field.key, v?.value)}
+              />
+            )}
           </Field>
         );
       }
@@ -400,5 +434,35 @@ function getStyles(theme: GrafanaTheme2) {
   return {
     root: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), padding: theme.spacing(1) }),
     zoomRow: css({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(1) }),
+    previewOption: css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      color: 'inherit',
+      minWidth: 0,
+    }),
+    previewIcon: css({
+      flex: '0 0 auto',
+      width: 16,
+      height: 16,
+      backgroundColor: 'currentColor',
+      maskRepeat: 'no-repeat',
+      WebkitMaskRepeat: 'no-repeat',
+      maskPosition: 'center',
+      WebkitMaskPosition: 'center',
+      maskSize: 'contain',
+      WebkitMaskSize: 'contain',
+    }),
+    previewText: css({
+      display: 'flex',
+      flexDirection: 'column',
+      minWidth: 0,
+      gap: 2,
+    }),
+    previewDescription: css({
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.size.sm,
+      lineHeight: 1.2,
+    }),
   };
 }

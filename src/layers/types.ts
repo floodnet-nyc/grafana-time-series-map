@@ -118,7 +118,13 @@ export interface LayerOptionField {
   min?: number;
   max?: number;
   step?: number;
-  selectOptions?: Array<{ label: string; value: string | number }>;
+  selectOptions?: Array<{
+    label: string;
+    value: string | number;
+    description?: string;
+    previewUrl?: string;
+    title?: string;
+  }>;
   showIf?: (settings: Record<string, unknown>) => boolean;
 }
 
