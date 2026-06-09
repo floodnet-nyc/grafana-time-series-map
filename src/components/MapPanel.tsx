@@ -303,6 +303,9 @@ export function MapPanel({
               template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
               onClose={handlePopupClose}
               inline
+              fromTimeMs={fromTimeMs}
+              toTimeMs={toTimeMs}
+              currentTimeMs={playback.cursorTimeMs}
             />
           )}
           {options.legend.show && (

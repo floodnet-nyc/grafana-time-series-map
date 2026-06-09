@@ -107,4 +107,22 @@ describe('SensorPopup', () => {
     expect(screen.getByText(/2025-01-01T00:00:00Z=4/)).toBeInTheDocument();
     expect(screen.getByText(/2025-01-01T00:05:00Z=7/)).toBeInTheDocument();
   });
+
+  it('renders an inline svg sparkline with the current-time guide', () => {
+    const { container } = render(
+      <SensorPopup
+        selectedKey="sensor-1"
+        selectionContext={createSelectionContext()}
+        template={'{{ matches.B | sparkline: "depth_inches", "time", from, to, currentTime }}'}
+        onClose={() => {}}
+        inline
+        fromTimeMs={Date.parse('2025-01-01T00:00:00Z')}
+        toTimeMs={Date.parse('2025-01-01T00:10:00Z')}
+        currentTimeMs={Date.parse('2025-01-01T00:03:00Z')}
+      />
+    );
+
+    expect(container.querySelector('svg')).not.toBeNull();
+    expect(container.innerHTML).toContain('stroke-dasharray="2 3"');
+  });
 });

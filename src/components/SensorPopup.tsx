@@ -19,14 +19,29 @@ interface SensorPopupProps {
   template: string;
   onClose: () => void;
   inline?: boolean;
+  fromTimeMs?: number;
+  toTimeMs?: number;
+  currentTimeMs?: number;
 }
 
-export function SensorPopup({ selectedKey, selectionContext, template, onClose, inline = false }: SensorPopupProps) {
+export function SensorPopup({
+  selectedKey,
+  selectionContext,
+  template,
+  onClose,
+  inline = false,
+  fromTimeMs,
+  toTimeMs,
+  currentTimeMs,
+}: SensorPopupProps) {
   const primary = selectionContext?.primary ?? null;
   const scope = {
     ...buildLiquidScope(primary?.properties ?? {}, selectedKey),
     ...(primary?.scope ?? {}),
     _key: selectedKey,
+    from: fromTimeMs,
+    to: toTimeMs,
+    currentTime: currentTimeMs,
     primary,
     match: selectionContext?.match ?? {},
     matches: selectionContext?.matches ?? {},
