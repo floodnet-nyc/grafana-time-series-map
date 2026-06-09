@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/css';
 import { FieldType, type DataFrame, type DataHoverPayload, type PanelProps, type RawTimeRange } from '@grafana/data';
 import type { Feature } from 'geojson';
@@ -159,6 +159,11 @@ export function MapPanel({
   // External DataSelectEvent (from time series panel) sets selectedKey without a feature.
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
   const [currentLocation, setCurrentLocation] = useState<CurrentLocationState | null>(null);
+  const [legendCollapsed, setLegendCollapsed] = useState(() => width < 500);
+
+  useEffect(() => {
+    setLegendCollapsed(Boolean(selectedKey));
+  }, [selectedKey]);
 
   const onFeatureClick = useCallback(
     (feature: Feature, info: FeaturePickingInfo) => {
@@ -315,22 +320,41 @@ export function MapPanel({
         fitRequestId={fitRequestId}
         onViewportChange={handleViewportChange}
       />
-      {options.legend.show && (
-        <MapLegend
-          layers={options.layers}
-          onToggleVisibility={onToggleLayerVisibility}
-          panelWidth={width}
-          maxWidth={options.legend.maxWidth}
-          maxHeight={options.legend.maxHeight}
-        />
-      )}
-      {selectedKey && (
-        <SensorPopup
-          selectedKey={selectedKey}
-          feature={resolvedSelectedFeature}
-          template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
-          onClose={handlePopupClose}
-        />
+      {(options.legend.show || selectedKey) && (
+        <div
+          className={css({
+            position: 'absolute',
+            top: 16,
+            left: 12,
+            zIndex: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 8,
+          })}
+        >
+          {selectedKey && (
+            <SensorPopup
+              selectedKey={selectedKey}
+              feature={resolvedSelectedFeature}
+              template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
+              onClose={handlePopupClose}
+              inline
+            />
+          )}
+          {options.legend.show && (
+            <MapLegend
+              layers={options.layers}
+              onToggleVisibility={onToggleLayerVisibility}
+              panelWidth={width}
+              maxWidth={options.legend.maxWidth}
+              maxHeight={options.legend.maxHeight}
+              collapsed={legendCollapsed}
+              onCollapsedChange={setLegendCollapsed}
+              inline
+            />
+          )}
+        </div>
       )}
       {options.time.show && (
         <TimePlaybackControls width={width} fromTimeMs={fromTimeMs} toTimeMs={toTimeMs} playback={playback} />

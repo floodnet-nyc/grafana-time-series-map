@@ -11,8 +11,19 @@ export function MapLegend({
   showEye = false,
   maxWidth,
   maxHeight,
+  collapsed,
+  onCollapsedChange,
+  inline = false,
 }: MapLegendProps) {
-  const [collapsed, setCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
+  const [internalCollapsed, setInternalCollapsed] = useState(() => panelWidth < SMALL_PANEL_THRESHOLD);
+  const isCollapsed = collapsed ?? internalCollapsed;
+
+  const setCollapsed = (next: boolean) => {
+    if (collapsed === undefined) {
+      setInternalCollapsed(next);
+    }
+    onCollapsedChange?.(next);
+  };
 
   const entries = useMemo(() => getLegendEntries(layers), [layers]);
 
@@ -21,14 +32,15 @@ export function MapLegend({
     maxHeight: maxHeight ?? undefined,
     overflowY: maxHeight ? ('auto' as const) : undefined,
   };
+  const className = inline ? 'map-card' : 'map-card legend-box';
 
   if (entries.length === 0) {
     return null;
   }
 
-  if (collapsed) {
+  if (isCollapsed) {
     return (
-      <div style={{ ...boxStyle, padding: '5px 8px' }} className="map-card legend-box">
+      <div style={{ ...boxStyle, padding: '5px 8px' }} className={className}>
         <button
           onClick={() => setCollapsed(false)}
           title="Expand legend"
@@ -54,7 +66,7 @@ export function MapLegend({
   }
 
   return (
-    <div style={{ ...boxStyle, padding: '10px 14px 8px' }} className="map-card legend-box">
+    <div style={{ ...boxStyle, padding: '10px 14px 8px' }} className={className}>
       {entries.map((layer) => (
         <LayerLegendEntry
           key={layer.id}

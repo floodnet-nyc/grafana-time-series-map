@@ -18,18 +18,19 @@ interface SensorPopupProps {
   feature: Feature | null;
   template: string;
   onClose: () => void;
+  inline?: boolean;
 }
 
-export function SensorPopup({ selectedKey, feature, template, onClose }: SensorPopupProps) {
+export function SensorPopup({ selectedKey, feature, template, onClose, inline = false }: SensorPopupProps) {
   const scope = buildLiquidScope(feature?.properties ?? {}, selectedKey);
   const html = renderLiquidTemplate(template, scope);
 
   return (
     <div
       style={{
-        position: 'absolute',
-        top: 12,
-        right: 12,
+        position: inline ? 'relative' : 'absolute',
+        top: inline ? undefined : 12,
+        right: inline ? undefined : 12,
         padding: '12px 16px 14px',
         color: '#e8e8e8',
         minWidth: 180,

@@ -7,4 +7,7 @@ export interface MapLegendProps {
   showEye?: boolean;
   maxWidth?: number;
   maxHeight?: number;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  inline?: boolean;
 }
