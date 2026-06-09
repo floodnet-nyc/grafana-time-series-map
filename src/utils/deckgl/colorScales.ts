@@ -244,6 +244,11 @@ vec4 interpolateColor(float v) {
   float vn = clamp((v - ${scaleMin.toFixed(4)}) / ${range.toFixed(4)}, 0.0, 1.0);
   vec4 palette[${paletteSteps}];
 ${paletteLines}
+  if (vn >= 1.0) {
+    vec4 c = palette[${paletteSteps - 1}];
+    ${hasScaledAlpha ? 'c.a = applyScaledAlpha(v, c.a);' : ''}
+    return c;
+  }
   float idx = vn * ${(paletteSteps - 1).toFixed(1)};
   int i = clamp(int(floor(idx)), 0, ${paletteSteps - 2});
   float t = fract(idx);

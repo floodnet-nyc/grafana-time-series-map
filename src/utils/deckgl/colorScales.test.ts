@@ -1,4 +1,4 @@
-import { buildColorAccessor } from './colorScales';
+import { buildColorAccessor, buildInterpolateColorGlsl } from './colorScales';
 import type { ColorScaleConfig } from '../../types';
 
 describe('buildColorAccessor alpha scaling', () => {
@@ -40,5 +40,21 @@ describe('buildColorAccessor alpha scaling', () => {
 
     expect(getColor({ properties: { value: 0 } } as any, {} as any)).toEqual([10, 20, 30, 0]);
     expect(getColor({ properties: { value: 10 } } as any, {} as any)).toEqual([40, 50, 60, 128]);
+  });
+
+  it('returns the final palette color when gradient values hit the top of the range', () => {
+    const colorScale: ColorScaleConfig = {
+      type: 'gradient',
+      field: { source: 'main', field: 'value' },
+      schemeName: 'MrmsPrecipOperational',
+      scaleMin: 0,
+      scaleMax: 125,
+    };
+
+    const glsl = buildInterpolateColorGlsl(colorScale, 16);
+
+    expect(glsl).toContain('if (vn >= 1.0)');
+    expect(glsl).toContain('vec4 c = palette[15];');
+    expect(glsl).toContain('return c;');
   });
 });
