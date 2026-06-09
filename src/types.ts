@@ -49,6 +49,9 @@ export interface ColorScaleConfig {
   scaleMin?: number;
   scaleMax?: number;
   invert?: boolean;
+  alphaMin?: number;
+  alphaMax?: number;
+  alphaGamma?: number;
 }
 
 export interface ShaderConfig {

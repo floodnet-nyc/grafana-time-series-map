@@ -18,6 +18,9 @@ export const DEFAULT_COG_COLOR_SCALE: ColorScaleConfig = {
   schemeName: 'MrmsPrecip',
   scaleMin: 0,
   scaleMax: 1,
+  alphaMin: 0,
+  alphaMax: 0.9,
+  alphaGamma: 0.6,
 };
 
 export const defaultCogSettings: CogLayerSettings = {

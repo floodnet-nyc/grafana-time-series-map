@@ -197,6 +197,31 @@ export function ColorScaleEditor({ layer, sourceOptions, fieldsBySource, onChang
           </Field>
         </>
       )}
+      {mode !== 'fixed' && (
+        <>
+          <Field label="Opacity min">
+            <Input
+              type="number"
+              value={String(layer.colorScale?.alphaMin ?? 0)}
+              onChange={(e) => patchColor({ alphaMin: Number(e.currentTarget.value) })}
+            />
+          </Field>
+          <Field label="Opacity max">
+            <Input
+              type="number"
+              value={String(layer.colorScale?.alphaMax ?? 1)}
+              onChange={(e) => patchColor({ alphaMax: Number(e.currentTarget.value) })}
+            />
+          </Field>
+          <Field label="Opacity gamma">
+            <Input
+              type="number"
+              value={String(layer.colorScale?.alphaGamma ?? 1)}
+              onChange={(e) => patchColor({ alphaGamma: Number(e.currentTarget.value) })}
+            />
+          </Field>
+        </>
+      )}
       <CollapsableSection label="Shader" isOpen={false}>
         <Field label="Enabled">
           <Switch

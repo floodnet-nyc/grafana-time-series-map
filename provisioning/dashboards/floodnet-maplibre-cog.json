@@ -296,7 +296,10 @@
               "type": "gradient",
               "schemeName": "MrmsPrecip",
               "scaleMin": 0,
-              "scaleMax": 150
+              "scaleMax": 150,
+              "alphaMin": 0,
+              "alphaMax": 1,
+              "alphaGamma": 0.6
             },
             "settings": {
               "colorMaxValue": 200,

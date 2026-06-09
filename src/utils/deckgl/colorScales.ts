@@ -18,6 +18,39 @@ function thresholdToColor(steps: ColorStep[], value: number): RGBA {
   return color;
 }
 
+function normalizeValue(value: number, scaleMin: number, scaleMax: number): number {
+  const range = scaleMax - scaleMin || 1;
+  return Math.max(0, Math.min(1, (value - scaleMin) / range));
+}
+
+function getScaledAlpha(colorScale: ColorScaleConfig, value: number, baseAlpha: number): number {
+  if (
+    colorScale.alphaMin === undefined &&
+    colorScale.alphaMax === undefined &&
+    colorScale.alphaGamma === undefined
+  ) {
+    return baseAlpha;
+  }
+
+  const scaleMin = colorScale.scaleMin ?? 0;
+  const thresholdValues = colorScale.steps?.map((step) => step.value) ?? [];
+  const scaleMax =
+    colorScale.scaleMax ??
+    (colorScale.type === 'threshold' && thresholdValues.length
+      ? Math.max(...thresholdValues)
+      : 1);
+  const resolvedScaleMin =
+    colorScale.scaleMin ??
+    (colorScale.type === 'threshold' && thresholdValues.length
+      ? Math.min(...thresholdValues)
+      : scaleMin);
+  const alphaMin = colorScale.alphaMin ?? 0;
+  const alphaMax = colorScale.alphaMax ?? 1;
+  const alphaGamma = colorScale.alphaGamma ?? 1;
+  const an = Math.pow(normalizeValue(value, resolvedScaleMin, scaleMax), alphaGamma);
+  return Math.max(0, Math.min(1, baseAlpha * (alphaMin + (alphaMax - alphaMin) * an)));
+}
+
 export function buildColorAccessor<TDatum>(
   colorScale: ColorScaleConfig | undefined,
   defaultColor: RGBA = [0, 155, 104, 255],
@@ -35,19 +68,23 @@ export function buildColorAccessor<TDatum>(
     const field = colorScale.field.field;
     return (datum: TDatum, ctx: AccessorContext<TDatum>) => {
       const raw = getValue ? getValue(datum, ctx) : Number((datum as Feature).properties?.[field]);
-      return thresholdToColor(steps, Number.isFinite(raw) ? raw : 0);
+      const value = Number.isFinite(raw) ? raw : 0;
+      const color = thresholdToColor(steps, value);
+      const alpha = Math.round(255 * getScaledAlpha(colorScale, value, color[3] / 255));
+      return [color[0], color[1], color[2], alpha];
     };
   }
 
   if (colorScale.schemeName && colorScale.field) {
     const { schemeName, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
     const field = colorScale.field.field;
-    const range = scaleMax - scaleMin || 1;
     return (datum: TDatum, ctx: AccessorContext<TDatum>) => {
       const raw = getValue ? getValue(datum, ctx) : Number((datum as Feature).properties?.[field]);
       const v = Number.isFinite(raw) ? raw : scaleMin;
-      const t = Math.max(0, Math.min(1, (v - scaleMin) / range));
-      return interpolateScheme(schemeName, t, invert);
+      const t = normalizeValue(v, scaleMin, scaleMax);
+      const color = interpolateScheme(schemeName, t, invert);
+      const alpha = Math.round(255 * getScaledAlpha(colorScale, v, color[3] / 255));
+      return [color[0], color[1], color[2], alpha];
     };
   }
 
@@ -141,19 +178,44 @@ color = interpolateColor(v);`;
  */
 export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, paletteSteps = 16): string {
   paletteSteps = Math.max(2, paletteSteps);
+  const alphaMin = colorScale.alphaMin;
+  const alphaMax = colorScale.alphaMax;
+  const alphaGamma = colorScale.alphaGamma ?? 1;
+  const hasScaledAlpha = alphaMin !== undefined || alphaMax !== undefined || colorScale.alphaGamma !== undefined;
+  const derivedScaleMin =
+    colorScale.scaleMin ??
+    (colorScale.type === 'threshold' && colorScale.steps?.length ? colorScale.steps[0].value : 0);
+  const derivedScaleMax =
+    colorScale.scaleMax ??
+    (colorScale.type === 'threshold' && colorScale.steps?.length
+      ? colorScale.steps[colorScale.steps.length - 1].value
+      : 1);
+  const alphaDecl = hasScaledAlpha
+    ? `float applyScaledAlpha(float v, float baseAlpha) {
+  float vn = clamp((v - ${derivedScaleMin.toFixed(4)}) / ${(derivedScaleMax - derivedScaleMin || 1).toFixed(4)}, 0.0, 1.0);
+  float an = pow(vn, ${alphaGamma.toFixed(4)});
+  float scaled = mix(${(alphaMin ?? 0).toFixed(4)}, ${(alphaMax ?? 1).toFixed(4)}, an);
+  return clamp(baseAlpha * scaled, 0.0, 1.0);
+}
+`
+    : '';
   // ── Threshold: discrete step function ─────────────────────────────────────
   if (colorScale.type === 'threshold' && colorScale.steps?.length) {
     const sorted = [...colorScale.steps].sort((a, b) => a.value - b.value);
-    const lines: string[] = ['vec4 interpolateColor(float v) {'];
+    const lines: string[] = [alphaDecl, 'vec4 interpolateColor(float v) {', '  vec4 c;'];
     // Emit from highest threshold down so first match wins
     for (let i = sorted.length - 1; i >= 1; i--) {
       const { value, color } = sorted[i];
       const [r, g, b, a] = color.map((c) => (c / 255).toFixed(4));
-      lines.push(`  if (v >= ${value.toFixed(2)}) return vec4(${r}, ${g}, ${b}, ${a});`);
+      lines.push(`  ${i === sorted.length - 1 ? 'if' : 'else if'} (v >= ${value.toFixed(2)}) c = vec4(${r}, ${g}, ${b}, ${a});`);
     }
     // Base color (below first threshold)
     const [r, g, b, a] = sorted[0].color.map((c) => (c / 255).toFixed(4));
-    lines.push(`  return vec4(${r}, ${g}, ${b}, ${a});`);
+    lines.push(`  else c = vec4(${r}, ${g}, ${b}, ${a});`);
+    if (hasScaledAlpha) {
+      lines.push('  c.a = applyScaledAlpha(v, c.a);');
+    }
+    lines.push('  return c;');
     lines.push('}');
     return lines.join('\n');
   }
@@ -162,28 +224,31 @@ export function buildInterpolateColorGlsl(colorScale: ColorScaleConfig, paletteS
   const { schemeName, scaleMin = 0, scaleMax = 1, invert = false } = colorScale;
   const range = scaleMax - scaleMin || 1;
 
-  const palette: Array<[number, number, number]> = [];
+  const palette: RGBA[] = [];
   for (let i = 0; i < paletteSteps; i++) {
     const t = i / (paletteSteps - 1); // paletteSteps >= 2 guaranteed above
     const rgba = schemeName ? interpolateScheme(schemeName, t, invert) : ([128, 128, 128, 255] as RGBA);
-    palette.push([rgba[0], rgba[1], rgba[2]]);
+    palette.push(rgba);
   }
 
   const paletteLines = palette
     .map(
       (c, i) =>
-        `  palette[${i}] = vec3(${(c[0] / 255).toFixed(4)}, ${(c[1] / 255).toFixed(4)}, ${(c[2] / 255).toFixed(4)});`
+        `  palette[${i}] = vec4(${(c[0] / 255).toFixed(4)}, ${(c[1] / 255).toFixed(4)}, ${(c[2] / 255).toFixed(4)}, ${(c[3] / 255).toFixed(4)});`
     )
     .join('\n');
 
   return `\
+${alphaDecl}\
 vec4 interpolateColor(float v) {
   float vn = clamp((v - ${scaleMin.toFixed(4)}) / ${range.toFixed(4)}, 0.0, 1.0);
-  vec3 palette[${paletteSteps}];
+  vec4 palette[${paletteSteps}];
 ${paletteLines}
   float idx = vn * ${(paletteSteps - 1).toFixed(1)};
   int i = clamp(int(floor(idx)), 0, ${paletteSteps - 2});
   float t = fract(idx);
-  return vec4(mix(palette[i], palette[i + 1], t), 1.0);
+  vec4 c = mix(palette[i], palette[i + 1], t);
+  ${hasScaledAlpha ? 'c.a = applyScaledAlpha(v, c.a);' : ''}
+  return c;
 }`;
 }
