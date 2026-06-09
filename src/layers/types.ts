@@ -99,6 +99,8 @@ export interface LayerRenderContext<TLayerConfig extends LayerConfigBase = Layer
   cursorTimeMs: number;
   fromTimeMs: number;
   toTimeMs: number;
+  playing?: boolean;
+  playbackRate?: number;
   timeFilterFlags: Uint8Array | undefined;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
   derivedValues?: Array<Record<string, unknown>>;

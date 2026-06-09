@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { EventBus, PanelProps } from '@grafana/data';
+import { FieldType, type DataFrame, type EventBus, type PanelProps } from '@grafana/data';
 import type { Feature } from 'geojson';
 import type { MapPanelOptions } from '../types';
 import { createSourceRef } from '../layers/defaults';
@@ -41,7 +41,7 @@ jest.mock('../layers/current-location/currentLocationLayers', () => ({
 jest.mock('../hooks/usePanelLayers', () => ({
   usePanelFeatures: (...args: unknown[]) => mockUsePanelFeatures(...args),
   usePanelLayers: (...args: unknown[]) => {
-    latestFeatureClick = args[7] as (feature: Feature, info: any) => void;
+    latestFeatureClick = args[9] as (feature: Feature, info: any) => void;
     return mockUsePanelLayers(...args);
   },
   useGeoJsonUrlFeatures: () => new Map(),
@@ -346,5 +346,50 @@ describe('MapPanel', () => {
     view.rerender(<MapPanel {...props} />);
 
     expect(setSelectedKey).toHaveBeenLastCalledWith(null);
+  });
+
+  it('builds hover payload from selected series with max fallback', () => {
+    const series: DataFrame[] = [
+      {
+        name: 'sensor-1',
+        length: 2,
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1000, 1500] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [2, 3] },
+        ],
+      } as DataFrame,
+      {
+        name: 'sensor-2',
+        length: 2,
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1000, 1500] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [4, 8] },
+        ],
+      } as DataFrame,
+    ];
+
+    selectedKey = 'sensor-1';
+    render(<MapPanel {...createProps(createOptions())} data={{ ...createProps().data, series } as any} />);
+
+    const bridgeArgs = mockUseGrafanaEventBridge.mock.calls.at(-1)?.[0];
+    const selectedPayload = bridgeArgs.getHoverPayload('sensor-1', 1500);
+    const fallbackPayload = bridgeArgs.getHoverPayload(null, 1500);
+
+    expect(selectedPayload).toEqual(
+      expect.objectContaining({
+        data: series[0],
+        rowIndex: 1,
+        dataId: 'sensor-1',
+        point: { time: 1500, y: 3 },
+      })
+    );
+    expect(fallbackPayload).toEqual(
+      expect.objectContaining({
+        data: series[1],
+        rowIndex: 1,
+        dataId: 'sensor-2',
+        point: { time: 1500, y: 8 },
+      })
+    );
   });
 });

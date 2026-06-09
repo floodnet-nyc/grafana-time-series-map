@@ -47,22 +47,4 @@ export const cogLayerDefinition: LayerDefinition<CogLayerConfig> = {
   },
 };
 
-const pad2 = (value: number) => String(value).padStart(2, '0');
-const formatUtcTimestamp = (timeMs: number) => {
-  const time = new Date(timeMs);
-  return [
-    time.getUTCFullYear(),
-    pad2(time.getUTCMonth() + 1),
-    pad2(time.getUTCDate()),
-    'T',
-    pad2(time.getUTCHours()),
-    pad2(time.getUTCMinutes()),
-    pad2(time.getUTCSeconds()),
-    'Z',
-  ].join('');
-};
-
-export const buildPrecipCogUrl = (timeMs: number) =>
-  `http://localhost:3000/sample-data/cogs/${formatUtcTimestamp(timeMs)}.tif`;
-
 export default cogLayerDefinition;

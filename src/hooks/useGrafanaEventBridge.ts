@@ -6,6 +6,7 @@ import {
   DataSelectEvent,
   BusEvent,
   BusEventType,
+  type DataHoverPayload,
   InterpolateFunction,
 } from '@grafana/data';
 import type { UsePlaybackResult } from './usePlayback';
@@ -41,7 +42,7 @@ function getSelectedKeyFromEventPayload(payload: unknown): string | null {
  * Syncs this panel's playback cursor and series selection with other Grafana panels.
  *
  * Cursor sync:
- *   - While playing, publishes DataHoverEvent at ~10Hz (point.time only, no data frame).
+ *   - While playing or scrubbing, publishes DataHoverEvent at ~10Hz (point.time only, no data frame).
  *   - Subscribes to DataHoverEvent and seeks our cursor to match.
  *
  * Selection sync:
@@ -55,6 +56,7 @@ export function useGrafanaEventBridge({
   eventBus,
   replaceVariables,
   playback,
+  getHoverPayload,
   fromTimeMs,
   toTimeMs,
   publish = true,
@@ -66,6 +68,7 @@ export function useGrafanaEventBridge({
   eventBus: EventBus | undefined;
   replaceVariables: InterpolateFunction;
   playback: UsePlaybackResult;
+  getHoverPayload?: (selectedKey: string | null, cursorTimeMs: number) => DataHoverPayload | null;
   fromTimeMs: number;
   toTimeMs: number;
   selectionVariableName?: string;
@@ -76,6 +79,7 @@ export function useGrafanaEventBridge({
   subscribeSelection?: boolean;
 }): UseGrafanaEventBridgeResult {
   const playbackRef = useLatestRef(playback);
+  const getHoverPayloadRef = useLatestRef(getHoverPayload);
   const rangeRef = useLatestRef({ fromTimeMs, toTimeMs });
   const lastReceivedAtRef = useRef<number>(0);
 
@@ -111,19 +115,20 @@ export function useGrafanaEventBridge({
 
   const setSelectedKey = useCallback((key: string | null) => applySelectedKey(key, 'local'), [applySelectedKey]);
 
-  // Publish cursor position while playing
+  // Publish cursor position while playing or scrubbing
 
   useInterval(
     () => {
       const pb = playbackRef.current;
-      if (!pb.playing || !eventBus) {
+      if ((!pb.playing && !pb.scrubbing) || !eventBus) {
         return;
       }
       if (Date.now() - lastReceivedAtRef.current < ECHO_COOLDOWN_MS) {
         return;
       }
-      // Publish point.time only — no data frame, so subscribers won't misread it as a selection.
-      eventBus.publish(new DataHoverEvent({ point: { time: pb.cursorTimeMs } }));
+      eventBus.publish(
+        new DataHoverEvent(getHoverPayloadRef.current?.(selectedKey, pb.cursorTimeMs) ?? { point: { time: pb.cursorTimeMs } })
+      );
     },
     eventBus && publish ? PUBLISH_INTERVAL_MS : undefined
   );
@@ -134,6 +139,10 @@ export function useGrafanaEventBridge({
     !subscribe
       ? undefined
       : (event) => {
+          if (playbackRef.current.playing || playbackRef.current.scrubbing) {
+            return;
+          }
+
           const { point } = event.payload ?? {};
 
           // Cursor sync: always seek if point.time is in range

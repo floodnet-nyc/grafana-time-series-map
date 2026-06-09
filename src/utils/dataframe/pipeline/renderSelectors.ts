@@ -13,6 +13,8 @@ interface RenderPreparedLayersArgs {
   cursorTimeMs: number;
   fromTimeMs: number;
   toTimeMs: number;
+  playing?: boolean;
+  playbackRate?: number;
   selectedKey: string | null;
   onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void;
   getRenderer?: (type: string) => LayerDefinition<any> | undefined;
@@ -25,6 +27,8 @@ export function renderPreparedLayers({
   cursorTimeMs,
   fromTimeMs,
   toTimeMs,
+  playing,
+  playbackRate,
   selectedKey,
   onFeatureClick,
   getRenderer = resolveConfiguredLayerDefinition,
@@ -50,6 +54,8 @@ export function renderPreparedLayers({
           cursorTimeMs,
           fromTimeMs,
           toTimeMs,
+          playing,
+          playbackRate,
           selectedKey,
           onFeatureClick,
         })
@@ -72,6 +78,8 @@ function createLayerRenderContext({
   cursorTimeMs,
   fromTimeMs,
   toTimeMs,
+  playing,
+  playbackRate,
   selectedKey,
   onFeatureClick,
 }: {
@@ -80,6 +88,8 @@ function createLayerRenderContext({
   cursorTimeMs: number;
   fromTimeMs: number;
   toTimeMs: number;
+  playing?: boolean;
+  playbackRate?: number;
   selectedKey: string | null;
   onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void;
 }): LayerRenderContext {
@@ -94,6 +104,8 @@ function createLayerRenderContext({
     cursorTimeMs,
     fromTimeMs,
     toTimeMs,
+    playing,
+    playbackRate,
     timeFilterFlags: preparedLayerState.timeFilterFlags,
     joinedSourceValues: preparedLayerState.joinedSourceValues,
     derivedValues: preparedLayerState.derivedValues,

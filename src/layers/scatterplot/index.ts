@@ -1,5 +1,5 @@
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
-import { DataFilterExtension } from '@deck.gl/extensions';
+// import { DataFilterExtension } from '@deck.gl/extensions';
 import type { BaseLayerConfig, LayerDefinition, LayerRenderContext } from '../types';
 import type { SourceRef } from '../../types';
 import { CreateMathExtensionSubclass } from '../../utils/deckgl/extensions/MathExtension';
@@ -168,6 +168,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         : undefined;
       layers.push(
         new TextLayer({
+          ...commonProps,
           id: `scatterplot-labels/${config.id}`,
           data,
           visible: config.visible,
@@ -190,8 +191,6 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           fontFamily: 'Helvetica Neue, Verdana, Roboto, Helvetica, sans-serif',
           minZoom: config.minZoom,
           maxZoom: config.maxZoom,
-          getFilterValue: commonProps.getFilterValue,
-          filterRange: commonProps.filterRange,
           collisionGroup: 'scatter-labels',
           collisionTestProps: {
             sizeScale: options.labelCollisionTestScale ?? 1.6,
@@ -200,7 +199,10 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
             getBackgroundColor: [255, 255, 255, 255] as [number, number, number, number],
           },
           getCollisionPriority: getCollisionPriority ?? 0,
-          extensions: [new DataFilterExtension({ filterSize: 1 }), new CollisionFilterExtension()],
+          extensions: [
+            ...commonProps.extensions, 
+            new CollisionFilterExtension()
+          ],
           updateTriggers: {
             ...commonProps.updateTriggers,
             getPosition: [...updatesLabelPosition, ...updateElevation],

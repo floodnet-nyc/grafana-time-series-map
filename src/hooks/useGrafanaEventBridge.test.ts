@@ -188,6 +188,38 @@ describe('useGrafanaEventBridge', () => {
     expect(result.current.selectedKey).toBe('sensor-2');
   });
 
+  it('ignores incoming hover events while playback is running', () => {
+    const { eventBus, subscribers } = createEventBus();
+    const playback = createPlayback({ playing: true });
+    const { result } = renderBridge(eventBus, playback);
+
+    const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
+    expect(hoverSubscriber).toBeDefined();
+
+    act(() => {
+      hoverSubscriber?.handler(new DataHoverEvent({ point: { time: 1500 }, data: { name: 'sensor-2' } } as any));
+    });
+
+    expect(playback.seekTo).not.toHaveBeenCalled();
+    expect(result.current.selectedKey).toBeNull();
+  });
+
+  it('ignores incoming hover events while scrubbing', () => {
+    const { eventBus, subscribers } = createEventBus();
+    const playback = createPlayback({ scrubbing: true });
+    const { result } = renderBridge(eventBus, playback);
+
+    const hoverSubscriber = subscribers.find((subscriber) => subscriber.eventType === DataHoverEvent);
+    expect(hoverSubscriber).toBeDefined();
+
+    act(() => {
+      hoverSubscriber?.handler(new DataHoverEvent({ point: { time: 1500 }, data: { name: 'sensor-2' } } as any));
+    });
+
+    expect(playback.seekTo).not.toHaveBeenCalled();
+    expect(result.current.selectedKey).toBeNull();
+  });
+
   it('ignores incoming selection payloads when subscribeSelection is disabled', () => {
     const { eventBus, subscribers } = createEventBus();
     const { result } = renderBridge(eventBus, createPlayback(), { subscribeSelection: false });
@@ -216,7 +248,7 @@ describe('useGrafanaEventBridge', () => {
     expect(result.current.selectedKey).toBe('sensor-3');
   });
 
-  it('publishes hover events while playing and suppresses immediate echo', () => {
+  it('publishes hover events while playing and ignores incoming hover echo', () => {
     jest.spyOn(Date, 'now').mockReturnValue(1000);
 
     const { eventBus, subscribers, published } = createEventBus();
@@ -238,12 +270,52 @@ describe('useGrafanaEventBridge', () => {
       jest.spyOn(Date, 'now').mockReturnValue(1200);
       jest.advanceTimersByTime(100);
     });
-    expect(eventBus.publish).toHaveBeenCalledTimes(1);
+    expect(eventBus.publish).toHaveBeenCalledTimes(2);
 
     act(() => {
       jest.spyOn(Date, 'now').mockReturnValue(2000);
       jest.advanceTimersByTime(100);
     });
-    expect(eventBus.publish).toHaveBeenCalledTimes(2);
+    expect(eventBus.publish).toHaveBeenCalledTimes(3);
+  });
+
+  it('publishes hover events while scrubbing', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1000);
+
+    const { eventBus, published } = createEventBus();
+    const playback = createPlayback({ scrubbing: true, cursorTimeMs: 1666 });
+    renderBridge(eventBus, playback);
+
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(eventBus.publish).toHaveBeenCalledTimes(1);
+    expect(published[0]).toBeInstanceOf(DataHoverEvent);
+  });
+
+  it('publishes the provided hover payload when available', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1000);
+
+    const { eventBus, published } = createEventBus();
+    const playback = createPlayback({ playing: true, cursorTimeMs: 1666 });
+    renderBridge(eventBus, playback, {
+      getHoverPayload: (selectedKey, cursorTimeMs) => ({
+        dataId: selectedKey ?? 'sensor-2',
+        rowIndex: 4,
+        point: { time: cursorTimeMs, y: 9.5 },
+      }),
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(published[0]).toBeInstanceOf(DataHoverEvent);
+    expect((published[0] as DataHoverEvent).payload).toEqual({
+      dataId: 'sensor-2',
+      rowIndex: 4,
+      point: { time: 1666, y: 9.5 },
+    });
   });
 });

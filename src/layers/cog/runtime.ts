@@ -20,10 +20,10 @@ type CogTileData = MinimalTileData & {
 
 function buildFsFilterColor(): string {
   return `\
-float raw = color.r * 65535.0;
+float raw = color.r * 65535.0 / 100.0;
 if (raw <= 0.0) { discard; }
-float t = clamp(raw / 200.0, 0.0, 1.0);
-t = pow(t, 0.72);
+float t = clamp(raw, 0.0, 1.0);
+//t = pow(t, 0.72);
 vec4 c = interpolateColor(t);
 float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
 color = vec4(c.rgb, alpha);`;
@@ -113,7 +113,7 @@ async function getTileData(image: GeoTIFF | Overview, { device, x, y, signal, po
 }
 
 export function renderCogLayers(context: LayerRenderContext<CogLayerConfig>) {
-  const { config, data, cursorTimeMs, getAccessor, getAccessors } = context;
+  const { config, data, cursorTimeMs, playing, playbackRate, getAccessor, getAccessors } = context;
   const options = config.settings;
 
   const [getUrl, updatesUrl] = getAccessor<string>(options.url, '');
@@ -125,6 +125,8 @@ export function renderCogLayers(context: LayerRenderContext<CogLayerConfig>) {
       id: `cog/${config.id}`,
       data,
       currentTime: cursorTimeMs,
+      playing,
+      playbackRate,
       getUrl,
       getTime,
       getTileData,
@@ -133,6 +135,25 @@ export function renderCogLayers(context: LayerRenderContext<CogLayerConfig>) {
       visible: config.visible,
       // maxRequests: options.maxRequests,
       // maxFrameRate: options.maxFrameRate,
+
+      missingFramePolicy: "nearest",
+      qualityPolicy: {
+        lowResFirst: false,
+      },
+      bufferPolicy: {
+        backwardFrames: playing ? 0 : 2,
+        forwardFrames: playing ? 16 : 8,
+      },
+      schedulerPolicy: {
+        maxNetworkRequests: 16,
+        frameRateSnap: "slower",
+      },
+      skipMissingFrames: true,
+      missingFramesWatermark: Date.now() - 60 * 60 * 1000,
+      scrubBucketingPolicy: {
+        enabled: true,
+      },
+
       pool: mainThreadPool,
       updateTriggers: {
         getUrl: updatesUrl,

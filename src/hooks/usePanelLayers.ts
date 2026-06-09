@@ -29,6 +29,8 @@ export function usePanelLayers(
   cursorTimeMs: number,
   fromTimeMs: number,
   toTimeMs: number,
+  playing: boolean,
+  playbackRate: number,
   selectedKey: string | null,
   onFeatureClick?: (feature: Feature, info: FeaturePickingInfo) => void
 ): UsePanelLayersResult {
@@ -69,11 +71,13 @@ export function usePanelLayers(
       cursorTimeMs,
       fromTimeMs,
       toTimeMs,
+      playing,
+      playbackRate,
       selectedKey,
       onFeatureClick,
       getRenderer,
     });
-  }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, options, selectedKey, onFeatureClick, getRenderer]);
+  }, [preparedLayerStates, cursorTimeMs, fromTimeMs, toTimeMs, playing, playbackRate, options, selectedKey, onFeatureClick, getRenderer]);
 
   return useMemo(
     () => ({
