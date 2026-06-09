@@ -23,7 +23,7 @@
         "links": [],
         "screenshots": [],
         "version": "1.0.1",
-        "updated": "2026-06-03"
+        "updated": "2026-06-09"
     },
     "dependencies": {
         "grafanaDependency": ">=12.3.0",
