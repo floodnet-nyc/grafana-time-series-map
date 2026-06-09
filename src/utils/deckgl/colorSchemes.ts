@@ -111,6 +111,35 @@ function interpolateMrmsPrecip(t: number): string {
   return lerpRgb(c0, c1, f);
 }
 
+// Operational-style precipitation ramp:
+// dark/light blue -> green -> yellow -> orange -> red -> magenta -> purple
+// This keeps light rain subdued and reserves the pink/purple tail for only the
+// most extreme rates.
+function interpolateMrmsPrecipOperational(t: number): string {
+  const s: Array<[number, [number, number, number]]> = [
+    [0.0, [18, 38, 72]],
+    [0.08, [60, 115, 196]],
+    [0.18, [92, 180, 255]],
+    [0.34, [48, 201, 126]],
+    [0.52, [226, 232, 69]],
+    [0.68, [255, 171, 56]],
+    [0.82, [241, 92, 63]],
+    [0.92, [219, 67, 159]],
+    [1.0, [130, 62, 196]],
+  ];
+  let i = s.length - 2;
+  for (let j = 0; j < s.length - 1; j++) {
+    if (t <= s[j + 1][0]) {
+      i = j;
+      break;
+    }
+  }
+  const [t0, c0] = s[i];
+  const [t1, c1] = s[Math.min(i + 1, s.length - 1)];
+  const f = t1 === t0 ? 1 : Math.max(0, Math.min(1, (t - t0) / (t1 - t0)));
+  return lerpRgb(c0, c1, f);
+}
+
 function interpolateFromStops(stops: Array<[number, number, number]>, t: number): string {
   const n = stops.length - 1;
   const idx = Math.min(t * n, n - 1e-10);
@@ -190,6 +219,7 @@ const INTERPOLATORS: Record<string, Interpolator> = {
   // Domain-specific
   FloodDepth: interpolateFloodDepth,
   MrmsPrecip: interpolateMrmsPrecip,
+  MrmsPrecipOperational: interpolateMrmsPrecipOperational,
   HeatmapFire: interpolateHeatmapFire,
   HeatmapGyr: interpolateHeatmapGyr,
 };
@@ -204,6 +234,7 @@ export const COLOR_SCHEMES: SchemeEntry[] = [
   // Domain-specific
   { name: 'FloodDepth', label: 'Flood Depth', group: 'domain' },
   { name: 'MrmsPrecip', label: 'MRMS Precipitation', group: 'domain' },
+  { name: 'MrmsPrecipOperational', label: 'MRMS Precipitation (Operational)', group: 'domain' },
   { name: 'HeatmapFire', label: 'Heatmap Fire', group: 'domain' },
   { name: 'HeatmapGyr', label: 'Heatmap Green-Yellow-Red', group: 'domain' },
   // Diverging

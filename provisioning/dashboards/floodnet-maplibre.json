@@ -294,9 +294,9 @@
             "opacity": 0.86,
             "colorScale": {
               "type": "gradient",
-              "schemeName": "MrmsPrecip",
+              "schemeName": "MrmsPrecipOperational",
               "scaleMin": 0,
-              "scaleMax": 150
+              "scaleMax": 75
             },
             "settings": {
               "colorMaxValue": 200,
