@@ -118,7 +118,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
           : [200, 200, 240, 0]
         : [0, 0, 0, 0]) as [number, number, number, number];
     const getLineWidth = (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
-      selectedKey != null ? (String(getSelection?.(datum, ctx) ?? '') === selectedKey ? 3 : 1) : 2;
+      selectedKey != null ? (String(getSelection?.(datum, ctx) ?? '') === selectedKey ? 3 : 0) : 0;
 
     const [getRadius, updateRadius] = getAccessors.number(options.radius, options.radiusScale);
     const [getValue, updateValue] = useShader ? getAccessors.number(valueField) : [undefined, []];
@@ -133,10 +133,12 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
         radiusMinPixels: options.radiusMinPixels,
         radiusMaxPixels: options.radiusMaxPixels,
         radiusUnits: 'pixels' as const,
+        lineWidthUnits: 'pixels' as const,
         stroked: options.stroked,
         filled: true,
         antialiasing: options.antialiasing ?? true,
         lineWidthMinPixels: 0,
+        lineWidthMaxPixels: 6,
         getPosition,
         getLineColor: getLineColor ?? [0, 0, 0, 0],
         getLineWidth: getLineWidth ?? 0,

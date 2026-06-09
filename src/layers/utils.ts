@@ -6,7 +6,7 @@ import { buildFeatureAt, getRowGeometry, type LayerDatum } from '../utils/datafr
 
 type ElevationSettings = { depthTest?: boolean };
 
-export const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 230, 60, 255];
+export const DEFAULT_SELECTED_COLOR: [number, number, number, number] = [255, 255, 255, 255];
 
 export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<string, LayerSettingsObject>>({
   config,
