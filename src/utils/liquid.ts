@@ -41,6 +41,20 @@ liquid.registerFilter('pretty', (value: unknown) => {
   return String(value);
 });
 
+liquid.registerFilter('dateOnly', (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
+
+  const date =
+    value instanceof Date ? value : typeof value === 'string' || typeof value === 'number' ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString();
+});
+
 export function getFeatureFromDatum(datum: unknown): Feature | null {
   if (!datum || typeof datum !== 'object') {
     return null;
