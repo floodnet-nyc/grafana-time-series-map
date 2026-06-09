@@ -56,6 +56,11 @@
               "type": "string"
             },
             {
+              "selector": "properties.name",
+              "text": "name",
+              "type": "string"
+            },
+            {
               "selector": "properties.depth_inches",
               "text": "depth_inches",
               "type": "number"
@@ -794,6 +799,10 @@
         },
         "legend": {
           "show": true
+        },
+        "tooltip": {
+          "show": true,
+          "template": "<div style=\"display:flex;flex-direction:column;gap:3px;min-width:220px;\">\n  <div style=\"font-size:14px;font-weight:700;line-height:1.2;\">{{ name }}</div>\n  <div style=\"font-size:15px;font-weight:600;line-height:1.2;\">{% if depth_inches == nil or depth_inches == '' %}No flooding detected{% else %}{{ depth_inches | pretty }} in{% endif %}</div>\n  {% if depth_inches != nil and depth_inches != '' %}<div style=\"font-size:12px;opacity:0.72;\">{{ time | pretty }}</div>{% endif %}\n</div>"
         },
         "popup": {
           "show": true,
