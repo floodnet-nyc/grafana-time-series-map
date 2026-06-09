@@ -85,7 +85,7 @@ export const scatterplotLayerDefinition: LayerDefinition<ScatterplotLayerConfig,
     const valueField = config.colorScale?.field || config.shader?.value;
 
     const hasScheme = !!(config.colorScale?.schemeName || config.colorScale?.type === 'threshold');
-    const useShader = !!(hasScheme && valueField?.field);
+    const useShader = !!(config.shader?.enabled && hasScheme && valueField?.field);
 
     const shaderExtensions: unknown[] = [];
     if (useShader) {
