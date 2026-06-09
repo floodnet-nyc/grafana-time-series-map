@@ -19,7 +19,7 @@ import {
   type CurrentLocationState,
 } from '../layers/current-location/currentLocationLayers';
 import type { FeaturePickingInfo } from '../layers/types';
-import { buildFeatureAt, getRowValue } from '../utils/dataframe/layerTable';
+import { buildPopupSelectionContext } from '../utils/popupSelection';
 import 'style.css';
 
 const CONTROLS_HEIGHT = 48;
@@ -155,9 +155,6 @@ export function MapPanel({
     selectionVariableName: options.sync.selectionVariableName,
   });
 
-  // Track the last clicked feature so the popup can show its properties.
-  // External DataSelectEvent (from time series panel) sets selectedKey without a feature.
-  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
   const [currentLocation, setCurrentLocation] = useState<CurrentLocationState | null>(null);
   const [legendCollapsed, setLegendCollapsed] = useState(() => width < 500);
 
@@ -178,10 +175,8 @@ export function MapPanel({
       }
       if (key === selectedKey) {
         selectKey(null);
-        setSelectedFeature(null);
       } else {
         selectKey(key);
-        setSelectedFeature(feature);
       }
     },
     [selectedKey, selectKey]
@@ -189,7 +184,6 @@ export function MapPanel({
 
   const handlePopupClose = useCallback(() => {
     selectKey(null);
-    setSelectedFeature(null);
   }, [selectKey]);
 
   const onToggleLayerVisibility = useCallback(
@@ -218,42 +212,6 @@ export function MapPanel({
 
   const mapHeight = options.time.show ? Math.max(0, height - CONTROLS_HEIGHT) : height;
   const featuresByLayerId = usePanelFeatures(data, options);
-  const resolvedSelectedFeature = useMemo(() => {
-    if (!selectedKey) {
-      return null;
-    }
-
-    if (
-      selectedFeature &&
-      options.layers.some((layer) => {
-        const keyField = layer.selectionKey;
-        return keyField?.field && keyField.source === layer.data.featureSource.id
-          ? String(selectedFeature.properties?.[keyField.field] ?? '') === selectedKey
-          : false;
-      })
-    ) {
-      return selectedFeature;
-    }
-
-    for (const layer of options.layers) {
-      const keyField = layer.selectionKey;
-      if (!keyField?.field || keyField.source !== layer.data.featureSource.id) {
-        continue;
-      }
-
-      const table = featuresByLayerId.get(layer.id);
-      if (!table) {
-        continue;
-      }
-      for (let index = 0; index < table.data.length; index += 1) {
-        if (String(getRowValue(table, index, keyField.field) ?? '') === selectedKey) {
-          return buildFeatureAt(table, index);
-        }
-      }
-    }
-
-    return null;
-  }, [featuresByLayerId, options.layers, selectedFeature, selectedKey]);
 
   const { layers, preparedLayerStates } = usePanelLayers(
     options,
@@ -267,6 +225,11 @@ export function MapPanel({
     selectedKey,
     onFeatureClick
   );
+  const popupSelectionContext = useMemo(
+    () => buildPopupSelectionContext(preparedLayerStates, selectedKey, playback.cursorTimeMs),
+    [preparedLayerStates, selectedKey, playback.cursorTimeMs]
+  );
+  const resolvedSelectedFeature = popupSelectionContext?.primary?.feature ?? null;
   const fitBounds = useFitBounds(options, preparedLayerStates);
   const fitRequestId = options.initialView.fitRequestId ?? 0;
   const currentLocationLayers = useMemo(() => buildCurrentLocationLayers(currentLocation), [currentLocation]);
@@ -336,7 +299,7 @@ export function MapPanel({
           {selectedKey && (
             <SensorPopup
               selectedKey={selectedKey}
-              feature={resolvedSelectedFeature}
+              selectionContext={popupSelectionContext}
               template={options.popup.template ?? DEFAULT_POPUP_TEMPLATE}
               onClose={handlePopupClose}
               inline

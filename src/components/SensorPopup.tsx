@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Feature } from 'geojson';
 import { buildLiquidScope, renderLiquidTemplate } from '../utils/liquid';
+import type { PopupSelectionContext } from '../utils/popupSelection';
 
 export const DEFAULT_POPUP_TEMPLATE = `\
 <table class="fn-datatable">
@@ -15,14 +15,23 @@ export const DEFAULT_POPUP_TEMPLATE = `\
 
 interface SensorPopupProps {
   selectedKey: string;
-  feature: Feature | null;
+  selectionContext: PopupSelectionContext | null;
   template: string;
   onClose: () => void;
   inline?: boolean;
 }
 
-export function SensorPopup({ selectedKey, feature, template, onClose, inline = false }: SensorPopupProps) {
-  const scope = buildLiquidScope(feature?.properties ?? {}, selectedKey);
+export function SensorPopup({ selectedKey, selectionContext, template, onClose, inline = false }: SensorPopupProps) {
+  const primary = selectionContext?.primary ?? null;
+  const scope = {
+    ...buildLiquidScope(primary?.properties ?? {}, selectedKey),
+    ...(primary?.scope ?? {}),
+    _key: selectedKey,
+    primary,
+    match: selectionContext?.match ?? {},
+    matches: selectionContext?.matches ?? {},
+    flatMatches: selectionContext?.flatMatches ?? [],
+  };
   const html = renderLiquidTemplate(template, scope);
 
   return (
