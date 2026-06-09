@@ -90,6 +90,41 @@
               "type": "string"
             },
             {
+              "selector": "properties.name",
+              "text": "name",
+              "type": "string"
+            },
+            {
+              "selector": "properties.date_deployed",
+              "text": "date_deployed",
+              "type": "timestamp"
+            },
+            {
+              "selector": "properties.date_down",
+              "text": "date_down",
+              "type": "timestamp"
+            },
+            {
+              "selector": "properties.neighborhood",
+              "text": "neighborhood",
+              "type": "string"
+            },
+            {
+              "selector": "properties.borough",
+              "text": "borough",
+              "type": "string"
+            },
+            {
+              "selector": "properties.sensor_mount",
+              "text": "sensor_mount",
+              "type": "string"
+            },
+            {
+              "selector": "properties.mounted_over",
+              "text": "mounted_over",
+              "type": "string"
+            },
+            {
               "selector": "geometry.coordinates.0",
               "text": "lng",
               "type": "number"
@@ -759,6 +794,10 @@
         },
         "legend": {
           "show": true
+        },
+        "popup": {
+          "show": true,
+          "template": "<div style=\"display:flex;flex-direction:column;gap:6px;min-width:240px;\">\n  <div style=\"font-size:16px;font-weight:700;line-height:1.2;\">{{ match.sensors.name }}</div>\n  <div style=\"font-size:12px;opacity:0.8;\">{{ match.sensors.date_deployed | pretty }} - {% if match.sensors.date_down %}{{ match.sensors.date_down | pretty }}{% else %}present{% endif %}</div>\n  <div style=\"font-size:13px;\">{{ match.sensors.neighborhood }}, {{ match.sensors.borough }}</div>\n  <div style=\"font-size:13px;\">{{ match.sensors.sensor_mount }}</div>\n  <div style=\"font-size:13px;opacity:0.9;\">Mounted over {{ match.sensors.mounted_over }}</div>\n</div>"
         },
         "sync": {
           "subscribe": true,
