@@ -3,7 +3,7 @@ import type { LayerConfig } from '../../layers';
 import { EyeIcon, InfoIcon } from './icons';
 import { GradientLegend } from './scales/GradientLegend';
 import { ThresholdLegend } from './scales/ThresholdLegend';
-import { swatchHex } from './utils';
+import { getLegendIconDefinition, swatchHex } from './utils';
 
 interface LayerLegendEntryProps {
   layer: LayerConfig;
@@ -13,6 +13,7 @@ interface LayerLegendEntryProps {
 
 export function LayerLegendEntry({ layer, onToggle, showEye }: LayerLegendEntryProps) {
   const colorScale = layer.colorScale;
+  const iconDefinition = getLegendIconDefinition(layer);
   const [tooltipVisible, setTooltipVisible] = useState(false);
 
   return (
@@ -30,7 +31,11 @@ export function LayerLegendEntry({ layer, onToggle, showEye }: LayerLegendEntryP
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-          {colorScale?.type === 'fixed' && colorScale.fixedColor && <FixedLegend colorScale={colorScale} />}
+          {iconDefinition ? (
+            <IconLegendSwatch layer={layer} />
+          ) : colorScale?.type === 'fixed' && colorScale.fixedColor ? (
+            <FixedLegend colorScale={colorScale} />
+          ) : null}
 
           <span
             style={{
@@ -91,5 +96,56 @@ const FixedLegend = ({ colorScale }: { colorScale: LayerConfig['colorScale'] }) 
         }}
       />
     )
+  );
+};
+
+const IconLegendSwatch = ({ layer }: { layer: LayerConfig }) => {
+  const icon = getLegendIconDefinition(layer);
+  if (!icon) {
+    return null;
+  }
+
+  const color =
+    layer.colorScale?.type === 'fixed' && layer.colorScale.fixedColor ? swatchHex(layer.colorScale.fixedColor) : '#e0e0e0';
+  const size = 14;
+
+  if (icon.mask !== false) {
+    return (
+      <span
+        aria-label={`${layer.label} legend icon`}
+        style={{
+          display: 'inline-block',
+          width: size,
+          height: size,
+          flexShrink: 0,
+          backgroundColor: color,
+          maskImage: `url("${icon.url}")`,
+          WebkitMaskImage: `url("${icon.url}")`,
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.08)',
+        }}
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-label={`${layer.label} legend icon`}
+      style={{
+        display: 'inline-block',
+        width: size,
+        height: size,
+        flexShrink: 0,
+        backgroundImage: `url("${icon.url}")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        backgroundSize: 'contain',
+      }}
+    />
   );
 };

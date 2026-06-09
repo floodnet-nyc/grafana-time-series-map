@@ -1,5 +1,6 @@
 import type { ColorScaleConfig, ColorStep } from '../../types';
 import type { LayerConfig } from '../../layers';
+import { DEFAULT_BUILT_IN_ICON, isBuiltInIconName, resolveBuiltInIcon } from '../../layers/icon/builtInIcons';
 
 export const SMALL_PANEL_THRESHOLD = 400;
 
@@ -20,7 +21,7 @@ export function sortThresholdSteps(steps: ColorStep[]): ColorStep[] {
   return [...steps].sort((left, right) => left.value - right.value);
 }
 
-export function hasLegendContent(colorScale: ColorScaleConfig | undefined): boolean {
+export function hasColorLegendContent(colorScale: ColorScaleConfig | undefined): boolean {
   if (!colorScale) {
     return false;
   }
@@ -36,6 +37,33 @@ export function hasLegendContent(colorScale: ColorScaleConfig | undefined): bool
   return !!colorScale.schemeName;
 }
 
+export function getLegendIconDefinition(layer: LayerConfig) {
+  if (layer.type !== 'icon') {
+    return undefined;
+  }
+
+  const settings = layer.settings as {
+    fixedIcon?: string;
+    iconAtlasUrl?: string;
+    iconMappingUrl?: string;
+  };
+  const fixedIcon = settings.fixedIcon?.trim() || DEFAULT_BUILT_IN_ICON;
+
+  if (isBuiltInIconName(fixedIcon)) {
+    return resolveBuiltInIcon(fixedIcon);
+  }
+
+  if (!settings.iconAtlasUrl?.trim() || !settings.iconMappingUrl?.trim()) {
+    return resolveBuiltInIcon(DEFAULT_BUILT_IN_ICON);
+  }
+
+  return undefined;
+}
+
+export function hasLegendContent(layer: LayerConfig): boolean {
+  return hasColorLegendContent(layer.colorScale) || !!getLegendIconDefinition(layer);
+}
+
 export function getLegendEntries(layers: LayerConfig[]): LayerConfig[] {
-  return layers.filter((layer) => (layer.showInLegend ?? true) && hasLegendContent(layer.colorScale));
+  return layers.filter((layer) => (layer.showInLegend ?? true) && hasLegendContent(layer));
 }
