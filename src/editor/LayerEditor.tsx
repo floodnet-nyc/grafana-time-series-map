@@ -269,6 +269,9 @@ export function LayerEditor({
   return (
     <div className={styles.root}>
       <CollapsableSection label="General" isOpen>
+        <Field label="Layer ID" description="Stable identifier used by templates, selection context, and dashboard JSON">
+          <Input value={layer.id} onChange={(e) => patch({ id: e.currentTarget.value })} />
+        </Field>
         <Field label="Layer name">
           <Input value={layer.label} onChange={(e) => patch({ label: e.currentTarget.value })} />
         </Field>
