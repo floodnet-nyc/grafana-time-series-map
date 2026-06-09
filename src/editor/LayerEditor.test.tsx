@@ -1,9 +1,78 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LayerEditor } from './LayerEditor';
-import type { LayerConfig } from '../layers';
+import type { LayerConfig } from '../layers/types';
 import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
+
+jest.mock('@grafana/ui', () => {
+  const React = require('react');
+
+  const passthrough =
+    (tag = 'div') =>
+    ({ children, ...props }: any) =>
+      React.createElement(tag, props, children);
+
+  return {
+    useStyles2: () => ({}),
+    Field: ({ label, description, children }: any) =>
+      React.createElement(
+        'label',
+        {},
+        label ? React.createElement('span', {}, label) : null,
+        description ? React.createElement('small', {}, description) : null,
+        children
+      ),
+    Input: ({ value, onChange, type = 'text' }: any) =>
+      React.createElement('input', { value, onChange, type }),
+    Switch: ({ value, onChange }: any) =>
+      React.createElement('input', { type: 'checkbox', checked: value, onChange }),
+    Combobox: ({ value, onChange }: any) =>
+      React.createElement('input', {
+        value: value ?? '',
+        onChange: (e: any) => onChange?.({ value: e.currentTarget.value }),
+      }),
+    Select: ({ value, onChange }: any) =>
+      React.createElement('input', {
+        value: value?.value ?? '',
+        onChange: (e: any) => onChange?.({ value: e.currentTarget.value }),
+      }),
+    Slider: ({ value, onChange }: any) =>
+      React.createElement('input', {
+        type: 'range',
+        value,
+        onChange: (e: any) => onChange?.(Number(e.currentTarget.value)),
+      }),
+    TextArea: ({ value, onChange }: any) => React.createElement('textarea', { value, onChange }),
+    CollapsableSection: ({ children }: any) => React.createElement('div', {}, children),
+    ColorPicker: ({ color, onChange }: any) =>
+      React.createElement('input', { value: color, onChange: (e: any) => onChange?.(e.currentTarget.value) }),
+    Button: ({ children, onClick }: any) => React.createElement('button', { onClick }, children),
+    IconButton: ({ onClick }: any) => React.createElement('button', { onClick }),
+  };
+});
+
+jest.mock('../layers', () => ({
+  layerDefinitions: [
+    {
+      type: 'scatterplot',
+      label: 'Scatterplot',
+      createDefaultConfig: () => ({}),
+      editorSections: [],
+    },
+  ],
+  getLayerDefinition: () => ({
+    type: 'scatterplot',
+    label: 'Scatterplot',
+    createDefaultConfig: () => ({}),
+    editorSections: [],
+  }),
+}));
+
+jest.mock('../extensions', () => ({
+  layerExtensionDefinitions: [],
+}));
+
+const { LayerEditor } = require('./LayerEditor');
 
 function createLayer(overrides: Partial<LayerConfig> = {}): LayerConfig {
   const base: ScatterplotLayerConfig = {
