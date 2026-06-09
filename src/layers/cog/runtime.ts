@@ -20,12 +20,10 @@ type CogTileData = MinimalTileData & {
 
 function buildFsFilterColor(): string {
   return `\
-float raw = color.r * 65535.0 / 100.0;
+float raw = color.r * 65535.0;
 if (raw <= 0.0) { discard; }
-float t = clamp(raw, 0.0, 1.0);
-//t = pow(t, 0.72);
-vec4 c = interpolateColor(t);
-float alpha = smoothstep(0.0, 0.06, t) * (0.20 + 0.70 * sqrt(t));
+vec4 c = interpolateColor(raw);
+float alpha = smoothstep(0.0, 3.0, raw) * (0.20 + 0.70 * sqrt(clamp(raw / 50.0, 0.0, 1.0)));
 color = vec4(c.rgb, alpha);`;
 }
 

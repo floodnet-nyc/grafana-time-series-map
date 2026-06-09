@@ -278,7 +278,7 @@
           {
             "id": "precip-cog",
             "type": "cog",
-            "label": "Precipitation",
+            "label": "Precipitation (mm/hr)",
             "visible": true,
             "geometry": {
               "type": "none"
@@ -296,7 +296,7 @@
               "type": "gradient",
               "schemeName": "MrmsPrecip",
               "scaleMin": 0,
-              "scaleMax": 1
+              "scaleMax": 150
             },
             "settings": {
               "colorMaxValue": 200,
