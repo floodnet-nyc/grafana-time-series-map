@@ -82,7 +82,7 @@ export const iconLayerDefinition: LayerDefinition<IconLayerConfig, LayerDatum> =
   ],
   renderLayers(context: LayerRenderContext<IconLayerConfig>) {
     const { config, data, getAccessor, getAccessors, selectedKey } = context;
-    const options = config.settings;
+    const options: IconLayerSettings = { ...defaultSettings, ...config.settings };
     const commonProps = createCommonLayerProps(context);
 
     const [getColorValue] = config.colorScale?.field ? getAccessors.number(config.colorScale.field) : [undefined, []];

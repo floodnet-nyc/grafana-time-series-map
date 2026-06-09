@@ -1,16 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import type { LayerConfig } from '../layers/types';
+import type { LayerConfig } from '../layers';
 import { createSourceRef } from '../layers/defaults';
 import type { ScatterplotLayerConfig } from '../layers/scatterplot';
 
 jest.mock('@grafana/ui', () => {
   const React = require('react');
-
-  const passthrough =
-    (tag = 'div') =>
-    ({ children, ...props }: any) =>
-      React.createElement(tag, props, children);
 
   return {
     useStyles2: () => ({}),
