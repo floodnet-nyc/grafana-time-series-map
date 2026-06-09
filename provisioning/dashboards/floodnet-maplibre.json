@@ -296,7 +296,7 @@
               "type": "gradient",
               "schemeName": "MrmsPrecipOperational",
               "scaleMin": 0,
-              "scaleMax": 75
+              "scaleMax": 100
             },
             "settings": {
               "colorMaxValue": 200,
