@@ -24,12 +24,23 @@ interface Props {
 
 export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: Props) {
   const styles = useStyles2(getStyles);
-  const { cursorTimeMs, playing, playbackSpeed, speeds, play, pause, scrubTo, setSpeed } = playback;
+  const { cursorTimeMs, playing, playbackSpeed, speeds, play, pause, scrubTo, seekTo, setSpeed } = playback;
   const speedOptions = useMemo(() => speeds.map((value) => ({ label: formatSpeedLabel(value), value })), [speeds]);
+  const toTime = useCallback((value: number) => fromTimeMs + value * (toTimeMs - fromTimeMs), [fromTimeMs, toTimeMs]);
 
   const handleSliderChange = useCallback(
-    (value: number) => scrubTo(fromTimeMs + value * (toTimeMs - fromTimeMs)),
-    [fromTimeMs, toTimeMs, scrubTo]
+    (value: number) => scrubTo(toTime(value)),
+    [scrubTo, toTime]
+  );
+
+  const handleSliderAfterChange = useCallback(
+    (value?: number) => {
+      if (typeof value !== 'number') {
+        return;
+      }
+      seekTo(toTime(value));
+    },
+    [seekTo, toTime]
   );
 
   const progress = toTimeMs > fromTimeMs ? (cursorTimeMs - fromTimeMs) / (toTimeMs - fromTimeMs) : 0;
@@ -50,6 +61,7 @@ export function TimePlaybackControls({ width, fromTimeMs, toTimeMs, playback }: 
           step={0.001}
           value={progress}
           onChange={handleSliderChange}
+          onAfterChange={handleSliderAfterChange}
           showInput={false}
         />
         <span className={styles.timeLabel}>{formatTime(cursorTimeMs)}</span>
