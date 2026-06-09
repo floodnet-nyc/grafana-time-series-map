@@ -17,6 +17,7 @@ export function createCommonLayerProps<TLayerConfig extends BaseLayerConfig<stri
 }: LayerRenderContext<TLayerConfig>) {
   return {
     config,
+    table,
     id: `${config.type}/${config.id}`,
     data,
     visible: config.visible,

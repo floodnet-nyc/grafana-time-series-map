@@ -1,6 +1,8 @@
 import type { PickingInfo } from '@deck.gl/core';
 import type { DeckTooltipContent } from '../../components/map/types';
+import { buildFeatureAt, type LayerDatum } from '../dataframe/layerTable';
 import { liquid, getFeatureFromDatum, buildLiquidScope } from '../liquid';
+import type { LayerWithConfig } from '../../layers/types';
 
 export const DEFAULT_TOOLTIP_TEMPLATE = `\
 <table class="fn-datatable">
@@ -27,7 +29,13 @@ export function buildDeckTooltip(template: string): (info: PickingInfo) => DeckT
       return null;
     }
 
-    const feature = getFeatureFromDatum(info.object);
+    const feature =
+      getFeatureFromDatum(info.object) ??
+      (() => {
+        const datum = info.object as LayerDatum | undefined;
+        const table = (info.layer as LayerWithConfig | undefined)?.props?.table;
+        return table && typeof datum?.__idx === 'number' ? buildFeatureAt(table, datum.__idx) : null;
+      })();
     const props = feature?.properties;
     if (!props) {
       return null;

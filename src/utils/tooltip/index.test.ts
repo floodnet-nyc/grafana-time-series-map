@@ -1,4 +1,5 @@
 import { buildDeckTooltip, DEFAULT_TOOLTIP_TEMPLATE } from './index';
+import type { LayerTable } from '../dataframe/layerTable';
 
 function createFeature(properties: Record<string, unknown>) {
   return {
@@ -72,5 +73,22 @@ describe('tooltip', () => {
     const feature = createFeature({ sensor_id: 'nested' });
     const result = getTooltip({ object: { feature } } as any) as any;
     expect(result.html).toBe('nested');
+  });
+
+  it('rebuilds a feature from a picked layer datum and backing table', () => {
+    const getTooltip = buildDeckTooltip('{{ sensor_id }}');
+    const table: LayerTable = {
+      frames: [],
+      rowRefs: [{ frameIndex: 0, rowIndex: 0 }],
+      geometry: [createFeature({}).geometry],
+      data: [{ __idx: 0 }],
+      featureSourceId: 'main',
+      legacyFeatures: [createFeature({ sensor_id: 'rebuilt' }) as any],
+    };
+    const result = getTooltip({
+      object: { __idx: 0 },
+      layer: { props: { table } },
+    } as any) as any;
+    expect(result.html).toBe('rebuilt');
   });
 });

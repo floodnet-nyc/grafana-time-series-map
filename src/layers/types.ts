@@ -67,7 +67,7 @@ export type PointPositionAccessorFunction<T = any> = (
 ) => [AccessorFunction<T, [number, number] | [number, number, number]>, AccessorDependencyKey];
 
 export type LayerWithConfig<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Layer & {
-  props: Layer['props'] & { config?: TLayerConfig };
+  props: Layer['props'] & { config?: TLayerConfig; table?: LayerTable };
 };
 
 export type FeaturePickingInfo<TLayerConfig extends LayerConfigBase = LayerConfigBase> = Partial<
