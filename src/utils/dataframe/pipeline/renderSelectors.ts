@@ -96,7 +96,7 @@ function createLayerRenderContext({
   return {
     config: preparedLayerState.config,
     panelOptions: options,
-    data: preparedLayerState.table.data,
+    data: preparedLayerState.data ?? preparedLayerState.table.data,
     table: preparedLayerState.table,
     features: preparedLayerState.features,
     featureCollection:

@@ -9,7 +9,12 @@ import type {
 } from '../../../layers/types';
 import type { SourceRef } from '../../../types';
 import type { DerivedValueTable } from './derivedFieldSelectors';
+import type { PreparedGroupedVectorsState } from './vectorSelectors';
 import { getRowGeometry, getRowValue, type LayerTable, type LayerDatum } from '../layerTable';
+
+function getDatumIndex(datum: LayerDatum, ctx: AccessorContext<LayerDatum>) {
+  return datum.__idx ?? ctx.index;
+}
 
 function dependencyKey(fieldRef?: SourceRef, defaultValue?: unknown) {
   return [fieldRef?.source ?? '', fieldRef?.field ?? '', defaultValue];
@@ -157,11 +162,13 @@ export function selectAccessorFactories({
   table,
   derivedValues,
   joinedSourceValues,
+  groupedVectors,
 }: {
   config: LayerConfig;
   table: LayerTable;
   derivedValues?: DerivedValueTable;
   joinedSourceValues?: Map<string, Map<string, Record<string, unknown>>>;
+  groupedVectors?: PreparedGroupedVectorsState;
 }): { getAccessor: GetAccessorFunction; getAccessors: GetAccessorFunctions } {
   const derivedFieldNames = new Set((config.derivedFields ?? []).map((f) => f.as).filter(Boolean));
 
@@ -172,16 +179,16 @@ export function selectAccessorFactories({
 
     if (fieldRef.source === config.data.featureSource.id && derivedFieldNames.has(fieldRef.field)) {
       return [
-        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) =>
-          derivedValues?.[index]?.[fieldRef.field] ?? defaultValue,
+        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+          derivedValues?.[getDatumIndex(datum, ctx)]?.[fieldRef.field] ?? defaultValue,
         [...dependencyKey(fieldRef, defaultValue), derivedValues],
       ];
     }
 
     if (fieldRef.source === config.data.featureSource.id) {
       return [
-        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) =>
-          getRowValue(table, index, fieldRef.field) ?? defaultValue,
+        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+          getRowValue(table, getDatumIndex(datum, ctx), fieldRef.field) ?? defaultValue,
         dependencyKey(fieldRef, defaultValue),
       ];
     }
@@ -194,7 +201,8 @@ export function selectAccessorFactories({
       }
 
       return [
-        (_datum: LayerDatum, { index }: AccessorContext<LayerDatum>) => {
+        (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) => {
+          const index = getDatumIndex(datum, ctx);
           const localKey = String(
             getFeatureFieldValue(
               table,
@@ -220,15 +228,31 @@ export function selectAccessorFactories({
       date: makeTypedGetAccessor(rawGetAccessor, toDate, new Date(NaN)),
       dateMs: makeTypedGetAccessor(rawGetAccessor, toDateMs, 0),
       array: makeTypedGetAccessor(rawGetAccessor, toArray, []),
-      numericArray: makeTypedGetAccessor(rawGetAccessor, toNumericArray, []),
+      numericArray: ((fieldRef?: SourceRef, defaultValue: number[] = []) => {
+        const vectorFieldValues =
+          fieldRef?.source === config.data.featureSource.id && fieldRef.field
+            ? groupedVectors?.numericArrayByField.get(fieldRef.field)
+            : undefined;
+        const [accessor, updates] = rawGetAccessor(fieldRef, defaultValue);
+        return [
+          vectorFieldValues
+            ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+                vectorFieldValues.get(getDatumIndex(datum, ctx)) ?? defaultValue
+            : accessor
+              ? (datum: LayerDatum, ctx: AccessorContext<LayerDatum>) =>
+                  toNumericArray(accessor(datum, ctx), defaultValue)
+              : undefined,
+          [...updates, vectorFieldValues],
+        ] as [AccessorFunction<LayerDatum, number[]> | undefined, readonly unknown[]];
+      }) as TypedGetAccessorFunction<number[]>,
       geometry: (defaultValue = null) => [
-        (_datum, { index }) => getRowGeometry(table, index) ?? defaultValue,
+        (datum, ctx) => getRowGeometry(table, getDatumIndex(datum, ctx)) ?? defaultValue,
         [table.geometry],
       ],
       pointPosition: ((defaultValue: [number, number] | [number, number, number] = [0, 0], getElevation, elevationOffset = 0) => [
         (datum, ctx) =>
           getPointPositionFromGeometry(
-            getRowGeometry(table, ctx.index),
+            getRowGeometry(table, getDatumIndex(datum, ctx)),
             defaultValue,
             getElevation?.(datum, ctx),
             elevationOffset
@@ -236,11 +260,13 @@ export function selectAccessorFactories({
         [table.geometry],
       ]) as PointPositionAccessorFunction,
       path: (defaultValue: number[][] = []) => [
-        (_datum, { index }) => getPathFromGeometry(getRowGeometry(table, index), defaultValue),
-        [table.geometry],
+        (datum, ctx) =>
+          groupedVectors?.pathByIndex.get(getDatumIndex(datum, ctx)) ??
+          getPathFromGeometry(getRowGeometry(table, getDatumIndex(datum, ctx)), defaultValue),
+        [table.geometry, groupedVectors?.pathByIndex],
       ],
       polygon: (defaultValue: number[][][] = []) => [
-        (_datum, { index }) => getPolygonFromGeometry(getRowGeometry(table, index), defaultValue),
+        (datum, ctx) => getPolygonFromGeometry(getRowGeometry(table, getDatumIndex(datum, ctx)), defaultValue),
         [table.geometry],
       ],
     },

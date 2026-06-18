@@ -38,6 +38,10 @@ function getPath(geometry: unknown): number[][] {
   return [];
 }
 
+function isValidTrip(path: number[][], timestamps: number[]) {
+  return path.length >= 2 && timestamps.length === path.length;
+}
+
 function scaleTimestamp(value: number, unit: TripsLayerSettings['timestampUnit']): number {
   return unit === 's' ? value * 1000 : value;
 }
@@ -85,33 +89,36 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
       : [undefined, []];
     const getColor = buildColorAccessor<TripDatum>(config.colorScale, [0, 200, 180, 220], getColorValue);
     const [getWidth, updatesWidth] = getAccessors.number(options.width, 1);
-    const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(options.timestamps);
+    const [getPathAccessor, updatesPath] = getAccessors.path();
+    const timestampsSource = options.timestamps.field ? options.timestamps : config.timeFilter.time;
+    const [getTimestampsRaw, updatesTimestamps] = getAccessors.numericArray(timestampsSource);
     const scaleTimestamps = (timestamps: number[]) => timestamps.map((timestamp) => scaleTimestamp(timestamp, options.timestampUnit));
-    const getIndex = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => ctx?.index ?? datum.__idx ?? -1;
+    const getIndex = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => datum.__idx ?? ctx?.index ?? -1;
     const getContext = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) =>
       ctx ?? ({ index: getIndex(datum, ctx) } as AccessorContext<TripDatum>);
-    const getPathAccessor = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
-      const path = getPath(getRowGeometry(context.table, getIndex(datum, ctx)));
+    const getPathValue = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
+      const path = getPathAccessor(datum, getContext(datum, ctx));
       return path.length >= 2 ? path : [];
     };
-    const getTimestamps = getTimestampsRaw
+    const getEmbeddedTimestamps = getTimestampsRaw
       ? (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
           const timestamps = scaleTimestamps(getTimestampsRaw(datum, ctx));
-          const path = getPathAccessor(datum, ctx);
-          return timestamps.length === path.length ? timestamps : [];
+          const path = getPathValue(datum, ctx);
+          return isValidTrip(path, timestamps) ? timestamps : [];
         }
       : (datum: TripDatum, ctx: AccessorContext<TripDatum>) => {
-          const path = getPathAccessor(datum, ctx);
+          const path = getPath(getRowGeometry(context.table, getIndex(datum, ctx)));
           return scaleTimestamps(path.map((coord) => Number(coord[2])).filter(Number.isFinite));
         };
+    const getTimestamps = (datum: TripDatum, ctx: AccessorContext<TripDatum>) => getEmbeddedTimestamps(datum, ctx);
     const getFilterValue = (datum: TripDatum, ctx?: AccessorContext<TripDatum>) => {
       const index = getIndex(datum, ctx);
       if (index < 0 || (timeFilterFlags && !timeFilterFlags[index])) {
         return -1;
       }
-      const path = getPathAccessor(datum, ctx);
+      const path = getPathValue(datum, ctx);
       const timestamps = getTimestamps(datum, getContext(datum, ctx));
-      return path.length >= 2 && timestamps.length === path.length ? 1 : -1;
+      return isValidTrip(path, timestamps) ? 1 : -1;
     };
 
     // Panel time filtering and joined-source lookups stay feature-oriented:
@@ -129,7 +136,7 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
         widthMaxPixels: options.widthMaxPixels,
         capRounded: options.capRounded,
         jointRounded: options.jointRounded,
-        getPath: getPathAccessor as any,
+        getPath: getPathValue as any,
         getTimestamps,
         getColor,
         getWidth: getWidth ?? 1,
@@ -140,7 +147,8 @@ export const tripsLayerDefinition: LayerDefinition<TripsLayerConfig, TripDatum> 
           getTimestamps: updatesTimestamps,
           getColor: updatesColorValue,
           getWidth: updatesWidth,
-          getFilterValue: [timeFilterFlags, options.timestamps.field],
+          getPath: updatesPath,
+          getFilterValue: [timeFilterFlags, timestampsSource?.field, updatesPath],
         },
       } as any),
     ];

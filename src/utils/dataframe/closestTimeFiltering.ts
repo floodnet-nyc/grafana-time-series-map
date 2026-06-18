@@ -145,7 +145,7 @@ export function buildPacked(
 //   return { keyIndex, buckets };
 // }
 
-function asofIndex(times: Float64Array, t0: number): number {
+export function asofIndex(times: Float64Array, t0: number): number {
   let lo = 0,
     hi = times.length - 1,
     ans = -1;
@@ -159,6 +159,23 @@ function asofIndex(times: Float64Array, t0: number): number {
     }
   }
   return ans;
+}
+
+export function closestIndex(times: Float64Array, t0: number): number {
+  if (times.length === 0) {
+    return -1;
+  }
+
+  const before = asofIndex(times, t0);
+  if (before < 0) {
+    return 0;
+  }
+  if (before >= times.length - 1) {
+    return times.length - 1;
+  }
+
+  const after = before + 1;
+  return Math.abs(times[after] - t0) < Math.abs(t0 - times[before]) ? after : before;
 }
 
 const DEFAULT_MAX_LAG_MS = 60 * 60 * 1000;

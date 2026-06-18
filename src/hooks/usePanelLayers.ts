@@ -6,6 +6,8 @@ import type { MapPanelOptions } from '../types';
 import type { FeaturePickingInfo } from '../layers/types';
 import {
   buildJoinedSourcePackedByLayerId,
+  buildGroupedVectorPackedByLayerId,
+  buildPreparedGroupedVectorsByLayerId,
   buildJoinedSourceValuesByLayerId,
   buildPreparedLayerStates,
   buildTimeFilterFlagsByLayerId,
@@ -49,6 +51,14 @@ export function usePanelLayers(
     return buildJoinedSourceValuesByLayerId(options.layers, joinedSourcePackedByLayerId, cursorTimeMs);
   }, [cursorTimeMs, options.layers, joinedSourcePackedByLayerId]);
 
+  const groupedVectorPackedByLayerId = useMemo(() => {
+    return buildGroupedVectorPackedByLayerId(options.layers, tablesByLayerId);
+  }, [options.layers, tablesByLayerId]);
+
+  const groupedVectorsByLayerId = useMemo(() => {
+    return buildPreparedGroupedVectorsByLayerId(options.layers, tablesByLayerId, groupedVectorPackedByLayerId, cursorTimeMs);
+  }, [options.layers, tablesByLayerId, groupedVectorPackedByLayerId, cursorTimeMs]);
+
   const timeFlagsByLayerId = useMemo(() => {
     return buildTimeFilterFlagsByLayerId(
       options.layers,
@@ -61,8 +71,14 @@ export function usePanelLayers(
   }, [tablesByLayerId, timePackedByLayerId, cursorTimeMs, fromTimeMs, toTimeMs, options.layers]);
 
   const preparedLayerStates = useMemo(() => {
-    return buildPreparedLayerStates(options.layers, tablesByLayerId, timeFlagsByLayerId, joinedSourceValuesByLayerId);
-  }, [tablesByLayerId, timeFlagsByLayerId, options.layers, joinedSourceValuesByLayerId]);
+    return buildPreparedLayerStates(
+      options.layers,
+      tablesByLayerId,
+      timeFlagsByLayerId,
+      joinedSourceValuesByLayerId,
+      groupedVectorsByLayerId
+    );
+  }, [tablesByLayerId, timeFlagsByLayerId, options.layers, joinedSourceValuesByLayerId, groupedVectorsByLayerId]);
 
   const layers = useMemo(() => {
     return renderPreparedLayers({
